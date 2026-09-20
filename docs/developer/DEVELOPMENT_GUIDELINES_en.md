@@ -29,6 +29,10 @@ When adding or changing documentation, update the Chinese and English versions t
 
 Use Mermaid text that can be read by Marmimind for flowcharts, architecture diagrams, sequence diagrams, and dependency graphs. Prefer a `mermaid` code block in Markdown, or store standalone diagrams under `docs/diagrams/*.mmd`. Do not submit only PNGs, screenshots, or unreviewable proprietary formats; diagram nodes and important notes should be provided in both Chinese and English.
 
+## CodeGraph Index
+
+The project uses CodeGraph to build a code relationship index. Keep `.codegraph/.gitignore` in the repository, but keep the database, logs, and runtime files local. After changing JavaScript or GitHub Actions, run `codegraph sync` to update the index and `codegraph status` to verify that it is current.
+
 ## Security
 
 Never commit secrets, tokens, personal configuration, or build output. Verify that every new external link, script, or font is trustworthy and necessary.
