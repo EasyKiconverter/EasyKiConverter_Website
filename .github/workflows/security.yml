@@ -19,7 +19,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
+      - name: Detect dependency manifests
+        id: manifests
+        shell: bash
+        run: |
+          if find . -maxdepth 3 -type f \( \
+            -name 'package.json' \
+            -o -name 'package-lock.json' \
+            -o -name 'pnpm-lock.yaml' \
+            -o -name 'yarn.lock' \
+            -o -name 'requirements.txt' \
+            -o -name 'pyproject.toml' \
+            -o -name 'Cargo.toml' \
+            -o -name 'go.mod' \
+          \) -print -quit | grep -q .; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+            echo 'Dependency manifest found.'
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+            echo 'No dependency manifest found; dependency review is not applicable.'
+          fi
+
       - name: Review dependency changes
+        if: steps.manifests.outputs.present == 'true'
         uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
         with:
           fail-on-severity: moderate
