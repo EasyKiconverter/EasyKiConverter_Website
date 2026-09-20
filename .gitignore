@@ -1,0 +1,35 @@
+# AI agent prompts and instruction files
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+COPILOT.md
+copilot-instructions.md
+.cursorrules
+.cursor/rules/
+.windsurfrules
+.clinerules/
+.roo/rules/
+.junie/
+.github/copilot-instructions.md
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor and IDE metadata
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Dependencies and generated output
+node_modules/
+dist/
+build/
+.cache/
+
+# Local configuration and logs
+.env
+.env.*
+*.log
