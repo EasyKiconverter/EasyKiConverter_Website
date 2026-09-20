@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 开发者文档 / Developer Documentation
+    url: https://github.com/EasyKiconverter/EasyKiConverter_Website/tree/master/docs/developer
+    about: 查看开发规范和流程 / Read development rules and workflow
+  - name: Pull Requests
+    url: https://github.com/EasyKiconverter/EasyKiConverter_Website/pulls
+    about: 查看正在进行的变更 / Review ongoing changes
