@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EasyKiConverter：让元件库转换像 Qt 一样顺滑。">
+  <title>EasyKiConverter · 顺手一点的元件库转换</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="easter-eggs.css">
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="pointer-glow" aria-hidden="true"></div>
+  <header class="site-header shell">
+    <a class="brand" href="#top" aria-label="EasyKiConverter 首页"><span class="brand-mark">EK</span><span>EasyKiConverter</span></a>
+    <nav class="nav-links" aria-label="主导航"><a href="#features">能力</a><a href="#workflow">工作流</a><a href="#download">下载</a></nav>
+    <a class="nav-link" href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">访问 GitHub <span>↗</span></a>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy reveal">
+        <p class="eyebrow">Open source tools for makers</p>
+        <h1>让元件库转换，<span>顺手一点。</span></h1>
+        <p class="hero-intro">EasyKiConverter 把 LCSC 与 EasyEDA 的元件数据，整理成你熟悉的 KiCad、Altium 和 Xpedition 库文件。</p>
+        <div class="hero-actions"><a class="button magnetic" href="https://github.com/EasyKiconverter/EasyKiConverter/releases" target="_blank" rel="noreferrer">下载最新版本 <i>↗</i></a><a class="under-link" href="#features">先看看它能做什么 <span>↓</span></a></div>
+      </div>
+      <div class="hero-art reveal reveal-delay" aria-label="元件数据转换示意图">
+        <div class="art-orbit orbit-a"></div><div class="art-orbit orbit-b"></div>
+        <div class="art-blob blob-lilac"></div><div class="art-blob blob-peach"></div><div class="art-blob blob-mint"></div>
+        <div class="converter-card tilt-card">
+          <div class="card-top"><span class="status-dot"></span><span>easy conversion</span><span class="card-menu">•••</span></div>
+          <div class="source-row"><div class="part part-source">LCSC</div><div class="motion-arrow">→</div><div class="part part-target">KiCad</div></div>
+          <div class="progress-track"><span></span></div><div class="progress-meta"><span>preparing library</span><b>84%</b></div>
+          <div class="floating-chip chip-one">⌁ symbol</div><div class="floating-chip chip-two">◒ footprint</div>
+        </div>
+        <p class="art-caption">让复杂的转换<br><strong>安静地完成。</strong></p>
+      </div>
+      <a class="scroll-cue" href="#features"><span></span>向下探索</a>
+    </section>
+
+    <div class="ticker"><div class="ticker-track"><span>SYMBOLS</span><b>✳</b><span>FOOTPRINTS</span><b>✳</b><span>3D MODELS</span><b>✳</b><span>BOM FILES</span><b>✳</b><span>GUI + CLI</span><b>✳</b><span>SYMBOLS</span><b>✳</b><span>FOOTPRINTS</span><b>✳</b><span>3D MODELS</span><b>✳</b><span>BOM FILES</span><b>✳</b><span>GUI + CLI</span><b>✳</b></div></div>
+
+    <section id="features" class="section shell">
+      <div class="section-heading reveal"><div><p class="eyebrow">What it does</p><h2>少一点重复，<br>多一点专注。</h2></div><p>工具应该融入工作流，而不是要求你重新学习一套工作方式。</p></div>
+      <div class="feature-grid">
+        <article class="feature-card feature-card-lilac reveal"><div class="feature-symbol">◌</div><h3>完整转换</h3><p>从符号、封装到 3D 模型，一次完成库文件准备。</p></article>
+        <article class="feature-card feature-card-plain reveal reveal-delay-1"><div class="feature-symbol">↗</div><h3>批量处理</h3><p>导入 BOM，多线程处理大批量元件，省下机械操作。</p></article>
+        <article class="feature-card feature-card-mint reveal reveal-delay-2"><div class="feature-symbol">⌁</div><h3>GUI + CLI</h3><p>想点选时有舒适界面，需要自动化时也能交给命令行。</p></article>
+        <article class="feature-card feature-card-peach reveal reveal-delay-1"><div class="feature-symbol">◒</div><h3>聪明一点</h3><p>从剪贴板提取编号，自动获取 LCSC 预览图。</p></article>
+        <article class="feature-card feature-card-plain reveal reveal-delay-2"><div class="feature-symbol">↔</div><h3>跨平台</h3><p>Windows、Linux、macOS，按你的设备自然工作。</p></article>
+        <article class="feature-card feature-card-yellow reveal reveal-delay-3"><div class="feature-symbol">⌂</div><h3>记住进度</h3><p>设置自动保存，下一次打开，接着上一次继续。</p></article>
+      </div>
+    </section>
+
+    <section id="workflow" class="section shell workflow-section">
+      <div class="workflow-copy reveal"><p class="eyebrow">A calm workflow</p><h2>四个动作，<br>从数据到库。</h2><p>选择输入，设定目标，然后让 EasyKiConverter 安静地完成剩下的工作。</p></div>
+      <div class="steps reveal reveal-delay"><div class="step"><small>01</small><div><h3>选择元件</h3><p>粘贴 LCSC 编号，或导入 BOM 文件。</p></div></div><div class="step"><small>02</small><div><h3>选择目标</h3><p>选择 KiCad、Altium 或其他输出格式。</p></div></div><div class="step"><small>03</small><div><h3>开始转换</h3><p>符号、封装与 3D 模型自动处理。</p></div></div><div class="step"><small>04</small><div><h3>回到设计</h3><p>导入生成的库，继续你的电路设计。</p></div></div></div>
+    </section>
+
+    <section id="download" class="section shell"><div class="download-card reveal"><div><p class="eyebrow">Ready when you are</p><h2>把时间留给<br>更有趣的部分。</h2><p>免费、开源、跨平台。开始构建你的下一块板。</p></div><a class="button button-light magnetic" href="https://github.com/EasyKiconverter/EasyKiConverter/releases" target="_blank" rel="noreferrer">前往下载 <i>↗</i></a><div class="download-orb"></div></div></section>
+  </main>
+
+  <footer class="site-footer shell"><span>© EasyKiConverter · Built for electronic engineers</span><a class="secret-footer" href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">查看源码 ↗</a></footer>
+  <div class="egg-toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
