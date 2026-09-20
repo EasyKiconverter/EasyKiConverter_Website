@@ -33,6 +33,10 @@ python3 -m http.server 4173
 
 页面采用温暖的纸张底色、抽象流体图形和弹性缓动动画，强调像 Qt 软件一样顺滑的操作反馈，同时保留轻量、易维护的静态站点结构。
 
+## 品牌资源
+
+官网复用了 EasyKiConverter 主项目中的官方应用图标，来源为主项目的 `resources/icons/app_icon.svg` 与 `app_icon_dark.svg`，当前副本位于 `assets/icons/`。
+
 ## 分支开发流程
 
 - `master`：稳定生产分支，只接收已经验证稳定的版本分支。
