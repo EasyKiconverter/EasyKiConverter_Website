@@ -1,0 +1,14 @@
+%% EasyKiConverter Website development workflow
+%% Mermaid source; labels are bilingual for shared use in Chinese and English docs.
+flowchart TD
+    A[需求 Issue / Requirement] --> B[创建 feature 或 fix 分支 / Create branch]
+    B --> C[开发与提交 / Implement and commit]
+    C --> D[本地预览与测试 / Preview and test locally]
+    D --> E{验证通过？ / Passed?}
+    E -- 否 No --> C
+    E -- 是 Yes --> F[PR 到 version/V0.0.1 / PR to version branch]
+    F --> G[代码审查与回归 / Review and regression]
+    G --> H{版本稳定？ / Stable?}
+    H -- 否 No --> I[创建修复分支 / Create fix branch]
+    I --> C
+    H -- 是 Yes --> J[PR 到 master / PR to master]

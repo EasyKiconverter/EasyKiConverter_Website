@@ -1,6 +1,25 @@
 # EasyKiConverter Website
 
+[English](README_en.md)
+
 EasyKiConverter 官方网站，使用原生 HTML、CSS 与 JavaScript 构建。
+
+## 项目结构
+
+```text
+.
+├── index.html              # 网站入口，适配 GitHub Pages 与本地预览
+├── src/
+│   ├── css/                # 页面样式与彩蛋样式
+│   └── js/                 # 页面交互逻辑
+├── assets/                 # 图片、字体等静态资源
+├── docs/                   # 项目维护文档
+└── .github/workflows/      # GitHub Actions 工作流
+```
+
+新增页面入口仍放在根目录或明确的页面目录中；样式放入 `src/css/`，脚本放入 `src/js/`，图片和字体放入 `assets/`，不要把源码或资源继续堆在根目录。
+
+详细架构约束见：[项目架构](docs/ARCHITECTURE.md) | [开发者文档](docs/developer/README.md)。
 
 ## 本地预览
 
