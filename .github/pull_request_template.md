@@ -10,7 +10,9 @@
 
 ### 测试与验证
 
-- [ ] 已使用 `python3 -m http.server 4173` 本地预览
+- [ ] 已使用 `pnpm run build` 和 `pnpm run preview` 本地预览
+- [ ] 已运行 `python3 tools/validate_site.py` 和 `git diff --check`
+- [ ] 若涉及发布路径，已验证仓库子路径 `/EasyKiConverter_Website/`
 - [ ] 已检查桌面端和移动端布局
 - [ ] 已检查导航、外部链接和浏览器控制台
 - [ ] 已验证 `prefers-reduced-motion`
@@ -36,7 +38,9 @@
 
 ### Testing and Validation
 
-- [ ] Previewed locally with `python3 -m http.server 4173`
+- [ ] Previewed locally with `pnpm run build` and `pnpm run preview`
+- [ ] Ran `python3 tools/validate_site.py` and `git diff --check`
+- [ ] When deployment paths are affected, verified `/EasyKiConverter_Website/` as a repository subpath
 - [ ] Checked desktop and mobile layouts
 - [ ] Checked navigation, external links, and browser console
 - [ ] Verified `prefers-reduced-motion`

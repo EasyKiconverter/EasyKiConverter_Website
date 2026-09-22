@@ -1,0 +1,73 @@
+/* Small, shared safety layer for keyboard and degraded rendering states. */
+:root {
+  --muted: #6b665e;
+  --violet: #6254c8;
+}
+
+/* Keep the first screen composed at medium desktop widths. */
+@media (min-width: 851px) and (max-width: 1280px) {
+  .hero h1 {
+    font-size: clamp(54px, 5.6vw, 84px);
+  }
+}
+
+.stage-note {
+  background: #f3efe7a6;
+  border: 1px solid #29282412;
+  border-radius: 9px;
+  padding: 5px 8px;
+  backdrop-filter: blur(4px);
+}
+
+.model-label,
+.stage-hint {
+  background: #f3efe7a6;
+  border: 1px solid #29282412;
+  border-radius: 9px;
+  padding: 4px 7px;
+  backdrop-filter: blur(4px);
+}
+
+.model-label {
+  padding: 5px 8px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--violet);
+  outline-offset: 4px;
+}
+
+.model-fallback-copy {
+  display: none;
+  position: absolute;
+  z-index: 4;
+  left: 12%;
+  right: 12%;
+  top: 43%;
+  padding: 18px 20px;
+  border: 1px solid #29282425;
+  border-radius: 18px;
+  background: #fffdf8c9;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+}
+
+.model-fallback .model-fallback-copy {
+  display: block;
+}
+
+.model-fallback #model-canvas,
+.model-fallback .model-shadow {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-stage #model-canvas {
+    display: block;
+  }
+
+  .model-fallback-copy {
+    transition: none;
+  }
+}

@@ -8,7 +8,7 @@ These rules apply to changes to HTML, CSS, JavaScript, static assets, maintenanc
 
 ## Directories and Files
 
-- Keep page entry points at the root or in clearly named page directories; the current main entry point is `index.html`.
+- Keep page entry points in `src/pages/`; the Chinese entry is `src/pages/index.astro` and the English entry is `src/pages/en/index.astro`.
 - Put styles in `src/css/`, scripts in `src/js/`, and runtime resources in `assets/`.
 - Put architecture, workflow, and maintenance documentation in `docs/`; every document must have both `.md` and `_en.md` versions.
 - Keep GitHub Actions and PR configuration in `.github/` only.
@@ -16,10 +16,10 @@ These rules apply to changes to HTML, CSS, JavaScript, static assets, maintenanc
 
 ## Code and Compatibility
 
-- Use two-space indentation in HTML, CSS, and JavaScript. Keep the native implementation dependency-free for simple interactions.
+- Use two-space indentation in Astro, CSS, and TypeScript. Keep interactive modules typed and preserve semantic HTML, accessible labels and progressive enhancement.
 - Prefer semantic HTML, accessible labels, and progressive enhancement. Preserve `target="_blank"` with `rel="noreferrer"` on external links.
 - Respect `prefers-reduced-motion` when adding animations.
-- When changing resource paths, also check `index.html` and the local HTTP preview.
+- When changing resource paths, also check the Astro page, `public/assets/` and the production build preview.
 
 ## Documentation and Assets
 

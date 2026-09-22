@@ -27,7 +27,8 @@ git fetch origin
 git switch version/V0.0.1
 git pull --ff-only
 git switch -c feature/improve-download-section
-python3 -m http.server 4173
+pnpm install
+pnpm dev
 ```
 
 ## Commits and Pull Requests

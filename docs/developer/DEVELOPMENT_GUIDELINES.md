@@ -8,7 +8,7 @@
 
 ## 目录与文件
 
-- 页面入口放在根目录或明确的页面目录中；当前主入口是 `index.html`。
+- 页面入口放在 `src/pages/`；中文入口是 `src/pages/index.astro`，英文入口是 `src/pages/en/index.astro`。
 - 样式放在 `src/css/`，脚本放在 `src/js/`，运行时资源放在 `assets/`。
 - 架构、流程和维护说明放在 `docs/`；每份文档必须有 `.md` 与 `_en.md` 两个版本。
 - GitHub Actions 和 PR 配置只放在 `.github/`。
@@ -19,7 +19,7 @@
 - HTML、CSS、JavaScript 使用两个空格缩进，保持现有原生实现，不为简单交互引入依赖。
 - 优先使用语义化 HTML、可访问标签和渐进增强；外部链接保留 `target="_blank"` 与 `rel="noreferrer"`。
 - 新增动画必须尊重 `prefers-reduced-motion`。
-- 修改资源路径时，同时检查 `index.html` 和本地 HTTP 预览。
+- 修改资源路径时，同时检查 Astro 页面、`public/assets/` 和发布构建预览。
 
 ## 文档与资源
 
