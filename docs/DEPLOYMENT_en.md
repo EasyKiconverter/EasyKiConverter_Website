@@ -41,14 +41,7 @@ STEP and WASM must allow same-origin GET requests. Do not add a cross-origin pol
 
 ## Domain configuration
 
-The HTML currently uses the public example canonical URL `https://easykiconverter.github.io/EasyKiConverter_Website/`. After deploying to your own domain, update these together:
-
-- `canonical` in `src/pages/index.astro` and `src/pages/en/index.astro`
-- `og:url` in both pages, if present
-- URLs in `sitemap.xml`
-- the sitemap URL in `robots.txt`
-
-This does not change the visual result, but prevents search engines from treating the self-hosted site as a GitHub Pages mirror.
+The production domain is `https://easykiconverter.org.cn/`. `astro.config.ts` uses it as the default `site` with `/` as the default `base`; canonical, `og:url`, hreflang, `sitemap.xml`, and `robots.txt` are generated from that shared configuration. If the domain or deployment path changes, set `SITE_URL` and `SITE_BASE` in the build environment rather than editing page URLs individually.
 
 ## Release acceptance
 

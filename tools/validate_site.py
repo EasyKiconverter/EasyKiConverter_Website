@@ -55,9 +55,12 @@ for page in pages:
             if not target.exists():
                 errors.append(f"{page}: missing {attribute} target {value}")
 
-for required in ("robots.txt", "sitemap.xml", "assets/model/README.md", "assets/model/Easykiconverter_展示模型.step", "assets/vendor/occt-import-js.js", "assets/vendor/occt-import-js.wasm"):
+for required in ("assets/model/README.md", "assets/model/README_zh.md", "assets/model/Easykiconverter_展示模型.step", "assets/vendor/occt-import-js.js", "assets/vendor/occt-import-js.wasm"):
     if not (ROOT / "public" / required).exists():
         errors.append(f"missing required file: {required}")
+for required in ("src/pages/robots.txt.ts", "src/pages/sitemap.xml.ts"):
+    if not (ROOT / required).exists():
+        errors.append(f"missing generated SEO endpoint: {required}")
 for required in ("src/js/app.ts", "src/js/model-viewer.ts", "src/js/step-worker.ts"):
     if not (ROOT / required).exists():
         errors.append(f"missing required source: {required}")

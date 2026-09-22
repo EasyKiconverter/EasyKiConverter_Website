@@ -2,6 +2,13 @@
 import '../../css/styles.css';
 import '../../css/accessibility.css';
 import '../../css/easter-eggs.css';
+import '../../css/motion-narrative.css';
+import MotionNarrative from '../../components/MotionNarrative.astro';
+const siteRoot = new URL(import.meta.env.SITE);
+const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
+const chineseUrl = siteBase.href;
+const englishUrl = new URL('en/', siteBase).href;
+const socialImageUrl = new URL('assets/showcase/easykiconverter-main.webp', siteBase).href;
 ---
 <!doctype html>
 <html lang="en">
@@ -9,30 +16,40 @@ import '../../css/easter-eggs.css';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="EasyKiConverter converts LCSC and EasyEDA component data into practical EDA libraries with a Qt 6 GUI, CLI and batch workflows.">
-  <link rel="canonical" href="https://easykiconverter.github.io/EasyKiConverter_Website/en/">
-  <link rel="alternate" hreflang="zh-CN" href="https://easykiconverter.github.io/EasyKiConverter_Website/">
-  <link rel="alternate" hreflang="en" href="https://easykiconverter.github.io/EasyKiConverter_Website/en/">
-  <link rel="alternate" hreflang="x-default" href="https://easykiconverter.github.io/EasyKiConverter_Website/">
+  <link rel="canonical" href={englishUrl}>
+  <link rel="alternate" hreflang="zh-CN" href={chineseUrl}>
+  <link rel="alternate" hreflang="en" href={englishUrl}>
+  <link rel="alternate" hreflang="x-default" href={chineseUrl}>
   <meta name="theme-color" content="#f3efe7">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://easykiconverter.github.io/EasyKiConverter_Website/en/">
+  <meta property="og:url" content={englishUrl}>
   <meta property="og:title" content="EasyKiConverter · Component conversion, made easier">
   <meta property="og:description" content="From LCSC / EasyEDA to your EDA workbench. Free, open source and cross-platform.">
-  <meta property="og:image" content="https://easykiconverter.github.io/EasyKiConverter_Website/assets/showcase/easykiconverter-main.webp">
+  <meta property="og:image" content={socialImageUrl}>
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="EasyKiConverter · Component conversion, made easier">
   <meta name="twitter:description" content="From LCSC / EasyEDA to your EDA workbench. Free, open source and cross-platform.">
-  <meta name="twitter:image" content="https://easykiconverter.github.io/EasyKiConverter_Website/assets/showcase/easykiconverter-main.webp">
-  <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"SoftwareApplication","name":"EasyKiConverter","applicationCategory":"DeveloperApplication","operatingSystem":"Windows, Linux, macOS","softwareVersion":"3.1.11","license":"https://www.gnu.org/licenses/gpl-3.0.html","downloadUrl":"https://github.com/EasyKiconverter/EasyKiConverter/releases","url":"https://easykiconverter.github.io/EasyKiConverter_Website/en/","codeRepository":"https://github.com/EasyKiconverter/EasyKiConverter","description":"Convert LCSC and EasyEDA component data into practical KiCad and Altium libraries with GUI and CLI workflows."}
-  </script>
+  <meta name="twitter:image" content={socialImageUrl}>
+  <script type="application/ld+json" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'EasyKiConverter',
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'Windows, Linux, macOS',
+    softwareVersion: '3.1.11',
+    license: 'https://www.gnu.org/licenses/gpl-3.0.html',
+    downloadUrl: 'https://github.com/EasyKiconverter/EasyKiConverter/releases',
+    url: englishUrl,
+    codeRepository: 'https://github.com/EasyKiconverter/EasyKiConverter',
+    description: 'Convert LCSC and EasyEDA component data into practical KiCad and Altium libraries with GUI and CLI workflows.',
+  })}></script>
   <title>EasyKiConverter · Component conversion, made easier</title>
   <link rel="icon" href="../assets/icons/easyki-icon.svg" type="image/svg+xml">
 </head>
 <body>
   <header class="site-header shell"><a class="brand" href="../"><img src="../assets/icons/easyki-icon.svg" alt="" width="36" height="36"><span>EasyKiConverter</span></a><nav class="nav-links" aria-label="Main navigation"><a href="#story">Story</a><a href="#formats">Formats</a><a href="#features">Features</a><a href="#workflow">Workflow</a><a href="#download">Download</a><a href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs" target="_blank" rel="noreferrer">Docs</a></nav><div class="header-actions"><a class="lang-link" href="../">中文</a><a class="github-link" href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">GitHub ↗</a><button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-nav">Menu</button></div></header>
   <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation"><a href="#story">Story</a><a href="#formats">Formats</a><a href="#features">Features</a><a href="#workflow">Workflow</a><a href="#download">Download</a><a href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs" target="_blank" rel="noreferrer">Docs</a><a href="../">中文</a></nav>
-  <main id="top"><section class="hero shell" aria-labelledby="hero-title"><div class="hero-copy reveal"><p class="kicker">OPEN SOURCE · Qt 6 DESKTOP TOOL</p><h1 id="hero-title">Component conversion,<br><em>made easier.</em></h1><p class="hero-lede">Bring component data from LCSC / EasyEDA into the EDA libraries you already know. Less repetition, more time for the design itself.</p><div class="hero-actions"><a class="button button-dark" href="https://github.com/EasyKiconverter/EasyKiConverter/releases" target="_blank" rel="noreferrer">Download stable ↗</a><a class="text-link" href="#story">See how it works ↓</a></div><div class="hero-facts"><span><b>v3.1.11</b> current stable</span><span><b>GPL-3.0</b> open source</span><span><b>GUI + CLI</b> two ways in</span></div></div><div class="hero-stage reveal reveal-delay" data-model-stage><div class="stage-note"><span class="live-dot"></span><span>LIVE MODEL STUDY</span><small>STEP / 3D</small></div><canvas id="model-canvas" aria-label="Interactive web preview of the EasyKiConverter STEP component model"></canvas><div class="model-fallback-copy" role="status">The STEP 3D preview is unavailable. Page content and downloads remain available.</div><div class="model-shadow"></div><div class="model-label label-top">3D MODEL <b>01</b></div><div class="model-label label-bottom">A quiet little solid<br><strong>ready to move.</strong></div><div class="stage-hint"><span class="drag-icon">↔</span> Scroll or move your pointer</div></div><a class="scroll-cue" href="#story">Continue <span></span></a></section><div class="marquee" aria-hidden="true"><div><span>SYMBOL</span><i>✳</i><span>FOOTPRINT</span><i>✳</i><span>3D MODEL</span><i>✳</i><span>BOM</span><i>✳</i><span>GUI + CLI</span><i>✳</i><span>SYMBOL</span><i>✳</i><span>FOOTPRINT</span><i>✳</i></div></div>
+  <main id="top"><MotionNarrative lang="en" /><section class="hero shell" aria-labelledby="hero-title"><div class="hero-copy reveal"><p class="kicker">OPEN SOURCE · Qt 6 DESKTOP TOOL</p><h1 id="hero-title">Component conversion,<br><em>made easier.</em></h1><p class="hero-lede">Bring component data from LCSC / EasyEDA into the EDA libraries you already know. Less repetition, more time for the design itself.</p><div class="hero-actions"><a class="button button-dark" href="https://github.com/EasyKiconverter/EasyKiConverter/releases" target="_blank" rel="noreferrer">Download stable ↗</a><a class="text-link" href="#story">See how it works ↓</a></div><div class="hero-facts"><span><b>v3.1.11</b> current stable</span><span><b>GPL-3.0</b> open source</span><span><b>GUI + CLI</b> two ways in</span></div></div><div class="hero-stage reveal reveal-delay" data-model-stage><div class="stage-note"><span class="live-dot"></span><span>LIVE MODEL STUDY</span><small>STEP / 3D</small></div><canvas id="model-canvas" aria-label="Interactive web preview of the EasyKiConverter STEP component model"></canvas><div class="model-fallback-copy" role="status">The STEP 3D preview is unavailable. Page content and downloads remain available.</div><div class="model-shadow"></div><div class="model-label label-top">3D MODEL <b>01</b></div><div class="model-label label-bottom">A quiet little solid<br><strong>ready to move.</strong></div><div class="stage-hint"><span class="drag-icon">↔</span> Scroll or move your pointer</div></div><a class="scroll-cue" href="#story">Continue <span></span></a></section><div class="marquee" aria-hidden="true"><div><span>SYMBOL</span><i>✳</i><span>FOOTPRINT</span><i>✳</i><span>3D MODEL</span><i>✳</i><span>BOM</span><i>✳</i><span>GUI + CLI</span><i>✳</i><span>SYMBOL</span><i>✳</i><span>FOOTPRINT</span><i>✳</i></div></div>
   <section id="story" class="story section shell" aria-labelledby="story-title"><div class="section-intro reveal"><p class="kicker">THE QUIET MIDDLE</p><h2 id="story-title">Data finds<br><em>its own shape.</em></h2><p>EasyKiConverter is a quiet bridge: it receives LCSC / EasyEDA data and returns useful results to KiCad, Altium and your existing workflow.</p></div><div class="story-rail"><article class="story-card story-card-a reveal"><span class="story-index">01 / INPUT</span><h3>Bring the<br>part in.</h3><p>Paste an LCSC number or import a BOM. Clipboard extraction keeps the small work small.</p><div class="story-pulse">C2040 <span>→</span></div></article><article class="story-card story-card-b reveal"><span class="story-index">02 / SHAPE</span><h3>Symbol, footprint<br>and model together.</h3><p>Fetch data, map layers and process 3D files while batch work stays multi-threaded.</p><div class="story-stack"><b>SYMBOL</b><b>FOOTPRINT</b><b>3D MODEL</b></div></article><article class="story-card story-card-c reveal"><span class="story-index">03 / RETURN</span><h3>Go back to<br>your design.</h3><p>When the export is ready, continue in your target EDA. The tool should stay out of the way.</p><div class="story-check">✓ ready to use</div></article></div></section>
   <section class="product-showcase section shell" aria-labelledby="showcase-title"><div class="section-intro section-intro-wide reveal"><p class="kicker">THE REAL THING</p><h2 id="showcase-title">This is not a concept image.<br><em>It is the actual workbench.</em></h2><p>A real Qt Quick view from the EasyKiConverter project: add components, import a BOM, set the output and start converting.</p></div><figure class="app-window reveal"><div class="window-chrome"><span class="window-icon"><img src="../assets/icons/easyki-icon.svg" alt=""></span><b>EasyKiConverter</b><span class="window-spacer"></span><i></i><i></i><i></i></div><img src="../assets/showcase/easykiconverter-main.webp" alt="The actual EasyKiConverter Qt Quick main window" loading="lazy"><figcaption><span>REAL QT QUICK UI</span><span>from the main project</span></figcaption></figure></section>
   <section id="features" class="features section shell" aria-labelledby="features-title"><div class="section-heading reveal"><div><p class="kicker">A TOOL WITH GOOD MANNERS</p><h2 id="features-title">Make the tedious part,<br><em>a little more decent.</em></h2></div><p>Every feature is grounded in a real electronics workflow: it does not pretend to design for you, it simply removes mechanical work.</p></div><div class="feature-grid"><article id="formats" class="feature-card feature-card-large reveal"><span class="feature-number">01</span><div><h3>Multiple targets</h3><p>Stable releases focus on KiCad and Altium; other formats evolve in the main project and should be checked against their release and capability matrix.</p><div class="format-pills"><b>KiCad</b><b>Altium</b><b>3D</b></div></div></article><article class="feature-card feature-card-mint reveal"><span class="feature-symbol">⌁</span><h3>Batch, quietly</h3><p>BOM import, multi-threading and remembered settings keep large jobs calm.</p></article><article class="feature-card feature-card-peach reveal"><span class="feature-symbol">◒</span><h3>Visible results</h3><p>LCSC previews, conversion state and diagnostics stay in view.</p></article><article class="feature-card feature-card-lilac reveal"><span class="feature-symbol">⌘</span><h3>GUI + CLI</h3><p>A Qt 6 interface when you want it, a command line when you need automation.</p></article><article class="feature-card feature-card-yellow reveal"><span class="feature-symbol">↗</span><h3>Settings remembered</h3><p>Open it again and continue from the state you know.</p></article></div></section>

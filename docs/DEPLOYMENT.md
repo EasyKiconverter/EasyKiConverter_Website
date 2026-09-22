@@ -41,14 +41,7 @@ STEP 和 WASM 必须允许同源 GET 请求。不要给静态资源增加会阻�
 
 ## 域名配置
 
-当前 HTML 中的 canonical 地址仍是公开示例地址 `https://easykiconverter.github.io/EasyKiConverter_Website/`。部署到自有域名后，应同步修改：
-
-- `src/pages/index.astro` 与 `src/pages/en/index.astro` 的 `canonical`
-- 两个页面的 `og:url`（如果存在）
-- `sitemap.xml` 中的 URL
-- `robots.txt` 中的 sitemap 地址
-
-这不会改变页面视觉效果，但能避免搜索引擎把自有服务器识别为 GitHub Pages 的镜像。
+正式域名为 `https://easykiconverter.org.cn/`。`astro.config.ts` 将其作为默认 `site`，并以 `/` 为默认 `base`；页面的 canonical、`og:url`、hreflang、`sitemap.xml` 和 `robots.txt` 都从此配置生成。若部署路径或域名改变，只需在构建环境设置 `SITE_URL` 与 `SITE_BASE`，不要在页面中分别手改 URL。
 
 ## 发布前验收
 
