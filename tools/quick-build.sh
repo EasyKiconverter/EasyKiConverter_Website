@@ -21,4 +21,4 @@ echo "Building the website..."
 echo "Build complete. Preview: http://localhost:${port}"
 echo "Press Ctrl+C to stop the preview server."
 cd "$repo_root"
-exec pnpm run preview --host 127.0.0.1 --port "$port" --ignore-lock
+exec pnpm run preview --host 0.0.0.0 --port "$port" --ignore-lock

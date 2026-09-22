@@ -83,6 +83,25 @@ if ('IntersectionObserver' in window) {
 
 void import('./model-viewer').then(({ setupModel }) => setupModel());
 
+document.querySelectorAll<HTMLElement>('[data-model-stage]').forEach((stage) => {
+  const caption = stage.querySelector<HTMLElement>('.artifact-caption');
+  const modeLabel = stage.querySelector<HTMLElement>('[data-artifact-label]');
+  stage.querySelectorAll<HTMLButtonElement>('[data-artifact-view]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const view = button.dataset.artifactView;
+      if (!view) return;
+      stage.dataset.artifactView = view;
+      stage.querySelectorAll<HTMLButtonElement>('[data-artifact-view]').forEach((option) => {
+        option.setAttribute('aria-pressed', String(option === button));
+      });
+      const captionKey = document.documentElement.lang === 'en' ? 'captionEn' : 'captionZh';
+      const labelKey = document.documentElement.lang === 'en' ? 'labelEn' : 'labelZh';
+      caption?.replaceChildren(document.createTextNode(button.dataset[captionKey] ?? ''));
+      if (modeLabel) modeLabel.textContent = button.dataset[labelKey] ?? '';
+    });
+  });
+});
+
 document.querySelectorAll<HTMLElement>('.magnetic').forEach((button) => {
   button.addEventListener('pointermove', (event) => { if (motionPreference.matches) return; const box = button.getBoundingClientRect(); const x = (event.clientX - box.left - box.width / 2) * 0.1; const y = (event.clientY - box.top - box.height / 2) * 0.14; button.style.transform = `translate(${x}px,${y}px)`; });
   button.addEventListener('pointerleave', () => { button.style.transform = ''; });

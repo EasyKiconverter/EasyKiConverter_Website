@@ -52,8 +52,21 @@ export const setupModel = (): void => {
     visible: true,
     frame: 0,
     modelRadius: 1,
+    explode: 0,
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
       .matches,
+  };
+  const explodedMeshes: {
+    mesh: THREE.Mesh;
+    direction: THREE.Vector3;
+  }[] = [];
+  let appliedExplode = -1;
+  const applyExplode = (): void => {
+    if (appliedExplode === state.explode) return;
+    explodedMeshes.forEach(({ mesh, direction }) => {
+      mesh.position.copy(direction).multiplyScalar(state.modelRadius * 0.44 * state.explode);
+    });
+    appliedExplode = state.explode;
   };
 
   const fitCamera = (): void => {
@@ -140,6 +153,7 @@ export const setupModel = (): void => {
     group.position.x = blend(from.x, to.x);
     group.position.y = blend(from.y, to.y);
     group.scale.setScalar(0.8 * blend(from.scale, to.scale));
+    applyExplode();
     renderer.render(scene, camera);
   };
 
@@ -148,7 +162,7 @@ export const setupModel = (): void => {
     triangleCount: number,
   ): void => {
     const materials = new Map<string, THREE.MeshStandardMaterial>();
-    meshes.forEach(({ positions, indices, color }) => {
+    meshes.forEach(({ positions, indices, color }, meshIndex) => {
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute(
         "position",
@@ -168,7 +182,19 @@ export const setupModel = (): void => {
         });
         materials.set(key, material);
       }
-      group.add(new THREE.Mesh(geometry, material));
+      const mesh = new THREE.Mesh(geometry, material);
+      const center = geometry.boundingSphere?.center ?? new THREE.Vector3();
+      const angle = meshIndex * 2.399963229728653;
+      const fallbackDirection = new THREE.Vector3(
+        Math.cos(angle),
+        ((meshIndex % 5) - 2) * 0.32,
+        Math.sin(angle),
+      ).normalize();
+      explodedMeshes.push({
+        mesh,
+        direction: center.lengthSq() > 0.0025 ? center.clone().normalize() : fallbackDirection,
+      });
+      group.add(mesh);
     });
     const sphere = new THREE.Box3()
       .setFromObject(group)
@@ -176,6 +202,18 @@ export const setupModel = (): void => {
     state.modelRadius = Math.max(sphere.radius, 0.1);
     fitCamera();
     stage.dataset.modelTriangles = String(triangleCount);
+    const explodeInput = stage.querySelector<HTMLInputElement>("[data-model-explode]");
+    const explodeStats = stage.querySelector<HTMLElement>("[data-model-explode-stats]");
+    const explodeValue = stage.querySelector<HTMLOutputElement>("[data-model-explode-value]");
+    if (explodeInput) explodeInput.disabled = false;
+    if (explodeStats)
+      explodeStats.textContent = `${meshes.length} ${document.documentElement.lang === "en" ? "meshes" : "个网格对象"} · ${triangleCount.toLocaleString()} ${document.documentElement.lang === "en" ? "triangles" : "个三角面"}`;
+    explodeInput?.addEventListener("input", () => {
+      state.explode = Number(explodeInput.value) / 100;
+      if (explodeValue) explodeValue.value = `${explodeInput.value}%`;
+      applyExplode();
+      wake();
+    });
     stage.classList.add("model-loaded");
     wake();
   };

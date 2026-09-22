@@ -13,9 +13,43 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
       <p>{en ? 'Follow one real component from LCSC / EasyEDA into the EDA tools you already use.' : '跟随一个真实元件，从 LCSC / EasyEDA 出发，走进你熟悉的 EDA 工作流。'}</p>
     </div>
 
-    <div class="motion-model" data-model-stage>
-      <div class="motion-model-note"><span class="live-dot"></span>{en ? 'A REAL STEP MODEL' : '真实 STEP 模型'}<small>01 / 04</small></div>
+    <div class="motion-model" data-model-stage data-artifact-view="model">
+      <div class="motion-model-note"><span class="live-dot"></span><span data-artifact-label>{en ? 'A REAL STEP MODEL' : '真实 STEP 模型'}</span><small>01 / 04</small></div>
       <canvas id="model-canvas" aria-label={en ? 'Interactive preview of the EasyKiConverter STEP component model' : 'EasyKiConverter STEP 元件模型的交互式预览'}></canvas>
+      <div class="artifact-visual" data-visual="symbol" aria-hidden="true">
+        <svg viewBox="0 0 460 320" role="presentation">
+          <g class="artifact-grid"><path d="M20 40H440M20 80H440M20 120H440M20 160H440M20 200H440M20 240H440M20 280H440M60 20V300M100 20V300M140 20V300M180 20V300M220 20V300M260 20V300M300 20V300M340 20V300M380 20V300M420 20V300" /></g>
+          <g class="symbol-lines"><path d="M70 90H165M70 230H165M295 90H390M295 230H390M165 65V255H295V65Z" /><path d="M230 65V32M230 255V288M165 125H135M165 195H135M295 125H325M295 195H325" /></g>
+          <g class="symbol-pins"><path d="M212 32H248M212 288H248M116 90V110M116 210V230M344 90V110M344 210V230" /></g>
+          <g class="symbol-copy"><text x="230" y="145" text-anchor="middle">U1</text><text x="230" y="174" text-anchor="middle">EASYKI</text><text x="230" y="196" text-anchor="middle">COMPONENT</text><text x="184" y="53">VCC</text><text x="188" y="280">GND</text><text x="73" y="82">IN</text><text x="352" y="82">OUT</text></g>
+          <circle class="symbol-node" cx="116" cy="90" r="5"/><circle class="symbol-node" cx="344" cy="90" r="5"/><circle class="symbol-node" cx="116" cy="230" r="5"/><circle class="symbol-node" cx="344" cy="230" r="5"/>
+        </svg>
+      </div>
+      <div class="artifact-visual" data-visual="footprint" aria-hidden="true">
+        <svg viewBox="0 0 460 320" role="presentation">
+          <g class="artifact-grid"><path d="M20 40H440M20 80H440M20 120H440M20 160H440M20 200H440M20 240H440M20 280H440M60 20V300M100 20V300M140 20V300M180 20V300M220 20V300M260 20V300M300 20V300M340 20V300M380 20V300M420 20V300" /></g>
+          <rect class="footprint-body" x="116" y="54" width="228" height="212" rx="10" />
+          <path class="footprint-silk" d="M132 70H328V250H132Z" />
+          <path class="footprint-mark" d="M132 96A26 26 0 0 1 158 70" />
+          <g class="footprint-pads">
+            <rect x="67" y="77" width="34" height="18" rx="5"/><rect x="67" y="119" width="34" height="18" rx="5"/><rect x="67" y="161" width="34" height="18" rx="5"/><rect x="67" y="203" width="34" height="18" rx="5"/>
+            <rect x="359" y="77" width="34" height="18" rx="5"/><rect x="359" y="119" width="34" height="18" rx="5"/><rect x="359" y="161" width="34" height="18" rx="5"/><rect x="359" y="203" width="34" height="18" rx="5"/>
+          </g>
+          <g class="footprint-copy"><text x="230" y="155" text-anchor="middle">U1</text><text x="230" y="180" text-anchor="middle">LAND PATTERN</text><text x="230" y="238" text-anchor="middle">TOP VIEW · NOT TO SCALE</text></g>
+        </svg>
+      </div>
+      <div class="artifact-switcher" role="group" aria-label={en ? 'Choose a component view' : '选择元件视图'}>
+        <button type="button" data-artifact-view="model" data-label-zh="真实 STEP 模型" data-label-en="A REAL STEP MODEL" data-caption-zh="真实 STEP 网格 · 随滚动进入产品叙事" data-caption-en="Real STEP geometry · connected to the scroll story" aria-pressed="true">{en ? '3D solid' : '3D 实体'}</button>
+        <button type="button" data-artifact-view="symbol" data-label-zh="原理图符号示意" data-label-en="SCHEMATIC SYMBOL STUDY" data-caption-zh="原理图符号 · 视觉示意，并非导出的 CAD 数据" data-caption-en="Schematic symbol · visual study, not exported CAD data" aria-pressed="false">{en ? 'Symbol' : '符号'}</button>
+        <button type="button" data-artifact-view="footprint" data-label-zh="PCB 封装示意" data-label-en="PCB FOOTPRINT STUDY" data-caption-zh="PCB 封装 · 视觉示意，并非导出的 CAD 数据" data-caption-en="PCB footprint · visual study, not exported CAD data" aria-pressed="false">{en ? 'Footprint' : '封装'}</button>
+      </div>
+      <label class="model-explode" data-model-explode-control>
+        <span class="model-explode-heading">{en ? 'EXPLODE THE GEOMETRY' : '展开真实几何'}</span>
+        <input type="range" min="0" max="100" value="0" step="1" data-model-explode aria-label={en ? 'Explode the STEP mesh parts' : '拆解 STEP 网格零件'} disabled />
+        <output data-model-explode-value>0%</output>
+        <small data-model-explode-stats>{en ? 'Waiting for STEP mesh…' : '等待 STEP 网格…'}</small>
+      </label>
+      <p class="artifact-caption" aria-live="polite">{en ? 'Real STEP geometry · connected to the scroll story' : '真实 STEP 网格 · 随滚动进入产品叙事'}</p>
       <div class="model-fallback-copy" role="status">{en ? '3D preview is unavailable. The page and download links remain usable.' : '3D 预览暂不可用，页面内容和下载入口仍可正常使用。'}</div>
       <span class="motion-model-tag">{en ? 'SCROLL TO TRANSFORM' : '向下滚动，继续转化'}</span>
     </div>
