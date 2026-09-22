@@ -8,7 +8,7 @@ type WorkerInput = {
   stepUrl: string;
   vendorRoot: string;
   bounds: Bounds;
-  maxTriangles: number;
+  linearDeflection: number;
 };
 
 type MeshData = {
@@ -20,6 +20,12 @@ type MeshData = {
 type StepResult = {
   success: boolean;
   meshes: MeshData[];
+};
+
+type PackedMesh = {
+  positions: ArrayBuffer;
+  indices: ArrayBuffer;
+  color: number[];
 };
 
 type OcctModule = {
@@ -46,42 +52,40 @@ workerScope.onmessage = async ({ data }: MessageEvent<WorkerInput>): Promise<voi
     const result = occt.ReadStepFile(new Uint8Array(buffer), {
       linearUnit: 'millimeter',
       linearDeflectionType: 'bounding_box_ratio',
-      linearDeflection: 0.012,
-      angularDeflection: 0.35,
+      linearDeflection: data.linearDeflection,
+      angularDeflection: 0.16,
     });
     if (!result.success) throw new Error('STEP triangulation failed');
 
-    const { bounds, maxTriangles } = data;
+    const { bounds } = data;
     const center = {
       x: (bounds.x[0] + bounds.x[1]) / 2,
       y: (bounds.y[0] + bounds.y[1]) / 2,
       z: (bounds.z[0] + bounds.z[1]) / 2,
     };
     const span = Math.max(bounds.x[1] - bounds.x[0], bounds.y[1] - bounds.y[0]);
-    const vertices: number[] = [];
+    const meshes: PackedMesh[] = [];
+    const transfers: ArrayBuffer[] = [];
     let triangles = 0;
     result.meshes.forEach((mesh: MeshData) => {
-      if (!mesh.attributes?.position?.array || !mesh.index?.array || triangles >= maxTriangles) return;
+      if (!mesh.attributes?.position?.array || !mesh.index?.array) return;
       const positions = mesh.attributes.position.array;
       const indices = mesh.index.array;
       const color = mesh.color?.length === 3 ? mesh.color : [0.52, 0.71, 0.62];
-      const stride = Math.max(1, Math.ceil(indices.length / 3 / Math.max(1, maxTriangles - triangles)));
-      for (let triangle = 0; triangle < indices.length / 3 && triangles < maxTriangles; triangle += stride) {
-        const ia = Number(indices[triangle * 3]) * 3;
-        const ib = Number(indices[triangle * 3 + 1]) * 3;
-        const ic = Number(indices[triangle * 3 + 2]) * 3;
-        const a = [(Number(positions[ia]) - center.x) / span * 2, (Number(positions[ia + 1]) - center.y) / span * 2, (Number(positions[ia + 2]) - center.z) / span * 2];
-        const b = [(Number(positions[ib]) - center.x) / span * 2, (Number(positions[ib + 1]) - center.y) / span * 2, (Number(positions[ib + 2]) - center.z) / span * 2];
-        const c = [(Number(positions[ic]) - center.x) / span * 2, (Number(positions[ic + 1]) - center.y) / span * 2, (Number(positions[ic + 2]) - center.z) / span * 2];
-        const ux = b[0] - a[0]; const uy = b[1] - a[1]; const uz = b[2] - a[2];
-        const vx = c[0] - a[0]; const vy = c[1] - a[1]; const vz = c[2] - a[2];
-        const nx = uy * vz - uz * vy; const ny = uz * vx - ux * vz; const nz = ux * vy - uy * vx;
-        [a, b, c].forEach((point) => vertices.push(point[0], point[1], point[2], nx, ny, nz, color[0], color[1], color[2]));
-        triangles += 1;
+      const normalizedPositions = new Float32Array(positions.length);
+      for (let index = 0; index < positions.length; index += 3) {
+        normalizedPositions[index] = (Number(positions[index]) - center.x) / span * 2;
+        normalizedPositions[index + 1] = (Number(positions[index + 1]) - center.y) / span * 2;
+        normalizedPositions[index + 2] = (Number(positions[index + 2]) - center.z) / span * 2;
       }
+      const packedIndices = new Uint32Array(indices.length);
+      for (let index = 0; index < indices.length; index += 1) packedIndices[index] = Number(indices[index]);
+      meshes.push({ positions: normalizedPositions.buffer, indices: packedIndices.buffer, color });
+      transfers.push(normalizedPositions.buffer, packedIndices.buffer);
+      triangles += Math.floor(indices.length / 3);
     });
-    const output = new Float32Array(vertices);
-    workerScope.postMessage({ type: 'mesh', vertices: output.buffer, vertexCount: output.length / 9 }, [output.buffer]);
+    if (!meshes.length) throw new Error('STEP file did not contain any renderable meshes');
+    workerScope.postMessage({ type: 'mesh', meshes, triangleCount: triangles }, transfers);
   } catch (error) {
     workerScope.postMessage({ type: 'error', message: error instanceof Error ? error.message : String(error) });
   }

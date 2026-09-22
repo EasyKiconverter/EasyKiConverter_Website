@@ -8,8 +8,8 @@ type ModelBounds = {
 
 type MeshMessage = {
   type: 'mesh' | 'error';
-  vertices?: ArrayBuffer;
-  vertexCount?: number;
+  meshes?: { positions: ArrayBuffer; indices: ArrayBuffer; color: number[] }[];
+  triangleCount?: number;
   message?: string;
 };
 
@@ -42,10 +42,13 @@ export const setupModel = (): void => {
   const group = new THREE.Group();
   group.scale.setScalar(0.8);
   scene.add(group);
-  scene.add(new THREE.HemisphereLight(0xfff7ed, 0x758a82, 1.8));
+  scene.add(new THREE.HemisphereLight(0xfff7ed, 0x758a82, 1.45));
   const keyLight = new THREE.DirectionalLight(0xffffff, 2.1);
   keyLight.position.set(-2, 3, 4);
   scene.add(keyLight);
+  const fillLight = new THREE.DirectionalLight(0xe2ebff, 0.8);
+  fillLight.position.set(3, 0.5, -2);
+  scene.add(fillLight);
 
   const state = {
     pointerX: 0,
@@ -56,20 +59,26 @@ export const setupModel = (): void => {
     visible: true,
     frame: 0,
     start: performance.now(),
+    modelRadius: 1,
+  };
+
+  const fitCamera = (): void => {
+    const aspect = state.width / state.height;
+    const halfHeight = state.modelRadius * 1.16 / Math.min(1, aspect);
+    camera.left = -halfHeight * aspect;
+    camera.right = halfHeight * aspect;
+    camera.top = halfHeight;
+    camera.bottom = -halfHeight;
+    camera.updateProjectionMatrix();
   };
 
   const resize = (): void => {
     const rect = stage.getBoundingClientRect();
     state.width = Math.max(1, rect.width);
     state.height = Math.max(1, rect.height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(state.width, state.height, false);
-    const aspect = state.width / state.height;
-    camera.left = -aspect;
-    camera.right = aspect;
-    camera.top = 1;
-    camera.bottom = -1;
-    camera.updateProjectionMatrix();
+    fitCamera();
   };
 
   const updateScroll = (): void => {
@@ -93,23 +102,38 @@ export const setupModel = (): void => {
     wake();
   };
 
-  const uploadMesh = (vertices: ArrayBuffer, vertexCount: number): void => {
-    const data = new Float32Array(vertices);
-    const geometry = new THREE.BufferGeometry();
-    const interleaved = new THREE.InterleavedBuffer(data, 9);
-    geometry.setAttribute('position', new THREE.InterleavedBufferAttribute(interleaved, 3, 0));
-    geometry.setAttribute('normal', new THREE.InterleavedBufferAttribute(interleaved, 3, 3));
-    geometry.setAttribute('color', new THREE.InterleavedBufferAttribute(interleaved, 3, 6));
-    const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.66, metalness: 0.05, side: THREE.DoubleSide });
-    group.add(new THREE.Mesh(geometry, material));
-    stage.dataset.modelTriangles = String(Math.round(vertexCount / 3));
+  const uploadMesh = (meshes: NonNullable<MeshMessage['meshes']>, triangleCount: number): void => {
+    const materials = new Map<string, THREE.MeshStandardMaterial>();
+    meshes.forEach(({ positions, indices, color }) => {
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+      geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
+      geometry.computeVertexNormals();
+      geometry.computeBoundingSphere();
+      const key = color.join(',');
+      let material = materials.get(key);
+      if (!material) {
+        material = new THREE.MeshStandardMaterial({
+          color: new THREE.Color(color[0], color[1], color[2]),
+          roughness: 0.42,
+          metalness: 0.12,
+          side: THREE.DoubleSide,
+        });
+        materials.set(key, material);
+      }
+      group.add(new THREE.Mesh(geometry, material));
+    });
+    const sphere = new THREE.Box3().setFromObject(group).getBoundingSphere(new THREE.Sphere());
+    state.modelRadius = Math.max(sphere.radius, 0.1);
+    fitCamera();
+    stage.dataset.modelTriangles = String(triangleCount);
     stage.classList.add('model-loaded');
     wake();
   };
 
   const worker = new Worker(new URL('./step-worker.ts', import.meta.url), { type: 'classic' });
   worker.onmessage = ({ data }: MessageEvent<MeshMessage>): void => {
-    if (data.type === 'mesh' && data.vertices && data.vertexCount) uploadMesh(data.vertices, data.vertexCount);
+    if (data.type === 'mesh' && data.meshes?.length && data.triangleCount) uploadMesh(data.meshes, data.triangleCount);
     else {
       stage.classList.add('model-fallback');
       console.warn('STEP model fallback:', data.message);
@@ -122,11 +146,12 @@ export const setupModel = (): void => {
     worker.terminate();
   };
   const assetRoot = document.documentElement.lang === 'en' ? '../' : './';
+  const modelQuality = stage.clientWidth < 520 ? 0.007 : 0.004;
   worker.postMessage({
     stepUrl: new URL(`${assetRoot}assets/model/Easykiconverter_展示模型.step`, document.baseURI).href,
     vendorRoot: new URL(`${assetRoot}assets/vendor/`, document.baseURI).href,
     bounds,
-    maxTriangles: state.width < 520 ? 36000 : 75000,
+    linearDeflection: modelQuality,
   });
 
   const onPointerMove = (event: PointerEvent): void => {
