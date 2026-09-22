@@ -8,20 +8,20 @@ EasyKiConverter 官方网站，使用 Astro、TypeScript、Three.js 与 OpenCasc
 
 ```text
 .
-├── src/pages/index.astro   # 中文网站入口
-├── src/pages/en/index.astro # English website entry
-├── public/assets/          # 图片、模型和 WASM 等静态资源
 ├── src/
-│   ├── css/                # 页面样式与彩蛋样式
-│   └── js/                 # 页面交互逻辑
-├── assets/                 # 图片、字体等静态资源
-├── docs/                   # 项目维护文档
+│   ├── components/         # 中英文共用页面组件
+│   ├── pages/              # 中文页、英文页及 SEO 路由
+│   ├── css/                # 页面样式与视觉效果
+│   └── js/                 # 页面交互、3D 渲染与 STEP Worker
+├── public/assets/          # 图标、模型、截图和运行时资源
+├── tools/                  # 本地构建与站点校验脚本
+├── docs/                   # 架构、开发、部署和性能文档
 └── .github/workflows/      # GitHub Actions 工作流
 ```
 
-首页使用固定版本的 OpenCascade/WASM STEP 解析器在浏览器中生成真实网格；`src/js/step-worker.ts` 把解析和网格准备放在 Web Worker 中，`src/js/model-viewer.ts` 使用 Three.js 负责渲染，避免阻塞首屏主线程。原始 `public/assets/model/Easykiconverter_展示模型.step` 与模型说明放在同一目录中，模型来源、尺寸测量、三角形预算和后续 STEP → GLB 流程见 [3D model pipeline](public/assets/model/README.md)。
+首页使用固定版本的 OpenCascade/WASM STEP 解析器在浏览器中生成真实网格；`src/js/step-worker.ts` 把解析和网格准备放在 Web Worker 中，`src/js/model-viewer.ts` 使用 Three.js 负责渲染，避免阻塞首屏主线程。原始 `public/assets/model/Easykiconverter_展示模型.step` 与模型说明放在同一目录中，模型来源、尺寸测量、三角形预算和后续 STEP → GLB 流程见[3D 模型资产流程](public/assets/model/README_zh.md)。
 
-新增页面放入 `src/pages/`；样式放入 `src/css/`，脚本放入 `src/js/`，图片、模型和运行时资源放入 `public/assets/`，不要把源码或资源继续堆在根目录。
+新增页面放入 `src/pages/`，可复用页面区块放入 `src/components/`；样式放入 `src/css/`，脚本放入 `src/js/`，图片、模型、图标和运行时资源统一放入 `public/assets/`。仓库没有根目录 `assets/`；不要把源码或资源继续堆在根目录。
 
 详细架构约束见：[项目架构](docs/ARCHITECTURE.md) | [开发者文档](docs/developer/README.md)。
 
@@ -49,7 +49,7 @@ pnpm run preview
 
 ## 品牌资源
 
-官网复用了 EasyKiConverter 主项目中的官方应用图标，来源为主项目的 `resources/icons/app_icon.svg` 与 `app_icon_dark.svg`，当前副本位于 `assets/icons/`。
+官网复用了 EasyKiConverter 主项目中的官方应用图标，来源为主项目的 `resources/icons/app_icon.svg` 与 `app_icon_dark.svg`，当前副本位于 `public/assets/icons/`。
 
 ## 分支开发流程
 

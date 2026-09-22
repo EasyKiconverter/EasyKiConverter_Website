@@ -10,3 +10,10 @@
 - **Risk and rollback:** This iteration only adds documentation; reverting its documentation commit does not affect the site.
 - **Limit:** GitHub Actions was not rerun. Local checks validate the workflow condition and site build, not the status of a remote run.
 
+## 2026-09-22 — Correct repository structure documentation
+
+- **Why:** Both READMEs pointed contributors to a nonexistent root-level `assets/` directory and omitted `src/components/` and `tools/`. This could place new files in the wrong locations. The documentation fix is low-cost, evidence-based, and behavior-neutral.
+- **Changes:** Updated both project trees and asset ownership guidance; corrected the Chinese README's official icon path and localized model-guide link; reprioritized remaining opportunities in the backlog.
+- **Validation:** `pnpm run check` and `pnpm run build` passed (Astro: 0 errors, 0 warnings, 0 hints); `python3 tools/validate_site.py` and `git diff --check` passed. No separate test, lint, or benchmark scripts are defined. No browser test was needed for this docs-only change.
+- **Risk and rollback:** Documentation-only change. Revert the README and log entry independently if the paths are incorrect; runtime behavior is unaffected.
+- **Next:** Assess browser regression coverage first, then measure whether an offline STEP → GLB pipeline is worthwhile.

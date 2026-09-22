@@ -8,20 +8,20 @@ The official EasyKiConverter website, built with Astro, TypeScript, Three.js and
 
 ```text
 .
-├── src/pages/index.astro   # Chinese website entry
-├── src/pages/en/index.astro # English website entry
-├── public/assets/          # Images, models and WASM resources
 ├── src/
+│   ├── components/         # Shared components used by both locales
+│   ├── pages/              # Chinese, English, and SEO routes
 │   ├── css/                # Page styles and visual effects
-│   └── js/                 # Browser interaction logic
-├── assets/                 # Images, fonts, and other static resources
-├── docs/                   # Project maintenance documentation
+│   └── js/                 # Interactions, 3D rendering, and STEP worker
+├── public/assets/          # Icons, models, screenshots, and runtime assets
+├── tools/                  # Local build and site-validation scripts
+├── docs/                   # Architecture, development, deployment, and performance docs
 └── .github/workflows/      # GitHub Actions workflows
 ```
 
 The homepage uses a pinned OpenCascade/WASM STEP importer to build a real mesh in the browser. `src/js/step-worker.ts` performs parsing and mesh preparation in a Web Worker while `src/js/model-viewer.ts` uses Three.js for rendering, keeping the main thread responsive. The original `public/assets/model/Easykiconverter_展示模型.step` is stored beside its model documentation; its measurements, triangle budget, fallback behavior and planned STEP → GLB pipeline are documented in [3D model pipeline](public/assets/model/README.md).
 
-Keep page styles in `src/css/`, scripts in `src/js/`, and images, models or runtime assets in `public/assets/`. Do not continue adding source files or resources directly to the repository root.
+Put pages in `src/pages/` and reusable page sections in `src/components/`; keep styles in `src/css/`, scripts in `src/js/`, and images, models, icons, or runtime assets in `public/assets/`. There is no root-level `assets/` directory. Do not add source files or resources directly to the repository root.
 
 See the [architecture guide](docs/ARCHITECTURE_en.md) and [developer documentation](docs/developer/README_en.md) for the complete rules.
 
