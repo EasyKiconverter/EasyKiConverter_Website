@@ -1,4 +1,4 @@
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 const stableRelease = { tag: 'v3.1.11', url: 'https://github.com/EasyKiconverter/EasyKiConverter/releases/tag/v3.1.11' };
 const toast = document.querySelector<HTMLElement>('.egg-toast') || (() => { const element = document.createElement('div'); element.className = 'egg-toast'; element.setAttribute('role', 'status'); element.setAttribute('aria-live', 'polite'); document.body.append(element); return element; })();
 let toastTimer: number | undefined;
@@ -49,7 +49,7 @@ const refreshRelease = async () => {
 };
 refreshRelease();
 
-const menuButton = document.querySelector('.menu-button');
+const menuButton = document.querySelector<HTMLButtonElement>('.menu-button');
 const mobileNav = document.querySelector('.mobile-nav');
 menuButton?.addEventListener('click', () => {
   const isOpen = mobileNav?.classList.toggle('is-open') ?? false;
@@ -59,6 +59,12 @@ mobileNav?.querySelectorAll('a').forEach((link) => link.addEventListener('click'
   mobileNav.classList.remove('is-open');
   menuButton?.setAttribute('aria-expanded', 'false');
 }));
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape' || !mobileNav?.classList.contains('is-open')) return;
+  mobileNav.classList.remove('is-open');
+  menuButton?.setAttribute('aria-expanded', 'false');
+  menuButton?.focus();
+});
 
 const revealElements = document.querySelectorAll('.reveal');
 if ('IntersectionObserver' in window) {
@@ -78,12 +84,12 @@ if ('IntersectionObserver' in window) {
 void import('./model-viewer').then(({ setupModel }) => setupModel());
 
 document.querySelectorAll<HTMLElement>('.magnetic').forEach((button) => {
-  if (reducedMotion) return;
-  button.addEventListener('pointermove', (event) => { const box = button.getBoundingClientRect(); const x = (event.clientX - box.left - box.width / 2) * 0.1; const y = (event.clientY - box.top - box.height / 2) * 0.14; button.style.transform = `translate(${x}px,${y}px)`; });
+  button.addEventListener('pointermove', (event) => { if (motionPreference.matches) return; const box = button.getBoundingClientRect(); const x = (event.clientX - box.left - box.width / 2) * 0.1; const y = (event.clientY - box.top - box.height / 2) * 0.14; button.style.transform = `translate(${x}px,${y}px)`; });
   button.addEventListener('pointerleave', () => { button.style.transform = ''; });
 });
+motionPreference.addEventListener('change', ({ matches }) => {
+  if (matches) document.querySelectorAll<HTMLElement>('.magnetic').forEach((button) => { button.style.transform = ''; });
+});
 
-const logo = document.querySelector<HTMLImageElement>('.brand img'); let logoClicks = 0; let logoReset: number | undefined;
-logo?.addEventListener('click', (event) => { event.preventDefault(); logoClicks += 1; clearTimeout(logoReset); logoReset = window.setTimeout(() => { logoClicks = 0; }, 1100); if (logoClicks === 3) { showToast('小小的 Qt 灵魂，已被唤醒 ✦'); logoClicks = 0; } });
 const secretKeys = ['q', 't', '6']; let keyBuffer: string[] = [];
-document.addEventListener('keydown', (event) => { if (event.key.length !== 1) return; keyBuffer = [...keyBuffer, event.key.toLowerCase()].slice(-3); if (keyBuffer.join('') === secretKeys.join('')) { showToast('Qt 6 mode · smoothness increased'); keyBuffer = []; } });
+document.addEventListener('keydown', (event) => { const target = event.target; if (event.key.length !== 1 || (target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)))) return; keyBuffer = [...keyBuffer, event.key.toLowerCase()].slice(-3); if (keyBuffer.join('') === secretKeys.join('')) { showToast('Qt 6 mode · smoothness increased'); keyBuffer = []; } });

@@ -37,6 +37,14 @@
   outline-offset: 4px;
 }
 
+.mobile-nav {
+  visibility: hidden;
+}
+
+.mobile-nav.is-open {
+  visibility: visible;
+}
+
 .model-fallback-copy {
   display: none;
   position: absolute;
