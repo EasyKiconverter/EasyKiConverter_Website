@@ -6,5 +6,7 @@
 
 - [Website Architecture](ARCHITECTURE_en.md) / [中文](ARCHITECTURE.md): directory ownership and file placement.
 - [Developer Documentation](developer/README_en.md) / [中文](developer/README.md): development constraints, branch workflow, commits, testing, and pull requests.
+- [Performance Record](PERFORMANCE_en.md) / [中文](PERFORMANCE.md): STEP/WASM asset budgets and browser observations.
+- [Deployment and Preview Parity](DEPLOYMENT_en.md) / [中文](DEPLOYMENT.md): self-hosted static deployment, subpath verification, and domain replacement checklist.
 
 Every maintenance document must have Chinese and English versions with language links at the top. Put new documents in the directory for their subject instead of placing them in the repository root.

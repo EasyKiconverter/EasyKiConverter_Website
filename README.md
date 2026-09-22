@@ -2,13 +2,15 @@
 
 [English](README_en.md)
 
-EasyKiConverter 官方网站，使用原生 HTML、CSS 与 JavaScript 构建。
+EasyKiConverter 官方网站，使用 Astro、TypeScript、Three.js 与 OpenCascade/WASM 构建，提供中文首页与可索引的英文入口。
 
 ## 项目结构
 
 ```text
 .
-├── index.html              # 网站入口，适配 GitHub Pages 与本地预览
+├── src/pages/index.astro   # 中文网站入口
+├── src/pages/en/index.astro # English website entry
+├── public/assets/          # 图片、模型和 WASM 等静态资源
 ├── src/
 │   ├── css/                # 页面样式与彩蛋样式
 │   └── js/                 # 页面交互逻辑
@@ -17,17 +19,29 @@ EasyKiConverter 官方网站，使用原生 HTML、CSS 与 JavaScript 构建。
 └── .github/workflows/      # GitHub Actions 工作流
 ```
 
-新增页面入口仍放在根目录或明确的页面目录中；样式放入 `src/css/`，脚本放入 `src/js/`，图片和字体放入 `assets/`，不要把源码或资源继续堆在根目录。
+首页使用固定版本的 OpenCascade/WASM STEP 解析器在浏览器中生成真实网格；`src/js/step-worker.ts` 把解析和网格准备放在 Web Worker 中，`src/js/model-viewer.ts` 使用 Three.js 负责渲染，避免阻塞首屏主线程。原始 `public/assets/model/Easykiconverter_展示模型.step` 与模型说明放在同一目录中，模型来源、尺寸测量、三角形预算和后续 STEP → GLB 流程见 [3D model pipeline](public/assets/model/README.md)。
+
+新增页面放入 `src/pages/`；样式放入 `src/css/`，脚本放入 `src/js/`，图片、模型和运行时资源放入 `public/assets/`，不要把源码或资源继续堆在根目录。
 
 详细架构约束见：[项目架构](docs/ARCHITECTURE.md) | [开发者文档](docs/developer/README.md)。
 
 ## 本地预览
 
 ```bash
-python3 -m http.server 4173
+pnpm install
+pnpm dev
 ```
 
-然后打开 <http://localhost:4173>。
+构建发布版本：
+
+```bash
+pnpm run build
+pnpm run preview
+```
+
+不要双击页面使用 `file://`，浏览器会阻止 STEP/WASM 资源读取，导致本地效果与发布效果不一致。
+
+自有服务器部署和发布前检查见：[部署与预览一致性](docs/DEPLOYMENT.md)。如果服务器使用子路径，可在仓库父目录启动 HTTP 服务并访问 `http://localhost:4174/EasyKiConverter_Website/`，模拟线上路径。
 
 ## 设计方向
 

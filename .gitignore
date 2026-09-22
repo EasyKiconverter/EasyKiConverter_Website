@@ -28,6 +28,7 @@ node_modules/
 dist/
 build/
 .cache/
+.astro/
 
 # Local configuration and logs
 .env

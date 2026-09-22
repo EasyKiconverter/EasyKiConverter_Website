@@ -1,0 +1,10 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "allowJs": false,
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
+  },
+  "include": [".astro/types.d.ts", "src/**/*.ts", "src/**/*.astro", "astro.config.ts"]
+}

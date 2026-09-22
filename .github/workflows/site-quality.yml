@@ -1,0 +1,84 @@
+name: Site Quality
+
+on:
+  push:
+    branches: [master, 'version/**', 'codex/**']
+  pull_request:
+    branches: [master, 'version/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-site:
+    name: Static site checks
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Validate pages and build
+        run: |
+          python3 tools/validate_site.py
+          pnpm run build
+      - name: Check CSS structure
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for path in Path("src/css").glob("*.css"):
+              text = path.read_text(encoding="utf-8")
+              if text.count("{") != text.count("}"):
+                  raise SystemExit(f"unbalanced CSS braces: {path}")
+          print("CSS structure looks balanced")
+          PY
+      - name: Check whitespace
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            git diff --check "$BASE_SHA...$PR_HEAD_SHA"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            git diff --check HEAD^ HEAD
+          else
+            git diff --check HEAD
+          fi
+      - name: Smoke test built site
+        run: |
+          pnpm run preview --host 127.0.0.1 --port 4173 >/tmp/easyki-site.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          python3 - <<'PY'
+          import time
+          from urllib.request import urlopen
+
+          base_url = "http://127.0.0.1:4173"
+          deadline = time.monotonic() + 30
+          while True:
+              try:
+                  with urlopen(base_url + "/", timeout=2) as response:
+                      assert response.status == 200, ("/", response.status)
+                  break
+              except OSError:
+                  if time.monotonic() >= deadline:
+                      raise SystemExit("preview server did not become ready within 30 seconds")
+                  time.sleep(1)
+
+          for path in ("/", "/en/", "/robots.txt", "/sitemap.xml"):
+              with urlopen(base_url + path, timeout=5) as response:
+                  assert response.status == 200, (path, response.status)
+          PY
