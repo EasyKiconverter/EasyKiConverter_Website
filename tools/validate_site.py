@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 pages = [ROOT / "src/pages/index.astro", ROOT / "src/pages/en/index.astro"]
+shared_components = [ROOT / "src/components/MotionNarrative.astro"]
 errors = []
 accessibility_css = (ROOT / "src/css/accessibility.css").read_text(encoding="utf-8")
 if ":focus-visible" not in accessibility_css:
@@ -17,6 +18,9 @@ if "prefers-reduced-motion" not in (ROOT / "src/css/styles.css").read_text(encod
 for page in pages:
     text = page.read_text(encoding="utf-8")
     id_values = re.findall(r'id=["\']([^"\']+)["\']', text)
+    for component in shared_components:
+        component_text = component.read_text(encoding="utf-8")
+        id_values.extend(re.findall(r'id=["\']([^"\']+)["\']', component_text))
     ids = set(id_values)
     if len(ids) != len(id_values):
         errors.append(f"{page}: duplicate HTML id")
