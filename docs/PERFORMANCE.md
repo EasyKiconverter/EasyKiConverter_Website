@@ -6,8 +6,9 @@
 
 - STEP 源文件：约 11 MB，保留为源资产。
 - WASM 解析器：`occt-import-js` 0.0.23，约 7.3 MB。
-- 网格预算：桌面最多 75,000 个三角形，窄屏最多 36,000 个三角形。
-- DPR：最高 1.7。
+- 网格数量：当前 Worker 会传输 OCCT 生成的全部可渲染网格，没有硬三角形上限；窄屏仅使用更粗的线性偏差参数，不能保证三角形数量。
+- 三角化参数：宽屏 `linearDeflection=0.004`，窄屏（stage 宽度小于 520px）`0.007`，`angularDeflection=0.16`；来源为 `src/js/model-viewer.ts` 与 `src/js/step-worker.ts`。
+- DPR：最高 2。
 - 首屏：正文与布局先可见，STEP/WASM 在脚本初始化后异步加载。
 - 渲染循环：仅在 Hero 进入视口且页面可见时持续运行；离开视口或切到后台会暂停，返回时唤醒。
 - Three.js：使用 `BufferGeometry`、顶点色和标准材质渲染真实模型。

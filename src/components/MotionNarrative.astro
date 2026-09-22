@@ -1,0 +1,39 @@
+---
+interface Props { lang: 'zh' | 'en'; }
+const { lang } = Astro.props;
+const en = lang === 'en';
+const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main.webp`, Astro.site).href;
+---
+
+<section class="motion-narrative" id="story" data-motion-timeline aria-label={en ? 'From component data to design' : '从元件数据到电路设计'}>
+  <div class="motion-pin">
+    <div class="motion-heading">
+      <p class="kicker">{en ? 'ONE COMPONENT, A NEW SHAPE' : '同一个元件，新的形状'}</p>
+      <h1>{en ? <>Component conversion,<br /><em>made tangible.</em></> : <>让元件库转换，<br /><em>顺手一点。</em></>}</h1>
+      <p>{en ? 'Follow one real component from LCSC / EasyEDA into the EDA tools you already use.' : '跟随一个真实元件，从 LCSC / EasyEDA 出发，走进你熟悉的 EDA 工作流。'}</p>
+    </div>
+
+    <div class="motion-model" data-model-stage>
+      <div class="motion-model-note"><span class="live-dot"></span>{en ? 'A REAL STEP MODEL' : '真实 STEP 模型'}<small>01 / 04</small></div>
+      <canvas id="model-canvas" aria-label={en ? 'Interactive preview of the EasyKiConverter STEP component model' : 'EasyKiConverter STEP 元件模型的交互式预览'}></canvas>
+      <div class="model-fallback-copy" role="status">{en ? '3D preview is unavailable. The page and download links remain usable.' : '3D 预览暂不可用，页面内容和下载入口仍可正常使用。'}</div>
+      <span class="motion-model-tag">{en ? 'SCROLL TO TRANSFORM' : '向下滚动，继续转化'}</span>
+    </div>
+
+    <div class="motion-progress" aria-hidden="true"><span></span></div>
+    <article class="motion-chapter motion-chapter-input" data-motion-chapter="input">
+      <span>01 — INPUT</span><h2>{en ? <>Begin with<br /><em>a part number.</em></> : <>从一个编号<br /><em>开始。</em></>}</h2>
+      <p>{en ? 'LCSC · EasyEDA · BOM' : 'LCSC · EasyEDA · BOM'}</p>
+    </article>
+    <article class="motion-chapter motion-chapter-library" data-motion-chapter="library">
+      <span>02 — BUILD THE LIBRARY</span><h2>{en ? <>One component.<br /><em>Three useful views.</em></> : <>一个元件，<br /><em>三种设计语言。</em></>}</h2>
+      <div class="motion-artifacts"><b>SYMBOL</b><i>+</i><b>FOOTPRINT</b><i>+</i><b>3D MODEL</b></div>
+      <p>{en ? 'A visual metaphor for the output — not a live CAD conversion.' : '这是对转换结果的视觉隐喻，并非网页中的实时 CAD 转换。'}</p>
+    </article>
+    <article class="motion-chapter motion-chapter-product" data-motion-chapter="product">
+      <span>03 — THE REAL WORKBENCH</span><h2>{en ? <>Then, back<br /><em>to your work.</em></> : <>最后回到<br /><em>真实工作台。</em></>}</h2>
+      <figure class="motion-app-window"><img src={appImage} alt={en ? 'The real EasyKiConverter Qt Quick desktop interface' : 'EasyKiConverter 真实 Qt Quick 桌面工作界面'} loading="lazy" /><figcaption>{en ? 'THE REAL QT QUICK APP' : '真实 Qt Quick 应用界面'}</figcaption></figure>
+    </article>
+    <div class="motion-destinations" aria-label={en ? 'Supported EDA destinations' : '支持的 EDA 目标'}><span>KiCad</span><i>↗</i><span>Altium</span><small>{en ? '04 — CONTINUE DESIGNING' : '04 — 继续你的设计'}</small></div>
+  </div>
+</section>
