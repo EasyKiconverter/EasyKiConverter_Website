@@ -100,6 +100,10 @@ document.querySelectorAll<HTMLElement>('[data-model-stage]').forEach((stage) => 
       if (modeLabel) modeLabel.textContent = button.dataset[labelKey] ?? '';
     });
   });
+  stage.querySelector<HTMLButtonElement>('[data-tomogram-reveal-atlas]')?.addEventListener('click', () => {
+    stage.querySelector<HTMLButtonElement>('[data-artifact-view="atlas"]')?.click();
+    requestAnimationFrame(() => stage.querySelector<HTMLCanvasElement>('[data-mesh-atlas]')?.focus({ preventScroll: true }));
+  });
 });
 
 document.querySelectorAll<HTMLElement>('.magnetic').forEach((button) => {

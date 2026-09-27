@@ -15,7 +15,134 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
 
     <div class="motion-model" data-model-stage data-artifact-view="model">
       <div class="motion-model-note"><span class="live-dot"></span><span data-artifact-label>{en ? 'A REAL STEP MODEL' : '真实 STEP 模型'}</span><small>01 / 04</small></div>
-      <canvas id="model-canvas" aria-label={en ? 'Interactive preview of the EasyKiConverter STEP component model' : 'EasyKiConverter STEP 元件模型的交互式预览'}></canvas>
+      <div class="neural-memory-readout" data-neural-memory aria-live="polite">{en ? 'SYNAPTIC MEMORY · 0 PATHS' : '突触记忆 · 0 条路径'}</div>
+      <div class="swarm-lineage-readout" data-swarm-lineage-readout aria-live="polite">{en ? 'LINEAGE ∞ 0' : '谱系 ∞ 0'}</div>
+      <div class="swarm-lineage-picker" data-swarm-lineage-picker role="group" aria-label={en ? 'Recall an archived topology genome' : '回溯已归档的拓扑基因'}></div>
+      <canvas id="model-canvas" tabindex="0" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Escape" aria-label={en ? 'Interactive STEP model. Click a part or focus this canvas and use the arrow keys to explore neighboring components in screen space. Escape restores the full material view.' : '交互式 STEP 模型。点击零件，或聚焦此画布后用方向键按屏幕空间探索相邻零件。按 Esc 恢复完整材质视图。'}></canvas>
+      <canvas class="mesh-atlas" data-mesh-atlas tabindex="0" aria-label={en ? 'Spatial atlas of the real STEP meshes. Use arrow keys to move focus, Enter to inspect a part, and Escape to clear focus.' : '真实 STEP 网格的空间星图。使用方向键移动焦点，按 Enter 检查零件，按 Esc 清除焦点。'}></canvas>
+      <canvas class="model-tomogram" data-model-tomogram role="img" aria-label={en ? 'Live tomogram accumulated from cross-sections of the real STEP geometry. Start a CT scan to reveal its internal profile.' : '由真实 STEP 几何剖面累积生成的实时断层图。启动 CT 扫描以显现内部轮廓。'}></canvas>
+      <canvas class="model-oracle" data-model-oracle tabindex="0" role="img" aria-label={en ? 'Topology DNA oracle generated from recorded real STEP section frames. Drag horizontally to scrub frames and vertically to mutate the helix.' : '由真实 STEP 截面帧生成的拓扑 DNA 预言图。横向拖动浏览帧，纵向拖动改变螺旋突变强度。'}></canvas>
+      <canvas class="model-trinity" data-model-trinity tabindex="0" role="img" aria-label={en ? 'Three-track comparison of topology parent A, parent B, and the recombined timeline. Click a position to jump to that real section.' : '拓扑父时间线 A、父时间线 B 与重组时间线的三轨对照图。点击位置可跳转到真实截面。'}></canvas>
+      <canvas class="model-morph" data-model-morph tabindex="0" role="img" aria-label={en ? 'Interactive topology morph field. Drag across the field to scrub real STEP section history.' : '交互式拓扑形变场。拖动形变场以浏览真实 STEP 截面历史。'}></canvas>
+      <button type="button" class="morph-gravity" data-morph-gravity aria-pressed="true" aria-label={en ? 'Toggle topology gravity deformation' : '切换拓扑引力形变'}>{en ? 'GRAVITY ◉' : '引力 ◉'}</button>
+      <button type="button" class="morph-fork" data-morph-fork aria-label={en ? 'Export the gravity-warped topology branch' : '导出引力扭曲后的拓扑分支'}>{en ? 'FORK ↗' : '分支 ↗'}</button>
+      <button type="button" class="morph-collision" data-morph-collision aria-label={en ? 'Collide two imported topology branches' : '碰撞两条导入的拓扑分支'}>{en ? 'COLLIDE ☄' : '碰撞 ☄'}</button>
+      <button type="button" class="morph-antimatter" data-morph-antimatter aria-pressed="false" aria-label={en ? 'Invert topology roles into antimatter mode' : '将拓扑角色反转为反物质模式'}>{en ? 'ANTIMATTER ◇' : '反物质 ◇'}</button>
+      <button type="button" class="morph-annihilate" data-morph-annihilate aria-pressed="false" aria-label={en ? 'Reveal topology annihilation field' : '显示拓扑湮灭场'}>{en ? 'ANNIHILATE ◌' : '湮灭 ◌'}</button>
+      <button type="button" class="morph-horizon" data-causal-horizon aria-pressed="false" aria-label={en ? 'Collapse the current model into a causal event horizon' : '将当前模型坍缩为因果事件视界'}>{en ? 'HORIZON ◉' : '视界 ◉'}</button>
+      <button type="button" class="morph-orbit-export" data-causal-orbit-export disabled aria-label={en ? 'Export the observer orbit capsule' : '导出观察者轨道胶囊'}>ORBIT ↓</button>
+      <button type="button" class="morph-orbit-import" data-causal-orbit-import aria-label={en ? 'Import an observer orbit capsule' : '导入观察者轨道胶囊'}>ORBIT ↥</button>
+      <button type="button" class="morph-orbit-replay" data-causal-orbit-replay disabled aria-label={en ? 'Replay the observer orbit capsule' : '重放观察者轨道胶囊'}>REPLAY ↺</button>
+      <button type="button" class="morph-entangle" data-causal-entangle aria-pressed="false" aria-label={en ? 'Entangle this observer with other open EasyKiConverter tabs' : '将当前观察者与其他打开的 EasyKiConverter 页面纠缠'}>ENTANGLE ∞</button>
+      <button type="button" class="morph-resonance" data-morph-resonance aria-pressed="false" aria-label={en ? 'Open a resonance chamber made from the real STEP meshes' : '打开由真实 STEP 网格构成的拓扑共振舱'}>RESONATE ◇</button>
+      <button type="button" class="morph-mutate" data-morph-mutate aria-label={en ? 'Mutate the shared topology gene' : '突变共享拓扑基因'}>MUTATE 🧬</button>
+      <button type="button" class="morph-crossbreed" data-morph-crossbreed aria-label={en ? 'Crossbreed local and peer topology genes' : '交叉重组本地与远程拓扑基因'}>CROSSBREED ⚗</button>
+      <button type="button" class="morph-evolve" data-morph-evolve aria-label={en ? 'Run a topology gene survival tournament' : '运行拓扑基因生存竞技'}>EVOLVE ⚔</button>
+      <button type="button" class="morph-archive" data-morph-archive aria-label={en ? 'Archive this topology champion across sessions' : '跨会话归档当前拓扑冠军'}>ARCHIVE ∞</button>
+      <button type="button" class="morph-genome-share" data-morph-genome-share disabled aria-label={en ? 'Share a deep link to the latest topology genome' : '分享最新拓扑基因深链接'}>GENOME ↗</button>
+      <button type="button" class="morph-genome-passport" data-morph-genome-passport disabled aria-label={en ? 'Download a visual passport for the latest topology genome' : '下载最新拓扑基因的视觉护照'}>PASSPORT ✦</button>
+      <button type="button" class="morph-genome-inject" data-morph-genome-inject aria-label={en ? 'Inject a topology genome passport SVG' : '注入拓扑基因护照 SVG'}>INJECT ↥</button>
+      <button type="button" class="morph-genome-duel" data-genome-duel disabled aria-label={en ? 'Open a 3D duel between the latest two topology genomes' : '打开最近两个拓扑基因的三维决斗场'}>DUEL ⚡</button>
+      <button type="button" class="morph-genome-spawn" data-genome-spawn disabled aria-label={en ? 'Spawn a new topology genome from the duel' : '从基因决斗中生成新的拓扑基因'}>SPAWN ∴</button>
+      <button type="button" class="morph-genome-spectate" data-genome-spectate aria-pressed="false" aria-label={en ? 'Watch topology duels from another EasyKiConverter tab' : '观战其他 EasyKiConverter 标签页的拓扑决斗'}>SPECTATE ◉</button>
+      <button type="button" class="morph-genome-arena" data-genome-arena aria-pressed="false" aria-label={en ? 'Toggle the shared topology arena scoreboard' : '切换共享拓扑竞技榜'}>ARENA ▣</button>
+      <div class="genome-arena-board" data-genome-arena-board hidden aria-live="polite">
+        <span>{en ? 'TOPOLOGY ARENA' : '拓扑竞技场'}</span><b data-genome-arena-seats>0 SEATS</b>
+        <ol data-genome-arena-list></ol>
+        <small>{en ? 'RECENT ROUNDS · CLICK TO REPLAY' : '最近回合 · 点击回放'}</small><ul data-genome-arena-history></ul>
+        <small>{en ? 'SEASON BRACKET' : '赛季淘汰树'}</small><ol class="genome-season-bracket" data-genome-season-bracket></ol>
+        <div class="genome-arena-timeline" data-genome-arena-timeline hidden>
+          <label for={en ? 'arena-replay-time-en' : 'arena-replay-time-zh'}>{en ? 'REPLAY TIME' : '回放时间'} <output data-genome-arena-time>100%</output></label>
+          <input id={en ? 'arena-replay-time-en' : 'arena-replay-time-zh'} type="range" min="0" max="100" value="100" data-genome-arena-time-slider aria-label={en ? 'Scrub arena replay time' : '拖动竞技回放时间'} />
+          <button type="button" data-genome-arena-mix aria-pressed="false" aria-label={en ? 'Play recent arena rounds as a continuous replay mix' : '连续播放最近竞技回合混剪'}>MIX ▶</button>
+          <button type="button" data-genome-arena-bridge-duel disabled aria-label={en ? 'Challenge the generated bridge genome' : '挑战刚生成的桥接基因'}>BRIDGE ⚔</button>
+          <button type="button" data-genome-arena-ascend disabled aria-label={en ? 'Evolve a new genome from the bridge duel winner' : '从桥接决斗胜者进化新基因'}>ASCEND ✦</button>
+          <button type="button" data-genome-arena-season disabled aria-label={en ? 'Crown the current topology season champion' : '加冕当前拓扑赛季冠军'}>SEASON ♛</button>
+          <button type="button" data-genome-arena-challenge disabled aria-label={en ? 'Challenge the crowned season champion with the strongest rival' : '让最强对手挑战赛季冠军'}>CHALLENGE ⚔</button>
+        </div>
+      </div>
+      <input type="file" accept="image/svg+xml,.svg" data-morph-genome-input hidden />
+      <input type="file" accept="application/json,.json" data-causal-orbit-input hidden />
+      <span class="tomogram-specimen-label" data-tomogram-specimen-label aria-hidden="true"><span>{en ? 'LIVE SPECIMEN' : '实时标本'}</span><b data-tomogram-axis-label>{en ? 'X SECTION' : 'X 向切片'}</b></span>
+      <div class="tomogram-telemetry" data-tomogram-telemetry role="group" aria-label={en ? 'Cross-section measurements' : '真实截面测量值'}>
+        <span><small>{en ? 'AREA' : '面积'}</small><b data-tomogram-area>—</b><i>mm²</i></span>
+        <span><small>{en ? 'PERIMETER' : '周长'}</small><b data-tomogram-perimeter>—</b><i>mm</i></span>
+        <span><small>{en ? 'CLOSED LOOPS' : '闭合环'}</small><b data-tomogram-loops>—</b><i></i></span>
+        <span><small>{en ? 'TOPOLOGY' : '拓扑'}</small><b data-tomogram-topology>—</b><i></i></span>
+        <span><small>{en ? 'Δ AREA' : '面积差'}</small><b data-tomogram-delta>—</b><i>mm²</i></span>
+        <button type="button" class="tomogram-mesh-link" data-tomogram-reveal-atlas aria-label={en ? 'Show the meshes crossed by this section in the spatial atlas' : '在空间星图中查看当前剖面穿过的网格'} title={en ? 'Reveal intersecting meshes in the atlas' : '在星图中查看相交网格'}>
+          <small>{en ? 'MESHES ↗' : '网格 ↗'}</small><b data-tomogram-meshes>—</b><i></i>
+        </button>
+      </div>
+      <button type="button" class="tomogram-pin" data-tomogram-pin disabled aria-pressed="false" aria-label={en ? 'Pin the current section, then move the slice to compare geometry' : '固定当前截面，然后移动切片比较几何变化'} title={en ? 'Pin a section for difference comparison' : '固定截面用于差分比较'}>PIN Δ</button>
+      <button type="button" class="tomogram-export" data-tomogram-export disabled aria-label={en ? 'Export the current closed section contours as an SVG file' : '将当前闭合截面轮廓导出为 SVG 文件'} title={en ? 'Export vector section profile' : '导出矢量截面轮廓'}>SVG ↓</button>
+      <label class="tomogram-scrubber" data-tomogram-scrubber>
+        <span class="tomogram-scrubber-title">{en ? 'SLICE' : '切片'}</span>
+        <input type="range" min="0" max="100" value="50" step="1" data-tomogram-scrubber-range aria-label={en ? 'Scrub the CT section position' : '拖动以检查 CT 切片位置'} disabled />
+        <output data-tomogram-scrubber-value aria-hidden="true">50%</output>
+      </label>
+      <label class="tomogram-frame-scrubber" data-tomogram-frame-scrubber>
+        <span class="tomogram-scrubber-title">{en ? 'FRAME' : '帧'}</span>
+        <input type="range" min="0" max="0" value="0" step="1" data-tomogram-frame-range aria-label={en ? 'Scrub the recorded section timeline' : '拖动已录制截面时间轴'} disabled />
+        <output data-tomogram-frame-value aria-hidden="true">—</output>
+      </label>
+      <label class="tomogram-crossover" data-tomogram-crossover>
+        <span class="tomogram-scrubber-title">{en ? 'CROSSOVER' : '交叉点'}</span>
+        <input type="range" min="5" max="95" value="50" step="1" data-tomogram-crossover-range aria-label={en ? 'Choose the crossover point for topology recombination' : '选择拓扑重组的基因交叉点'} disabled />
+        <output data-tomogram-crossover-value aria-hidden="true">50%</output>
+      </label>
+      <label class="tomogram-crossover-end" data-tomogram-crossover-end>
+        <span class="tomogram-scrubber-title">{en ? 'CROSSOVER B' : '交叉点 B'}</span>
+        <input type="range" min="5" max="95" value="70" step="1" data-tomogram-crossover-end-range aria-label={en ? 'Choose the second crossover point for topology recombination' : '选择拓扑重组的第二个基因交叉点'} disabled />
+        <output data-tomogram-crossover-end-value aria-hidden="true">70%</output>
+      </label>
+      <div class="tomogram-lineage" data-tomogram-lineage hidden>
+        <div class="tomogram-lineage-head">
+          <span class="tomogram-lineage-title">{en ? 'LINEAGE' : '谱系'}</span>
+          <button type="button" class="tomogram-memory-pin" data-tomogram-memory-pin disabled aria-pressed="false" aria-label={en ? 'Pin the latest topology memory in 3D space' : '将最近的拓扑记忆固定在三维空间'}>PIN MEMORY</button>
+        </div>
+        <div class="tomogram-lineage-field" data-tomogram-lineage-field role="img" aria-label={en ? 'Topology genealogy field across recorded frames' : '已录制帧中的拓扑家谱场'}></div>
+        <div class="tomogram-lineage-track" data-tomogram-lineage-track role="listbox" aria-label={en ? 'Selected topology loop area through recorded frames' : '选中拓扑环在已录制帧中的面积变化'}></div>
+        <div class="tomogram-memory-rack" data-tomogram-memory-rack aria-label={en ? 'Pinned topology memories' : '已固定的拓扑记忆'}></div>
+        <label class="tomogram-orbit-control">
+          <span>{en ? 'ORBIT' : '轨道'}</span>
+          <input type="range" min="0.5" max="2.4" step="0.1" value="1" data-tomogram-orbit-range aria-label={en ? 'Adjust topology memory orbit radius' : '调整拓扑记忆轨道半径'} disabled />
+          <output data-tomogram-orbit-value>1×</output>
+        </label>
+        <label class="tomogram-orbit-control">
+          <span>{en ? 'TIME' : '时间'}</span>
+          <input type="range" min="0" max="3" step="0.1" value="1" data-tomogram-speed-range aria-label={en ? 'Adjust topology memory orbit speed' : '调整拓扑记忆轨道速度'} disabled />
+          <output data-tomogram-speed-value>1×</output>
+        </label>
+        <label class="tomogram-orbit-control">
+          <span>{en ? 'PART' : '部件'}</span>
+          <input type="range" min="-3" max="3" step="0.1" value="1" data-tomogram-part-speed-range aria-label={en ? 'Adjust selected part memory time speed, negative reverses time' : '调整选中部件记忆时间速度，负值反向播放'} disabled />
+          <output data-tomogram-part-speed-value>1×</output>
+        </label>
+        <label class="tomogram-orbit-control">
+          <span>{en ? 'HISTORY' : '历史'}</span>
+          <input type="range" min="0" max="100" step="1" value="100" data-tomogram-part-history-range aria-label={en ? 'Jump through selected part history' : '跳转选中部件的历史状态'} disabled />
+          <output data-tomogram-part-history-value>100%</output>
+        </label>
+        <output data-tomogram-lineage-value aria-hidden="true">—</output>
+      </div>
+      <span class="tomogram-record-status" data-tomogram-record-status aria-live="polite">{en ? 'NO FRAMES' : '暂无帧'}</span>
+      <button type="button" class="tomogram-movie" data-tomogram-movie disabled aria-label={en ? 'Export recorded section frames as an animated SVG' : '将已录制截面帧导出为 SVG 动画'} title={en ? 'Export geometry movie' : '导出几何电影'}>MOVIE ↓</button>
+      <button type="button" class="tomogram-forecast" data-tomogram-forecast disabled aria-pressed="false" aria-label={en ? 'Project the next section from recent real STEP frames' : '根据最近真实 STEP 帧预测下一个截面'} title={en ? 'Project the next real section' : '预测下一个真实截面'}>FUTURE ◌</button>
+      <button type="button" class="tomogram-branches" data-tomogram-branches disabled aria-pressed="false" aria-label={en ? 'Cycle through three possible future section branches' : '循环查看三个可能的未来截面分支'} title={en ? 'Cycle future branches' : '循环未来分支'}>BRANCH ∞</button>
+      <button type="button" class="tomogram-events" data-tomogram-events disabled aria-label={en ? 'Export topology events as a diagnostic narrative' : '导出拓扑事件诊断叙事'} title={en ? 'Export topology event narrative' : '导出拓扑事件叙事'}>EVENTS ↓</button>
+      <button type="button" class="tomogram-import" data-tomogram-import aria-label={en ? 'Import an EasyKiConverter section time capsule' : '导入 EasyKiConverter 截面时间胶囊'} title={en ? 'Import section history JSON' : '导入截面历史 JSON'}>IMPORT ↥</button>
+      <input type="file" accept="application/json,.json" multiple data-tomogram-import-input hidden />
+      <button type="button" class="tomogram-play" data-tomogram-play disabled aria-pressed="false" aria-label={en ? 'Play recorded section frames' : '播放已录制截面帧'}>PLAY ▶</button>
+      <button type="button" class="tomogram-hop" data-tomogram-hop disabled aria-label={en ? 'Jump to the next topology event' : '跳转到下一个拓扑事件'} title={en ? 'Jump between topology events' : '在拓扑事件之间跳转'}>HOP ↠</button>
+      <button type="button" class="tomogram-arc" data-tomogram-arc disabled aria-label={en ? 'Play the topology event arc' : '播放拓扑事件弧线'} title={en ? 'Play event arc' : '播放事件弧线'}>ARC ▶</button>
+      <button type="button" class="tomogram-reel" data-tomogram-reel disabled aria-pressed="false" aria-label={en ? 'Record the topology event arc as WebM' : '将拓扑事件弧线录制为 WebM'} title={en ? 'Record event reel' : '录制事件短片'}>REEL ●</button>
+      <button type="button" class="tomogram-multiverse" data-tomogram-multiverse disabled aria-pressed="false" aria-label={en ? 'Blend imported topology histories as a multiverse interference field' : '将导入的拓扑历史混合为多宇宙干涉场'} title={en ? 'Blend imported histories' : '混合导入的历史'}>MIX ∞</button>
+      <button type="button" class="tomogram-splice" data-tomogram-splice disabled aria-pressed="false" aria-label={en ? 'Recombine two imported topology histories into a hybrid timeline' : '将两条导入的拓扑历史重组为混合时间线'} title={en ? 'Recombine histories' : '重组历史'}>SPLICE 🧬</button>
+      <button type="button" class="tomogram-audio" data-tomogram-audio disabled aria-pressed="false" aria-label={en ? 'Sonify topology events' : '将拓扑事件转化为声音'} title={en ? 'Turn topology into sound' : '让拓扑发声'}>SOUND ♫</button>
+      <button type="button" class="tomogram-cinema" data-tomogram-cinema disabled aria-pressed="false" aria-label={en ? 'Replay the locked topology event across all views' : '在所有视图中回放锁定的拓扑事件'} title={en ? 'Replay event capsule' : '回放事件胶囊'}>CINEMA ◉</button>
+      <button type="button" class="tomogram-share" data-tomogram-share disabled aria-label={en ? 'Copy a link to the selected topology event' : '复制当前拓扑事件链接'} title={en ? 'Copy event deep link' : '复制事件深链接'}>SHARE ↗</button>
+      <button type="button" class="tomogram-record" data-tomogram-record disabled aria-pressed="false" aria-label={en ? 'Record section frames while scanning' : '扫描时录制截面帧'}>REC ●</button>
       <div class="artifact-visual" data-visual="symbol" aria-hidden="true">
         <svg viewBox="0 0 460 320" role="presentation">
           <g class="artifact-grid"><path d="M20 40H440M20 80H440M20 120H440M20 160H440M20 200H440M20 240H440M20 280H440M60 20V300M100 20V300M140 20V300M180 20V300M220 20V300M260 20V300M300 20V300M340 20V300M380 20V300M420 20V300" /></g>
@@ -40,14 +167,29 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
       </div>
       <div class="artifact-switcher" role="group" aria-label={en ? 'Choose a component view' : '选择元件视图'}>
         <button type="button" data-artifact-view="model" data-label-zh="真实 STEP 模型" data-label-en="A REAL STEP MODEL" data-caption-zh="真实 STEP 网格 · 随滚动进入产品叙事" data-caption-en="Real STEP geometry · connected to the scroll story" aria-pressed="true">{en ? '3D solid' : '3D 实体'}</button>
+        <button type="button" data-artifact-view="atlas" data-label-zh="网格空间星图" data-label-en="MESH CONSTELLATION" data-caption-zh="每个节点对应真实 STEP 网格；点击节点可定位回实体" data-caption-en="Every node is a real STEP mesh · select one to inspect it in 3D" aria-pressed="false">{en ? 'Atlas' : '星图'}</button>
+        <button type="button" data-artifact-view="tomogram" data-label-zh="剖面断层地形" data-label-en="SECTION TOMOGRAM" data-caption-zh="扫描经过的真实 STEP 剖面 · 亮度表示截面占据宽度" data-caption-en="Real STEP sections accumulated across the scan · brightness maps section width" aria-pressed="false">{en ? 'Tomo' : '断层'}</button>
+        <button type="button" data-artifact-view="oracle" data-label-zh="拓扑 DNA 预言图" data-label-en="TOPOLOGY DNA ORACLE" data-caption-zh="真实截面历史的双螺旋 · 事件改变螺旋的节奏" data-caption-en="A double helix of real section history · events change its rhythm" aria-pressed="false">{en ? 'Oracle' : '预言'}</button>
+        <button type="button" data-artifact-view="trinity" data-label-zh="三体时间线" data-label-en="TIMELINE TRINITY" data-caption-zh="父线 A · 父线 B · A→B→A 重组线" data-caption-en="Parent A · Parent B · A→B→A recombination" aria-pressed="false">{en ? 'Trinity' : '三体'}</button>
+        <button type="button" data-artifact-view="morph" data-label-zh="拓扑形变场" data-label-en="TOPOLOGY MORPH FIELD" data-caption-zh="真实截面历史的相空间 · 拖动以穿越形变" data-caption-en="Phase space of real section history · drag to travel through the morph" aria-pressed="false">{en ? 'Morph' : '形变'}</button>
         <button type="button" data-artifact-view="symbol" data-label-zh="原理图符号示意" data-label-en="SCHEMATIC SYMBOL STUDY" data-caption-zh="原理图符号 · 视觉示意，并非导出的 CAD 数据" data-caption-en="Schematic symbol · visual study, not exported CAD data" aria-pressed="false">{en ? 'Symbol' : '符号'}</button>
         <button type="button" data-artifact-view="footprint" data-label-zh="PCB 封装示意" data-label-en="PCB FOOTPRINT STUDY" data-caption-zh="PCB 封装 · 视觉示意，并非导出的 CAD 数据" data-caption-en="PCB footprint · visual study, not exported CAD data" aria-pressed="false">{en ? 'Footprint' : '封装'}</button>
+        <button type="button" class="model-scan-toggle" data-model-scan aria-label={en ? 'Play a CT scan through the STEP model' : '播放穿过 STEP 模型的 CT 扫描'} aria-pressed="false" disabled>{en ? 'CT Scan' : 'CT 扫描'}</button>
       </div>
       <label class="model-explode" data-model-explode-control>
-        <span class="model-explode-heading">{en ? 'EXPLODE THE GEOMETRY' : '展开真实几何'}</span>
+        <span class="model-explode-heading">{en ? 'EXPLODE · X-RAY FOCUS' : '爆炸视图 · X 光聚焦'}</span>
         <input type="range" min="0" max="100" value="0" step="1" data-model-explode aria-label={en ? 'Explode the STEP mesh parts' : '拆解 STEP 网格零件'} disabled />
         <output data-model-explode-value>0%</output>
         <small data-model-explode-stats>{en ? 'Waiting for STEP mesh…' : '等待 STEP 网格…'}</small>
+        <span class="model-slice-heading">{en ? 'LIVE SECTION PLANE' : '实时剖切平面'}</span>
+        <button class="model-slice-toggle" type="button" data-model-slice-toggle aria-pressed="false" disabled>{en ? 'CUT' : '剖切'}</button>
+        <div class="model-slice-axes" role="group" aria-label={en ? 'CT scan axis' : 'CT 扫描方向'}>
+          <button type="button" data-slice-axis="x" aria-pressed="true" disabled>X</button>
+          <button type="button" data-slice-axis="y" aria-pressed="false" disabled>Y</button>
+          <button type="button" data-slice-axis="z" aria-pressed="false" disabled>Z</button>
+        </div>
+        <input class="model-slice-range" type="range" min="0" max="100" value="50" step="1" data-model-slice aria-label={en ? 'Move the live section plane through the model' : '移动剖切平面穿过模型'} disabled />
+        <output class="model-slice-value" data-model-slice-value>50%</output>
       </label>
       <p class="artifact-caption" aria-live="polite">{en ? 'Real STEP geometry · connected to the scroll story' : '真实 STEP 网格 · 随滚动进入产品叙事'}</p>
       <div class="model-fallback-copy" role="status">{en ? '3D preview is unavailable. The page and download links remain usable.' : '3D 预览暂不可用，页面内容和下载入口仍可正常使用。'}</div>

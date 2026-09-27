@@ -89,7 +89,13 @@ workerScope.onmessage = async ({ data }: MessageEvent<WorkerInput>): Promise<voi
       triangles += Math.floor(indices.length / 3);
     });
     if (!meshes.length) throw new Error('STEP file did not contain any renderable meshes');
-    workerScope.postMessage({ type: 'mesh', meshes, triangleCount: triangles }, transfers);
+    workerScope.postMessage({
+      type: 'mesh',
+      meshes,
+      triangleCount: triangles,
+      modelSpanMm: span,
+      modelCenterMm: center,
+    }, transfers);
   } catch (error) {
     workerScope.postMessage({ type: 'error', message: error instanceof Error ? error.message : String(error) });
   }
