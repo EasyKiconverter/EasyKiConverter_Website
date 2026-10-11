@@ -44,16 +44,30 @@ test('mobile story cards keep decorative labels clear of their copy', async ({ p
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'networkidle' });
-    const storyCard = page.locator('.story-card-b');
-    await storyCard.scrollIntoViewIfNeeded();
-    const bounds = await storyCard.evaluate((card) => {
+    const storyCards = page.locator('.story-card');
+    await storyCards.first().scrollIntoViewIfNeeded();
+    const bounds = await storyCards.evaluateAll((cards) => cards.map((card) => {
       const copy = card.querySelector('p')?.getBoundingClientRect();
-      const labels = card.querySelector('.story-stack')?.getBoundingClientRect();
-      if (!copy || !labels) return null;
-      return { copy, labels };
+      const decoration = card.querySelector('.story-pulse, .story-stack, .story-check')?.getBoundingClientRect();
+      if (!copy || !decoration) return null;
+      return {
+        copyRight: copy.right,
+        copyLeft: copy.left,
+        copyBottom: copy.bottom,
+        copyTop: copy.top,
+        decorationRight: decoration.right,
+        decorationLeft: decoration.left,
+        decorationBottom: decoration.bottom,
+        decorationTop: decoration.top,
+      };
+    }));
+    expect(bounds).toHaveLength(3);
+    bounds.forEach((bound) => {
+      expect(bound).not.toBeNull();
+      const horizontalGap = bound!.copyRight <= bound!.decorationLeft + 1 || bound!.decorationRight <= bound!.copyLeft + 1;
+      const verticalGap = bound!.copyBottom <= bound!.decorationTop + 1 || bound!.decorationBottom <= bound!.copyTop + 1;
+      expect(horizontalGap || verticalGap).toBe(true);
     });
-    expect(bounds).not.toBeNull();
-    expect(bounds!.copy.right).toBeLessThanOrEqual(bounds!.labels.left + 1);
   }
 });
 

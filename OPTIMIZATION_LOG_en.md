@@ -5,7 +5,7 @@
 ## 2026-10-12 — Prevent story-card decoration from covering mobile copy
 
 - **Issue:** On narrow screens, the symbols, footprint, and 3D-model labels in the “整理/ORGANIZE” story card overlapped its paragraph; the desktop layout was unaffected.
-- **Changes:** Reserved a readable text width for that card in the mobile layout while keeping its decorative stack and staggered visual treatment; added a bilingual geometry regression test.
+- **Changes:** Reserved a readable text width for all three cards in the mobile layout while keeping their status pills, decorative stacks, and staggered visual treatment; added a bilingual all-card geometry regression test.
 - **Validation:** Run the build, static site checks, asset checks, the full browser suite, and review a 390px screenshot.
 
 ## 2026-10-12 — Close the Dependency Review gate when dependencies are unchanged

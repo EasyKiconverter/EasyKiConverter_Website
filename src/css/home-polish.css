@@ -404,8 +404,8 @@
     transform: translate3d(0, var(--story-lift, 0px), var(--story-z, 0px)) rotateY(var(--story-turn, 0deg));
   }
 
-  .story-card-b p {
-    max-width: 185px;
+  .story-card p {
+    max-width: 145px;
   }
 }
 
