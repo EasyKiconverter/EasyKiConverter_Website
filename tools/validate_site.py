@@ -91,11 +91,24 @@ if not all(page.exists() for page in output_pages):
 else:
     for page in output_pages:
         parser = PageParser()
-        parser.feed(page.read_text(encoding="utf-8"))
+        page_text = page.read_text(encoding="utf-8")
+        parser.feed(page_text)
         if parser.duplicate_ids:
             errors.append(f"{page}: duplicate HTML id(s): {', '.join(sorted(parser.duplicate_ids))}")
         if "main" not in parser.tags or "footer" not in parser.tags or not parser.aria_labels:
             errors.append(f"{page}: missing semantic landmarks or labelled sections")
+        for marker in (
+            'rel="canonical"',
+            'hreflang="zh-CN"',
+            'hreflang="en"',
+            'property="og:title"',
+            'name="twitter:card"',
+        ):
+            if marker not in page_text:
+                errors.append(f"{page}: missing SEO marker {marker}")
+        for route in ("formats", "cases", "lab"):
+            if route not in page_text:
+                errors.append(f"{page}: missing content navigation route {route}")
         for fragment in parser.fragments:
             if fragment and fragment not in parser.ids:
                 errors.append(f"{page}: missing fragment target #{fragment}")
