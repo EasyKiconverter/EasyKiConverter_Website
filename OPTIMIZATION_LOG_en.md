@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Keep footer entries readable
+
+- **Issue:** The desktop inner-page footer squeezed its shared Grid column, causing Chinese entries to wrap character by character and splitting the English `3D Lab` label.
+- **Changes:** Added a dedicated shared `SiteFooter` stylesheet that lets the link group wrap while keeping each entry on one line; added desktop footer geometry coverage for all eight bilingual public routes.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite.
+
 ## 2026-10-12 — Keep Release refresh same-origin
 
 - **Issue:** Every page requested the GitHub Releases API in the browser; API rate limits produced a 403 failed request even though the static fallback remained usable.
