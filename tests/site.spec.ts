@@ -86,6 +86,17 @@ test('Lab runtime assets remain reachable from nested routes', async ({ request 
   }
 });
 
+test('Lab advanced controls are collapsed until explicitly opened', async ({ page }) => {
+  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
+  const toggle = page.locator('[data-experiment-controls]');
+  await expect(page.locator('[data-model-stage]')).toHaveAttribute('data-controls-ready', 'true');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('.morph-horizon')).toBeHidden();
+  await toggle.click({ force: true });
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('.morph-horizon')).toBeVisible();
+});
+
 test('sitemap lists every public bilingual route', async ({ request }) => {
   const response = await request.get('/sitemap.xml');
   expect(response.ok()).toBeTruthy();

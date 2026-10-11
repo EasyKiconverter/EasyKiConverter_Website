@@ -71,9 +71,32 @@ const pointInPolygon = (point: [number, number], polygon: [number, number][]): b
 };
 
 export const setupModel = async (): Promise<void> => {
+  const stage = document.querySelector<HTMLElement>("[data-model-stage]");
+  if (stage?.dataset.controlsReady === "true") return;
+  const controlsRoot = stage?.parentElement ?? document;
+  const experimentControlsToggle = controlsRoot.querySelector<HTMLButtonElement>("[data-experiment-controls]");
+  const experimentControlsNote = controlsRoot.querySelector<HTMLElement>(".lab-experiment-controls");
+  const syncExperimentControls = (): void => {
+    if (!experimentControlsToggle || !stage) return;
+    const open = stage.dataset.controlsOpen === "true";
+    controlsRoot instanceof HTMLElement && (controlsRoot.dataset.controlsOpen = String(open));
+    const english = document.documentElement.lang === "en";
+    experimentControlsToggle.setAttribute("aria-expanded", String(open));
+    experimentControlsToggle.textContent = open
+      ? english ? "TOOLS −" : "工具 −"
+      : english ? "TOOLS +" : "工具 +";
+    experimentControlsNote?.setAttribute("aria-hidden", String(!open));
+  };
+  experimentControlsToggle?.addEventListener("click", () => {
+    if (!stage) return;
+    stage.dataset.controlsOpen = stage.dataset.controlsOpen === "true" ? "false" : "true";
+    syncExperimentControls();
+  });
+  syncExperimentControls();
+  stage?.setAttribute("data-controls-ready", "true");
+
   const THREE = await import("three");
   const canvas = document.querySelector<HTMLCanvasElement>("#model-canvas");
-  const stage = document.querySelector<HTMLElement>("[data-model-stage]");
   const atlasCanvas = stage?.querySelector<HTMLCanvasElement>("[data-mesh-atlas]");
   const atlasContext = atlasCanvas?.getContext("2d") ?? null;
   const tomogramCanvas = stage?.querySelector<HTMLCanvasElement>("[data-model-tomogram]");
@@ -144,6 +167,9 @@ export const setupModel = async (): Promise<void> => {
     stage.classList.add("model-fallback");
     return;
   }
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.92;
   renderer.localClippingEnabled = true;
 
   const scene = new THREE.Scene();
@@ -1016,13 +1042,16 @@ export const setupModel = async (): Promise<void> => {
   const synapticMemoryGroup = new THREE.Group();
   synapticMemoryGroup.renderOrder = 7.5;
   scene.add(synapticMemoryGroup);
-  scene.add(new THREE.HemisphereLight(0xfff7ed, 0x758a82, 1.45));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 2.1);
+  scene.add(new THREE.HemisphereLight(0xfff7ed, 0x53655e, 0.92));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1.55);
   keyLight.position.set(-2, 3, 4);
   scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0xe2ebff, 0.8);
+  const fillLight = new THREE.DirectionalLight(0xcbd9ff, 0.42);
   fillLight.position.set(3, 0.5, -2);
   scene.add(fillLight);
+  const rimLight = new THREE.DirectionalLight(0x9fe0cb, 0.68);
+  rimLight.position.set(-3, -1, -4);
+  scene.add(rimLight);
 
   const state = {
     pointerX: 0,
@@ -4293,8 +4322,8 @@ export const setupModel = async (): Promise<void> => {
       if (!material) {
         material = new THREE.MeshStandardMaterial({
           color: new THREE.Color(color[0], color[1], color[2]),
-          roughness: 0.42,
-          metalness: 0.12,
+          roughness: 0.34,
+          metalness: 0.16,
           side: THREE.DoubleSide,
         });
         materials.set(key, material);
