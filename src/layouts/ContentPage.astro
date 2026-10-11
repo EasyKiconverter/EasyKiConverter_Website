@@ -7,6 +7,8 @@ interface Props {
   description: string;
 }
 
+import "../css/content-page.css";
+
 const { lang, pageUrl, alternateUrl, title, description } = Astro.props;
 const en = lang === "en";
 const siteRoot = new URL(import.meta.env.SITE);
@@ -15,6 +17,7 @@ const homeUrl = siteBase.href;
 const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase).href;
 const casesUrl = new URL(en ? "en/cases/" : "cases/", siteBase).href;
 const labUrl = new URL(en ? "en/lab/" : "lab/", siteBase).href;
+const isCurrent = (href: string) => new URL(href).pathname === pageUrl.pathname;
 ---
 
 <!doctype html>
@@ -35,17 +38,18 @@ const labUrl = new URL(en ? "en/lab/" : "lab/", siteBase).href;
     <title>{title}</title>
   </head>
   <body>
-    <header class="site-header shell">
+    <a class="content-page-skip" href="#content-page-main">{en ? "Skip to content" : "跳转到正文"}</a>
+    <header class="site-header content-page-header shell">
       <a class="brand" href={homeUrl}>EasyKiConverter</a>
       <nav class="nav-links" aria-label={en ? "Page navigation" : "页面导航"}>
         <a href={homeUrl}>{en ? "Home" : "首页"}</a>
-        <a href={formatsUrl}>{en ? "Formats" : "格式矩阵"}</a>
-        <a href={casesUrl}>{en ? "Cases" : "转换案例"}</a>
-        <a href={labUrl}>{en ? "3D Lab" : "3D 实验室"}</a>
+        <a href={formatsUrl} aria-current={isCurrent(formatsUrl) ? "page" : undefined}>{en ? "Formats" : "格式矩阵"}</a>
+        <a href={casesUrl} aria-current={isCurrent(casesUrl) ? "page" : undefined}>{en ? "Cases" : "转换案例"}</a>
+        <a href={labUrl} aria-current={isCurrent(labUrl) ? "page" : undefined}>{en ? "3D Lab" : "3D 实验室"}</a>
         <a href={alternateUrl}>{en ? "中文" : "English"}</a>
       </nav>
     </header>
-    <main>
+    <main id="content-page-main">
       <slot />
     </main>
     <footer class="site-footer shell">
