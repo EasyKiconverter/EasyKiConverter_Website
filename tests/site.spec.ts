@@ -521,14 +521,21 @@ test('Chinese case summaries keep evidence terms localized', async ({ page }) =>
 });
 
 test('download cards show the actual Release asset architectures', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const links = page.locator('.download-links > a');
-    await expect(links).toHaveCount(8);
-    await expect(links.nth(0)).toContainText('x86_64 installer');
-    for (const label of ['arm64 installer', 'x86_64 AppImage', 'amd64 DEB', 'aarch64 AppImage', 'Apple Silicon DMG', 'Intel DMG']) {
-      await expect(links.filter({ hasText: label })).toHaveCount(1);
-    }
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const chineseLinks = page.locator('.download-links > a');
+  await expect(chineseLinks).toHaveCount(8);
+  await expect(chineseLinks.nth(0)).toContainText('x86_64 安装包');
+  await expect(chineseLinks.nth(1)).toContainText('arm64 安装包');
+  expect((await chineseLinks.locator('span').allTextContents()).join(' ')).not.toContain('installer');
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  const englishLinks = page.locator('.download-links > a');
+  await expect(englishLinks).toHaveCount(8);
+  await expect(englishLinks.nth(0)).toContainText('x86_64 installer');
+  for (const label of ['arm64 installer', 'x86_64 AppImage', 'amd64 DEB', 'aarch64 AppImage', 'Apple Silicon DMG', 'Intel DMG']) {
+    await expect(englishLinks.filter({ hasText: label })).toHaveCount(1);
+  }
+  for (const links of [chineseLinks, englishLinks]) {
     for (let index = 0; index < 8; index += 1) {
       await expect(links.nth(index)).toHaveAttribute('href', /v3\.1\.13/);
     }
