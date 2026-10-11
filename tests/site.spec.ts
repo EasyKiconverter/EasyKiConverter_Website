@@ -216,6 +216,14 @@ test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
   await expect(homepage.locator('.kicker').filter({ hasText: '随时可以开始' })).toHaveCount(1);
 });
 
+test('Chinese Lab keeps its entry label localized', async ({ page }) => {
+  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.lab-intro .kicker')).toHaveText('按需加载 · 实验性 3D');
+  await expect(page.locator('.lab-intro')).not.toContainText('EXPERIMENTAL 3D');
+  await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.lab-intro .kicker')).toHaveText('ON DEMAND · EXPERIMENTAL 3D');
+});
+
 test('download cards show the actual Release asset architectures', async ({ page }) => {
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
