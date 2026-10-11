@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Name the primary EDA destinations in the hero
+
+- **Issue:** The hero explained the LCSC / EasyEDA input but described the output only as “the EDA libraries you already know,” making first-time visitors scroll to the format section to confirm KiCad and Altium.
+- **Changes:** Name KiCad and Altium directly in both hero paragraphs while retaining the broader “and the EDA libraries you already know” wording; keep the existing layout and CTAs unchanged.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite.
+
 ## 2026-10-12 — State the cross-platform scope directly
 
 - **Issue:** The platform section’s “Your system, it knows it” headline had personality but did not directly state the supported systems, and the Chinese/English headings were not semantically aligned.
