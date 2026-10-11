@@ -39,7 +39,7 @@ const registeredCount = targetFormats.filter((format) => format.tier === "regist
       <caption>{en ? "Registered export targets" : "已注册导出目标"}</caption>
       <thead><tr><th>ID</th><th>{en ? "Target" : "目标"}</th><th>{en ? "Release status" : "版本状态"}</th></tr></thead>
       <tbody>
-        {targetFormats.map((format) => <tr><th scope="row"><code>{format.id}</code></th><td>{format.name}</td><td><span class:list={["format-status", `format-status-${format.tier}`]}>{en ? format.en : format.zh}</span></td></tr>)}
+        {targetFormats.map((format) => <tr><th scope="row"><code>{format.id}</code></th><td data-label={en ? "Target" : "目标"}>{format.name}</td><td data-label={en ? "Release status" : "版本状态"}><span class:list={["format-status", `format-status-${format.tier}`]}>{en ? format.en : format.zh}</span></td></tr>)}
       </tbody>
     </table>
   </div>

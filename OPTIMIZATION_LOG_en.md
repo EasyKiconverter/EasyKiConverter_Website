@@ -165,3 +165,9 @@
 - **Issue**: The homepage and the Formats, Cases and 3D Lab pages maintained separate Headers, allowing brand entry points, language switching and mobile navigation to drift between bilingual routes.
 - **Change**: Added a `home/inner` variant-based `SiteHeader` that centralizes the brand, GitHub entry and mobile menu while preserving homepage anchor navigation, inner-page current state and the Lab brand marker.
 - **Validation**: Updated static site validation to recognize the shared Header, then reran bilingual navigation, current-state, mobile-menu, build, site validation, asset checks and all 62 browser tests.
+
+## 2026-10-12 — Improve mobile reading of the format matrix
+
+- **Issue**: The format matrix kept a 620px minimum width on narrow screens, forcing horizontal scrolling before users could see the Release status and compare targets continuously.
+- **Change**: Kept the table layout on desktop and changed each row into a labeled ID/target/Release-status card below 640px while preserving table semantics and bilingual fields.
+- **Validation**: Added a 390px narrow-layout assertion and reran the build, site validation, asset checks and the complete browser suite.
