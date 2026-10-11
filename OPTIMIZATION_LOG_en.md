@@ -317,3 +317,9 @@
 - **Issue**: Lab controls disabled by missing model, scan or import prerequisites still showed a `wait` cursor, which could be read as an active page load.
 - **Change**: Scoped disabled buttons and inputs inside the 3D model area now use `not-allowed`, distinguishing unavailable controls from loading states.
 - **Validation**: Added bilingual desktop/mobile disabled-cursor assertions and reran the full build, site validation, asset checks and browser suite.
+
+## 2026-10-12 — Make the 3D Lab loading strategy scannable
+
+- **Issue**: The Lab already explained its GLB, STEP/WASM and homepage-isolation behavior, but the information was concentrated in a long paragraph instead of being quickly scannable on entry.
+- **Change**: Added a bilingual status summary for “GLB first”, “STEP / WASM fallback” and “homepage isolated”; the narrow layout stacks the facts compactly while preserving the technical copy hierarchy.
+- **Validation**: Added bilingual loading-strategy assertions and reran the build, site validation, asset checks and the complete browser suite.
