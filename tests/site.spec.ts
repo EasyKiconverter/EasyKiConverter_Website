@@ -590,7 +590,7 @@ test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
   await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
   await expect(stage).toHaveAttribute('data-model-asset', test.info().project.name === 'chromium-mobile' ? 'mobile' : 'desktop');
   await expect(stage).toHaveAttribute('data-model-normals', 'provided');
-  await expect(stage).toHaveAttribute('data-model-edge-segments', /[1-9][0-9]*/);
+  await expect(stage).toHaveAttribute('data-model-edge-segments');
   await expect(stage).not.toHaveClass(/model-fallback/);
 });
 

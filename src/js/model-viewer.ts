@@ -4374,27 +4374,6 @@ export const setupModel = async (): Promise<void> => {
         materials.set(key, material);
       }
       const mesh = new THREE.Mesh(geometry, material);
-      // Large shells already read well from PBR shading; reserve edge work for
-      // smaller parts where it improves component boundaries without delaying
-      // the first interactive frame.
-      if (meshIndex < 96 && edgeSegments < edgeSegmentBudget && indices.byteLength / Uint32Array.BYTES_PER_ELEMENT <= 6_000) {
-        const edgeGeometry = new THREE.EdgesGeometry(geometry, 32);
-        const segmentCount = (edgeGeometry.getAttribute("position")?.count ?? 0) / 2;
-        if (segmentCount > 0 && edgeSegments + segmentCount <= edgeSegmentBudget) {
-          const edgeMaterial = new THREE.LineBasicMaterial({
-            color: 0x4a4358,
-            transparent: true,
-            opacity: 0.18,
-            depthWrite: false,
-          });
-          const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
-          edgeLines.renderOrder = 1;
-          mesh.add(edgeLines);
-          edgeSegments += segmentCount;
-        } else {
-          edgeGeometry.dispose();
-        }
-      }
       const center = geometry.boundingSphere?.center ?? new THREE.Vector3();
       const angle = meshIndex * 2.399963229728653;
       const fallbackDirection = new THREE.Vector3(
@@ -4419,7 +4398,40 @@ export const setupModel = async (): Promise<void> => {
     state.modelRadius = Math.max(sphere.radius, 0.1);
     fitCamera();
     stage.dataset.modelTriangles = String(triangleCount);
-    stage.dataset.modelEdgeSegments = String(edgeSegments);
+    stage.dataset.modelEdgeSegments = "pending";
+    const edgeParts = explodedMeshes.filter(({ index, mesh }) =>
+      index < 96 && (mesh.geometry.index?.count ?? 0) <= 6_000,
+    );
+    let edgePartIndex = 0;
+    const addEdgeChunk = (): void => {
+      const chunkEnd = Math.min(edgePartIndex + 8, edgeParts.length);
+      for (; edgePartIndex < chunkEnd && edgeSegments < edgeSegmentBudget; edgePartIndex += 1) {
+        const { mesh } = edgeParts[edgePartIndex];
+        const edgeGeometry = new THREE.EdgesGeometry(mesh.geometry, 32);
+        const segmentCount = (edgeGeometry.getAttribute("position")?.count ?? 0) / 2;
+        if (segmentCount <= 0 || edgeSegments + segmentCount > edgeSegmentBudget) {
+          edgeGeometry.dispose();
+          continue;
+        }
+        const edgeMaterial = new THREE.LineBasicMaterial({
+          color: 0x4a4358,
+          transparent: true,
+          opacity: 0.18,
+          depthWrite: false,
+        });
+        const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+        edgeLines.renderOrder = 1;
+        mesh.add(edgeLines);
+        edgeSegments += segmentCount;
+      }
+      if (edgePartIndex < edgeParts.length && edgeSegments < edgeSegmentBudget) {
+        window.setTimeout(addEdgeChunk, 16);
+        return;
+      }
+      stage.dataset.modelEdgeSegments = String(edgeSegments);
+      wake();
+    };
+    window.setTimeout(addEdgeChunk, 100);
     const explodeInput = stage.querySelector<HTMLInputElement>("[data-model-explode]");
     const explodeStats = stage.querySelector<HTMLElement>("[data-model-explode-stats]");
     const explodeValue = stage.querySelector<HTMLOutputElement>("[data-model-explode-value]");
