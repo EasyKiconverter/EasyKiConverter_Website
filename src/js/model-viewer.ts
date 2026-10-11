@@ -7038,14 +7038,13 @@ export const setupModel = async (): Promise<void> => {
     console.warn("STEP model fallback:", error.message);
     worker.terminate();
   };
-  const assetRoot = document.documentElement.lang === "en" ? "../" : "./";
+  // Resolve Lab assets from Astro's configured deployment base, not from the
+  // current language route. `/lab/` and `/en/lab/` are both nested pages.
+  const assetRoot = new URL(import.meta.env.BASE_URL, document.baseURI);
   const modelQuality = stage.clientWidth < 520 ? 0.007 : 0.004;
   worker.postMessage({
-    stepUrl: new URL(
-      `${assetRoot}assets/model/Easykiconverter_展示模型.step`,
-      document.baseURI,
-    ).href,
-    vendorRoot: new URL(`${assetRoot}assets/vendor/`, document.baseURI).href,
+    stepUrl: new URL("assets/model/Easykiconverter_展示模型.step", assetRoot).href,
+    vendorRoot: new URL("assets/vendor/", assetRoot).href,
     linearDeflection: modelQuality,
   });
 

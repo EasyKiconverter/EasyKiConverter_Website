@@ -75,6 +75,17 @@ test('the heavy 3D runtime is isolated to the Lab route', async ({ request }) =>
   }
 });
 
+test('Lab runtime assets remain reachable from nested routes', async ({ request }) => {
+  for (const asset of [
+    '/assets/vendor/occt-import-js.js',
+    '/assets/vendor/occt-import-js.wasm',
+    '/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B.step',
+  ]) {
+    const response = await request.get(asset);
+    expect(response.ok()).toBeTruthy();
+  }
+});
+
 test('sitemap lists every public bilingual route', async ({ request }) => {
   const response = await request.get('/sitemap.xml');
   expect(response.ok()).toBeTruthy();
