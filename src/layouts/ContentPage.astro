@@ -9,6 +9,7 @@ interface Props {
 
 import "../css/content-page.css";
 import SeoHead from "../components/SeoHead.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 import { latestRelease } from "../data/release";
 
 const { lang, pageUrl, alternateUrl, title, description } = Astro.props;
@@ -83,10 +84,7 @@ const isCasesPage = pageUrl.pathname.includes("/cases/");
         <a class="text-link" href={homeUrl}>{en ? "Back to the homepage" : "回到首页"} <span>→</span></a>
       </div>
     </section>
-    <footer class="site-footer shell">
-      <p>© EasyKiConverter · GPL-3.0</p>
-      <a href={homeUrl}>{en ? "Return home" : "返回首页"}</a>
-    </footer>
+    <SiteFooter lang={lang} />
     <script>
       import "../js/app";
     </script>
