@@ -6,6 +6,8 @@
 
 独立的 3D Lab 默认按需加载旁路生成的 `Easykiconverter_展示模型.glb`，通过 Three.js `GLTFLoader` 渲染；官网首页不会加载模型运行时。GLB 由 `tools/prepare_model_asset.py` 从 STEP 源资产生成，保留归一化网格、材质组和源模型尺寸元数据。如果 GLB、WebGL 或加载器不可用，Lab 会回退到固定版本的 `occt-import-js` 0.0.23 OpenCascade/WASM，在 Web Worker 中读取 STEP；如果所有运行时资源都不可用，Lab 内容仍保留并显示样式化回退画面。
 
+GLB 已包含生成好的顶点法线，浏览器交付路径会直接复用，不再为每个网格重复计算；STEP 回退路径则在 Worker 传输网格后重新计算法线。
+
 桌面 GLB 当前包含 303 个网格和 278,784 个三角面；移动 GLB 使用 `linearDeflection: 0.007`，包含 228,004 个三角面，约 8.1 MB。桌面生成参数为 `linearUnit: millimeter`、`linearDeflectionType: bounding_box_ratio`、`linearDeflection: 0.004`、`angularDeflection: 0.16`；移动端仅降低线性偏差。屏幕宽度不超过 760px 或 stage 小于 520px 时选择移动 GLB；STEP Worker 的窄屏参数只用于 GLB 加载失败时的回退路径。这些参数影响三角化精度，但不限制三角形总量。源文件 SHA256：`4310cdcbb920625dfdea4baac3855ec2fce4b7281ce335762c10791f0da939ce`。
 
 随附运行时为 LGPL-2.1 许可的 `occt-import-js` 0.0.23，许可证保存在运行时目录。运行时 SHA256：JS `3fb44ce11d00611f9b3f3c5775d520ebab48930c1f08279b7b1316f05f0d3379`，WASM `33391fc9d94ea5c869a6718488bf0a9a464222bac9bdc764dfe1690cef281952`。

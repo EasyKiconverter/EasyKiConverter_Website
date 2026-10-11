@@ -2,7 +2,7 @@ import type * as THREE from "three";
 
 type MeshMessage = {
   type: "mesh" | "error";
-  meshes?: { positions: ArrayBuffer; indices: ArrayBuffer; color: number[] }[];
+  meshes?: { positions: ArrayBuffer; normals?: ArrayBuffer; indices: ArrayBuffer; color: number[] }[];
   triangleCount?: number;
   modelSpanMm?: number;
   modelCenterMm?: number[];
@@ -4308,14 +4308,19 @@ export const setupModel = async (): Promise<void> => {
     modelSpanMm = spanMm;
     modelCenterMm = centerMm.length === 3 ? centerMm : [0, 0, 0];
     const materials = new Map<string, THREE.MeshStandardMaterial>();
-    meshes.forEach(({ positions, indices, color }, meshIndex) => {
+    stage.dataset.modelNormals = meshes.every(({ normals }) => normals) ? "provided" : "computed";
+    meshes.forEach(({ positions, normals, indices, color }, meshIndex) => {
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute(
         "position",
         new THREE.BufferAttribute(new Float32Array(positions), 3),
       );
+      if (normals) {
+        geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(normals), 3));
+      } else {
+        geometry.computeVertexNormals();
+      }
       geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
-      geometry.computeVertexNormals();
       geometry.computeBoundingBox();
       geometry.computeBoundingSphere();
       const key = color.join(",");
@@ -7097,7 +7102,9 @@ export const setupModel = async (): Promise<void> => {
             if (!(object instanceof THREE.Mesh)) return;
             const position = object.geometry.getAttribute("position");
             if (!position) return;
+            const normal = object.geometry.getAttribute("normal");
             const positions = Float32Array.from(position.array as ArrayLike<number>);
+            const normals = normal ? Float32Array.from(normal.array as ArrayLike<number>) : undefined;
             const indices = object.geometry.index
               ? Uint32Array.from(object.geometry.index.array as ArrayLike<number>)
               : (() => {
@@ -7109,7 +7116,7 @@ export const setupModel = async (): Promise<void> => {
             const color = material instanceof THREE.MeshStandardMaterial
               ? [material.color.r, material.color.g, material.color.b]
               : [0.52, 0.71, 0.62];
-            meshes.push({ positions: positions.buffer, indices: indices.buffer, color });
+            meshes.push({ positions: positions.buffer, normals: normals?.buffer as ArrayBuffer | undefined, indices: indices.buffer, color });
           });
           const triangleCount = meshes.reduce((total, mesh) => total + mesh.indices.byteLength / Uint32Array.BYTES_PER_ELEMENT / 3, 0);
           const asset = gltf.asset as { extras?: { sourceModelSpanMm?: number; sourceModelCenterMm?: number[] } };
