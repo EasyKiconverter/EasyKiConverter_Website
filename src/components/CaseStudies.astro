@@ -31,8 +31,8 @@ const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase);
       <h2>{en ? item.titleEn : item.titleZh}</h2>
       <p>{en ? item.summaryEn : item.summaryZh}</p>
       <dl>
-        <div><dt>{en ? "Fixture" : "测试样本"}</dt><dd><a href={`${repository}/blob/master/${item.fixture}`} target="_blank" rel="noreferrer"><code>{item.fixture}</code> ↗</a></dd></div>
-        <div><dt>{en ? "Test evidence" : "测试证据"}</dt><dd><a href={`${repository}/blob/master/${item.test}`} target="_blank" rel="noreferrer"><code>{item.test}</code> ↗</a></dd></div>
+        <div><dt>{en ? "Fixture" : "测试样本"}</dt><dd><a class="case-evidence-link" href={`${repository}/blob/master/${item.fixture}`} target="_blank" rel="noreferrer" aria-label={en ? `Open fixture ${item.fixture}` : `打开测试样本 ${item.fixture}`}><span class="case-evidence-action">{en ? "Open fixture" : "打开测试样本"} <span aria-hidden="true">↗</span></span><code>{item.fixture}</code></a></dd></div>
+        <div><dt>{en ? "Test evidence" : "测试证据"}</dt><dd><a class="case-evidence-link" href={`${repository}/blob/master/${item.test}`} target="_blank" rel="noreferrer" aria-label={en ? `Open test evidence ${item.test}` : `打开测试证据 ${item.test}`}><span class="case-evidence-action">{en ? "Open test evidence" : "打开测试证据"} <span aria-hidden="true">↗</span></span><code>{item.test}</code></a></dd></div>
       </dl>
     </article>)}
   </div>
