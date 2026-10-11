@@ -3,6 +3,7 @@ import "../../css/styles.css";
 import "../../css/accessibility.css";
 import "../../css/easter-eggs.css";
 import "../../css/home-polish.css";
+import SeoHead from "../../components/SeoHead.astro";
 import { latestRelease } from "../../data/release";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
@@ -20,36 +21,14 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="EasyKiConverter converts LCSC and EasyEDA component data into practical EDA libraries with a Qt 6 GUI, CLI and batch workflows."
+    <SeoHead
+      lang="en"
+      pageUrl={new URL(englishUrl)}
+      alternateUrl={new URL(chineseUrl)}
+      title="EasyKiConverter · Component conversion, made easier"
+      description="From LCSC / EasyEDA to your EDA workbench. Free, open source and cross-platform."
+      socialImageUrl={new URL(socialImageUrl)}
     />
-    <link rel="canonical" href={englishUrl} />
-    <link rel="alternate" hreflang="zh-CN" href={chineseUrl} />
-    <link rel="alternate" hreflang="en" href={englishUrl} />
-    <link rel="alternate" hreflang="x-default" href={chineseUrl} />
-    <meta name="theme-color" content="#f3efe7" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={englishUrl} />
-    <meta
-      property="og:title"
-      content="EasyKiConverter · Component conversion, made easier"
-    />
-    <meta
-      property="og:description"
-      content="From LCSC / EasyEDA to your EDA workbench. Free, open source and cross-platform."
-    />
-    <meta property="og:image" content={socialImageUrl} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="EasyKiConverter · Component conversion, made easier"
-    />
-    <meta
-      name="twitter:description"
-      content="From LCSC / EasyEDA to your EDA workbench. Free, open source and cross-platform."
-    />
-    <meta name="twitter:image" content={socialImageUrl} />
     <script
       type="application/ld+json"
       set:html={JSON.stringify({
@@ -69,11 +48,6 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
       })}
     ></script>
     <title>EasyKiConverter · Component conversion, made easier</title>
-    <link
-      rel="icon"
-      href="../assets/icons/easyki-icon.svg"
-      type="image/svg+xml"
-    />
   </head>
   <body>
     <header class="site-header shell">
