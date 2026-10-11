@@ -1104,6 +1104,7 @@ export const setupModel = async (): Promise<void> => {
   let lastNeuralSignalAt = 0;
   let neuralDecisionAt = 0;
   let neuralDecisionRole: SectionLoop["role"] = "outer";
+  let rendering = false;
   const neuralMemory = stage.querySelector<HTMLElement>("[data-neural-memory]");
   const synapticStorageKey = "easyki-synaptic-memory-v1";
   const persistedSynapses = new Map<string, { weight: number; lastSeen: number }>();
@@ -3077,7 +3078,7 @@ export const setupModel = async (): Promise<void> => {
   ];
 
   const wake = (): void => {
-    if (state.visible && !document.hidden && !state.frame)
+    if (state.visible && !document.hidden && !state.frame && (!state.reducedMotion || !rendering))
       state.frame = requestAnimationFrame(render);
   };
 
@@ -3256,6 +3257,7 @@ export const setupModel = async (): Promise<void> => {
   const render = (): void => {
     state.frame = 0;
     if (!state.visible || document.hidden) return;
+    rendering = true;
     if (state.sliceScanning) {
       const now = performance.now();
       const elapsed = lastScanFrame ? Math.min(now - lastScanFrame, 100) : 0;
@@ -4297,6 +4299,7 @@ export const setupModel = async (): Promise<void> => {
     if (memoryGhostSnapshots.length) wake();
     if (state.sliceScanning) scanTimer = window.setTimeout(wake, 80);
     if (playback) playbackTimer = window.setTimeout(wake, 120);
+    rendering = false;
   };
 
   const uploadMesh = (
@@ -7176,8 +7179,16 @@ export const setupModel = async (): Promise<void> => {
       state.pointerX = 0;
       state.pointerY = 0;
       state.storyProgress = 0;
+      state.sliceScanning = false;
+      playback = false;
+      cinematicStartedAt = 0;
+      if (scanTimer) window.clearTimeout(scanTimer);
+      if (playbackTimer) window.clearTimeout(playbackTimer);
       if (timeline) delete timeline.dataset.storyStep;
       if (progressFill) progressFill.style.transform = "scaleX(0)";
+      setScanButtonState(false);
+      syncSliceControls();
+      syncRecordingControls();
     }
     wake();
   });

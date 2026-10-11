@@ -115,6 +115,26 @@ test('Lab asset guidance matches the generated delivery path', async ({ page }) 
   await expect(page.locator('.lab-warning')).toContainText('STEP/WASM');
 });
 
+test('reduced motion renders the Lab without a continuous animation loop', async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await context.newPage();
+  await page.addInitScript(() => {
+    let frames = 0;
+    const request = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = (callback) => request((time) => {
+      frames += 1;
+      callback(time);
+    });
+    (window as typeof window & { __modelFrames?: () => number }).__modelFrames = () => frames;
+  });
+  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-model-stage]')).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+  await page.waitForTimeout(1000);
+  const frames = await page.evaluate(() => (window as typeof window & { __modelFrames?: () => number }).__modelFrames?.() ?? 0);
+  expect(frames).toBeLessThan(12);
+  await context.close();
+});
+
 test('sitemap lists every public bilingual route', async ({ request }) => {
   const response = await request.get('/sitemap.xml');
   expect(response.ok()).toBeTruthy();
