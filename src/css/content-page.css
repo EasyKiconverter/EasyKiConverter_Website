@@ -114,7 +114,10 @@
   gap: 22px;
 }
 
-.content-page-cta .button-light,
+.content-page-cta .button-light {
+  color: var(--ink);
+}
+
 .content-page-cta .text-link {
   color: #fff;
 }
