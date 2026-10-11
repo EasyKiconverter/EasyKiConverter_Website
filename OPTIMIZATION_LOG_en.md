@@ -48,3 +48,9 @@
 - **Issue:** The English homepage download button lacked the magnetic and arrow motion, its hero arrow did not use the shared animated markup, and its three colored feature cards lacked the staggered reveal rhythm used by the Chinese page.
 - **Changes:** Matched the English download button classes, arrow markup, and feature-card reveal delays; expanded bilingual browser coverage across the hero, feature, and download sections.
 - **Validation:** Run the build, static site checks, GLB asset gate, and both-browser regression suite; the change remains presentation-only.
+
+## 2026-10-11 — Add a shared next-step CTA to content pages
+
+- **Issue:** Formats and Cases pages present capability evidence and conversion cases, but offer no clear download or homepage action after reading; their action hierarchy was weaker than the homepage.
+- **Changes:** Added a bilingual dark CTA to the shared content-page layout with the current stable release, a Release download, and a homepage route; all content pages now reuse one structure and visual treatment.
+- **Validation:** Added browser coverage for the four bilingual content routes and ran the build, site validation, asset gate, and full browser suite.
