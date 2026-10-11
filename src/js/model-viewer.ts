@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import type * as THREE from "three";
 
 type MeshMessage = {
   type: "mesh" | "error";
@@ -70,7 +70,8 @@ const pointInPolygon = (point: [number, number], polygon: [number, number][]): b
   return inside;
 };
 
-export const setupModel = (): void => {
+export const setupModel = async (): Promise<void> => {
+  const THREE = await import("three");
   const canvas = document.querySelector<HTMLCanvasElement>("#model-canvas");
   const stage = document.querySelector<HTMLElement>("[data-model-stage]");
   const atlasCanvas = stage?.querySelector<HTMLCanvasElement>("[data-mesh-atlas]");

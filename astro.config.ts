@@ -16,7 +16,8 @@ export default defineConfig({
   },
   vite: {
     build: {
-      chunkSizeWarningLimit: 600,
+      // The isolated /lab/ route loads a measured ~720 KB Three.js runtime on demand.
+      chunkSizeWarningLimit: 750,
     },
   },
 });
