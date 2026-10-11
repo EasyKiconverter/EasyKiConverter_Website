@@ -202,6 +202,20 @@ test('bilingual homepages expose localized navigation destinations', async ({ pa
   await expect(page.locator('.mobile-nav a[href="#download"]')).toHaveText('Download');
 });
 
+test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const homepage = page.locator('main');
+  await expect(homepage).not.toContainText('OPEN SOURCE · Qt 6 DESKTOP TOOL');
+  await expect(homepage).not.toContainText('THE QUIET MIDDLE');
+  await expect(homepage).not.toContainText('THE REAL THING');
+  await expect(homepage).not.toContainText('A TOOL WITH GOOD MANNERS');
+  await expect(homepage).not.toContainText('A SMALL RITUAL');
+  await expect(homepage).not.toContainText('WHERE IT LIVES');
+  await expect(homepage).not.toContainText('READY WHEN YOU ARE');
+  await expect(homepage.locator('.kicker').filter({ hasText: '开源' })).toHaveCount(1);
+  await expect(homepage.locator('.kicker').filter({ hasText: '随时可以开始' })).toHaveCount(1);
+});
+
 test('download cards show the actual Release asset architectures', async ({ page }) => {
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
