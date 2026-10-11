@@ -24,3 +24,9 @@
 - **处理：** 使用 `tools/prepare_model_asset.py` 重建桌面 GLB；新增跨平台 Python 校验器 `tools/check_model_assets.py`，检查 STEP 源文件、GLB 结构、303 组法线、源尺寸元数据，以及桌面 300,000 / 移动 250,000 三角面预算；将 `pnpm run assets:check` 接入 README 和 Site Quality。
 - **验证：** 桌面资产为 9,989,676 bytes / 278,784 triangles，移动资产为 8,431,996 bytes / 228,004 triangles；`pnpm run build`、`python3 tools/validate_site.py`、`pnpm run assets:check` 和 `pnpm run test:browser` 均通过（26 项浏览器测试）。
 - **边界：** 预算是意外膨胀的质量门，不是几何简化算法；真正的视觉简化仍需比较轮廓、连接器和焊盘细节后单独决定。
+
+## 2026-10-11 — 统一内容页与 3D Lab 的品牌表现
+
+- **问题：** 首页使用图标、GitHub 入口和产品式品牌头部，但 Formats、Cases 和 3D Lab 使用不同的纯文字头部；Lab 的双语资产体积提示也落后于实际 GLB 资产。
+- **处理：** 内容页共享品牌图标和 GitHub 入口；Lab 头部改用同一图标与层级，并将桌面/移动 GLB 提示更新为约 10.0 / 8.4 MB；移动断点保留紧凑布局，隐藏非核心 GitHub 文字入口以避免拥挤。
+- **验证：** `pnpm run build`、`python3 tools/validate_site.py`、`pnpm run assets:check` 和 `pnpm run test:browser` 均通过；浏览器回归测试为 28 项，覆盖桌面与移动头部表现。

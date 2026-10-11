@@ -47,6 +47,20 @@ test('content pages keep navigation reachable on narrow screens', async ({ page 
   await expect(page.locator('.content-page-skip')).toBeFocused();
 });
 
+test('content and Lab headers keep the shared brand treatment', async ({ page }) => {
+  await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.content-page-header .brand img')).toHaveAttribute('src', /easyki-icon\.svg/);
+  if (test.info().project.name === 'chromium') {
+    await expect(page.locator('.content-page-header .github-link')).toBeVisible();
+  } else {
+    await expect(page.locator('.content-page-header .github-link')).toBeHidden();
+  }
+  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.lab-header .brand img')).toHaveAttribute('src', /easyki-icon\.svg/);
+  await expect(page.locator('.lab-warning')).toContainText('10.0 MB');
+  await expect(page.locator('.lab-warning')).toContainText('8.4 MB');
+});
+
 test('reduced motion keeps content visible without marquee animation', async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
@@ -110,8 +124,8 @@ test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
 
 test('Lab asset guidance matches the generated delivery path', async ({ page }) => {
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-warning')).toContainText('9.6 MB');
-  await expect(page.locator('.lab-warning')).toContainText('8.1 MB');
+  await expect(page.locator('.lab-warning')).toContainText('10.0 MB');
+  await expect(page.locator('.lab-warning')).toContainText('8.4 MB');
   await expect(page.locator('.lab-warning')).toContainText('STEP/WASM');
 });
 
