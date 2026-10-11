@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Clarify the homepage input-to-output story
+
+- **Issue:** The homepage story section still used the `legacy-story` anchor, while the Chinese kicker “安静的中间地带” and English `THE QUIET MIDDLE` were more abstract than the conversion flow they introduced.
+- **Changes:** Use the semantic `#story` anchor across both languages and rename the kicker to “从输入到输出” / `FROM INPUT TO OUTPUT`; added bilingual homepage anchor coverage so navigation and hero CTAs target the same section.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite.
+
 ## 2026-10-12 — Unify the Chinese conversion-case navigation label
 
 - **Issue:** The Chinese homepage, inner-page Header, and footer pointed to the same case page with three different labels: “案例”, “转换案例”, and “案例”.
