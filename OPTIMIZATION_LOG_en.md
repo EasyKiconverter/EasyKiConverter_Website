@@ -335,3 +335,9 @@
 - **Issue**: GLB meshes were re-uploaded with one fixed material profile, so the source PBR values were discarded; on the light stage, the model could look flat and sharp part boundaries were difficult to read.
 - **Change**: Preserve GLB roughness and metalness, add a budgeted sharp-edge detail layer, and introduce a soft front fill so primary geometry remains legible across viewpoints without changing the existing animation or mobile asset selection.
 - **Validation**: Added an assertion for generated model-edge segments; build, site validation, asset checks and the complete browser suite remain the gates for this change.
+
+## 2026-10-12 — Restore contrast for the stable-download CTA
+
+- **Issue**: The stable-download button on the bilingual Formats and Cases pages used the dark-button style inside an equally dark CTA container, making the primary download path nearly invisible.
+- **Change**: Use the light primary button consistently while retaining the dark CTA surface and white secondary link, aligning the action hierarchy with the homepage.
+- **Validation**: Added computed-background and class assertions for all four bilingual content routes, then ran the build, site validation, asset checks and the complete browser suite.
