@@ -1,6 +1,8 @@
+import { latestRelease } from '../data/release';
+
 document.documentElement.classList.add('js-ready');
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
-const stableRelease = { tag: 'v3.1.13', url: 'https://github.com/EasyKiconverter/EasyKiConverter/releases/tag/v3.1.13' };
+const stableRelease = { tag: latestRelease.tag, url: latestRelease.url };
 const toast = document.querySelector<HTMLElement>('.egg-toast') || (() => { const element = document.createElement('div'); element.className = 'egg-toast'; element.setAttribute('role', 'status'); element.setAttribute('aria-live', 'polite'); document.body.append(element); return element; })();
 let toastTimer: number | undefined;
 
@@ -45,7 +47,7 @@ const refreshRelease = async () => {
     if (!release.tag_name || release.prerelease || release.draft) return;
     applyRelease(release.tag_name, release.html_url || stableRelease.url);
     try { window.sessionStorage.setItem('easyki-latest-release', JSON.stringify({ tag: release.tag_name, url: release.html_url, expires: Date.now() + 600000 })); } catch { /* The static fallback remains available without storage. */ }
-  } catch { /* Static v3.1.13 content remains usable when API/rate limit/network fails. */ }
+  } catch { /* The checked-in Release data remains usable when API/rate limit/network fails. */ }
   finally { window.clearTimeout(timeout); }
 };
 refreshRelease();
