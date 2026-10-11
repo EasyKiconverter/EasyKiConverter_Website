@@ -300,6 +300,7 @@ test('Lab pages keep the experiment connected to product navigation', async ({ p
 test('Lab advanced controls explain their collapsed hierarchy', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.motion-model button:disabled').first()).toHaveCSS('cursor', 'not-allowed');
     const toggle = page.locator('[data-experiment-controls]');
     await expect(toggle).toHaveAttribute('aria-controls', 'lab-experiment-controls');
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');

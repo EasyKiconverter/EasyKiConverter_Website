@@ -311,3 +311,9 @@
 - **Issue**: The Chinese Lab schematic-symbol study still displayed `EASYKI COMPONENT`; `COMPONENT` is ordinary explanatory copy rather than a required engineering acronym.
 - **Change**: Kept the `EASYKI` brand name and localized the Chinese description as “元件”; electrical net names remain `VCC/GND/IN/OUT`.
 - **Validation**: Added bilingual symbol-label assertions and reran the full build, site validation, asset checks and browser suite.
+
+## 2026-10-12 — Correct disabled-control cursor feedback in the 3D Lab
+
+- **Issue**: Lab controls disabled by missing model, scan or import prerequisites still showed a `wait` cursor, which could be read as an active page load.
+- **Change**: Scoped disabled buttons and inputs inside the 3D model area now use `not-allowed`, distinguishing unavailable controls from loading states.
+- **Validation**: Added bilingual desktop/mobile disabled-cursor assertions and reran the full build, site validation, asset checks and browser suite.
