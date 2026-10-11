@@ -215,6 +215,20 @@ test('bilingual homepages expose localized navigation destinations', async ({ pa
   await expect(page.locator('.mobile-nav a[href="#download"]')).toHaveText('Download');
 });
 
+test('homepage platform summary mirrors the available Release assets', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const platforms = page.locator('.platform-list > div');
+    await expect(platforms).toHaveCount(3);
+    await expect(platforms.nth(0)).toContainText(/Windows/);
+    await expect(platforms.nth(0)).toContainText(/x86_64/);
+    await expect(platforms.nth(0)).toContainText(/arm64/);
+    await expect(platforms.nth(1)).toContainText(/aarch64/);
+    await expect(platforms.nth(2)).toContainText(/Intel/);
+    await expect(platforms.nth(2)).toContainText(/Apple Silicon/);
+  }
+});
+
 test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const homepage = page.locator('main');
