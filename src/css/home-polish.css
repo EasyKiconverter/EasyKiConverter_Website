@@ -457,3 +457,15 @@
     transform: none;
   }
 }
+
+@media (max-width: 850px) {
+  .section h2 em,
+  .download h2 em {
+    white-space: normal;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 10px 16px;
+  }
+}
