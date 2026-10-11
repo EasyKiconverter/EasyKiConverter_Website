@@ -1,0 +1,11 @@
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+}
+
+.footer-links a {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}

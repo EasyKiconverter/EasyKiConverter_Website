@@ -4,6 +4,8 @@ interface Props {
   homeHref?: string;
 }
 
+import "../css/footer.css";
+
 const { lang, homeHref } = Astro.props;
 const en = lang === "en";
 const siteRoot = new URL(import.meta.env.SITE);
