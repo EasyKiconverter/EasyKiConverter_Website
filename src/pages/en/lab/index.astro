@@ -4,6 +4,7 @@ import "../../../css/accessibility.css";
 import "../../../css/motion-narrative.css";
 import "../../../css/lab.css";
 import MotionNarrative from "../../../components/MotionNarrative.astro";
+import SeoHead from "../../../components/SeoHead.astro";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
 const pageUrl = new URL("en/lab/", siteBase);
@@ -15,16 +16,13 @@ const chineseUrl = new URL("lab/", siteBase);
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="EasyKiConverter 3D Lab: an on-demand interactive study of real STEP geometry, meshes and sections." />
-    <link rel="canonical" href={pageUrl} />
-    <link rel="alternate" hreflang="zh-CN" href={chineseUrl} />
-    <link rel="alternate" hreflang="en" href={pageUrl} />
-    <link rel="alternate" hreflang="x-default" href={chineseUrl} />
-    <meta property="og:title" content="EasyKiConverter · 3D Technology Lab" />
-    <meta property="og:description" content="An isolated STEP, mesh and section laboratory that does not affect homepage loading." />
-    <meta property="og:url" content={pageUrl} />
-    <meta name="twitter:card" content="summary" />
-    <title>EasyKiConverter · 3D Technology Lab</title>
+    <SeoHead
+      lang="en"
+      pageUrl={pageUrl}
+      alternateUrl={chineseUrl}
+      title="EasyKiConverter · 3D Technology Lab"
+      description="An isolated STEP, mesh and section laboratory that does not affect homepage loading."
+    />
   </head>
   <body>
     <header class="lab-header shell">

@@ -8,6 +8,7 @@ interface Props {
 }
 
 import "../css/content-page.css";
+import SeoHead from "../components/SeoHead.astro";
 
 const { lang, pageUrl, alternateUrl, title, description } = Astro.props;
 const en = lang === "en";
@@ -25,17 +26,7 @@ const isCurrent = (href: string) => new URL(href).pathname === pageUrl.pathname;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
-    <link rel="canonical" href={pageUrl} />
-    <link rel="alternate" hreflang="zh-CN" href={en ? alternateUrl : pageUrl} />
-    <link rel="alternate" hreflang="en" href={en ? pageUrl : alternateUrl} />
-    <link rel="alternate" hreflang="x-default" href={en ? alternateUrl : pageUrl} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={pageUrl} />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary" />
-    <title>{title}</title>
+    <SeoHead lang={lang} pageUrl={pageUrl} alternateUrl={alternateUrl} title={title} description={description} />
   </head>
   <body>
     <a class="content-page-skip" href="#content-page-main">{en ? "Skip to content" : "跳转到正文"}</a>

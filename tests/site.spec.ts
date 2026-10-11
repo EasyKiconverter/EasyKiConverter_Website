@@ -74,3 +74,33 @@ test('the heavy 3D runtime is isolated to the Lab route', async ({ request }) =>
     expect(html).not.toContain('occt-import');
   }
 });
+
+test('sitemap lists every public bilingual route', async ({ request }) => {
+  const response = await request.get('/sitemap.xml');
+  expect(response.ok()).toBeTruthy();
+  const sitemap = await response.text();
+  const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+    (match) => new URL(match[1]).pathname,
+  );
+  expect(paths).toEqual([
+    '/',
+    '/en/',
+    '/formats/',
+    '/en/formats/',
+    '/cases/',
+    '/en/cases/',
+    '/lab/',
+    '/en/lab/',
+  ]);
+});
+
+test('all public routes expose complete social metadata', async ({ request }) => {
+  for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
+    const response = await request.get(path);
+    expect(response.ok()).toBeTruthy();
+    const html = await response.text();
+    expect(html).toContain('property="og:image"');
+    expect(html).toContain('name="twitter:image"');
+    expect(html).toContain('rel="icon"');
+  }
+});
