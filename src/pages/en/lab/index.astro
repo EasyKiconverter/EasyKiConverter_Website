@@ -36,7 +36,11 @@ const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase);
         <p class="kicker">ON DEMAND · EXPERIMENTAL 3D</p>
         <h1 id="lab-title">Real geometry, isolated experiments.</h1>
         <p>This lab retains the STEP, Three.js, cross-section and topology research work. The homepage stays lightweight; CAD/WASM loads only when this lab is opened.</p>
-      <p class="lab-warning">The Lab normally loads about 10.0 MB of desktop GLB or 8.4 MB of mobile GLB; STEP/WASM is used only as a fallback. Use a desktop browser for technical validation; return home for product information and downloads.</p>
+        <p class="lab-warning">The Lab normally loads about 10.0 MB of desktop GLB or 8.4 MB of mobile GLB; STEP/WASM is used only as a fallback. Use a desktop browser for technical validation; return home for product information and downloads.</p>
+        <div class="lab-intro-actions">
+          <a class="button button-dark" href={siteBase.href}>Back to product <span>→</span></a>
+          <a class="text-link" href={new URL("en/formats/", siteBase)}>View format matrix <span>↗</span></a>
+        </div>
       </section>
       <MotionNarrative lang="en" />
     </main>

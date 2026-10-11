@@ -72,6 +72,16 @@ test('content pages offer a bilingual next-step release CTA', async ({ page }) =
   }
 });
 
+test('Lab pages keep the experiment connected to product navigation', async ({ page }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const actions = page.locator('.lab-intro-actions');
+    await expect(actions).toBeVisible();
+    await expect(actions.locator('.button-dark')).toHaveAttribute('href', /^(\/|https?:)/);
+    await expect(actions.locator('.text-link')).toHaveAttribute('href', /formats/);
+  }
+});
+
 test('reduced motion keeps content visible without marquee animation', async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
