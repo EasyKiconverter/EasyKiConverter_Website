@@ -13,6 +13,7 @@ Recorded: 2026-10-11. This document records facts reproducible from the reposito
 - `master` and `version/V0.0.1` require PRs, at least one approval, `Static site checks` and `Dependency Review`, conversation resolution, and disallow force-pushes.
 - On 2026-10-11, all eight production routes at `https://easykiconverter.org.cn/` returned HTTP 200; the homepage did not load the 3D runtime, same-origin model assets worked on `/lab/` and `/en/lab/`, and the legacy root-level `.msix` download remained available.
 - On 2026-10-11, Chromium with SwiftShader loaded the real STEP model on production `/lab/` (278,784 triangles, no fallback, and no console errors); the tools entry initialized and remained collapsed by default.
+- On 2026-10-11, the production GLB returned `model/gltf-binary`, approximately 9.6 MB, and `max-age=2592000`; WASM returned `application/wasm` with the same long-lived cache policy.
 
 ## Asset boundary
 
@@ -20,4 +21,4 @@ The homepage does not load STEP, WASM or the Three.js model runtime; those asset
 
 ## Verification still pending
 
-Real-device performance and cache behavior under different network conditions still need separate measurements; static builds, CI, and desktop SwiftShader results cannot replace those checks.
+Real-device performance and cache behavior under different network conditions still need separate measurements; a single production-header check cannot replace varied-network measurements.
