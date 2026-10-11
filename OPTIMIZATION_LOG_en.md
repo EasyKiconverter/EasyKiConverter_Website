@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Clarify the version boundary of format support
+
+- **Issue:** The homepage described other targets as “the main project also registers”, an internal implementation phrase that could be read as full stable-release support.
+- **Changes:** State that the current stable release focuses on KiCad and Altium, and that other targets must be confirmed against the matching Release and format matrix; updated both languages and added copy regression coverage.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite.
+
 ## 2026-10-12 — Clarify the homepage input-to-output story
 
 - **Issue:** The homepage story section still used the `legacy-story` anchor, while the Chinese kicker “安静的中间地带” and English `THE QUIET MIDDLE` were more abstract than the conversion flow they introduced.
