@@ -367,6 +367,16 @@ test('bilingual homepages expose localized navigation destinations', async ({ pa
   await expect(page.locator('.mobile-nav a[href="#download"]')).toHaveText('Download');
 });
 
+test('homepage story navigation uses the descriptive story anchor', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('main#top #story')).toBeVisible();
+    await expect(page.locator('.nav-links a[href="#story"]')).toHaveCount(1);
+    await expect(page.locator('.mobile-nav a[href="#story"]')).toHaveCount(1);
+    await expect(page.locator('.hero-actions a[href="#story"]')).toHaveCount(1);
+  }
+});
+
 test('homepage platform summary mirrors the available Release assets', async ({ page }) => {
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
