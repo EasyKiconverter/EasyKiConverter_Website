@@ -305,3 +305,9 @@
 - **Issue**: The Chinese Lab footprint-study SVG still displayed `TOP VIEW · NOT TO SCALE`, unlike the surrounding Chinese experiment copy.
 - **Change**: Chinese now displays “俯视图 · 非按比例” and “封装焊盘”; English retains the original engineering labels.
 - **Validation**: Added bilingual SVG-label assertions and reran the full build, site validation, asset checks and browser suite.
+
+## 2026-10-12 — Localize the schematic-symbol description
+
+- **Issue**: The Chinese Lab schematic-symbol study still displayed `EASYKI COMPONENT`; `COMPONENT` is ordinary explanatory copy rather than a required engineering acronym.
+- **Change**: Kept the `EASYKI` brand name and localized the Chinese description as “元件”; electrical net names remain `VCC/GND/IN/OUT`.
+- **Validation**: Added bilingual symbol-label assertions and reran the full build, site validation, asset checks and browser suite.
