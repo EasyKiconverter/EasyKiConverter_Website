@@ -196,3 +196,89 @@
   }
 
 }
+
+@media (max-width: 640px) {
+  .format-table-wrap {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .format-table-wrap table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .format-table-wrap caption {
+    display: block;
+    width: 100%;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fff8;
+  }
+
+  .format-table-wrap thead {
+    display: none;
+  }
+
+  .format-table-wrap tbody {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+    width: 100%;
+  }
+
+  .format-table-wrap tbody tr {
+    display: block;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fff8;
+  }
+
+  .format-table-wrap tbody th,
+  .format-table-wrap tbody td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0;
+    border: 0;
+    font-size: 13px;
+  }
+
+  .format-table-wrap tbody th::before,
+  .format-table-wrap tbody td::before {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .format-table-wrap tbody th::before {
+    content: "ID";
+  }
+
+  .format-table-wrap tbody td::before {
+    content: attr(data-label);
+  }
+
+  .format-table-wrap tbody th + td {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .format-table-wrap tbody td + td {
+    margin-top: 8px;
+  }
+
+  .format-table-wrap tbody th code,
+  .format-table-wrap .format-status {
+    text-align: right;
+  }
+}
