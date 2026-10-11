@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Small source and asset checks for the Astro static website."""
 from pathlib import Path
-import re
 import sys
+from html.parser import HTMLParser
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
-pages = [ROOT / "src/pages/index.astro", ROOT / "src/pages/en/index.astro"]
-shared_components = [ROOT / "src/components/MotionNarrative.astro"]
+source_pages = [ROOT / "src/pages/index.astro", ROOT / "src/pages/en/index.astro"]
+output_pages = [ROOT / "dist/index.html", ROOT / "dist/en/index.html"]
 errors = []
 accessibility_css = (ROOT / "src/css/accessibility.css").read_text(encoding="utf-8")
 home_polish_css = (ROOT / "src/css/home-polish.css").read_text(encoding="utf-8")
@@ -23,15 +23,8 @@ if "html:not(.js-ready) .mobile-nav" not in home_polish_css:
 if "classList.add('js-ready')" not in app_source:
     errors.append("src/js/app.ts: JavaScript readiness marker is missing")
 
-for page in pages:
+for page in source_pages:
     text = page.read_text(encoding="utf-8")
-    id_values = re.findall(r'id=["\']([^"\']+)["\']', text)
-    for component in shared_components:
-        component_text = component.read_text(encoding="utf-8")
-        id_values.extend(re.findall(r'id=["\']([^"\']+)["\']', component_text))
-    ids = set(id_values)
-    if len(ids) != len(id_values):
-        errors.append(f"{page}: duplicate HTML id")
     if "Xpedition" in text:
         errors.append(f"{page}: stable homepage must not claim Xpedition")
     has_model_stage = "data-model-stage" in text and "model-canvas" in text
@@ -44,29 +37,59 @@ for page in pages:
     has_accessible_stage_fallback = "model-fallback-copy" in text or "hero-product-window" in text
     if not has_accessible_stage_fallback or "menu-button" not in text:
         errors.append(f"{page}: missing accessible interaction fallback or mobile navigation")
-    if "aria-label=" not in text or "<main" not in text or "<footer" not in text:
-        errors.append(f"{page}: missing semantic/accessibility landmarks")
     for marker in ("download-links", "Windows", "Linux", "macOS", "SHA256"):
         if marker not in text:
             errors.append(f"{page}: missing download marker {marker}")
-    for label in re.findall(r'aria-labelledby=["\']([^"\']+)["\']', text):
-        if label not in ids:
-            errors.append(f"{page}: missing aria-labelledby target #{label}")
-    for attribute in ("href", "src"):
-        for value in re.findall(rf"{attribute}=[\"']([^\"']+)[\"']", text):
+
+
+class PageParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.ids: set[str] = set()
+        self.duplicate_ids: set[str] = set()
+        self.tags: set[str] = set()
+        self.fragments: list[str] = []
+        self.resources: list[tuple[str, str]] = []
+        self.aria_labels: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.tags.add(tag)
+        values = dict(attrs)
+        element_id = values.get("id")
+        if element_id:
+            if element_id in self.ids:
+                self.duplicate_ids.add(element_id)
+            self.ids.add(element_id)
+        label = values.get("aria-labelledby")
+        if label:
+            self.aria_labels.extend(label.split())
+        for attribute in ("href", "src"):
+            value = values.get(attribute)
+            if value:
+                if value.startswith("#"):
+                    self.fragments.append(value[1:])
+                else:
+                    self.resources.append((attribute, value))
+
+
+if not all(page.exists() for page in output_pages):
+    errors.append("dist: missing built HTML; run `pnpm run build` before site validation")
+else:
+    for page in output_pages:
+        parser = PageParser()
+        parser.feed(page.read_text(encoding="utf-8"))
+        if parser.duplicate_ids:
+            errors.append(f"{page}: duplicate HTML id(s): {', '.join(sorted(parser.duplicate_ids))}")
+        if "main" not in parser.tags or "footer" not in parser.tags or not parser.aria_labels:
+            errors.append(f"{page}: missing semantic landmarks or labelled sections")
+        for fragment in parser.fragments:
+            if fragment and fragment not in parser.ids:
+                errors.append(f"{page}: missing fragment target #{fragment}")
+        for attribute, value in parser.resources:
             parsed = urlparse(value)
-            if value.startswith("#"):
-                if value[1:] and value[1:] not in ids:
-                    errors.append(f"{page}: missing fragment target {value}")
-                continue
             if parsed.scheme or value.startswith("data:"):
                 continue
-            relative_path = parsed.path.lstrip("/")
-            public_path = relative_path.removeprefix("../")
-            if public_path.startswith("assets/") or public_path in {"robots.txt", "sitemap.xml"}:
-                target = (ROOT / "public" / public_path).resolve()
-            else:
-                target = (page.parent / parsed.path).resolve()
+            target = (ROOT / "dist" / parsed.path.lstrip("/")).resolve() if value.startswith("/") else (page.parent / parsed.path).resolve()
             if not target.exists():
                 errors.append(f"{page}: missing {attribute} target {value}")
 
@@ -83,4 +106,4 @@ for required in ("src/js/app.ts", "src/js/model-viewer.ts", "src/js/step-worker.
 if errors:
     print("\n".join(errors), file=sys.stderr)
     sys.exit(1)
-print(f"validated {len(pages)} pages and required assets")
+print(f"validated {len(output_pages)} built pages and required assets")

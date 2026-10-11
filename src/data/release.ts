@@ -1,0 +1,27 @@
+export type ReleaseAsset = {
+  label: string;
+  url: string;
+};
+
+export const latestRelease = {
+  tag: "v3.1.13",
+  version: "3.1.13",
+  url: "https://github.com/EasyKiconverter/EasyKiConverter/releases/tag/v3.1.13",
+  publishedAt: "2026-10-10T19:25:10Z",
+  checksumUrl: "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/SHA256SUMS",
+  assets: {
+    windows: [
+      { label: "x86_64 installer", url: "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-windows-x86_64-installer.exe" },
+      { label: "arm64 installer", url: "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-windows-arm64-installer.exe" },
+    ] satisfies ReleaseAsset[],
+    linux: [
+      { label: "x86_64 AppImage", url: "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-linux-x86_64.AppImage" },
+      { label: "amd64 DEB", url: "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-linux-amd64.deb" },
+      { label: "aarch64 AppImage", url: "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-linux-aarch64.AppImage" },
+    ] satisfies ReleaseAsset[],
+    macos: [
+      { label: "Apple Silicon DMG", url: "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-macos-arm64.dmg" },
+      { label: "Intel DMG", url: "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-macos-x86_64.dmg" },
+    ] satisfies ReleaseAsset[],
+  },
+} as const;
