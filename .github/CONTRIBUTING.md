@@ -29,7 +29,7 @@ python3 tools/validate_site.py
 pnpm run test:browser
 ```
 
-请检查桌面端和移动端布局、页面导航、外部链接、浏览器控制台、`prefers-reduced-motion`、六个构建路由以及首页与 3D Lab 的资源边界。
+请检查桌面端和移动端布局、页面导航、外部链接、浏览器控制台、`prefers-reduced-motion`、八个构建路由以及首页与 3D Lab 的资源边界。
 
 ## English
 
@@ -58,4 +58,4 @@ python3 tools/validate_site.py
 pnpm run test:browser
 ```
 
-Check desktop and mobile layouts, navigation, external links, browser-console errors, `prefers-reduced-motion`, all six built routes, and the homepage/Lab resource boundary.
+Check desktop and mobile layouts, navigation, external links, browser-console errors, `prefers-reduced-motion`, all eight built routes, and the homepage/Lab resource boundary.

@@ -19,7 +19,7 @@ The official EasyKiConverter website, built with Astro and TypeScript. The Chine
 └── .github/workflows/      # GitHub Actions workflows
 ```
 
-The homepage is a lightweight product presentation using the real Qt Quick screenshot, CSS depth and download links; it does not load the CAD runtime. The former STEP/Three.js research work is isolated at [`/lab/`](src/pages/lab/index.astro). There, `src/js/step-worker.ts` prepares meshes in a Web Worker and `src/js/model-viewer.ts` renders the experiments. The model source, measurements and planned STEP → GLB work are documented in [3D model pipeline](public/assets/model/README.md).
+The homepage is a lightweight product presentation using the real Qt Quick screenshot, CSS depth and download links; it does not load the CAD runtime. See the [EDA format matrix](src/pages/formats/index.astro) for capability scope and the [traceable conversion cases](src/pages/cases/index.astro) for test-backed examples. The former STEP/Three.js research work is isolated at [`/lab/`](src/pages/lab/index.astro). There, `src/js/step-worker.ts` prepares meshes in a Web Worker and `src/js/model-viewer.ts` renders the experiments. The model source, measurements and planned STEP → GLB work are documented in [3D model pipeline](public/assets/model/README.md).
 
 Put pages in `src/pages/` and reusable page sections in `src/components/`; keep styles in `src/css/`, scripts in `src/js/`, and images, models, icons, or runtime assets in `public/assets/`. There is no root-level `assets/` directory. Do not add source files or resources directly to the repository root.
 

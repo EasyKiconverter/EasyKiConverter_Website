@@ -6,7 +6,7 @@
 
 ## 已验证
 
-- Astro 静态构建生成 `/`、`/en/`、`/lab/`、`/en/lab/`、`/formats/`、`/en/formats/` 六个页面。
+- Astro 静态构建生成 `/`、`/en/`、`/lab/`、`/en/lab/`、`/formats/`、`/en/formats/`、`/cases/`、`/en/cases/` 八个页面。
 - `python3 tools/validate_site.py` 检查最终 `dist/` 的重复 ID、片段链接、语义地标、本地资源和未发布 PNG。
 - `pnpm run test:browser` 覆盖中英文首页、桌面/移动 Chromium、移动菜单、reduced-motion、Release 版本、格式矩阵、Lab 路由隔离和控制台错误。
 - Release 数据由 `tools/sync_release.py` 在构建期生成；CI 设置 `RELEASE_SYNC_REQUIRED=1`，网络或 API 异常会让构建失败。
@@ -18,4 +18,4 @@
 
 ## 未完成发布验证
 
-`easykiconverter.org.cn` 当前仍需外部部署更新；仓库构建成功不等于域名已切换。部署后必须重新检查六个页面、canonical、下载链接、Lab 同源资源、移动端和浏览器控制台。
+`easykiconverter.org.cn` 当前仍需外部部署更新；仓库构建成功不等于域名已切换。部署后必须重新检查八个页面、canonical、下载链接、Lab 同源资源、移动端和浏览器控制台。
