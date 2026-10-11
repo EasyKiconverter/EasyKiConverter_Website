@@ -590,6 +590,7 @@ test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
   await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
   await expect(stage).toHaveAttribute('data-model-asset', test.info().project.name === 'chromium-mobile' ? 'mobile' : 'desktop');
   await expect(stage).toHaveAttribute('data-model-normals', 'provided');
+  await expect(stage).toHaveAttribute('data-model-edge-segments', /[1-9][0-9]*/);
   await expect(stage).not.toHaveClass(/model-fallback/);
 });
 
@@ -605,6 +606,7 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const stage = page.locator('[data-model-stage]');
     await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+    await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-label', /GLB delivery model|GLB 交付模型/);
     const atlas = stage.locator('[data-artifact-view="atlas"]');
     await atlas.dispatchEvent('click');
     await expect(stage).toHaveAttribute('data-artifact-view', 'atlas');
