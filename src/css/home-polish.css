@@ -405,7 +405,20 @@
   }
 
   .story-card p {
-    max-width: 145px;
+    max-width: 265px;
+  }
+
+  .story-card .story-pulse,
+  .story-card .story-stack,
+  .story-card .story-check {
+    position: static;
+    width: max-content;
+    margin-top: 18px;
+    margin-left: auto;
+  }
+
+  .story-card .story-stack {
+    transform: rotate(-7deg);
   }
 }
 
