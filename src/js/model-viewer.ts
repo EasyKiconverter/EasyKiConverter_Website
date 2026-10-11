@@ -156,6 +156,11 @@ export const setupModel = async (): Promise<void> => {
     return;
   }
 
+  const artifactButtons = Array.from(stage.querySelectorAll<HTMLButtonElement>("[data-artifact-view]"));
+  const artifactLabel = stage.querySelector<HTMLElement>("[data-artifact-label]");
+  const artifactCaption = stage.querySelector<HTMLElement>(".artifact-caption");
+  stage.dataset.artifactView = stage.dataset.artifactView || "model";
+
   let renderer: THREE.WebGLRenderer;
   try {
     renderer = new THREE.WebGLRenderer({
@@ -3083,6 +3088,22 @@ export const setupModel = async (): Promise<void> => {
     if (state.visible && !document.hidden && !state.frame && (!state.reducedMotion || !rendering))
       state.frame = requestAnimationFrame(render);
   };
+
+  const syncArtifactView = (button: HTMLButtonElement, requestFrame = true): void => {
+    const view = button.dataset.artifactView;
+    if (!view) return;
+    stage.dataset.artifactView = view;
+    artifactButtons.forEach((candidate) => candidate.setAttribute("aria-pressed", String(candidate === button)));
+    const english = document.documentElement.lang === "en";
+    const label = english ? button.dataset.labelEn : button.dataset.labelZh;
+    const caption = english ? button.dataset.captionEn : button.dataset.captionZh;
+    if (label && artifactLabel) artifactLabel.textContent = label;
+    if (caption && artifactCaption) artifactCaption.textContent = caption;
+    if (requestFrame) wake();
+  };
+  artifactButtons.forEach((button) => button.addEventListener("click", () => syncArtifactView(button)));
+  const initialArtifactButton = artifactButtons.find((button) => button.dataset.artifactView === stage.dataset.artifactView) ?? artifactButtons[0];
+  if (initialArtifactButton) syncArtifactView(initialArtifactButton, false);
 
   const setScanButtonState = (scanning: boolean): void => {
     const scanButton = stage.querySelector<HTMLButtonElement>("[data-model-scan]");

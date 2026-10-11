@@ -14,7 +14,7 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
     </div>
 
     <div class="motion-model" data-model-stage data-artifact-view="model">
-      <div class="motion-model-note"><span class="live-dot"></span><span data-artifact-label>{en ? 'A REAL STEP MODEL' : '真实 STEP 模型'}</span><small>01 / 04</small></div>
+      <div class="motion-model-note"><span class="live-dot"></span><span data-artifact-label>{en ? 'GLB DELIVERY MODEL' : 'GLB 交付模型'}</span><small>01 / 04</small></div>
       <div class="neural-memory-readout" data-neural-memory aria-live="polite">{en ? 'SYNAPTIC MEMORY · 0 PATHS' : '突触记忆 · 0 条路径'}</div>
       <div class="swarm-lineage-readout" data-swarm-lineage-readout aria-live="polite">{en ? 'LINEAGE ∞ 0' : '谱系 ∞ 0'}</div>
       <div class="swarm-lineage-picker" data-swarm-lineage-picker role="group" aria-label={en ? 'Recall an archived topology genome' : '回溯已归档的拓扑基因'}></div>
@@ -166,7 +166,7 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
         </svg>
       </div>
       <div class="artifact-switcher" role="group" aria-label={en ? 'Choose a component view' : '选择元件视图'}>
-        <button type="button" data-artifact-view="model" data-label-zh="真实 STEP 模型" data-label-en="A REAL STEP MODEL" data-caption-zh="真实 STEP 网格 · 随滚动进入产品叙事" data-caption-en="Real STEP geometry · connected to the scroll story" aria-pressed="true">{en ? '3D solid' : '3D 实体'}</button>
+        <button type="button" data-artifact-view="model" data-label-zh="GLB 交付模型" data-label-en="GLB DELIVERY MODEL" data-caption-zh="由 STEP 几何生成的 GLB · 随滚动进入产品叙事" data-caption-en="GLB generated from STEP geometry · connected to the scroll story" aria-pressed="true">{en ? '3D solid' : '3D 实体'}</button>
         <button type="button" data-artifact-view="atlas" data-label-zh="网格空间星图" data-label-en="MESH CONSTELLATION" data-caption-zh="每个节点对应真实 STEP 网格；点击节点可定位回实体" data-caption-en="Every node is a real STEP mesh · select one to inspect it in 3D" aria-pressed="false">{en ? 'Atlas' : '星图'}</button>
         <button type="button" data-artifact-view="tomogram" data-label-zh="剖面断层地形" data-label-en="SECTION TOMOGRAM" data-caption-zh="扫描经过的真实 STEP 剖面 · 亮度表示截面占据宽度" data-caption-en="Real STEP sections accumulated across the scan · brightness maps section width" aria-pressed="false">{en ? 'Tomo' : '断层'}</button>
         <button type="button" data-artifact-view="oracle" data-label-zh="拓扑 DNA 预言图" data-label-en="TOPOLOGY DNA ORACLE" data-caption-zh="真实截面历史的双螺旋 · 事件改变螺旋的节奏" data-caption-en="A double helix of real section history · events change its rhythm" aria-pressed="false">{en ? 'Oracle' : '预言'}</button>
@@ -191,7 +191,7 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
         <input class="model-slice-range" type="range" min="0" max="100" value="50" step="1" data-model-slice aria-label={en ? 'Move the live section plane through the model' : '移动剖切平面穿过模型'} disabled />
         <output class="model-slice-value" data-model-slice-value>50%</output>
       </label>
-      <p class="artifact-caption" aria-live="polite">{en ? 'Real STEP geometry · connected to the scroll story' : '真实 STEP 网格 · 随滚动进入产品叙事'}</p>
+      <p class="artifact-caption" aria-live="polite">{en ? 'GLB generated from STEP geometry · connected to the scroll story' : '由 STEP 几何生成的 GLB · 随滚动进入产品叙事'}</p>
       <div class="model-fallback-copy" role="status">{en ? '3D preview is unavailable. The page and download links remain usable.' : '3D 预览暂不可用，页面内容和下载入口仍可正常使用。'}</div>
       <span class="motion-model-tag">{en ? 'SCROLL TO TRANSFORM' : '向下滚动，继续转化'}</span>
     </div>
