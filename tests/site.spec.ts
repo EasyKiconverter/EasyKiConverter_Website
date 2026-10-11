@@ -351,7 +351,7 @@ test('all public pages share the bilingual footer navigation', async ({ page }) 
     await expect(footer.locator('.brand')).toBeVisible();
     await expect(footer.locator('.footer-links a')).toHaveCount(7);
     for (const label of labels) await expect(footer).toContainText(label);
-    await expect(footer.locator('a[href*="EasyKiConverter/issues"]')).toHaveText('Issues');
+    await expect(footer.locator('a[href*="EasyKiConverter/issues"]')).toHaveText(path.startsWith('/en/') ? 'Issues' : '问题反馈');
   }
 });
 
