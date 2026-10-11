@@ -41,10 +41,13 @@ test('mobile navigation opens, closes, and restores focus', async ({ page }) => 
 test('content pages keep navigation reachable on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/formats/', { waitUntil: 'networkidle' });
-  await expect(page.locator('.content-page-header .nav-links')).toBeVisible();
-  await expect(page.locator('.content-page-header a[aria-current="page"]')).toHaveText('Formats');
-  await page.keyboard.press('Tab');
-  await expect(page.locator('.content-page-skip')).toBeFocused();
+  const menu = page.locator('.menu-button');
+  await menu.click();
+  await expect(page.locator('.mobile-nav')).toHaveClass(/is-open/);
+  await expect(page.locator('.mobile-nav a[aria-current="page"]')).toHaveText('Formats');
+  await expect(page.locator('.content-page-skip')).toHaveAttribute('href', '#content-page-main');
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeFocused();
 });
 
 test('content and Lab headers keep the shared brand treatment', async ({ page }) => {
@@ -65,6 +68,18 @@ test('content and Lab headers keep the shared brand treatment', async ({ page })
   await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.lab-header a[aria-current="page"]')).toHaveText('3D Lab');
   await expect(page.locator('.content-page-skip')).toHaveText('Skip to lab content');
+});
+
+test('Lab pages use the shared mobile navigation behavior', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const menu = page.locator('.menu-button');
+    await menu.click();
+    await expect(page.locator('.mobile-nav')).toHaveClass(/is-open/);
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeFocused();
+  }
 });
 
 test('content pages offer a bilingual next-step release CTA', async ({ page }) => {
