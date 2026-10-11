@@ -57,8 +57,14 @@ test('content and Lab headers keep the shared brand treatment', async ({ page })
   }
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.lab-header .brand img')).toHaveAttribute('src', /easyki-icon\.svg/);
+  await expect(page.locator('.lab-header a[aria-current="page"]')).toHaveText('3D 实验室');
+  await expect(page.locator('.lab-header .github-link span')).toHaveText('↗');
+  await expect(page.locator('.content-page-skip')).toHaveAttribute('href', '#lab-main');
   await expect(page.locator('.lab-warning')).toContainText('10.0 MB');
   await expect(page.locator('.lab-warning')).toContainText('8.4 MB');
+  await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.lab-header a[aria-current="page"]')).toHaveText('3D Lab');
+  await expect(page.locator('.content-page-skip')).toHaveText('Skip to lab content');
 });
 
 test('content pages offer a bilingual next-step release CTA', async ({ page }) => {
