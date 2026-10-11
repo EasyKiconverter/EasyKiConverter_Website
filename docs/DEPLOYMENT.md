@@ -45,15 +45,33 @@ STEP 和 WASM 必须允许同源 GET 请求。不要给静态资源增加会阻�
 
 ## 生产部署脚本
 
-使用 [`tools/deploy-production.sh`](../tools/deploy-production.sh) 发布时，必须显式提供服务器地址；脚本会构建 `dist/`、创建带时间戳的备份、精确替换站点目录、检查 Nginx 配置并重新加载服务。Nginx 检查失败会恢复上一份站点目录。
+使用 [`tools/deploy_production.py`](../tools/deploy_production.py) 发布时，必须显式提供服务器地址；Python 脚本会构建 `dist/`、创建带时间戳的备份、精确替换站点目录、检查 Nginx 配置并重新加载服务。Nginx 检查失败会恢复上一份站点目录。Shell 入口 [`tools/deploy-production.sh`](../tools/deploy-production.sh) 仅作为兼容包装。
 
 ```bash
 DEPLOY_HOST=8.137.164.32 \
 DEPLOY_USER=dennis \
 DEPLOY_PORT=2267 \
 DEPLOY_KEY="$HOME/.ssh/ChatGPT_KEY" \
-./tools/deploy-production.sh
+python3 tools/deploy_production.py
 ```
+
+PowerShell：
+
+```powershell
+$env:DEPLOY_HOST = "8.137.164.32"
+$env:DEPLOY_USER = "dennis"
+$env:DEPLOY_PORT = "2267"
+$env:DEPLOY_KEY = "$HOME/.ssh/ChatGPT_KEY"
+python tools/deploy_production.py
+```
+
+先检查配置而不构建或连接服务器：
+
+```bash
+DEPLOY_HOST=example.org python3 tools/deploy_production.py --dry-run
+```
+
+本地需要 Python 3、pnpm 和 OpenSSH；远程服务器继续使用 Nginx、sudo 和 tar 完成原子替换。
 
 脚本不会触碰 `/var/www/downloads/`；该目录中的旧版下载文件由 Nginx 的 `/downloads/` 和兼容路径继续提供。
 
