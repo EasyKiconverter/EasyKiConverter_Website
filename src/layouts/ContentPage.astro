@@ -45,10 +45,19 @@ const isCurrent = (href: string) => new URL(href).pathname === pageUrl.pathname;
         <a href={labUrl} aria-current={isCurrent(labUrl) ? "page" : undefined}>{en ? "3D Lab" : "3D 实验室"}</a>
         <a href={alternateUrl}>{en ? "中文" : "English"}</a>
       </nav>
-      <a class="github-link" href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">
-        GitHub <span>↗</span>
-      </a>
+      <div class="header-actions">
+        <a class="github-link" href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">GitHub <span>↗</span></a>
+        <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-nav">{en ? "Menu" : "菜单"}</button>
+      </div>
     </header>
+    <nav id="mobile-nav" class="mobile-nav" aria-label={en ? "Mobile page navigation" : "移动端页面导航"}>
+      <a href={homeUrl}>{en ? "Home" : "首页"}</a>
+      <a href={formatsUrl} aria-current={isCurrent(formatsUrl) ? "page" : undefined}>{en ? "Formats" : "格式矩阵"}</a>
+      <a href={casesUrl} aria-current={isCurrent(casesUrl) ? "page" : undefined}>{en ? "Cases" : "转换案例"}</a>
+      <a href={labUrl} aria-current={isCurrent(labUrl) ? "page" : undefined}>{en ? "3D Lab" : "3D 实验室"}</a>
+      <a href={alternateUrl}>{en ? "中文" : "English"}</a>
+      <a href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
     <main id="content-page-main">
       <slot />
     </main>
@@ -75,5 +84,8 @@ const isCurrent = (href: string) => new URL(href).pathname === pageUrl.pathname;
       <p>© EasyKiConverter · GPL-3.0</p>
       <a href={homeUrl}>{en ? "Return home" : "返回首页"}</a>
     </footer>
+    <script>
+      import "../js/app";
+    </script>
   </body>
 </html>

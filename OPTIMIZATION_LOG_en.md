@@ -70,3 +70,7 @@
 - Issue: The 3D Lab used a separate navigation without the shared GitHub entry, current-page state, skip link, or the same narrow-screen behavior as the Formats and Cases pages.
 - Changes: Reused the content-page navigation shell on both Lab pages, adding the GitHub link, current-page state, skip link, and shared mobile layout.
 - Validation: Added bilingual Lab navigation coverage and ran the build, site validation, asset gate, and browser tests.
+## 2026-10-11 — Unify secondary-page mobile navigation
+- Issue: Formats, Cases, and 3D Lab did not reuse the homepage menu button, Escape close behavior, or focus restoration on narrow screens.
+- Changes: Connected the content pages and Lab to the same mobile navigation structure and `app.ts` behavior while preserving desktop navigation and synchronizing current-page state, language switching, and the GitHub entry.
+- Validation: Added content-page and Lab mobile-navigation coverage and ran the build, site validation, asset gate, and browser tests.
