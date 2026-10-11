@@ -220,7 +220,7 @@ test('inner pages share the same localized header navigation', async ({ page }) 
     await expect(header.locator('.nav-links a')).toHaveCount(5);
     await expect(header.locator('.nav-links a[aria-current="page"]')).toHaveText(current);
     await expect(page.locator('.mobile-nav a')).toHaveCount(6);
-    if (lab) await expect(header.locator('.brand')).toContainText('/ Lab');
+    if (lab) await expect(header.locator('.brand')).toContainText(path.startsWith('/en/') ? '/ Lab' : '/ 实验室');
     else await expect(header.locator('.brand')).not.toContainText('/ Lab');
   }
 });
