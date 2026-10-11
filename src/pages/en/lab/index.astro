@@ -6,6 +6,7 @@ import "../../../css/motion-narrative.css";
 import "../../../css/lab.css";
 import MotionNarrative from "../../../components/MotionNarrative.astro";
 import SeoHead from "../../../components/SeoHead.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
 const pageUrl = new URL("en/lab/", siteBase);
@@ -58,7 +59,7 @@ const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase);
       </section>
       <MotionNarrative lang="en" />
     </main>
-    <footer class="site-footer shell"><p>© EasyKiConverter · GPL-3.0</p><a href={siteBase.href}>Return home</a></footer>
+    <SiteFooter lang="en" />
     <script>
       import "../../../js/app";
     </script>

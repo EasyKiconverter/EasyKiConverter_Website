@@ -185,6 +185,27 @@ test('all public pages share the paper-grain visual layer', async ({ page }) => 
   }
 });
 
+test('all public pages share the bilingual footer navigation', async ({ page }) => {
+  const pages = [
+    { path: '/', labels: ['格式矩阵', '案例', '3D 实验室', '文档'] },
+    { path: '/formats/', labels: ['格式矩阵', '案例', '3D 实验室', '文档'] },
+    { path: '/cases/', labels: ['格式矩阵', '案例', '3D 实验室', '文档'] },
+    { path: '/lab/', labels: ['格式矩阵', '案例', '3D 实验室', '文档'] },
+    { path: '/en/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
+    { path: '/en/formats/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
+    { path: '/en/cases/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
+    { path: '/en/lab/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
+  ];
+  for (const { path, labels } of pages) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const footer = page.locator('.site-footer');
+    await expect(footer.locator('.brand')).toBeVisible();
+    await expect(footer.locator('.footer-links a')).toHaveCount(7);
+    for (const label of labels) await expect(footer).toContainText(label);
+    await expect(footer.locator('a[href*="EasyKiConverter/issues"]')).toHaveText('Issues');
+  }
+});
+
 test('bilingual homepages keep the same interaction rhythm', async ({ page }) => {
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
