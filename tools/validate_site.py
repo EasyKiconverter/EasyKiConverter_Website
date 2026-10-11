@@ -45,6 +45,8 @@ if 'new URL(import.meta.env.BASE_URL, document.baseURI)' not in model_source:
     errors.append("src/js/model-viewer.ts: Lab assets must resolve from Astro BASE_URL")
 if 'assets/vendor/' not in model_source or 'assets/model/Easykiconverter_展示模型.step' not in model_source:
     errors.append("src/js/model-viewer.ts: Lab asset URLs are incomplete")
+if 'modelNormals' not in model_source or 'computeVertexNormals' not in model_source:
+    errors.append("src/js/model-viewer.ts: GLB normals must be preserved with a STEP fallback computation")
 for marker in (
     "name=\"description\"",
     "rel=\"canonical\"",

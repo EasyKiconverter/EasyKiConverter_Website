@@ -6,6 +6,8 @@ The source asset is stored beside this document as `Easykiconverter_展示模型
 
 The isolated 3D Lab loads the derived `Easykiconverter_展示模型.glb` on demand with Three.js `GLTFLoader`; the homepage does not load the model runtime. The GLB is generated from the checked-in STEP source by `tools/prepare_model_asset.py` and retains normalized meshes, material groups, and source-size metadata. If GLB, WebGL, or the loader fails, the Lab falls back to the pinned `occt-import-js` 0.0.23 OpenCascade/WASM runtime and parses STEP in a Web Worker. If all runtime assets fail, the Lab keeps its content and uses the styled visual fallback.
 
+The GLB includes generated vertex normals, and the browser delivery path reuses them instead of recomputing normals for every mesh. The STEP fallback computes normals after transferring mesh data from the Worker.
+
 The desktop GLB contains 303 meshes and 278,784 triangles. The mobile GLB uses `linearDeflection: 0.007`, contains 228,004 triangles, and is about 8.1 MB. The desktop conversion uses `linearUnit: millimeter`, `linearDeflectionType: bounding_box_ratio`, `linearDeflection: 0.004`, and `angularDeflection: 0.16`; only linear deflection is reduced for mobile. Viewports up to 760px or stages below 520px select the mobile GLB. The STEP fallback uses `0.007` below the 520px stage width. These values affect tessellation quality; they do not impose a hard triangle cap. Source SHA256: `4310cdcbb920625dfdea4baac3855ec2fce4b7281ce335762c10791f0da939ce`.
 
 The vendored runtime is `occt-import-js` 0.0.23 under LGPL-2.1; its license is stored beside the runtime. Runtime SHA256 values: JS `3fb44ce11d00611f9b3f3c5775d520ebab48930c1f08279b7b1316f05f0d3379`, WASM `33391fc9d94ea5c869a6718488bf0a9a464222bac9bdc764dfe1690cef281952`.
