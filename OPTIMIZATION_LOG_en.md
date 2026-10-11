@@ -110,3 +110,7 @@
 - Issue: The Chinese 3D Lab kicker still used `EXPERIMENTAL 3D`, unlike the surrounding Chinese entry copy.
 - Changes: Changed the high-level entry label to “实验性 3D” while retaining technical control and data terminology inside the Lab.
 - Validation: Added Chinese and English Lab entry-label assertions and ran the build, site validation, asset gate, and browser tests.
+## 2026-10-11 — Align Chinese 3D Lab narrative labels
+- Issue: Chapter numbers, component-output labels, and expanded experiment controls in the Chinese Lab still appeared in English, creating an uneven language hierarchy beside the translated body copy.
+- Changes: Localized the Chinese chapter labels, symbol/footprint/3D-model labels, and orbit, section, and topology experiment controls while retaining technical names such as STEP, Qt Quick, KiCad, and Altium.
+- Validation: Added bilingual Lab-narrative assertions and ran the build, site validation, asset gate, and 52 browser tests.
