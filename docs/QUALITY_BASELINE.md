@@ -11,11 +11,12 @@
 - `pnpm run test:browser` 覆盖中英文首页、桌面/移动 Chromium、移动菜单、reduced-motion、Release 版本、格式矩阵、Lab 路由隔离和控制台错误。
 - Release 数据由 `tools/sync_release.py` 在构建期生成；CI 设置 `RELEASE_SYNC_REQUIRED=1`，网络或 API 异常会让构建失败。
 - `master` 与 `version/V0.0.1` 已启用 PR、至少一名审批、强制通过 `Static site checks` 与 `Dependency Review`、禁止强推和会话解决门禁。
+- 2026-10-11 已在 `https://easykiconverter.org.cn/` 验证八个生产路由返回 HTTP 200；首页不加载 3D 运行时，`/lab/` 与 `/en/lab/` 的同源模型资源可访问，旧版根路径 `.msix` 下载链接仍可用。
 
 ## 资源边界
 
 首页不加载 STEP、WASM 或 Three.js 模型运行时；这些资源只由独立 3D Lab 按需使用。原始 Qt 截图在 `src/assets/source/`，WebP 派生文件在 `public/assets/showcase/`。
 
-## 未完成发布验证
+## 尚未完成的验证
 
-`easykiconverter.org.cn` 当前仍需外部部署更新；仓库构建成功不等于域名已切换。部署后必须重新检查八个页面、canonical、下载链接、Lab 同源资源、移动端和浏览器控制台。
+真实移动设备上的性能、不同网络条件下的缓存表现，以及生产环境浏览器控制台的人工复核仍需单独记录；这些不能由静态构建或 CI 结果替代。
