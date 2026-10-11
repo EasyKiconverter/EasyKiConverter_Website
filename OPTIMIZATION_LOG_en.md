@@ -171,3 +171,9 @@
 - **Issue**: The format matrix kept a 620px minimum width on narrow screens, forcing horizontal scrolling before users could see the Release status and compare targets continuously.
 - **Change**: Kept the table layout on desktop and changed each row into a labeled ID/target/Release-status card below 640px while preserving table semantics and bilingual fields.
 - **Validation**: Added a 390px narrow-layout assertion and reran the build, site validation, asset checks and the complete browser suite.
+
+## 2026-10-12 — Clarify the next action for case evidence
+
+- **Issue**: Case cards retained auditable repository paths, but users had to infer which link was the fixture and which was the test evidence.
+- **Change**: Added bilingual “Open fixture” and “Open test evidence” action labels above each full path while preserving the real URL, external-link semantics and auditability.
+- **Validation**: Added assertions for six case-evidence action labels and reran the build, site validation, asset checks and the complete browser suite.
