@@ -40,6 +40,17 @@ test('mobile navigation opens, closes, and restores focus', async ({ page }) => 
   await expect(menu).toBeFocused();
 });
 
+test('homepage format summary matches the capability matrix data', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const summary = page.locator('[data-format-summary]');
+    await expect(summary).toContainText('KiCad');
+    await expect(summary).toContainText('Altium Designer');
+    await expect(summary).toContainText(/\+ 9 (个已注册目标|registered targets)/);
+    await expect(summary).not.toContainText('3D');
+  }
+});
+
 test('content pages keep navigation reachable on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/formats/', { waitUntil: 'networkidle' });

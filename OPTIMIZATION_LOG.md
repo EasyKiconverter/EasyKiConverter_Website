@@ -2,6 +2,18 @@
 
 [English](OPTIMIZATION_LOG_en.md)
 
+## 2026-10-12 — 让 Dependency Review 门禁在无依赖变更时也闭环
+
+- **问题：** `master` 保护规则要求 `Dependency Review`，但 Security 工作流在未修改依赖清单的 PR 中没有形成可用的成功状态，导致正常的网站内容提升 PR 被错误阻塞。
+- **处理：** 保留依赖清单变更时的审计逻辑；无依赖变更时让同名检查明确成功，并为手动触发增加安全的事件分支。
+- **验证：** 将在版本分支 PR 与提升 PR 中确认 `Dependency Review` 和 `Static site checks` 均成功后再合并。
+
+## 2026-10-12 — 对齐首页与格式矩阵的能力摘要
+
+- **问题：** 首页格式卡片手写了 `3D` 标签，但共享格式矩阵维护的是 EDA 目标；首页也没有显示当前矩阵的稳定目标与已注册目标数量，容易让用户形成不一致的能力预期。
+- **处理：** 中文和英文首页直接读取 `src/data/formats.ts`，渲染 KiCad、Altium 及当前已注册目标数量，并保留跳转格式矩阵和 Release 证据的路径。
+- **验证：** 增加双语首页格式摘要回归测试；将运行构建、静态站点检查、资产检查和完整浏览器测试。
+
 ## 2026-09-22 — Dependency Review 工作流故障核验
 
 - **问题：** Actions run `35737032681` 的 `Dependency Review` 因仓库未启用 GitHub Dependency Graph 而失败；日志原文为 “Dependency review is not supported on this repository”。
