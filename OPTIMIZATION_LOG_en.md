@@ -60,3 +60,9 @@
 - **Issue:** The Lab explains its isolated loading and technical-validation boundary, but users had no prominent homepage or format-matrix action after entering the experiment; the return path between the experiment and product story was too quiet.
 - **Changes:** Added the same bilingual “Back to product” and “View format matrix” action group to the Lab intro without changing experiment controls, model loading, or route structure.
 - **Validation:** Added bilingual Lab navigation-bridge coverage and ran the build, site validation, asset gate, and full browser suite.
+
+## 2026-10-11 — Clarify the Lab advanced-control hierarchy
+
+- **Issue:** Advanced Lab experiments were collapsed by default, but the entry only said “TOOLS +”, did not describe the available experiments, and did not connect the toggle to its explanatory region with `aria-controls`.
+- **Changes:** Renamed the bilingual entry to “ADVANCED/高级工具”, described topology, orbit, and cross-tab experiments, synchronized the expanded state text, and completed the accessible control relationship.
+- **Validation:** Added bilingual Lab control-hierarchy coverage and ran the build, site validation, asset gate, and full browser suite.

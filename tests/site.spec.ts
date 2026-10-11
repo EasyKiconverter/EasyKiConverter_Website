@@ -82,6 +82,18 @@ test('Lab pages keep the experiment connected to product navigation', async ({ p
   }
 });
 
+test('Lab advanced controls explain their collapsed hierarchy', async ({ page }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const toggle = page.locator('[data-experiment-controls]');
+    await expect(toggle).toHaveAttribute('aria-controls', 'lab-experiment-controls');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('#lab-experiment-controls')).toContainText(/Topology|拓扑/);
+    await toggle.click({ force: true });
+    await expect(toggle).toHaveText(/ADVANCED|高级工具/);
+  }
+});
+
 test('reduced motion keeps content visible without marquee animation', async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
