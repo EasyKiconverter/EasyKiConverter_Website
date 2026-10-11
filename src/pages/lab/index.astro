@@ -26,6 +26,7 @@ const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase);
     />
   </head>
   <body>
+    <div class="grain" aria-hidden="true"></div>
     <header class="lab-header shell">
       <a class="brand" href={siteBase.href} aria-label="返回 EasyKiConverter 首页"><img src={iconUrl.href} alt="" width="36" height="36" /><span>EasyKiConverter <small>/ Lab</small></span></a>
       <nav aria-label="实验室导航"><a href={siteBase.href}>首页</a><a href={new URL("formats/", siteBase)}>格式矩阵</a><a href={new URL("cases/", siteBase)}>转换案例</a><a href={englishUrl}>English</a></nav>

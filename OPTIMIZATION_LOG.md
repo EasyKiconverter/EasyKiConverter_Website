@@ -30,3 +30,9 @@
 - **问题：** 首页使用图标、GitHub 入口和产品式品牌头部，但 Formats、Cases 和 3D Lab 使用不同的纯文字头部；Lab 的双语资产体积提示也落后于实际 GLB 资产。
 - **处理：** 内容页共享品牌图标和 GitHub 入口；Lab 头部改用同一图标与层级，并将桌面/移动 GLB 提示更新为约 10.0 / 8.4 MB；移动断点保留紧凑布局，隐藏非核心 GitHub 文字入口以避免拥挤。
 - **验证：** `pnpm run build`、`python3 tools/validate_site.py`、`pnpm run assets:check` 和 `pnpm run test:browser` 均通过；浏览器回归测试为 28 项，覆盖桌面与移动头部表现。
+
+## 2026-10-11 — 统一公开页面的纸张颗粒层
+
+- **问题：** 中文首页有 `.grain` 质感层，但英文首页、Formats、Cases 和中英文 Lab 页面没有，切换语言或进入子页面时背景质感会变化。
+- **处理：** 在英文首页、共享内容页布局和双语 Lab 页面加入同一层 `grain`，不改变页面结构或运行时加载路径。
+- **验证：** `pnpm run build`、`python3 tools/validate_site.py`、`pnpm run assets:check` 和 `pnpm run test:browser` 均通过；浏览器测试共 30 项，并逐页确认 8 个公开路由各有一个颗粒层。
