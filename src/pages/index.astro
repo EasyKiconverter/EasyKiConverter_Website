@@ -288,8 +288,10 @@ const platformAvailability = [
                 {primaryFormats.map((format) => <b>{format.name}</b>)}
                 <b>+ {registeredFormatCount} 个已注册目标</b>
               </div>
-              <a class="text-link" href="formats/">查看格式矩阵 <span>↗</span></a>
-              <a class="text-link" href="cases/">查看真实转换案例 <span>↗</span></a>
+              <div class="feature-links" aria-label="格式与案例入口">
+                <a class="feature-link feature-link-primary" href="formats/">查看格式矩阵 <span>↗</span></a>
+                <a class="feature-link feature-link-secondary" href="cases/">查看真实转换案例 <span>↗</span></a>
+              </div>
             </div>
           </article>
           <article class="feature-card feature-card-mint reveal reveal-delay-1">
