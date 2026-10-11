@@ -231,6 +231,9 @@ test('Chinese homepage keeps visual microcopy localized', async ({ page }) => {
   await expect(homepage).not.toContainText('Component data ready');
   await expect(homepage).not.toContainText('LIBRARY OUTPUT');
   await expect(homepage).not.toContainText('ready to use');
+  await expect(homepage.locator('.download-stamp')).toContainText('开源');
+  await expect(homepage.locator('.download-stamp')).toContainText('工程师而做');
+  await expect(homepage.locator('.download-stamp')).not.toContainText('OPEN SOURCE');
 });
 
 test('Chinese Lab keeps its entry label localized', async ({ page }) => {
@@ -249,6 +252,16 @@ test('Chinese Lab keeps its entry label localized', async ({ page }) => {
   await expect(page.locator('.motion-chapter-input > span')).toHaveText('01 — INPUT');
   await expect(page.locator('.motion-artifacts')).toHaveText('SYMBOL+FOOTPRINT+3D MODEL');
   await expect(page.locator('.morph-orbit-import')).toHaveText('ORBIT ↥');
+});
+
+test('Chinese case summaries keep evidence terms localized', async ({ page }) => {
+  await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.case-card').nth(0)).toContainText('CAD 测试样本');
+  await expect(page.locator('.case-card').nth(2)).toContainText('BOM 测试样本');
+  const chineseSummaries = await page.locator('.case-card > p').allTextContents();
+  expect(chineseSummaries.join(' ')).not.toContain('fixture');
+  await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.case-card').nth(0)).toContainText('CAD fixtures');
 });
 
 test('download cards show the actual Release asset architectures', async ({ page }) => {

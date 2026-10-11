@@ -118,3 +118,7 @@
 - Issue: The homepage body copy was localized, but Hero overlays, marquee labels, story-card stages, and output status still mixed in English, weakening the first-screen language hierarchy.
 - Changes: Localized the Chinese homepage component-library, BOM status, output, story-stage, and completion labels while retaining technical abbreviations such as GUI, CLI, and EDA.
 - Validation: Added Chinese homepage microcopy assertions and ran the build, site validation, asset gate, and 54 browser tests.
+## 2026-10-11 — Finish Chinese homepage and evidence copy
+- Issue: The download stamp still showed an English slogan, and Chinese case summaries exposed `CAD fixture` and `BOM fixture` instead of the page's localized evidence terminology.
+- Changes: Changed the homepage stamp to “开源工具 / 为工程师而做” and localized fixture terminology in Chinese summaries while retaining the real repository paths in evidence links.
+- Validation: Added homepage-stamp and case-summary assertions and ran the build, site validation, asset gate, and 56 browser tests.
