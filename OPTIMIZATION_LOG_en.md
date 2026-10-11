@@ -82,3 +82,7 @@
 - Issue: Case cards already linked fixtures and tests, but the heading lacked format-matrix and source-evidence paths, and the distinction between automated evidence and manual acceptance was not immediately visible.
 - Changes: Added bilingual case-study actions, marked each card as automated evidence, and retained the manual-acceptance disclaimer at the bottom.
 - Validation: Added bilingual case-path and evidence-scope coverage and ran the build, site validation, asset gate, and browser tests.
+## 2026-10-11 — Align bilingual homepage navigation
+- Issue: The Chinese homepage mixed `Formats`, `3D Lab`, and `Docs` in its navigation and footer, while the English Download entry already existed; adding a duplicate entry was unnecessary.
+- Changes: Localized the Chinese desktop, mobile, and footer entries to “格式矩阵”, “3D 实验室”, and “文档” while preserving the same product destinations in both languages.
+- Validation: Added bilingual homepage navigation-destination coverage and ran the build, site validation, asset gate, and browser tests.

@@ -189,6 +189,17 @@ test('bilingual homepages keep the same interaction rhythm', async ({ page }) =>
   }
 });
 
+test('bilingual homepages expose localized navigation destinations', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.nav-links a[href="#formats"]')).toHaveText('格式矩阵');
+  await expect(page.locator('.nav-links a[href="lab/"]')).toHaveText('3D 实验室');
+  await expect(page.locator('.mobile-nav a[href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"]')).toHaveText('文档');
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.nav-links a[href="#download"]')).toHaveText('Download');
+  await expect(page.locator('.mobile-nav a[href="#download"]')).toHaveText('Download');
+});
+
 test('Lab runtime assets remain reachable from nested routes', async ({ request }) => {
   for (const asset of [
     '/assets/vendor/occt-import-js.js',
