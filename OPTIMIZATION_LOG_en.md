@@ -323,3 +323,9 @@
 - **Issue**: The Lab already explained its GLB, STEP/WASM and homepage-isolation behavior, but the information was concentrated in a long paragraph instead of being quickly scannable on entry.
 - **Change**: Added a bilingual status summary for “GLB first”, “STEP / WASM fallback” and “homepage isolated”; the narrow layout stacks the facts compactly while preserving the technical copy hierarchy.
 - **Validation**: Added bilingual loading-strategy assertions and reran the build, site validation, asset checks and the complete browser suite.
+
+## 2026-10-12 — Repair the 3D Lab view switcher and align delivery copy
+
+- **Issue**: The Lab's Atlas, Tomogram and Oracle buttons were clickable but did not update the stage state or selected marker; the default label also said “A REAL STEP MODEL” even though GLB is the preferred delivery path.
+- **Change**: Restored view-state, bilingual label and caption synchronization; the default model now identifies itself as a “GLB DELIVERY MODEL” generated from STEP geometry.
+- **Validation**: Added bilingual artifact-switcher regression coverage, updated the performance baseline, and reran the build, site validation, asset checks and the complete browser suite.

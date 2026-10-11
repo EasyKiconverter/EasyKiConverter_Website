@@ -12,7 +12,7 @@
 - Release 数据由 `tools/sync_release.py` 在构建期生成；CI 设置 `RELEASE_SYNC_REQUIRED=1`，网络或 API 异常会让构建失败。
 - `master` 与 `version/V0.0.1` 已启用 PR、至少一名审批、强制通过 `Static site checks` 与 `Dependency Review`、禁止强推和会话解决门禁。
 - 2026-10-11 已在 `https://easykiconverter.org.cn/` 验证八个生产路由返回 HTTP 200；首页不加载 3D 运行时，`/lab/` 与 `/en/lab/` 的同源模型资源可访问，旧版根路径 `.msix` 下载链接仍可用。
-- 2026-10-11 使用 Chromium SwiftShader 访问生产 `/lab/`，真实 STEP 模型成功加载（`278,784` 个三角面、无 fallback、无控制台错误），工具入口初始化完成且默认收起。
+- 2026-10-11 使用 Chromium SwiftShader 访问生产 `/lab/`，由 STEP 几何生成的 GLB 模型成功加载（`278,784` 个三角面、无 fallback、无控制台错误），工具入口初始化完成且默认收起。
 - 2026-10-11 生产桌面 GLB 与移动 GLB 均返回 `model/gltf-binary`，分别约 9.6 MB 与 8.1 MB，并带有 `max-age=2592000`；WASM 返回 `application/wasm` 并带有同等长期缓存策略。
 
 ## 资源边界
