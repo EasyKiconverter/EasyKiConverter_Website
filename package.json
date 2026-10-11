@@ -5,16 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build",
+    "build": "pnpm run release:sync && astro check && astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "release:sync": "python3 tools/sync_release.py",
+    "test:browser": "playwright test"
   },
   "dependencies": {
-    "astro": "7.3.3",
-    "three": "0.186.0"
+    "astro": "7.3.8",
+    "three": "0.186.1"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
+    "@playwright/test": "1.64.0",
     "@types/three": "0.186.0",
     "typescript": "5.9.3"
   }

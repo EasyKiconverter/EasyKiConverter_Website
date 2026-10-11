@@ -2,7 +2,7 @@
 
 [中文](README.md)
 
-The official EasyKiConverter website, built with Astro, TypeScript, Three.js and OpenCascade/WASM, with a Chinese homepage and an indexable English entry point.
+The official EasyKiConverter website, built with Astro and TypeScript. The Chinese homepage and indexable English entry point stay lightweight; Three.js and OpenCascade/WASM load on demand in the isolated 3D Lab.
 
 ## Project Structure
 
@@ -12,14 +12,14 @@ The official EasyKiConverter website, built with Astro, TypeScript, Three.js and
 │   ├── components/         # Shared components used by both locales
 │   ├── pages/              # Chinese, English, and SEO routes
 │   ├── css/                # Page styles and visual effects
-│   └── js/                 # Interactions, 3D rendering, and STEP worker
+│   └── js/                 # Interactions; 3D Lab rendering and STEP worker
 ├── public/assets/          # Icons, models, screenshots, and runtime assets
 ├── tools/                  # Local build and site-validation scripts
 ├── docs/                   # Architecture, development, deployment, and performance docs
 └── .github/workflows/      # GitHub Actions workflows
 ```
 
-The homepage uses a pinned OpenCascade/WASM STEP importer to build a real mesh in the browser. `src/js/step-worker.ts` performs parsing and mesh preparation in a Web Worker while `src/js/model-viewer.ts` uses Three.js for rendering, keeping the main thread responsive. The original `public/assets/model/Easykiconverter_展示模型.step` is stored beside its model documentation; its measurements, triangle budget, fallback behavior and planned STEP → GLB pipeline are documented in [3D model pipeline](public/assets/model/README.md).
+The homepage is a lightweight product presentation using the real Qt Quick screenshot, CSS depth and download links; it does not load the CAD runtime. See the [EDA format matrix](src/pages/formats/index.astro) for capability scope and the [traceable conversion cases](src/pages/cases/index.astro) for test-backed examples. The former STEP/Three.js research work is isolated at [`/lab/`](src/pages/lab/index.astro). There, `src/js/step-worker.ts` prepares meshes in a Web Worker and `src/js/model-viewer.ts` renders the experiments. The model source, measurements and planned STEP → GLB work are documented in [3D model pipeline](public/assets/model/README.md).
 
 Put pages in `src/pages/` and reusable page sections in `src/components/`; keep styles in `src/css/`, scripts in `src/js/`, and images, models, icons, or runtime assets in `public/assets/`. There is no root-level `assets/` directory. Do not add source files or resources directly to the repository root.
 
@@ -32,7 +32,7 @@ pnpm install
 pnpm dev
 ```
 
-For a production build, run `pnpm run build` and preview it with `pnpm run preview`. Do not open the page through `file://`: browsers block STEP/WASM reads, which makes local rendering differ from production.
+For a production build, run `pnpm run build` and preview it with `pnpm run preview`. Do not open the 3D Lab through `file://`; browsers block STEP/WASM reads, which makes local rendering differ from production.
 
 See [deployment and preview parity](docs/DEPLOYMENT_en.md) for self-hosting and release checks. To simulate a production subpath, serve the repository parent directory and open `http://localhost:4174/EasyKiConverter_Website/`.
 

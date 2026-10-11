@@ -22,10 +22,14 @@
 ### 本地验证
 
 ```bash
-python3 -m http.server 4173
+pnpm install
+pnpm run check
+pnpm run build
+python3 tools/validate_site.py
+pnpm run test:browser
 ```
 
-请检查桌面端和移动端布局、页面导航、外部链接、浏览器控制台、`prefers-reduced-motion`，以及资源路径是否正确。
+请检查桌面端和移动端布局、页面导航、外部链接、浏览器控制台、`prefers-reduced-motion`、八个构建路由以及首页与 3D Lab 的资源边界。
 
 ## English
 
@@ -47,7 +51,11 @@ Thank you for contributing to EasyKiConverter Website.
 ### Local Validation
 
 ```bash
-python3 -m http.server 4173
+pnpm install
+pnpm run check
+pnpm run build
+python3 tools/validate_site.py
+pnpm run test:browser
 ```
 
-Check desktop and mobile layouts, navigation, external links, browser-console errors, `prefers-reduced-motion`, and resource paths.
+Check desktop and mobile layouts, navigation, external links, browser-console errors, `prefers-reduced-motion`, all eight built routes, and the homepage/Lab resource boundary.

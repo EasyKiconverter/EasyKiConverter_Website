@@ -1,0 +1,24 @@
+---
+import { targetFormats } from "../data/formats";
+interface Props { lang: "zh" | "en"; }
+const { lang } = Astro.props;
+const en = lang === "en";
+---
+
+<section class="format-matrix shell" aria-labelledby="format-matrix-title">
+  <div class="format-matrix-heading">
+    <p class="kicker">{en ? "VERSIONED CAPABILITY" : "版本化能力"}</p>
+    <h1 id="format-matrix-title">{en ? "EDA format capability matrix" : "EDA 格式能力矩阵"}</h1>
+    <p>{en ? "This page reports targets registered in the current main-project source. It does not promise that every symbol, footprint, 3D model or edge case is supported by every release." : "本页列出主项目当前源码中注册的目标格式。不把目标名称误读为每个版本都完整支持所有符号、封装、3D 模型和特殊对象。"}</p>
+  </div>
+  <div class="format-table-wrap">
+    <table>
+      <caption>{en ? "Registered export targets" : "已注册导出目标"}</caption>
+      <thead><tr><th>ID</th><th>{en ? "Target" : "目标"}</th><th>{en ? "Evidence status" : "证据状态"}</th></tr></thead>
+      <tbody>
+        {targetFormats.map((format) => <tr><th scope="row"><code>{format.id}</code></th><td>{format.name}</td><td>{en ? format.en : format.zh}</td></tr>)}
+      </tbody>
+    </table>
+  </div>
+  <p class="format-matrix-note">{en ? "For release-specific behavior, consult the main project's Release notes and tests before using a target in production." : "正式使用某个目标格式前，请以主项目对应 Release 说明和测试结果为准。"}</p>
+</section>

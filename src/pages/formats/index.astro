@@ -1,0 +1,12 @@
+---
+import "../../css/styles.css";
+import "../../css/accessibility.css";
+import "../../css/formats.css";
+import FormatMatrix from "../../components/FormatMatrix.astro";
+const siteRoot = new URL(import.meta.env.SITE);
+const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
+const pageUrl = new URL("formats/", siteBase);
+const englishUrl = new URL("en/formats/", siteBase);
+---
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="description" content="EasyKiConverter 版本化 EDA 格式能力矩阵。" /><link rel="canonical" href={pageUrl} /><link rel="alternate" hreflang="zh-CN" href={pageUrl} /><link rel="alternate" hreflang="en" href={englishUrl} /><link rel="alternate" hreflang="x-default" href={pageUrl} /><title>EasyKiConverter · EDA 格式能力矩阵</title></head><body><header class="site-header shell"><a class="brand" href={siteBase.href}>EasyKiConverter</a><nav class="nav-links" aria-label="页面导航"><a href={siteBase.href}>首页</a><a href={englishUrl}>English</a></nav></header><main><FormatMatrix lang="zh" /></main><footer class="site-footer shell"><p>© EasyKiConverter · GPL-3.0</p><a href={siteBase.href}>返回首页</a></footer></body></html>

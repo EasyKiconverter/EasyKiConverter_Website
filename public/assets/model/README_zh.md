@@ -4,7 +4,7 @@
 
 源资产 `Easykiconverter_展示模型.step` 与本文档位于同一目录。它是来自 EasyEDA Pro / Open CASCADE 7.8 的 ASCII STEP 文件；源文件包含 48,420 条 `CARTESIAN_POINT` 记录，边界尺寸约为 60.74 × 47.28 × 18.00 mm。
 
-当前网站通过固定版本的 `occt-import-js` 0.0.23 OpenCascade/WASM 运行时，在浏览器中直接读取 STEP。`src/js/step-worker.ts` 在 Web Worker 中负责加载、三角化、从实际顶点计算边界并归一化网格；`src/js/model-viewer.ts` 接收可转移的顶点/索引缓冲区，再通过 Three.js 渲染。浏览器不需要安装 CAD 软件，原始 STEP 也不会被替换或删除。如果 WebGL、WASM、Worker 或 STEP 资源不可用，页面内容仍保留并显示样式化回退画面。
+独立的 3D Lab 会按需通过固定版本的 `occt-import-js` 0.0.23 OpenCascade/WASM 运行时，在浏览器中读取 STEP；官网首页不会加载该运行时。`src/js/step-worker.ts` 在 Web Worker 中负责加载、三角化、从实际顶点计算边界并归一化网格；`src/js/model-viewer.ts` 接收可转移的顶点/索引缓冲区，再通过 Three.js 渲染。如果 WebGL、WASM、Worker 或 STEP 资源不可用，Lab 内容仍保留并显示样式化回退画面。
 
 运行参数为 `linearUnit: millimeter`、`linearDeflectionType: bounding_box_ratio`、`angularDeflection: 0.16`。stage 宽度至少 520px 时 `linearDeflection` 为 `0.004`，低于 520px 时为 `0.007`。这些值影响三角化精度，但不限制三角形总量；当前 Worker 会传输所有生成的可渲染三角形。参数实现位置是 `src/js/model-viewer.ts` 与 `src/js/step-worker.ts`。源文件 SHA256：`4310cdcbb920625dfdea4baac3855ec2fce4b7281ce335762c10791f0da939ce`。
 

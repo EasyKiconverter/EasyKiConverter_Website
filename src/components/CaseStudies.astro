@@ -1,0 +1,27 @@
+---
+import { caseStudies } from "../data/cases";
+interface Props { lang: "zh" | "en"; }
+const { lang } = Astro.props;
+const en = lang === "en";
+const repository = "https://github.com/EasyKiconverter/EasyKiConverter";
+---
+
+<section class="case-studies shell" aria-labelledby="case-studies-title">
+  <div class="case-studies-heading">
+    <p class="kicker">{en ? "TRACEABLE EXAMPLES" : "可追溯案例"}</p>
+    <h1 id="case-studies-title">{en ? "From fixture to library." : "从测试样本，到库文件。"}</h1>
+    <p>{en ? "These are evidence-led cases, not claims that every target supports every object. Follow the fixture and test links before treating a workflow as production-ready." : "这些是以证据为中心的案例，不代表每个目标格式支持所有对象。将某条流程用于生产前，请沿着测试样本和测试链接复核。"}</p>
+  </div>
+  <div class="case-grid">
+    {caseStudies.map((item, index) => <article class="case-card" id={item.id}>
+      <span class="case-number">0{index + 1}</span>
+      <h2>{en ? item.titleEn : item.titleZh}</h2>
+      <p>{en ? item.summaryEn : item.summaryZh}</p>
+      <dl>
+        <div><dt>{en ? "Fixture" : "测试样本"}</dt><dd><a href={`${repository}/blob/master/${item.fixture}`} target="_blank" rel="noreferrer"><code>{item.fixture}</code> ↗</a></dd></div>
+        <div><dt>{en ? "Test evidence" : "测试证据"}</dt><dd><a href={`${repository}/blob/master/${item.test}`} target="_blank" rel="noreferrer"><code>{item.test}</code> ↗</a></dd></div>
+      </dl>
+    </article>)}
+  </div>
+  <p class="case-disclaimer">{en ? "Evidence scope: repository fixtures and automated integration tests. Manual validation in KiCad, Altium or another EDA is a separate release gate." : "证据范围：仓库测试样本与自动化集成测试。在 KiCad、Altium 或其他 EDA 中的人工验证属于独立的版本门禁。"}</p>
+</section>

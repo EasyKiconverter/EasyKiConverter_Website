@@ -7049,12 +7049,14 @@ export const setupModel = (): void => {
   });
 
   const onPointerMove = (event: PointerEvent): void => {
+    if (state.reducedMotion) return;
     state.pointerX = event.clientX / Math.max(1, window.innerWidth) - 0.5;
     state.pointerY = event.clientY / Math.max(1, window.innerHeight) - 0.5;
     wake();
   };
   stage.addEventListener("pointermove", onPointerMove, { passive: true });
   stage.addEventListener("pointerleave", () => {
+    if (state.reducedMotion) return;
     state.pointerX = 0;
     state.pointerY = 0;
     wake();
@@ -7067,7 +7069,9 @@ export const setupModel = (): void => {
     },
     { passive: true },
   );
-  window.addEventListener("scroll", wake, { passive: true });
+  window.addEventListener("scroll", () => {
+    if (!state.reducedMotion) wake();
+  }, { passive: true });
   document.addEventListener("visibilitychange", wake);
   const motionPreference = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
