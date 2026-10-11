@@ -122,3 +122,7 @@
 - Issue: The download stamp still showed an English slogan, and Chinese case summaries exposed `CAD fixture` and `BOM fixture` instead of the page's localized evidence terminology.
 - Changes: Changed the homepage stamp to “开源工具 / 为工程师而做” and localized fixture terminology in Chinese summaries while retaining the real repository paths in evidence links.
 - Validation: Added homepage-stamp and case-summary assertions and ran the build, site validation, asset gate, and 56 browser tests.
+## 2026-10-11 — Add a format-matrix capability summary
+- Issue: The matrix exposed row-level statuses, but users had to count stable and registered targets themselves, and the status column did not state its release-oriented meaning directly.
+- Changes: Added a bilingual target-count summary near the heading, renamed the table column to “Release status / 版本状态”, and retained the visual distinction between stable targets and targets requiring Release verification.
+- Validation: Added bilingual summary and header assertions and ran the build, site validation, asset gate, and 56 browser tests.
