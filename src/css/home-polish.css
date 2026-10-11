@@ -6,6 +6,22 @@
   padding-bottom: 112px;
 }
 
+.platform-list > div {
+  grid-template-columns: 1fr 1fr auto 35px;
+}
+
+.platform-list .platform-count {
+  color: var(--ink);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+@media (max-width: 850px) {
+  .platform-list > div {
+    grid-template-columns: 1fr 1fr auto 35px;
+  }
+}
+
 .hero h1 {
   max-width: 640px;
   font-size: clamp(58px, 5.6vw, 78px);

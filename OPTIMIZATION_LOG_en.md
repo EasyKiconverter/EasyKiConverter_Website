@@ -153,3 +153,9 @@
 - **Issue**: The Formats matrix and conversion cases linked Release and test evidence, but users had to infer which version range the evidence described.
 - **Change**: Added a shared bilingual evidence-summary strip showing the current Release baseline and the number of targets or traceable cases.
 - **Validation**: Added evidence-summary assertions for both pages; build, site validation, asset checks and browser tests pass.
+
+## 2026-10-12 — Show downloadable asset counts in the platform summary
+
+- **Issue**: The homepage platform section listed architectures, but users still had to inspect the download cards to learn how many assets each platform offered; the bilingual summaries lacked the same information hierarchy.
+- **Change**: Kept the platform summary derived from `latestRelease.assets` and added the actual asset count for Windows, Linux and macOS, with matching bilingual accessible labels.
+- **Validation**: Added assertions for the 2/3/2 platform asset counts; build, site validation, asset checks, desktop/mobile render checks and all 62 browser tests pass.
