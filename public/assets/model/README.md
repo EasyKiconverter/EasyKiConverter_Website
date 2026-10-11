@@ -4,7 +4,7 @@ The source asset is stored beside this document as `Easykiconverter_展示模型
 
 [中文](README_zh.md)
 
-The current website loads the source directly in the browser with the pinned `occt-import-js` 0.0.23 OpenCascade/WASM runtime. `src/js/step-worker.ts` performs loading, triangulation, bounds calculation and mesh normalization in a Web Worker; `src/js/model-viewer.ts` receives transferable vertex/index buffers and renders them through Three.js. The browser never needs a CAD application, and the original STEP file is not replaced or deleted. If WebGL, WASM, the Worker or the STEP asset fails, the page keeps its content and uses the styled visual fallback.
+The isolated 3D Lab loads the source on demand with the pinned `occt-import-js` 0.0.23 OpenCascade/WASM runtime. The homepage does not load this runtime. `src/js/step-worker.ts` performs loading, triangulation, bounds calculation and mesh normalization in a Web Worker; `src/js/model-viewer.ts` receives transferable vertex/index buffers and renders them through Three.js. If WebGL, WASM, the Worker or the STEP asset fails, the Lab keeps its content and uses the styled visual fallback.
 
 Runtime parameters are `linearUnit: millimeter`, `linearDeflectionType: bounding_box_ratio`, and `angularDeflection: 0.16`. `linearDeflection` is `0.004` when the stage is at least 520px wide and `0.007` below that threshold. These values affect tessellation quality; they do not impose a hard triangle cap. The worker currently transfers all generated renderable triangles. Source SHA256: `4310cdcbb920625dfdea4baac3855ec2fce4b7281ce335762c10791f0da939ce`.
 

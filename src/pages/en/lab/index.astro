@@ -1,0 +1,48 @@
+---
+import "../../../css/styles.css";
+import "../../../css/accessibility.css";
+import "../../../css/motion-narrative.css";
+import "../../../css/lab.css";
+import MotionNarrative from "../../../components/MotionNarrative.astro";
+const siteRoot = new URL(import.meta.env.SITE);
+const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
+const pageUrl = new URL("en/lab/", siteBase);
+const chineseUrl = new URL("lab/", siteBase);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="EasyKiConverter 3D Lab: an on-demand interactive study of real STEP geometry, meshes and sections." />
+    <link rel="canonical" href={pageUrl} />
+    <link rel="alternate" hreflang="zh-CN" href={chineseUrl} />
+    <link rel="alternate" hreflang="en" href={pageUrl} />
+    <link rel="alternate" hreflang="x-default" href={chineseUrl} />
+    <meta property="og:title" content="EasyKiConverter · 3D Technology Lab" />
+    <meta property="og:description" content="An isolated STEP, mesh and section laboratory that does not affect homepage loading." />
+    <meta property="og:url" content={pageUrl} />
+    <title>EasyKiConverter · 3D Technology Lab</title>
+  </head>
+  <body>
+    <header class="lab-header shell">
+      <a class="brand" href={siteBase.href} aria-label="Return to EasyKiConverter home">EasyKiConverter / Lab</a>
+      <nav aria-label="Lab navigation"><a href={siteBase.href}>Home</a><a href={chineseUrl}>中文</a></nav>
+    </header>
+    <main>
+      <section class="lab-intro" aria-labelledby="lab-title">
+        <p class="kicker">ON DEMAND · EXPERIMENTAL 3D</p>
+        <h1 id="lab-title">Real geometry, isolated experiments.</h1>
+        <p>This lab retains the STEP, Three.js, section and topology research work. The homepage stays lightweight; CAD/WASM loads only when this lab is opened.</p>
+        <p class="lab-warning">The lab loads about 19 MB of experimental assets. Use a desktop browser for technical validation; return home for product information and downloads.</p>
+      </section>
+      <MotionNarrative lang="en" />
+    </main>
+    <footer class="site-footer shell"><p>© EasyKiConverter · GPL-3.0</p><a href={siteBase.href}>Return home</a></footer>
+    <script>
+      import { setupModel } from "../../../js/model-viewer";
+      setupModel();
+    </script>
+  </body>
+</html>

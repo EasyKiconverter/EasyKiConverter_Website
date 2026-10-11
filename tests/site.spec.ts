@@ -47,3 +47,18 @@ test('reduced motion keeps content visible without marquee animation', async ({ 
   await expect(page.locator('.marquee').first()).toHaveCSS('animation-name', 'none');
   await context.close();
 });
+
+test('the heavy 3D runtime is isolated to the Lab route', async ({ request }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    const response = await request.get(path);
+    expect(response.ok()).toBeTruthy();
+    expect(await response.text()).toContain('model-canvas');
+  }
+  for (const path of ['/', '/en/']) {
+    const response = await request.get(path);
+    const html = await response.text();
+    expect(response.ok()).toBeTruthy();
+    expect(html).not.toContain('model-viewer');
+    expect(html).not.toContain('occt-import');
+  }
+});

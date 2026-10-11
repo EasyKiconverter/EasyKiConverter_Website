@@ -4,7 +4,7 @@
 
 ## 本地预览
 
-不要直接打开生成的 HTML 使用 `file://`。浏览器会阻止页面从本地文件读取 STEP 和 WASM，导致本地看到的模型与线上不一致。
+不要直接打开 3D Lab 的 HTML 使用 `file://`。浏览器会阻止页面读取 STEP 和 WASM；首页的静态内容虽然可见，但这不能验证 Lab 的线上行为。
 
 ```bash
 pnpm install
@@ -28,7 +28,7 @@ pnpm run preview
 
 - `dist/index.html`、`dist/en/index.html`
 - `dist/_astro/`、`dist/assets/`
-- `dist/assets/model/Easykiconverter_展示模型.step`
+- `dist/assets/model/Easykiconverter_展示模型.step`（若部署 3D Lab）
 - `robots.txt`、`sitemap.xml`
 
 服务器至少需要正确返回这些 MIME 类型：
@@ -50,4 +50,4 @@ python3 tools/validate_site.py
 git diff --check
 ```
 
-在实际域名上检查：中文首页、`/en/`、导航锚点、下载链接、STEP 模型加载、移动宽度、减少动态效果设置，以及浏览器控制台没有错误。发布服务器上的浏览器访问应使用 `http://` 或 `https://`，不能用 `file://`。
+在实际域名上检查：中文首页、`/en/`、`/lab/`、`/en/lab/`、导航锚点、下载链接、移动宽度、减少动态效果设置，以及浏览器控制台没有错误。首页和 Lab 的资源边界应分别核对；发布服务器上的浏览器访问应使用 `http://` 或 `https://`，不能用 `file://`。

@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build",
+    "build": "pnpm run release:sync && astro check && astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "release:sync": "python3 tools/sync_release.py",
     "test:browser": "playwright test"
   },
   "dependencies": {
