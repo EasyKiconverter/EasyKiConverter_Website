@@ -24,7 +24,7 @@ Then open `http://localhost:4174/EasyKiConverter_Website/`. Relative asset paths
 
 ## Self-hosted server
 
-Sync the repository contents to the web root or target subdirectory and configure the server to serve that directory as static files. Keep these files available:
+Sync only the generated `dist/` contents to the web root or target subdirectory; do not serve the source repository directly. Keep these files available:
 
 - `dist/index.html`, `dist/en/index.html`
 - `dist/_astro/`, `dist/assets/`

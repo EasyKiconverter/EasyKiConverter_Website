@@ -24,7 +24,7 @@ pnpm run preview
 
 ## 自有服务器
 
-将仓库内容原样同步到 Web 根目录或目标子目录，并配置服务器将该目录作为静态文件根目录。必须保留以下文件：
+只将构建生成的 `dist/` 内容同步到 Web 根目录或目标子目录，不要把源码仓库直接作为静态根目录。必须保留以下文件：
 
 - `dist/index.html`、`dist/en/index.html`
 - `dist/_astro/`、`dist/assets/`

@@ -12,6 +12,7 @@
 
 - [ ] 已使用 `pnpm run build` 和 `pnpm run preview` 本地预览
 - [ ] 已运行 `python3 tools/validate_site.py` 和 `git diff --check`
+- [ ] 已运行 `pnpm run test:browser`（涉及页面或交互时必须）
 - [ ] 若涉及发布路径，已验证仓库子路径 `/EasyKiConverter_Website/`
 - [ ] 已检查桌面端和移动端布局
 - [ ] 已检查导航、外部链接和浏览器控制台
@@ -40,6 +41,7 @@
 
 - [ ] Previewed locally with `pnpm run build` and `pnpm run preview`
 - [ ] Ran `python3 tools/validate_site.py` and `git diff --check`
+- [ ] Ran `pnpm run test:browser` when pages or interactions are affected
 - [ ] When deployment paths are affected, verified `/EasyKiConverter_Website/` as a repository subpath
 - [ ] Checked desktop and mobile layouts
 - [ ] Checked navigation, external links, and browser console
