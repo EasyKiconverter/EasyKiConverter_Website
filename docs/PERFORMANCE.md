@@ -5,7 +5,7 @@
 ## 当前边界
 
 - 中文首页 `/` 和英文首页 `/en/` 使用 WebP 产品截图、CSS 空间效果和少量页面脚本，不加载 STEP、OpenCascade/WASM 或 Three.js 模型运行时。
-- 3D Lab `/lab/` 与 `/en/lab/` 才会加载约 11 MB STEP、约 7.3 MB WASM 和模型脚本；这是按需的实验资源，不是首页基线。
+- 3D Lab `/lab/` 与 `/en/lab/` 默认按需加载约 9.6 MB GLB 和模型脚本；GLB 缺失时才回退到约 11 MB STEP、约 7.3 MB WASM 的解析路径，这是实验资源，不是首页基线。
 - 首页首屏资源使用 `public/assets/showcase/*.webp`；原始 PNG、STEP 和 WASM 仍保留用于溯源或实验室，尚未从发布目录迁移。
 - `src/js/app.ts` 的交互只在页面可见时维护动画，并对 `prefers-reduced-motion` 提供静态路径。
 
@@ -25,4 +25,4 @@ pnpm run test:browser
 
 ## 资产决策
 
-STEP 是实验室的工程源资产，GLB 离线交付管线仍是后续优化项。首页不应重新引入浏览器 CAD 三角化；若 Lab 成为正式产品功能，必须单独建立模型体积、三角形预算和 fallback 的浏览器基准。
+STEP 是实验室的工程源资产，GLB 由 `tools/prepare_model_asset.py` 离线生成并作为默认 Web 交付资产。首页不应重新引入浏览器 CAD 三角化；若 Lab 成为正式产品功能，仍必须单独建立模型体积、三角形预算和 fallback 的浏览器基准。

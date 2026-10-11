@@ -96,6 +96,7 @@ export const setupModel = async (): Promise<void> => {
   stage?.setAttribute("data-controls-ready", "true");
 
   const THREE = await import("three");
+  const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
   const canvas = document.querySelector<HTMLCanvasElement>("#model-canvas");
   const atlasCanvas = stage?.querySelector<HTMLCanvasElement>("[data-mesh-atlas]");
   const atlasContext = atlasCanvas?.getContext("2d") ?? null;
@@ -7050,32 +7051,84 @@ export const setupModel = async (): Promise<void> => {
     wake();
   };
 
-  const worker = new Worker(new URL("./step-worker.ts", import.meta.url), {
-    type: "classic",
-  });
-  worker.onmessage = ({ data }: MessageEvent<MeshMessage>): void => {
-    if (data.type === "mesh" && data.meshes?.length && data.triangleCount && data.modelSpanMm)
-      uploadMesh(data.meshes, data.triangleCount, data.modelSpanMm, data.modelCenterMm ?? []);
-    else {
-      stage.classList.add("model-fallback");
-      console.warn("STEP model fallback:", data.message);
-    }
-    worker.terminate();
-  };
-  worker.onerror = (error): void => {
-    stage.classList.add("model-fallback");
-    console.warn("STEP model fallback:", error.message);
-    worker.terminate();
-  };
   // Resolve Lab assets from Astro's configured deployment base, not from the
   // current language route. `/lab/` and `/en/lab/` are both nested pages.
   const assetRoot = new URL(import.meta.env.BASE_URL, document.baseURI);
-  const modelQuality = stage.clientWidth < 520 ? 0.007 : 0.004;
-  worker.postMessage({
-    stepUrl: new URL("assets/model/Easykiconverter_展示模型.step", assetRoot).href,
-    vendorRoot: new URL("assets/vendor/", assetRoot).href,
-    linearDeflection: modelQuality,
-  });
+  const startStepWorker = (): void => {
+    const worker = new Worker(new URL("./step-worker.ts", import.meta.url), {
+      type: "classic",
+    });
+    worker.onmessage = ({ data }: MessageEvent<MeshMessage>): void => {
+      if (data.type === "mesh" && data.meshes?.length && data.triangleCount && data.modelSpanMm) {
+        stage.dataset.modelSource = "step-worker";
+        uploadMesh(data.meshes, data.triangleCount, data.modelSpanMm, data.modelCenterMm ?? []);
+      } else {
+        stage.classList.add("model-fallback");
+        console.warn("STEP model fallback:", data.message);
+      }
+      worker.terminate();
+    };
+    worker.onerror = (error): void => {
+      stage.classList.add("model-fallback");
+      console.warn("STEP model fallback:", error.message);
+      worker.terminate();
+    };
+    const modelQuality = stage.clientWidth < 520 ? 0.007 : 0.004;
+    worker.postMessage({
+      stepUrl: new URL("assets/model/Easykiconverter_展示模型.step", assetRoot).href,
+      vendorRoot: new URL("assets/vendor/", assetRoot).href,
+      linearDeflection: modelQuality,
+    });
+  };
+
+  const loadGlb = (): void => {
+    const loader = new GLTFLoader();
+    loader.load(
+      new URL("assets/model/Easykiconverter_展示模型.glb", assetRoot).href,
+      (gltf) => {
+        try {
+          const meshes: NonNullable<MeshMessage["meshes"]> = [];
+          gltf.scene.traverse((object) => {
+            if (!(object instanceof THREE.Mesh)) return;
+            const position = object.geometry.getAttribute("position");
+            if (!position) return;
+            const positions = Float32Array.from(position.array as ArrayLike<number>);
+            const indices = object.geometry.index
+              ? Uint32Array.from(object.geometry.index.array as ArrayLike<number>)
+              : (() => {
+                  const generated = new Uint32Array(positions.length / 3);
+                  for (let index = 0; index < generated.length; index += 1) generated[index] = index;
+                  return generated;
+                })();
+            const material = Array.isArray(object.material) ? object.material[0] : object.material;
+            const color = material instanceof THREE.MeshStandardMaterial
+              ? [material.color.r, material.color.g, material.color.b]
+              : [0.52, 0.71, 0.62];
+            meshes.push({ positions: positions.buffer, indices: indices.buffer, color });
+          });
+          const triangleCount = meshes.reduce((total, mesh) => total + mesh.indices.byteLength / Uint32Array.BYTES_PER_ELEMENT / 3, 0);
+          const asset = gltf.asset as { extras?: { sourceModelSpanMm?: number; sourceModelCenterMm?: number[] } };
+          if (!meshes.length || !triangleCount) throw new Error("GLB contains no renderable meshes");
+          stage.dataset.modelSource = "glb";
+          uploadMesh(
+            meshes,
+            triangleCount,
+            asset.extras?.sourceModelSpanMm ?? 1,
+            asset.extras?.sourceModelCenterMm ?? [0, 0, 0],
+          );
+        } catch (error) {
+          console.warn("GLB model fallback:", error instanceof Error ? error.message : String(error));
+          startStepWorker();
+        }
+      },
+      undefined,
+      (error) => {
+        console.warn("GLB model fallback:", error instanceof Error ? error.message : String(error));
+        startStepWorker();
+      },
+    );
+  };
+  loadGlb();
 
   const onPointerMove = (event: PointerEvent): void => {
     if (state.reducedMotion) return;

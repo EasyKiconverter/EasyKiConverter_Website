@@ -80,6 +80,7 @@ test('Lab runtime assets remain reachable from nested routes', async ({ request 
     '/assets/vendor/occt-import-js.js',
     '/assets/vendor/occt-import-js.wasm',
     '/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B.step',
+    '/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B.glb',
   ]) {
     const response = await request.get(asset);
     expect(response.ok()).toBeTruthy();
@@ -95,6 +96,12 @@ test('Lab advanced controls are collapsed until explicitly opened', async ({ pag
   await toggle.click({ force: true });
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('.morph-horizon')).toBeVisible();
+});
+
+test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
+  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-model-stage]')).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+  await expect(page.locator('[data-model-stage]')).not.toHaveClass(/model-fallback/);
 });
 
 test('sitemap lists every public bilingual route', async ({ request }) => {
