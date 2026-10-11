@@ -90,3 +90,7 @@
 - Issue: The homepage download cards mislabeled the Windows x86_64, Linux x86_64, and macOS Apple Silicon assets, and called the SHA256 file “Release notes”.
 - Changes: Rendered the actual Release asset labels, aligned platform architecture naming, and renamed the checksum entry to SHA256 checks.
 - Validation: Added bilingual download-architecture coverage and ran the build, site validation, asset gate, and browser tests.
+## 2026-10-11 — Align current stable-release entry points
+- Issue: The homepage showed the current stable version while its hero CTA still opened the generic Release list; the format matrix did the same.
+- Changes: Pointed the hero, download, content-page, and format-matrix CTAs to the current Release data, and made runtime Release refresh update every stable-release entry.
+- Validation: Added stable-release link assertions for the hero and format matrix, then ran the build, site validation, asset gate, and browser tests.
