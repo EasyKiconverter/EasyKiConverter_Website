@@ -1105,6 +1105,7 @@ export const setupModel = async (): Promise<void> => {
   let neuralDecisionAt = 0;
   let neuralDecisionRole: SectionLoop["role"] = "outer";
   let rendering = false;
+  let reducedMotionRenderPending = true;
   const neuralMemory = stage.querySelector<HTMLElement>("[data-neural-memory]");
   const synapticStorageKey = "easyki-synaptic-memory-v1";
   const persistedSynapses = new Map<string, { weight: number; lastSeen: number }>();
@@ -3078,6 +3079,7 @@ export const setupModel = async (): Promise<void> => {
   ];
 
   const wake = (): void => {
+    if (state.reducedMotion && !reducedMotionRenderPending) return;
     if (state.visible && !document.hidden && !state.frame && (!state.reducedMotion || !rendering))
       state.frame = requestAnimationFrame(render);
   };
@@ -3257,6 +3259,7 @@ export const setupModel = async (): Promise<void> => {
   const render = (): void => {
     state.frame = 0;
     if (!state.visible || document.hidden) return;
+    if (state.reducedMotion) reducedMotionRenderPending = false;
     rendering = true;
     if (state.sliceScanning) {
       const now = performance.now();
@@ -7125,6 +7128,7 @@ export const setupModel = async (): Promise<void> => {
           const asset = gltf.asset as { extras?: { sourceModelSpanMm?: number; sourceModelCenterMm?: number[] } };
           if (!meshes.length || !triangleCount) throw new Error("GLB contains no renderable meshes");
           stage.dataset.modelSource = "glb";
+          if (state.reducedMotion) reducedMotionRenderPending = true;
           uploadMesh(
             meshes,
             triangleCount,
@@ -7176,6 +7180,7 @@ export const setupModel = async (): Promise<void> => {
   motionPreference.addEventListener("change", ({ matches }) => {
     state.reducedMotion = matches;
     if (matches) {
+      reducedMotionRenderPending = true;
       state.pointerX = 0;
       state.pointerY = 0;
       state.storyProgress = 0;
