@@ -43,6 +43,20 @@ STEP and WASM must allow same-origin GET requests. Do not add a cross-origin pol
 
 The production domain is `https://easykiconverter.org.cn/`. `astro.config.ts` uses it as the default `site` with `/` as the default `base`; canonical, `og:url`, hreflang, `sitemap.xml`, and `robots.txt` are generated from that shared configuration. If the domain or deployment path changes, set `SITE_URL` and `SITE_BASE` in the build environment rather than editing page URLs individually.
 
+## Production deployment script
+
+Use [`tools/deploy-production.sh`](../tools/deploy-production.sh) with an explicit server address. The script builds `dist/`, creates a timestamped backup, replaces the site directory exactly, validates Nginx, and reloads the service. If the Nginx check fails, it restores the previous site directory.
+
+```bash
+DEPLOY_HOST=8.137.164.32 \
+DEPLOY_USER=dennis \
+DEPLOY_PORT=2267 \
+DEPLOY_KEY="$HOME/.ssh/ChatGPT_KEY" \
+./tools/deploy-production.sh
+```
+
+The script does not touch `/var/www/downloads/`; legacy release files remain available through Nginx at `/downloads/` and the compatibility root paths.
+
 ## Release acceptance
 
 ```bash
