@@ -132,7 +132,8 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
           <div class="hero-actions">
             <a
               class="button button-dark magnetic"
-              href="https://github.com/EasyKiconverter/EasyKiConverter/releases"
+              data-release-link
+              href={latestRelease.url}
               target="_blank"
               rel="noreferrer"
             >

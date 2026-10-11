@@ -8,8 +8,8 @@ let toastTimer: number | undefined;
 
 const applyRelease = (tag: string, url: string) => {
   document.querySelectorAll('[data-release-version], .hero-facts span:first-child b, .download-copy strong').forEach((element) => { element.textContent = tag; });
-  const link = document.querySelector<HTMLAnchorElement>('[data-release-link], .download-actions .button-light');
-  if (link && url) { link.href = url; if (link.firstChild) link.firstChild.textContent = `${document.documentElement.lang === 'en' ? 'Download' : '下载'} ${tag}${link.querySelector('span') ? ' ' : ' ↗'}`; }
+  const links = document.querySelectorAll<HTMLAnchorElement>('[data-release-link], .download-actions .button-light');
+  links.forEach((link) => { if (url) { link.href = url; if (link.firstChild) link.firstChild.textContent = `${document.documentElement.lang === 'en' ? 'Download' : '下载'} ${tag}${link.querySelector('span') ? ' ' : ' ↗'}`; } });
   const schema = document.querySelector('script[type="application/ld+json"]');
   if (schema) {
     try { const data = JSON.parse(schema.textContent); data.softwareVersion = tag.replace(/^v/, ''); data.downloadUrl = url; schema.textContent = JSON.stringify(data); } catch { /* Keep the static structured-data fallback. */ }
