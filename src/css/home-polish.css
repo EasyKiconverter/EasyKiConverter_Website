@@ -6,6 +6,17 @@
   padding-bottom: 112px;
 }
 
+.platform-intro > p {
+  max-width: 400px;
+  color: var(--muted);
+  margin: 26px 0 0;
+}
+
+.platform-intro-link {
+  display: inline-block;
+  margin-top: 24px;
+}
+
 .platform-list > div {
   grid-template-columns: 1fr 1fr auto 35px;
 }
