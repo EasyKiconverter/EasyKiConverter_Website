@@ -135,6 +135,16 @@ test('homepage format summary matches the capability matrix data', async ({ page
   }
 });
 
+test('homepage format summary explains version-scoped support', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#formats')).toContainText('其他目标格式的可用范围');
+  await expect(page.locator('#formats')).not.toContainText('主项目还注册了');
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#formats')).toContainText('confirm current support');
+  await expect(page.locator('#formats')).not.toContainText('the main project also registers');
+});
+
 test('content pages keep navigation reachable on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/formats/', { waitUntil: 'networkidle' });
