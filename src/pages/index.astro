@@ -477,31 +477,11 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
               </a>
             </div>
             <div class="download-links" aria-label="Release 入口">
+              {latestRelease.assets.windows.map((asset, index) => <a data-release-asset={`windows-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Windows</b><span>{asset.label}</span></a>)}
+              {latestRelease.assets.linux.map((asset, index) => <a data-release-asset={`linux-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Linux</b><span>{asset.label}</span></a>)}
+              {latestRelease.assets.macos.map((asset, index) => <a data-release-asset={`macos-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>macOS</b><span>{asset.label}</span></a>)}
               <a
-                href={latestRelease.assets.windows[0].url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <b>Windows</b>
-                <span>{latestRelease.assets.windows[0].label}</span>
-              </a>
-              <a
-                href={latestRelease.assets.linux[0].url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <b>Linux</b>
-                <span>{latestRelease.assets.linux[0].label}</span>
-              </a>
-              <a
-                href={latestRelease.assets.macos[0].url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <b>macOS</b>
-                <span>{latestRelease.assets.macos[0].label}</span>
-              </a>
-              <a
+                data-release-asset="checksum"
                 href={latestRelease.checksumUrl}
                 target="_blank"
                 rel="noreferrer"
@@ -511,9 +491,8 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
               </a>
             </div>
             <small>
-              官网不托管大型安装包；请在对应 Release
-              页面选择平台资产、阅读变更说明并核对 SHA256。若 GitHub API
-              不可用，页面保留稳定版回退信息。
+              官网不托管大型安装包；下方提供各平台架构的直达入口，也可以进入对应
+              Release 页面阅读变更说明并核对 SHA256。若 GitHub API 不可用，页面保留稳定版回退信息。
             </small>
           </div>
           <div class="download-stamp" aria-hidden="true">

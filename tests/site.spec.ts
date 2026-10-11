@@ -206,12 +206,15 @@ test('download cards show the actual Release asset architectures', async ({ page
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const links = page.locator('.download-links > a');
+    await expect(links).toHaveCount(8);
     await expect(links.nth(0)).toContainText('x86_64 installer');
-    await expect(links.nth(1)).toContainText('x86_64 AppImage');
-    await expect(links.nth(2)).toContainText(/Apple Silicon DMG/);
-    await expect(links.nth(3)).toContainText(/SHA256/);
-    await expect(links.nth(0)).not.toContainText('ARM64');
-    await expect(links.nth(2)).not.toContainText('Intel');
+    for (const label of ['arm64 installer', 'x86_64 AppImage', 'amd64 DEB', 'aarch64 AppImage', 'Apple Silicon DMG', 'Intel DMG']) {
+      await expect(links.filter({ hasText: label })).toHaveCount(1);
+    }
+    for (let index = 0; index < 8; index += 1) {
+      await expect(links.nth(index)).toHaveAttribute('href', /v3\.1\.13/);
+    }
+    await expect(links.nth(7)).toContainText(/SHA256/);
   }
 });
 

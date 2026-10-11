@@ -94,3 +94,11 @@
 - Issue: The homepage showed the current stable version while its hero CTA still opened the generic Release list; the format matrix did the same.
 - Changes: Pointed the hero, download, content-page, and format-matrix CTAs to the current Release data, and made runtime Release refresh update every stable-release entry.
 - Validation: Added stable-release link assertions for the hero and format matrix, then ran the build, site validation, asset gate, and browser tests.
+## 2026-10-11 — Expose every platform architecture download
+- Issue: The platform list named multiple architectures, but the homepage download cards exposed only the first asset for each platform.
+- Changes: Rendered every verified Windows, Linux, and macOS Release asset, then updated the bilingual guidance and regression coverage.
+- Validation: Confirmed 8 download entries (7 platform assets plus SHA256SUMS) and ran the build, site validation, asset gate, and browser tests.
+## 2026-10-11 — Keep runtime Release asset links in sync
+- Issue: When the GitHub API returned a newer Release, the version CTA could update while architecture assets and SHA256 still pointed to the build-time Release.
+- Changes: Added stable keys for every platform asset and updated package/checksum links at runtime by matching verified Release filename suffixes; the switch and cache occur only after the complete asset set passes validation.
+- Validation: Added version coverage for all 8 asset links and ran the build, site validation, asset gate, and browser tests.

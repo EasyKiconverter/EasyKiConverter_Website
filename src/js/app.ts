@@ -3,13 +3,31 @@ import { latestRelease } from '../data/release';
 document.documentElement.classList.add('js-ready');
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 const stableRelease = { tag: latestRelease.tag, url: latestRelease.url };
+const releaseAssetSuffixes = {
+  windows: ['windows-x86_64-installer.exe', 'windows-arm64-installer.exe'],
+  linux: ['linux-x86_64.AppImage', 'linux-amd64.deb', 'linux-aarch64.AppImage'],
+  macos: ['macos-arm64.dmg', 'macos-x86_64.dmg'],
+} as const;
+const releaseAssetCount = Object.values(releaseAssetSuffixes).reduce((count, suffixes) => count + suffixes.length, 1);
 const toast = document.querySelector<HTMLElement>('.egg-toast') || (() => { const element = document.createElement('div'); element.className = 'egg-toast'; element.setAttribute('role', 'status'); element.setAttribute('aria-live', 'polite'); document.body.append(element); return element; })();
 let toastTimer: number | undefined;
 
-const applyRelease = (tag: string, url: string) => {
+const getReleaseAssetUrls = (assets: Array<{ name?: string; browser_download_url?: string }>) => {
+  const urls: Record<string, string> = {};
+  Object.entries(releaseAssetSuffixes).forEach(([platform, suffixes]) => suffixes.forEach((suffix, index) => {
+    const asset = assets.find((candidate) => candidate.name?.endsWith(suffix));
+    if (asset?.browser_download_url) urls[`${platform}-${index}`] = asset.browser_download_url;
+  }));
+  const checksum = assets.find((asset) => asset.name === 'SHA256SUMS');
+  if (checksum?.browser_download_url) urls.checksum = checksum.browser_download_url;
+  return urls;
+};
+
+const applyRelease = (tag: string, url: string, assetUrls: Record<string, string> = {}) => {
   document.querySelectorAll('[data-release-version], .hero-facts span:first-child b, .download-copy strong').forEach((element) => { element.textContent = tag; });
   const links = document.querySelectorAll<HTMLAnchorElement>('[data-release-link], .download-actions .button-light');
   links.forEach((link) => { if (url) { link.href = url; if (link.firstChild) link.firstChild.textContent = `${document.documentElement.lang === 'en' ? 'Download' : '下载'} ${tag}${link.querySelector('span') ? ' ' : ' ↗'}`; } });
+  document.querySelectorAll<HTMLAnchorElement>('[data-release-asset]').forEach((link) => { const assetUrl = assetUrls[link.dataset.releaseAsset || '']; if (assetUrl) link.href = assetUrl; });
   const schema = document.querySelector('script[type="application/ld+json"]');
   if (schema) {
     try { const data = JSON.parse(schema.textContent); data.softwareVersion = tag.replace(/^v/, ''); data.downloadUrl = url; schema.textContent = JSON.stringify(data); } catch { /* Keep the static structured-data fallback. */ }
@@ -32,8 +50,8 @@ const refreshRelease = async () => {
   if (cached) {
     try {
       const saved = JSON.parse(cached);
-      if (saved.expires > Date.now() && saved.tag && saved.url) {
-        applyRelease(saved.tag, saved.url);
+      if (saved.expires > Date.now() && saved.tag && saved.url && saved.assetUrls && Object.keys(saved.assetUrls).length === releaseAssetCount) {
+        applyRelease(saved.tag, saved.url, saved.assetUrls || {});
         return;
       }
     } catch { try { window.sessionStorage.removeItem('easyki-latest-release'); } catch { /* Ignore unavailable storage. */ } }
@@ -45,8 +63,10 @@ const refreshRelease = async () => {
     if (!response.ok) return;
     const release = await response.json();
     if (!release.tag_name || release.prerelease || release.draft) return;
-    applyRelease(release.tag_name, release.html_url || stableRelease.url);
-    try { window.sessionStorage.setItem('easyki-latest-release', JSON.stringify({ tag: release.tag_name, url: release.html_url, expires: Date.now() + 600000 })); } catch { /* The static fallback remains available without storage. */ }
+    const assetUrls = getReleaseAssetUrls(Array.isArray(release.assets) ? release.assets : []);
+    if (Object.keys(assetUrls).length !== releaseAssetCount) return;
+    applyRelease(release.tag_name, release.html_url || stableRelease.url, assetUrls);
+    try { window.sessionStorage.setItem('easyki-latest-release', JSON.stringify({ tag: release.tag_name, url: release.html_url, assetUrls, expires: Date.now() + 600000 })); } catch { /* The static fallback remains available without storage. */ }
   } catch { /* The checked-in Release data remains usable when API/rate limit/network fails. */ }
   finally { window.clearTimeout(timeout); }
 };
