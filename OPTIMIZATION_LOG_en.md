@@ -78,3 +78,7 @@
 - Issue: The matrix showed targets and evidence status, but users had to scroll to the footer to find tested cases and Release notes; primary and verification-required targets also lacked a clear visual hierarchy.
 - Changes: Added tested-case and Release-note actions near the matrix heading, introduced a bilingual status legend, and marked each target with its stable or registered tier.
 - Validation: Added bilingual format-matrix action and status-count coverage and ran the build, site validation, asset gate, and browser tests.
+## 2026-10-11 — Clarify the evidence boundary of case studies
+- Issue: Case cards already linked fixtures and tests, but the heading lacked format-matrix and source-evidence paths, and the distinction between automated evidence and manual acceptance was not immediately visible.
+- Changes: Added bilingual case-study actions, marked each card as automated evidence, and retained the manual-acceptance disclaimer at the bottom.
+- Validation: Added bilingual case-path and evidence-scope coverage and ran the build, site validation, asset gate, and browser tests.

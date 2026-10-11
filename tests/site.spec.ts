@@ -104,6 +104,15 @@ test('format matrix offers evidence and release next steps in both languages', a
   }
 });
 
+test('case studies expose their evidence scope and next-step paths', async ({ page }) => {
+  for (const path of ['/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.case-studies-actions .button-dark')).toHaveAttribute('href', /formats/);
+    await expect(page.locator('.case-studies-actions .text-link')).toHaveAttribute('href', /github\.com\/EasyKiconverter\/EasyKiConverter$/);
+    await expect(page.locator('.case-proof')).toHaveCount(3);
+  }
+});
+
 test('Lab pages keep the experiment connected to product navigation', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
