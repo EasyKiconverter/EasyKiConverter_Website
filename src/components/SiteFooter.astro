@@ -1,0 +1,36 @@
+---
+interface Props {
+  lang: "zh-CN" | "en";
+  homeHref?: string;
+}
+
+const { lang, homeHref } = Astro.props;
+const en = lang === "en";
+const siteRoot = new URL(import.meta.env.SITE);
+const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
+const homeUrl = homeHref ?? siteBase.href;
+const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase);
+const casesUrl = new URL(en ? "en/cases/" : "cases/", siteBase);
+const labUrl = new URL(en ? "en/lab/" : "lab/", siteBase);
+const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase);
+---
+
+<footer class="site-footer shell">
+  <div>
+    <a class="brand" href={homeUrl}>
+      <img src={iconUrl.href} alt="" width="28" height="28" />
+      <span>EasyKiConverter</span>
+    </a>
+    <p>{en ? "Component conversion, made easier." : "让元件库转换，顺手一点。"}</p>
+  </div>
+  <div class="footer-links">
+    <a href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">GitHub</a>
+    <a href={formatsUrl}>{en ? "Formats" : "格式矩阵"}</a>
+    <a href={casesUrl}>{en ? "Cases" : "案例"}</a>
+    <a href={labUrl}>{en ? "3D Lab" : "3D 实验室"}</a>
+    <a href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs" target="_blank" rel="noreferrer">{en ? "Docs" : "文档"}</a>
+    <a href="https://github.com/EasyKiconverter/EasyKiConverter_Website" target="_blank" rel="noreferrer">{en ? "Contribute" : "贡献"}</a>
+    <a href="https://github.com/EasyKiconverter/EasyKiConverter/issues" target="_blank" rel="noreferrer">Issues</a>
+  </div>
+  <p class="copyright">© EasyKiConverter · GPL-3.0</p>
+</footer>

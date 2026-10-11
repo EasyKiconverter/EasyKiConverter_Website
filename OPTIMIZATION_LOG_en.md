@@ -136,3 +136,8 @@
 - **Issue**: The homepage platform section used a hand-written architecture summary while the download area was driven by current Release assets, allowing the two to drift.
 - **Change**: The bilingual homepages now derive platform summaries from `latestRelease.assets`; the Chinese page localizes installer labels while retaining every available architecture and package type.
 - **Validation**: Added a bilingual homepage platform-summary test; build, site validation, and browser tests run with this PR.
+## 2026-10-12 — Unify bilingual footer navigation across public pages
+
+- **Issue**: The homepage exposed the full site navigation, while Formats, Cases and 3D Lab only offered copyright and a home link.
+- **Change**: Extracted a bilingual `SiteFooter` component with shared GitHub, Formats, Cases, 3D Lab, Docs, Contribute and Issues entry points, reused across all eight public routes.
+- **Validation**: Added a footer-consistency test covering all eight bilingual routes; build, site validation, asset checks and browser tests pass.

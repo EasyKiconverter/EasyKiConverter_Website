@@ -4,6 +4,7 @@ import "../../css/accessibility.css";
 import "../../css/easter-eggs.css";
 import "../../css/home-polish.css";
 import SeoHead from "../../components/SeoHead.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
 import { latestRelease } from "../../data/release";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
@@ -532,53 +533,7 @@ const platformAvailability = [
         </div>
       </section>
     </main>
-    <footer class="site-footer shell">
-      <div>
-        <a class="brand" href="#top">
-          <img
-            src="../assets/icons/easyki-icon.svg"
-            alt=""
-            width="28"
-            height="28"
-          />
-          <span>EasyKiConverter</span>
-        </a>
-        <p>Component conversion, made easier.</p>
-      </div>
-      <div class="footer-links">
-        <a
-          href="https://github.com/EasyKiconverter/EasyKiConverter"
-          target="_blank"
-          rel="noreferrer"
-        >
-          GitHub
-        </a>
-        <a href="lab/">3D Lab</a>
-        <a href="cases/">Cases</a>
-        <a
-          href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Docs
-        </a>
-        <a
-          href="https://github.com/EasyKiconverter/EasyKiConverter_Website"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Contribute
-        </a>
-        <a
-          href="https://github.com/EasyKiconverter/EasyKiConverter/issues"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Issues
-        </a>
-      </div>
-      <p class="copyright">© EasyKiConverter · GPL-3.0</p>
-    </footer>
+    <SiteFooter lang="en" homeHref="#top" />
     <script>
       import "../../js/app.ts";
     </script>
