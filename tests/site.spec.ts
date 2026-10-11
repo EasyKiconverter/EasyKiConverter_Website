@@ -145,6 +145,16 @@ test('homepage format summary explains version-scoped support', async ({ page })
   await expect(page.locator('#formats')).not.toContainText('the main project also registers');
 });
 
+test('homepage format and case actions have a clear primary hierarchy', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const actions = page.locator('#formats .feature-links');
+    await expect(actions).toHaveCount(1);
+    await expect(actions.locator('.feature-link-primary')).toHaveAttribute('href', /formats\/$/);
+    await expect(actions.locator('.feature-link-secondary')).toHaveAttribute('href', /cases\/$/);
+  }
+});
+
 test('content pages keep navigation reachable on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/formats/', { waitUntil: 'networkidle' });

@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Establish hierarchy for homepage format and case actions
+
+- **Issue:** The “format matrix” and “conversion cases” links in the multiple-target card shared the same low-contrast text treatment, making the primary path unclear and reducing readability on the dark card.
+- **Changes:** Made the format matrix a high-contrast primary button and kept conversion cases as the secondary text action; both languages now share the same structure, spacing and interaction feedback, with hierarchy regression coverage.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite.
+
 ## 2026-10-12 — Clarify the version boundary of format support
 
 - **Issue:** The homepage described other targets as “the main project also registers”, an internal implementation phrase that could be read as full stable-release support.
