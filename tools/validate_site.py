@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 source_pages = [ROOT / "src/pages/index.astro", ROOT / "src/pages/en/index.astro"]
+lab_source_pages = [ROOT / "src/pages/lab/index.astro", ROOT / "src/pages/en/lab/index.astro"]
 seo_source = ROOT / "src/components/SeoHead.astro"
 output_pages = [
     ROOT / "dist/index.html",
@@ -73,6 +74,12 @@ for page in source_pages:
     for marker in ("download-links", "Windows", "Linux", "macOS", "SHA256"):
         if marker not in text:
             errors.append(f"{page}: missing download marker {marker}")
+
+for page in lab_source_pages:
+    text = page.read_text(encoding="utf-8")
+    for marker in ("GLB", "STEP/WASM", "lab-warning"):
+        if marker not in text:
+            errors.append(f"{page}: missing current Lab asset guidance marker {marker}")
 
 
 class PageParser(HTMLParser):

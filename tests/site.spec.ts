@@ -107,6 +107,13 @@ test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
   await expect(stage).not.toHaveClass(/model-fallback/);
 });
 
+test('Lab asset guidance matches the generated delivery path', async ({ page }) => {
+  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.lab-warning')).toContainText('9.6 MB');
+  await expect(page.locator('.lab-warning')).toContainText('8.1 MB');
+  await expect(page.locator('.lab-warning')).toContainText('STEP/WASM');
+});
+
 test('sitemap lists every public bilingual route', async ({ request }) => {
   const response = await request.get('/sitemap.xml');
   expect(response.ok()).toBeTruthy();
