@@ -19,7 +19,7 @@ EasyKiConverter 官方网站，使用 Astro、TypeScript 和静态资源构建�
 └── .github/workflows/      # GitHub Actions 工作流
 ```
 
-首页是轻量的产品展示：使用真实 Qt Quick 截图、CSS 空间层次和下载入口，不加载 CAD 解析运行时。格式能力见[EDA 格式矩阵](src/pages/formats/index.astro)，可追溯样本见[真实转换案例](src/pages/cases/index.astro)。旧的 STEP/Three.js 研究功能集中在独立的 [`/lab/`](src/pages/lab/index.astro) 页面；`src/js/step-worker.ts` 在 Web Worker 中准备网格，`src/js/model-viewer.ts` 负责实验室渲染。模型来源、尺寸测量和后续 STEP → GLB 计划见[3D 模型资产流程](public/assets/model/README_zh.md)。
+首页是轻量的产品展示：使用真实 Qt Quick 截图、CSS 空间层次和下载入口，不加载 CAD 解析运行时。格式能力见[EDA 格式矩阵](src/pages/formats/index.astro)，可追溯样本见[真实转换案例](src/pages/cases/index.astro)。旧的 STEP/Three.js 研究功能集中在独立的 [`/lab/`](src/pages/lab/index.astro) 页面；默认使用离线生成的 GLB，`src/js/step-worker.ts` 保留为回退路径，`src/js/model-viewer.ts` 负责实验室渲染。模型来源、尺寸测量和 STEP → GLB 工具见[3D 模型资产流程](public/assets/model/README_zh.md)。
 
 新增页面放入 `src/pages/`，可复用页面区块放入 `src/components/`；样式放入 `src/css/`，脚本放入 `src/js/`，图片、模型、图标和运行时资源统一放入 `public/assets/`。仓库没有根目录 `assets/`；不要把源码或资源继续堆在根目录。
 
