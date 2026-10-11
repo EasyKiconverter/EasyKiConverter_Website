@@ -4377,7 +4377,7 @@ export const setupModel = async (): Promise<void> => {
       // Large shells already read well from PBR shading; reserve edge work for
       // smaller parts where it improves component boundaries without delaying
       // the first interactive frame.
-      if (meshIndex < 96 && edgeSegments < edgeSegmentBudget && indices.length <= 6_000) {
+      if (meshIndex < 96 && edgeSegments < edgeSegmentBudget && indices.byteLength / Uint32Array.BYTES_PER_ELEMENT <= 6_000) {
         const edgeGeometry = new THREE.EdgesGeometry(geometry, 32);
         const segmentCount = (edgeGeometry.getAttribute("position")?.count ?? 0) / 2;
         if (segmentCount > 0 && edgeSegments + segmentCount <= edgeSegmentBudget) {
