@@ -100,10 +100,16 @@ test('bilingual homepages keep the same interaction rhythm', async ({ page }) =>
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.hero-actions .button-dark')).toHaveClass(/magnetic/);
+    await expect(page.locator('.hero-actions .button-dark span')).toHaveText('↗');
     await expect(page.locator('.story-card-b')).toHaveClass(/reveal-delay-1/);
     await expect(page.locator('.story-card-c')).toHaveClass(/reveal-delay-2/);
+    await expect(page.locator('.feature-card-mint')).toHaveClass(/reveal-delay-1/);
+    await expect(page.locator('.feature-card-peach')).toHaveClass(/reveal-delay-2/);
+    await expect(page.locator('.feature-card-yellow')).toHaveClass(/reveal-delay-1/);
     await expect(page.locator('.steps')).toHaveClass(/reveal-delay/);
     await expect(page.locator('.platform-list')).toHaveClass(/reveal-delay/);
+    await expect(page.locator('.download-actions .button-light')).toHaveClass(/magnetic/);
+    await expect(page.locator('.download-actions .button-light span')).toHaveText('↗');
     await expect(page.locator('.github-link span')).toHaveText('↗');
     await expect(page.locator('.scroll-cue')).toHaveAttribute('aria-label');
   }
