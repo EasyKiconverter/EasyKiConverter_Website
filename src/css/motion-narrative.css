@@ -368,5 +368,6 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
 .experiment-controls-toggle[aria-expanded="true"]{background:var(--ink,#292824);color:#fffdf8}
 .lab-experiment-controls{position:absolute;z-index:5;top:50px;right:16px;max-width:220px;padding:6px 9px;border:1px solid #29282418;border-radius:8px;background:#fffdf8cc;color:var(--muted,#746f66);font:600 8px/1.35 ui-monospace,SFMono-Regular,monospace;text-align:right;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .2s,transform .2s}
 .motion-pin[data-controls-open="true"] .lab-experiment-controls{opacity:1;transform:none}
+.motion-model button:disabled,.motion-model input:disabled{cursor:not-allowed}
 .motion-model:not([data-controls-open="true"]) [class^="morph-"],.motion-model:not([data-controls-open="true"]) [class*=" morph-"]{display:none!important}
 @media(max-width:760px){.experiment-controls-toggle{top:12px;right:12px;padding:6px 8px;font-size:8px}.lab-experiment-controls{top:46px;right:12px;max-width:180px}}
