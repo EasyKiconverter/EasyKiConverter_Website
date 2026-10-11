@@ -29,6 +29,7 @@ dist/
 build/
 .cache/
 .astro/
+test-results/
 
 # Local configuration and logs
 .env

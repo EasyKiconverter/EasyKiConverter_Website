@@ -1,38 +1,28 @@
-# 性能验证记录
+# 性能基线
 
 [English](PERFORMANCE_en.md)
 
-## 当前实现
+## 当前边界
 
-- STEP 源文件：约 11 MB，保留为源资产。
-- WASM 解析器：`occt-import-js` 0.0.23，约 7.3 MB。
-- 网格数量：当前 Worker 会传输 OCCT 生成的全部可渲染网格，没有硬三角形上限；窄屏仅使用更粗的线性偏差参数，不能保证三角形数量。
-- 三角化参数：宽屏 `linearDeflection=0.004`，窄屏（stage 宽度小于 520px）`0.007`，`angularDeflection=0.16`；来源为 `src/js/model-viewer.ts` 与 `src/js/step-worker.ts`。
-- DPR：最高 2。
-- 首屏：正文与布局先可见，STEP/WASM 在脚本初始化后异步加载。
-- 渲染循环：仅在 Hero 进入视口且页面可见时持续运行；离开视口或切到后台会暂停，返回时唤醒。
-- Three.js：使用 `BufferGeometry`、顶点色和标准材质渲染真实模型。
-- Qt Quick 主截图：页面加载约 158 KB WebP；原始 PNG 保留在 `public/assets/showcase/` 用于溯源。
+- 中文首页 `/` 和英文首页 `/en/` 使用 WebP 产品截图、CSS 空间效果和少量页面脚本，不加载 STEP、OpenCascade/WASM 或 Three.js 模型运行时。
+- 3D Lab `/lab/` 与 `/en/lab/` 才会加载约 11 MB STEP、约 7.3 MB WASM 和模型脚本；这是按需的实验资源，不是首页基线。
+- 首页首屏资源使用 `public/assets/showcase/*.webp`；原始 PNG、STEP 和 WASM 仍保留用于溯源或实验室，尚未从发布目录迁移。
+- `src/js/app.ts` 的交互只在页面可见时维护动画，并对 `prefers-reduced-motion` 提供静态路径。
 
-## 浏览器实测
+## 可重复检查
 
-使用本地 HTTP 页面和 Chrome 153 的 Lighthouse 12.8.2（`--throttling-method=provided`、桌面视口、软件 WebGL）分别检查中文首页与英文首页：
+```bash
+pnpm run build
+python3 tools/validate_site.py
+pnpm run test:browser
+```
 
-| 页面 | Performance | Accessibility | Best Practices | SEO | FCP | LCP | CLS | TBT |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 中文 `/` | 100 | 100 | 100 | 100 | 0.53 s | 0.53 s | 0 | 0 ms |
-| English `/en/` | 100 | 100 | 100 | 100 | 0.48 s | 0.48 s | 0 | 0 ms |
+构建校验检查最终 `dist/` 中四个页面的重复 ID、片段链接、语义地标和本地资源；Playwright 检查中英文首页、移动导航、reduced-motion、Release 版本与控制台错误。CI 还会启动静态预览并检查 `/`、`/en/`、`/robots.txt` 和 `/sitemap.xml`。
 
-同时使用浏览器 CDP 观察真实 STEP 解析完成后的 3 秒窗口：
+## 记录边界
 
-- `TaskDuration`: 约 0.175 秒
-- `ScriptDuration`: 约 0.023 秒
-- `JSHeapUsedSize`: 约 5.8 MB
-- 控制台：无 error/warning
-- `model-loaded`: true，`model-fallback`: false
+过去关于 STEP/WASM、Worker、Lighthouse 100 分或 TBT 0 ms 的记录只代表旧版 3D 叙事实验，不代表当前首页，也不能作为生产 SLA。正式性能报告应分别记录首页和 Lab 的网络瀑布、LCP、CLS、TBT、内存、FPS 与真机结果；在取得新数据前不填写推测值。
 
-OCCT 初始化、STEP 读取、三角化和网格整理在 `src/js/step-worker.ts` 中运行；主线程只接收可转移的顶点缓冲并交给 `src/js/model-viewer.ts` 的 Three.js 场景。Lighthouse 在 Worker 改造前曾测得约 36.9 秒 TBT，改造后两种语言页面均为 0 ms。
+## 资产决策
 
-这些是当前开发机和当前模型的单次观测；仍需在真实自有服务器、集成显卡、Retina、4K 和移动真机上补充 Chrome Performance、FPS 和网络瀑布测试。
-
-直接以 `file://` 打开页面时，脚本会跳过 STEP 和 Release API 请求；本地 HTTP 预览也不访问 GitHub Release API，以避免开发机 rate limit 产生 403 噪声，页面使用同一稳定版回退。部署到真实 HTTP(S) 域名后才启用 Release API。
+STEP 是实验室的工程源资产，GLB 离线交付管线仍是后续优化项。首页不应重新引入浏览器 CAD 三角化；若 Lab 成为正式产品功能，必须单独建立模型体积、三角形预算和 fallback 的浏览器基准。

@@ -2,7 +2,7 @@
 
 [English](README_en.md)
 
-EasyKiConverter 官方网站，使用 Astro、TypeScript、Three.js 与 OpenCascade/WASM 构建，提供中文首页与可索引的英文入口。
+EasyKiConverter 官方网站，使用 Astro、TypeScript 和静态资源构建，提供中文首页与可索引的英文入口；独立的 3D 技术实验室按需加载 Three.js 与 OpenCascade/WASM。
 
 ## 项目结构
 
@@ -12,14 +12,14 @@ EasyKiConverter 官方网站，使用 Astro、TypeScript、Three.js 与 OpenCasc
 │   ├── components/         # 中英文共用页面组件
 │   ├── pages/              # 中文页、英文页及 SEO 路由
 │   ├── css/                # 页面样式与视觉效果
-│   └── js/                 # 页面交互、3D 渲染与 STEP Worker
+│   └── js/                 # 页面交互；3D Lab 的渲染与 STEP Worker
 ├── public/assets/          # 图标、模型、截图和运行时资源
 ├── tools/                  # 本地构建与站点校验脚本
 ├── docs/                   # 架构、开发、部署和性能文档
 └── .github/workflows/      # GitHub Actions 工作流
 ```
 
-首页使用固定版本的 OpenCascade/WASM STEP 解析器在浏览器中生成真实网格；`src/js/step-worker.ts` 把解析和网格准备放在 Web Worker 中，`src/js/model-viewer.ts` 使用 Three.js 负责渲染，避免阻塞首屏主线程。原始 `public/assets/model/Easykiconverter_展示模型.step` 与模型说明放在同一目录中，模型来源、尺寸测量、三角形预算和后续 STEP → GLB 流程见[3D 模型资产流程](public/assets/model/README_zh.md)。
+首页是轻量的产品展示：使用真实 Qt Quick 截图、CSS 空间层次和下载入口，不加载 CAD 解析运行时。格式能力见[EDA 格式矩阵](src/pages/formats/index.astro)，可追溯样本见[真实转换案例](src/pages/cases/index.astro)。旧的 STEP/Three.js 研究功能集中在独立的 [`/lab/`](src/pages/lab/index.astro) 页面；`src/js/step-worker.ts` 在 Web Worker 中准备网格，`src/js/model-viewer.ts` 负责实验室渲染。模型来源、尺寸测量和后续 STEP → GLB 计划见[3D 模型资产流程](public/assets/model/README_zh.md)。
 
 新增页面放入 `src/pages/`，可复用页面区块放入 `src/components/`；样式放入 `src/css/`，脚本放入 `src/js/`，图片、模型、图标和运行时资源统一放入 `public/assets/`。仓库没有根目录 `assets/`；不要把源码或资源继续堆在根目录。
 
@@ -39,7 +39,7 @@ pnpm run build
 pnpm run preview
 ```
 
-不要双击页面使用 `file://`，浏览器会阻止 STEP/WASM 资源读取，导致本地效果与发布效果不一致。
+不要双击页面使用 `file://`。首页可直接查看静态内容；若要验证 3D Lab，必须通过 Astro HTTP 服务器访问，以允许 STEP/WASM 同源加载。
 
 自有服务器部署和发布前检查见：[部署与预览一致性](docs/DEPLOYMENT.md)。如果服务器使用子路径，可在仓库父目录启动 HTTP 服务并访问 `http://localhost:4174/EasyKiConverter_Website/`，模拟线上路径。
 

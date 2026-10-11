@@ -3,6 +3,7 @@ import "../../css/styles.css";
 import "../../css/accessibility.css";
 import "../../css/easter-eggs.css";
 import "../../css/home-polish.css";
+import { latestRelease } from "../../data/release";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
 const chineseUrl = siteBase.href;
@@ -57,7 +58,7 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
         name: "EasyKiConverter",
         applicationCategory: "DeveloperApplication",
         operatingSystem: "Windows, Linux, macOS",
-        softwareVersion: "3.1.11",
+        softwareVersion: latestRelease.version,
         license: "https://www.gnu.org/licenses/gpl-3.0.html",
         downloadUrl:
           "https://github.com/EasyKiconverter/EasyKiConverter/releases",
@@ -91,6 +92,8 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
         <a href="#features">Features</a>
         <a href="#workflow">Workflow</a>
         <a href="#download">Download</a>
+        <a href="lab/">3D Lab</a>
+        <a href="cases/">Cases</a>
         <a
           href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"
           target="_blank"
@@ -127,6 +130,8 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
       <a href="#features">Features</a>
       <a href="#workflow">Workflow</a>
       <a href="#download">Download</a>
+      <a href="lab/">3D Lab</a>
+      <a href="cases/">Cases</a>
       <a
         href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"
         target="_blank"
@@ -164,7 +169,7 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
           </div>
           <div class="hero-facts">
             <span>
-              <b>v3.1.11</b> current stable
+              <b data-release-version>{latestRelease.tag}</b> current stable
             </span>
             <span>
               <b>GPL-3.0</b> open source
@@ -358,6 +363,8 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
                 <b>Altium</b>
                 <b>3D</b>
               </div>
+              <a class="text-link" href="formats/">View format matrix <span>↗</span></a>
+              <a class="text-link" href="cases/">View conversion cases <span>↗</span></a>
             </div>
           </article>
           <article class="feature-card feature-card-mint reveal">
@@ -495,18 +502,18 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
               <em>start sooner.</em>
             </h2>
             <p>
-              Current stable <strong data-release-version>v3.1.11</strong> ·
+              Current stable <strong data-release-version>{latestRelease.tag}</strong> ·
               Free · GPL-3.0
             </p>
             <div class="download-actions">
               <a
                 class="button button-light"
                 data-release-link
-                href="https://github.com/EasyKiconverter/EasyKiConverter/releases/tag/v3.1.11"
+                href={latestRelease.url}
                 target="_blank"
                 rel="noreferrer"
               >
-                Download v3.1.11 ↗
+                Download {latestRelease.tag} ↗
               </a>
               <a
                 class="download-link"
@@ -519,31 +526,31 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
             </div>
             <div class="download-links" aria-label="Release entry points">
               <a
-                href="https://github.com/EasyKiconverter/EasyKiConverter/releases"
+                href={latestRelease.assets.windows[0].url}
                 target="_blank"
                 rel="noreferrer"
               >
                 <b>Windows</b>
-                <span>x64 · ARM64</span>
+                <span>{latestRelease.assets.windows[0].label} · ARM64</span>
               </a>
               <a
-                href="https://github.com/EasyKiconverter/EasyKiConverter/releases"
+                href={latestRelease.assets.linux[0].url}
                 target="_blank"
                 rel="noreferrer"
               >
                 <b>Linux</b>
-                <span>x86_64 · ARM64</span>
+                <span>{latestRelease.assets.linux[0].label} · ARM64</span>
               </a>
               <a
-                href="https://github.com/EasyKiconverter/EasyKiConverter/releases"
+                href={latestRelease.assets.macos[0].url}
                 target="_blank"
                 rel="noreferrer"
               >
                 <b>macOS</b>
-                <span>Intel · Apple Silicon</span>
+                <span>{latestRelease.assets.macos[0].label} · Intel</span>
               </a>
               <a
-                href="https://github.com/EasyKiconverter/EasyKiConverter/releases"
+                href={latestRelease.checksumUrl}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -595,6 +602,8 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
         >
           GitHub
         </a>
+        <a href="lab/">3D Lab</a>
+        <a href="cases/">Cases</a>
         <a
           href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"
           target="_blank"

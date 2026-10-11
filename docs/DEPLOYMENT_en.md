@@ -4,7 +4,7 @@ This is an Astro-generated static website. Run `pnpm run build` before publishin
 
 ## Local preview
 
-Do not open the generated HTML through `file://`. Browsers block local pages from reading the STEP and WASM files, so the local model would not match production.
+Do not open the 3D Lab HTML through `file://`. Browsers block local pages from reading STEP and WASM; the homepage may still look visible, but that does not validate Lab behavior.
 
 ```bash
 pnpm install
@@ -24,11 +24,11 @@ Then open `http://localhost:4174/EasyKiConverter_Website/`. Relative asset paths
 
 ## Self-hosted server
 
-Sync the repository contents to the web root or target subdirectory and configure the server to serve that directory as static files. Keep these files available:
+Sync only the generated `dist/` contents to the web root or target subdirectory; do not serve the source repository directly. Keep these files available:
 
-- `dist/index.html`, `dist/en/index.html`
+- `dist/index.html`, `dist/en/index.html`, `dist/formats/index.html`, `dist/en/formats/index.html`, `dist/cases/index.html`, `dist/en/cases/index.html`
 - `dist/_astro/`, `dist/assets/`
-- `dist/assets/model/Easykiconverter_展示模型.step`
+- `dist/assets/model/Easykiconverter_展示模型.step` (when deploying the 3D Lab)
 - `robots.txt`, `sitemap.xml`
 
 The server should return at least these MIME types:
@@ -50,4 +50,4 @@ python3 tools/validate_site.py
 git diff --check
 ```
 
-On the actual domain, check the Chinese home page, `/en/`, navigation anchors, download links, STEP model loading, narrow mobile layout, reduced-motion behavior, and a clean browser console. Production browser access must use `http://` or `https://`, never `file://`.
+On the actual domain, check all eight built routes: the Chinese homepage, `/en/`, `/lab/`, `/en/lab/`, `/formats/`, `/en/formats/`, `/cases/`, and `/en/cases/`. Also check navigation anchors, download links, narrow mobile layout, reduced-motion behavior, and a clean browser console. Verify homepage and Lab resource boundaries separately. Production browser access must use `http://` or `https://`, never `file://`.

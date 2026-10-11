@@ -8,6 +8,7 @@
 
 - [项目开发规范](DEVELOPMENT_GUIDELINES.md) / [English](DEVELOPMENT_GUIDELINES_en.md)：代码、目录、兼容性和资源约束。
 - [开发流程规范](DEVELOPMENT_WORKFLOW.md) / [English](DEVELOPMENT_WORKFLOW_en.md)：Issue、分支、测试、版本和合并流程。
+- [AI 开发约束](AI_DEVELOPMENT_RULES.md) / [English](AI_DEVELOPMENT_RULES_en.md)：继承主项目的 AI 协作政策、CodeGraph、证据和交付规则。
 
 ## 必须遵守的原则
 

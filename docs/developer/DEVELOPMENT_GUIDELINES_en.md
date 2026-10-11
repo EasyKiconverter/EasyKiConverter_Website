@@ -8,8 +8,8 @@ These rules apply to changes to HTML, CSS, JavaScript, static assets, maintenanc
 
 ## Directories and Files
 
-- Keep page entry points in `src/pages/`; the Chinese entry is `src/pages/index.astro` and the English entry is `src/pages/en/index.astro`.
-- Put styles in `src/css/`, scripts in `src/js/`, and runtime resources in `assets/`.
+- Keep page entry points in `src/pages/`; the Chinese entry is `src/pages/index.astro`, the English entry is `src/pages/en/index.astro`, and 3D Lab entries live under `src/pages/{lab,en/lab}/`.
+- Keep styles in `src/css/`, scripts in `src/js/`, published assets in `public/assets/`, and source-only assets in `src/assets/source/`.
 - Put architecture, workflow, and maintenance documentation in `docs/`; every document must have both `.md` and `_en.md` versions.
 - Keep GitHub Actions and PR configuration in `.github/` only.
 - Use lowercase kebab-case filenames, such as `download-card.css` and `navigation.js`.
@@ -23,7 +23,18 @@ These rules apply to changes to HTML, CSS, JavaScript, static assets, maintenanc
 
 ## Documentation and Assets
 
-When adding or changing documentation, update the Chinese and English versions together and add reciprocal language links at the top. Put images, icons, and fonts in the appropriate `assets/` subdirectory instead of duplicating reusable content inline.
+When adding or changing documentation, update the Chinese and English versions together and add reciprocal language links at the top. Put images, icons, and fonts in the appropriate `public/assets/` subdirectory; keep non-published originals in `src/assets/source/`, and do not replace reusable assets with repeated inline content.
+
+## Build and verification
+
+```bash
+pnpm run check
+pnpm run build
+python3 tools/validate_site.py
+pnpm run test:browser
+```
+
+`pnpm run build` synchronizes GitHub Release data at build time. If the network is unavailable, it uses the verified repository fallback; set `RELEASE_SYNC_REQUIRED=1` in CI-equivalent checks to fail instead.
 
 ## Flowcharts and Architecture Diagrams
 

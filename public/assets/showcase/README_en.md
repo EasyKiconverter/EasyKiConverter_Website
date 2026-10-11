@@ -1,6 +1,8 @@
 # Qt Quick screenshot assets
 
-`easykiconverter-main.png` and `easykiconverter-export.png` are the original Qt Quick screenshots obtained from the EasyKiConverter main project. They remain preserved for provenance and regeneration.
+[中文](README.md)
+
+`src/assets/source/showcase/easykiconverter-main.png` and `easykiconverter-export.png` are the original Qt Quick screenshots obtained from the EasyKiConverter main project. They remain preserved for provenance and regeneration, but are not published under `public/`.
 
 The pages load the derived WebP files:
 
@@ -10,8 +12,8 @@ The pages load the derived WebP files:
 Regenerate them with:
 
 ```bash
-convert easykiconverter-main.png -strip -quality 84 easykiconverter-main.webp
-convert easykiconverter-export.png -strip -quality 84 easykiconverter-export.webp
+convert src/assets/source/showcase/easykiconverter-main.png -strip -quality 84 public/assets/showcase/easykiconverter-main.webp
+convert src/assets/source/showcase/easykiconverter-export.png -strip -quality 84 public/assets/showcase/easykiconverter-export.webp
 ```
 
 WebP reduces transfer size but does not replace the real screenshot source files.

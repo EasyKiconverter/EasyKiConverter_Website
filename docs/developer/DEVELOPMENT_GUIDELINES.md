@@ -8,8 +8,8 @@
 
 ## 目录与文件
 
-- 页面入口放在 `src/pages/`；中文入口是 `src/pages/index.astro`，英文入口是 `src/pages/en/index.astro`。
-- 样式放在 `src/css/`，脚本放在 `src/js/`，运行时资源放在 `assets/`。
+- 页面入口放在 `src/pages/`；中文入口是 `src/pages/index.astro`，英文入口是 `src/pages/en/index.astro`，3D Lab 入口位于 `src/pages/{lab,en/lab}/`。
+- 样式放在 `src/css/`，脚本放在 `src/js/`，正式公共资源放在 `public/assets/`，仅源素材放在 `src/assets/source/`。
 - 架构、流程和维护说明放在 `docs/`；每份文档必须有 `.md` 与 `_en.md` 两个版本。
 - GitHub Actions 和 PR 配置只放在 `.github/`。
 - 文件名使用小写 kebab-case，例如 `download-card.css`、`navigation.js`。
@@ -23,7 +23,18 @@
 
 ## 文档与资源
 
-新增或修改文档时，必须同步更新中英文版本，并在顶部互相添加语言链接。图片、图标和字体放入 `assets/` 对应子目录，不要以内联重复内容代替可复用资源。
+新增或修改文档时，必须同步更新中英文版本，并在顶部互相添加语言链接。图片、图标和字体放入 `public/assets/` 对应子目录；不应发布的原图放入 `src/assets/source/`，不要以内联重复内容代替可复用资源。
+
+## 构建与验证
+
+```bash
+pnpm run check
+pnpm run build
+python3 tools/validate_site.py
+pnpm run test:browser
+```
+
+`pnpm run build` 会在构建期同步 GitHub Release；网络不可用时使用仓库内已验证的回退数据，本地 CI 等价检查可设置 `RELEASE_SYNC_REQUIRED=1` 强制失败。
 
 ## 流程图与架构图
 
