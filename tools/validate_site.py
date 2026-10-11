@@ -17,6 +17,7 @@ output_pages = [
     ROOT / "dist/cases/index.html",
     ROOT / "dist/en/cases/index.html",
 ]
+content_pages = output_pages[4:]
 errors = []
 accessibility_css = (ROOT / "src/css/accessibility.css").read_text(encoding="utf-8")
 home_polish_css = (ROOT / "src/css/home-polish.css").read_text(encoding="utf-8")
@@ -109,6 +110,10 @@ else:
         for route in ("formats", "cases", "lab"):
             if route not in page_text:
                 errors.append(f"{page}: missing content navigation route {route}")
+        if page in content_pages:
+            for marker in ('class="content-page-skip"', 'aria-current="page"'):
+                if marker not in page_text:
+                    errors.append(f"{page}: missing content-page accessibility marker {marker}")
         for fragment in parser.fragments:
             if fragment and fragment not in parser.ids:
                 errors.append(f"{page}: missing fragment target #{fragment}")
