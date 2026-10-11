@@ -16,11 +16,17 @@ class AssetResult:
     status: int
     content_type: str
     content_length: str
+    content_encoding: str
+    vary: str
     cache_control: str
 
 
 def fetch(base: str, path: str) -> AssetResult:
-    request = Request(f"{base.rstrip('/')}{path}", method="HEAD", headers={"User-Agent": "EasyKiConverter-production-check"})
+    request = Request(
+        f"{base.rstrip('/')}{path}",
+        method="HEAD",
+        headers={"Accept-Encoding": "gzip", "User-Agent": "EasyKiConverter-production-check"},
+    )
     try:
         with urlopen(request, timeout=15) as response:
             headers = response.headers
@@ -29,6 +35,8 @@ def fetch(base: str, path: str) -> AssetResult:
                 status=response.status,
                 content_type=headers.get("Content-Type", ""),
                 content_length=headers.get("Content-Length", ""),
+                content_encoding=headers.get("Content-Encoding", ""),
+                vary=headers.get("Vary", ""),
                 cache_control=headers.get("Cache-Control", ""),
             )
     except (HTTPError, URLError) as error:
@@ -67,11 +75,16 @@ def main() -> int:
             errors.append(f"{asset.path}: expected public, immutable cache policy, got {asset.cache_control or 'missing'}")
         if "max-age=" not in asset.cache_control:
             errors.append(f"{asset.path}: expected an explicit max-age cache policy")
+        if asset.content_encoding.lower() != "gzip":
+            errors.append(f"{asset.path}: expected gzip content encoding, got {asset.content_encoding or 'missing'}")
+        if "accept-encoding" not in {part.strip().lower() for part in asset.vary.split(",")}:
+            errors.append(f"{asset.path}: expected Vary: Accept-Encoding for compressed delivery")
     if args.as_json:
         print(json.dumps({"base_url": args.base_url, "assets": [asdict(result) for result in results], "errors": errors}, ensure_ascii=False, indent=2))
     else:
         for result in results:
-            print(f"{result.status} {result.path} · {result.content_type} · {result.cache_control or 'no-cache-header'}")
+            encoding = result.content_encoding or "identity"
+            print(f"{result.status} {result.path} · {result.content_type} · {encoding} · {result.cache_control or 'no-cache-header'}")
     if errors:
         for error in errors:
             print(f"ERROR: {error}")
