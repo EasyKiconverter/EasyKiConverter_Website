@@ -73,7 +73,8 @@ for page in source_pages:
     if "application/ld+json" not in text:
         errors.append(f"{page}: missing SoftwareApplication structured data")
     has_accessible_stage_fallback = "model-fallback-copy" in text or "hero-product-window" in text
-    if not has_accessible_stage_fallback or "menu-button" not in text:
+    has_shared_header = "SiteHeader" in text
+    if not has_accessible_stage_fallback or ("menu-button" not in text and not has_shared_header):
         errors.append(f"{page}: missing accessible interaction fallback or mobile navigation")
     for marker in ("download-links", "Windows", "Linux", "macOS", "SHA256"):
         if marker not in text:

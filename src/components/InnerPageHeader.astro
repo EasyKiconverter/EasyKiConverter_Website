@@ -1,4 +1,6 @@
 ---
+import SiteHeader from "./SiteHeader.astro";
+
 interface Props {
   lang: "zh-CN" | "en";
   pageUrl: URL;
@@ -6,40 +8,5 @@ interface Props {
 }
 
 const { lang, pageUrl, alternateUrl } = Astro.props;
-const en = lang === "en";
-const siteRoot = new URL(import.meta.env.SITE);
-const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
-const homeUrl = siteBase.href;
-const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase);
-const casesUrl = new URL(en ? "en/cases/" : "cases/", siteBase);
-const labUrl = new URL(en ? "en/lab/" : "lab/", siteBase);
-const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase);
-const isLab = pageUrl.pathname.includes("/lab/");
-const isCurrent = (href: URL) => href.pathname === pageUrl.pathname;
 ---
-
-<header class:list={["site-header", "content-page-header", "shell", { "lab-header": isLab }]}>
-  <a class="brand" href={homeUrl} aria-label={en ? "EasyKiConverter home" : "EasyKiConverter 首页"}>
-    <img src={iconUrl.href} alt="" width="36" height="36" />
-    <span>EasyKiConverter{isLab && <small> / Lab</small>}</span>
-  </a>
-  <nav class="nav-links" aria-label={en ? "Page navigation" : "页面导航"}>
-    <a href={homeUrl}>{en ? "Home" : "首页"}</a>
-    <a href={formatsUrl} aria-current={isCurrent(formatsUrl) ? "page" : undefined}>{en ? "Formats" : "格式矩阵"}</a>
-    <a href={casesUrl} aria-current={isCurrent(casesUrl) ? "page" : undefined}>{en ? "Cases" : "转换案例"}</a>
-    <a href={labUrl} aria-current={isCurrent(labUrl) ? "page" : undefined}>{en ? "3D Lab" : "3D 实验室"}</a>
-    <a href={alternateUrl}>{en ? "中文" : "English"}</a>
-  </nav>
-  <div class="header-actions">
-    <a class="github-link" href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">GitHub <span>↗</span></a>
-    <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-nav">{en ? "Menu" : "菜单"}</button>
-  </div>
-</header>
-<nav id="mobile-nav" class="mobile-nav" aria-label={en ? "Mobile page navigation" : "移动端页面导航"}>
-  <a href={homeUrl}>{en ? "Home" : "首页"}</a>
-  <a href={formatsUrl} aria-current={isCurrent(formatsUrl) ? "page" : undefined}>{en ? "Formats" : "格式矩阵"}</a>
-  <a href={casesUrl} aria-current={isCurrent(casesUrl) ? "page" : undefined}>{en ? "Cases" : "转换案例"}</a>
-  <a href={labUrl} aria-current={isCurrent(labUrl) ? "page" : undefined}>{en ? "3D Lab" : "3D 实验室"}</a>
-  <a href={alternateUrl}>{en ? "中文" : "English"}</a>
-  <a href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">GitHub ↗</a>
-</nav>
+<SiteHeader lang={lang} pageUrl={pageUrl} alternateUrl={alternateUrl} variant="inner" />

@@ -4,6 +4,7 @@ import "../../css/accessibility.css";
 import "../../css/easter-eggs.css";
 import "../../css/home-polish.css";
 import SeoHead from "../../components/SeoHead.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import { latestRelease } from "../../data/release";
 const siteRoot = new URL(import.meta.env.SITE);
@@ -57,71 +58,7 @@ const platformAvailability = [
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
-    <header class="site-header shell">
-      <a class="brand" href="../">
-        <img
-          src="../assets/icons/easyki-icon.svg"
-          alt=""
-          width="36"
-          height="36"
-        />
-        <span>EasyKiConverter</span>
-      </a>
-      <nav class="nav-links" aria-label="Main navigation">
-        <a href="#legacy-story">Story</a>
-        <a href="#formats">Formats</a>
-        <a href="#features">Features</a>
-        <a href="#workflow">Workflow</a>
-        <a href="#download">Download</a>
-        <a href="lab/">3D Lab</a>
-        <a href="cases/">Cases</a>
-        <a
-          href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Docs
-        </a>
-      </nav>
-      <div class="header-actions">
-        <a class="lang-link" href="../">
-          中文
-        </a>
-        <a
-          class="github-link"
-          href="https://github.com/EasyKiconverter/EasyKiConverter"
-          target="_blank"
-          rel="noreferrer"
-        >
-          GitHub <span>↗</span>
-        </a>
-        <button
-          class="menu-button"
-          type="button"
-          aria-expanded="false"
-          aria-controls="mobile-nav"
-        >
-          Menu
-        </button>
-      </div>
-    </header>
-    <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation">
-      <a href="#legacy-story">Story</a>
-      <a href="#formats">Formats</a>
-      <a href="#features">Features</a>
-      <a href="#workflow">Workflow</a>
-      <a href="#download">Download</a>
-      <a href="lab/">3D Lab</a>
-      <a href="cases/">Cases</a>
-      <a
-        href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"
-        target="_blank"
-        rel="noreferrer"
-      >
-        Docs
-      </a>
-      <a href="../">中文</a>
-    </nav>
+    <SiteHeader lang="en" variant="home" homeHref="#top" alternateUrl={new URL(chineseUrl)} />
     <main id="top">
       <section class="hero shell" aria-labelledby="hero-title">
         <div class="hero-copy reveal">
