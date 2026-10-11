@@ -200,6 +200,19 @@ test('bilingual homepages expose localized navigation destinations', async ({ pa
   await expect(page.locator('.mobile-nav a[href="#download"]')).toHaveText('Download');
 });
 
+test('download cards show the actual Release asset architectures', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const links = page.locator('.download-links > a');
+    await expect(links.nth(0)).toContainText('x86_64 installer');
+    await expect(links.nth(1)).toContainText('x86_64 AppImage');
+    await expect(links.nth(2)).toContainText(/Apple Silicon DMG/);
+    await expect(links.nth(3)).toContainText(/SHA256/);
+    await expect(links.nth(0)).not.toContainText('ARM64');
+    await expect(links.nth(2)).not.toContainText('Intel');
+  }
+});
+
 test('Lab runtime assets remain reachable from nested routes', async ({ request }) => {
   for (const asset of [
     '/assets/vendor/occt-import-js.js',

@@ -422,12 +422,12 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
         <div class="platform-list reveal reveal-delay">
           <div>
             <b>Windows</b>
-            <span>x64 · ARM64</span>
+            <span>x86_64 · arm64</span>
             <i>01</i>
           </div>
           <div>
             <b>Linux</b>
-            <span>x86_64 · ARM64</span>
+            <span>x86_64 · aarch64</span>
             <i>02</i>
           </div>
           <div>
@@ -482,7 +482,7 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
                 rel="noreferrer"
               >
                 <b>Windows</b>
-                <span>{latestRelease.assets.windows[0].label} · ARM64</span>
+                <span>{latestRelease.assets.windows[0].label}</span>
               </a>
               <a
                 href={latestRelease.assets.linux[0].url}
@@ -490,7 +490,7 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
                 rel="noreferrer"
               >
                 <b>Linux</b>
-                <span>{latestRelease.assets.linux[0].label} · ARM64</span>
+                <span>{latestRelease.assets.linux[0].label}</span>
               </a>
               <a
                 href={latestRelease.assets.macos[0].url}
@@ -498,15 +498,15 @@ const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-
                 rel="noreferrer"
               >
                 <b>macOS</b>
-                <span>{latestRelease.assets.macos[0].label} · Intel</span>
+                <span>{latestRelease.assets.macos[0].label}</span>
               </a>
               <a
                 href={latestRelease.checksumUrl}
                 target="_blank"
                 rel="noreferrer"
               >
-                <b>Release notes</b>
-                <span>SHA256 checksums ↗</span>
+                <b>SHA256 校验</b>
+                <span>SHA256SUMS ↗</span>
               </a>
             </div>
             <small>
