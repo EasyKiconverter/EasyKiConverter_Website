@@ -442,10 +442,12 @@ test('platform sections offer a direct path to the matching download area', asyn
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.platform-intro-link')).toHaveAttribute('href', '#download');
   await expect(page.locator('.platform-intro-link')).toContainText('查看平台下载项');
+  await expect(page.locator('.platform-intro > p:not(.kicker)')).toHaveCSS('max-width', '400px');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.platform-intro-link')).toHaveAttribute('href', '#download');
   await expect(page.locator('.platform-intro-link')).toContainText('See platform downloads');
+  await expect(page.locator('.platform-intro > p:not(.kicker)')).toHaveCSS('max-width', '400px');
 });
 
 test('bilingual hero copy identifies the primary EDA destinations', async ({ page }) => {
