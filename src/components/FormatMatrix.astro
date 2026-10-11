@@ -3,6 +3,10 @@ import { targetFormats } from "../data/formats";
 interface Props { lang: "zh" | "en"; }
 const { lang } = Astro.props;
 const en = lang === "en";
+const siteRoot = new URL(import.meta.env.SITE);
+const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
+const casesUrl = new URL(en ? "en/cases/" : "cases/", siteBase);
+const releasesUrl = "https://github.com/EasyKiconverter/EasyKiConverter/releases";
 ---
 
 <section class="format-matrix shell" aria-labelledby="format-matrix-title">
@@ -10,13 +14,21 @@ const en = lang === "en";
     <p class="kicker">{en ? "VERSIONED CAPABILITY" : "版本化能力"}</p>
     <h1 id="format-matrix-title">{en ? "EDA format capability matrix" : "EDA 格式能力矩阵"}</h1>
     <p>{en ? "This page reports targets registered in the current main-project source. It does not promise that every symbol, footprint, 3D model or edge case is supported by every release." : "本页列出主项目当前源码中注册的目标格式。不把目标名称误读为每个版本都完整支持所有符号、封装、3D 模型和特殊对象。"}</p>
+    <div class="format-matrix-actions">
+      <a class="button button-dark" href={casesUrl}>{en ? "See tested cases" : "查看测试案例"} <span>→</span></a>
+      <a class="text-link" href={releasesUrl} target="_blank" rel="noreferrer">{en ? "Read Release notes" : "阅读 Release 说明"} <span>↗</span></a>
+    </div>
+  </div>
+  <div class="format-legend" aria-label={en ? "Format status legend" : "格式状态图例"}>
+    <span class="format-legend-primary"><i></i>{en ? "Primary stable target" : "稳定版主要目标"}</span>
+    <span class="format-legend-registered"><i></i>{en ? "Registered; verify per Release" : "已注册，按 Release 验证"}</span>
   </div>
   <div class="format-table-wrap">
     <table>
       <caption>{en ? "Registered export targets" : "已注册导出目标"}</caption>
       <thead><tr><th>ID</th><th>{en ? "Target" : "目标"}</th><th>{en ? "Evidence status" : "证据状态"}</th></tr></thead>
       <tbody>
-        {targetFormats.map((format) => <tr><th scope="row"><code>{format.id}</code></th><td>{format.name}</td><td>{en ? format.en : format.zh}</td></tr>)}
+        {targetFormats.map((format) => <tr><th scope="row"><code>{format.id}</code></th><td>{format.name}</td><td><span class:list={["format-status", `format-status-${format.tier}`]}>{en ? format.en : format.zh}</span></td></tr>)}
       </tbody>
     </table>
   </div>
