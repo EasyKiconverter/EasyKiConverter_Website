@@ -114,3 +114,7 @@
 - Issue: Chapter numbers, component-output labels, and expanded experiment controls in the Chinese Lab still appeared in English, creating an uneven language hierarchy beside the translated body copy.
 - Changes: Localized the Chinese chapter labels, symbol/footprint/3D-model labels, and orbit, section, and topology experiment controls while retaining technical names such as STEP, Qt Quick, KiCad, and Altium.
 - Validation: Added bilingual Lab-narrative assertions and ran the build, site validation, asset gate, and 52 browser tests.
+## 2026-10-11 — Align Chinese homepage visual microcopy
+- Issue: The homepage body copy was localized, but Hero overlays, marquee labels, story-card stages, and output status still mixed in English, weakening the first-screen language hierarchy.
+- Changes: Localized the Chinese homepage component-library, BOM status, output, story-stage, and completion labels while retaining technical abbreviations such as GUI, CLI, and EDA.
+- Validation: Added Chinese homepage microcopy assertions and ran the build, site validation, asset gate, and 54 browser tests.
