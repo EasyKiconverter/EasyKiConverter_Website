@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Align the homepage capability summary with the format matrix
+
+- **Issue:** The homepage feature card hard-coded a `3D` label even though the shared matrix tracks EDA targets; it also hid the current stable-target and registered-target counts.
+- **Changes:** Both homepages now read `src/data/formats.ts`, render KiCad, Altium Designer, and the current registered-target count, while keeping the matrix and Release evidence paths visible.
+- **Validation:** Added a bilingual homepage format-summary regression test; the build, static site checks, asset checks, and full browser suite will run for this change.
+
 ## 2026-09-22 — Dependency Review workflow failure verified
 
 - **Issue:** Actions run `35737032681` failed in `Dependency Review` because GitHub Dependency Graph is disabled for this repository. The log says, “Dependency review is not supported on this repository.”

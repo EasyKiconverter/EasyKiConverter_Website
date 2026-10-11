@@ -2,6 +2,12 @@
 
 [English](OPTIMIZATION_LOG_en.md)
 
+## 2026-10-12 — 对齐首页与格式矩阵的能力摘要
+
+- **问题：** 首页格式卡片手写了 `3D` 标签，但共享格式矩阵维护的是 EDA 目标；首页也没有显示当前矩阵的稳定目标与已注册目标数量，容易让用户形成不一致的能力预期。
+- **处理：** 中文和英文首页直接读取 `src/data/formats.ts`，渲染 KiCad、Altium 及当前已注册目标数量，并保留跳转格式矩阵和 Release 证据的路径。
+- **验证：** 增加双语首页格式摘要回归测试；将运行构建、静态站点检查、资产检查和完整浏览器测试。
+
 ## 2026-09-22 — Dependency Review 工作流故障核验
 
 - **问题：** Actions run `35737032681` 的 `Dependency Review` 因仓库未启用 GitHub Dependency Graph 而失败；日志原文为 “Dependency review is not supported on this repository”。
