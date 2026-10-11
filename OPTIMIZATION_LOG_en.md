@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Keep Release refresh same-origin
+
+- **Issue:** Every page requested the GitHub Releases API in the browser; API rate limits produced a 403 failed request even though the static fallback remained usable.
+- **Changes:** The build now writes the validated Release asset set to `public/data/latest-release.json`; runtime refresh uses the same origin while the checked-in `src/data/release.ts` remains the fallback. Added a same-origin request regression test and updated the architecture notes.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite, then confirm online that pages no longer request the GitHub Releases API.
+
 ## 2026-10-12 — Remove narrow-screen overflow from English secondary pages
 
 - **Issue:** At 390px, the English Formats, Cases, and 3D Lab pages still overflowed horizontally through CTA emphasis text, footer links, and the Lab view switcher.

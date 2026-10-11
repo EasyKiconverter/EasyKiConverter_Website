@@ -1,0 +1,14 @@
+{
+  "tag": "v3.1.13",
+  "url": "https://github.com/EasyKiconverter/EasyKiConverter/releases/tag/v3.1.13",
+  "assetUrls": {
+    "windows-0": "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-windows-x86_64-installer.exe",
+    "windows-1": "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-windows-arm64-installer.exe",
+    "linux-0": "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-linux-x86_64.AppImage",
+    "linux-1": "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-linux-amd64.deb",
+    "linux-2": "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-linux-aarch64.AppImage",
+    "macos-0": "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-macos-arm64.dmg",
+    "macos-1": "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/EasyKiConverter-3.1.13-macos-x86_64.dmg",
+    "checksum": "https://github.com/EasyKiconverter/EasyKiConverter/releases/download/v3.1.13/SHA256SUMS"
+  }
+}
