@@ -281,3 +281,9 @@
 - **Issue**: Case cards retained auditable repository paths, but users had to infer which link was the fixture and which was the test evidence.
 - **Change**: Added bilingual “Open fixture” and “Open test evidence” action labels above each full path while preserving the real URL, external-link semantics and auditability.
 - **Validation**: Added assertions for six case-evidence action labels and reran the build, site validation, asset checks and the complete browser suite.
+
+## 2026-10-12 — Localize release terminology on Chinese pages
+
+- **Issue**: The Chinese homepage, Formats matrix and Cases page still mixed `Release` into ordinary Chinese guidance, forcing users to switch language context and weakening visual copy consistency.
+- **Change**: Localized ordinary Chinese guidance as “发布版本”, “发布说明” and “发布页”; English pages retain the precise GitHub ecosystem term `Release`, while technical links and version identifiers remain unchanged.
+- **Validation**: Added Chinese-route copy assertions confirming that visible copy on the homepage, Formats and Cases pages no longer exposes an unlocalized `Release`.

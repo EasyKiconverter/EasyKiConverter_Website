@@ -145,6 +145,16 @@ test('homepage format summary explains version-scoped support', async ({ page })
   await expect(page.locator('#formats')).not.toContainText('the main project also registers');
 });
 
+test('Chinese pages keep release guidance localized', async ({ page }) => {
+  for (const path of ['/', '/formats/', '/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('main')).not.toContainText('Release');
+  }
+  await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.format-matrix-actions .text-link')).toHaveText(/阅读当前发布页/);
+  await expect(page.locator('.format-legend-registered')).toHaveText(/按发布版本验证/);
+});
+
 test('homepage format and case actions have a clear primary hierarchy', async ({ page }) => {
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
