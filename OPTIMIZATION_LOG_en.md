@@ -106,3 +106,7 @@
 - Issue: The Chinese homepage body copy was localized, but its hero and section kickers remained mostly English, creating an uneven language hierarchy.
 - Changes: Localized the Chinese hero, section labels, and Qt Quick caption while keeping technical names such as KiCad, Altium, GUI, and CLI unchanged.
 - Validation: Added Chinese-label regression coverage and ran the build, site validation, asset gate, and browser tests.
+## 2026-10-11 — Localize the Chinese 3D Lab entry label
+- Issue: The Chinese 3D Lab kicker still used `EXPERIMENTAL 3D`, unlike the surrounding Chinese entry copy.
+- Changes: Changed the high-level entry label to “实验性 3D” while retaining technical control and data terminology inside the Lab.
+- Validation: Added Chinese and English Lab entry-label assertions and ran the build, site validation, asset gate, and browser tests.
