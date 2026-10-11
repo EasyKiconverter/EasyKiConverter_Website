@@ -387,15 +387,15 @@ const platformAvailability = [
             <em>it knows it.</em>
           </h2>
           <p>
-            Stable releases provide platform packages. Pick the asset that
-            matches your architecture.
+            The current stable release provides packages for Windows, Linux and
+            macOS. Choose the download that matches your architecture.
           </p>
         </div>
         <div class="platform-list reveal reveal-delay">
-          {platformAvailability.map((platform, index) => <div aria-label={`${platform.name} ${platform.assetCount} downloadable assets`}>
+          {platformAvailability.map((platform, index) => <div aria-label={`${platform.name} ${platform.assetCount} available downloads`}>
             <b>{platform.name}</b>
             <span>{platform.labels}</span>
-            <small class="platform-count">{platform.assetCount} assets</small>
+            <small class="platform-count">{platform.assetCount} downloads</small>
             <i>{String(index + 1).padStart(2, "0")}</i>
           </div>)}
         </div>
@@ -438,7 +438,7 @@ const platformAvailability = [
                 All releases
               </a>
             </div>
-            <div class="download-links" aria-label="Release entry points">
+            <div class="download-links" aria-label="Platform download entries">
               {latestRelease.assets.windows.map((asset, index) => <a data-release-asset={`windows-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Windows</b><span>{asset.label}</span></a>)}
               {latestRelease.assets.linux.map((asset, index) => <a data-release-asset={`linux-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Linux</b><span>{asset.label}</span></a>)}
               {latestRelease.assets.macos.map((asset, index) => <a data-release-asset={`macos-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>macOS</b><span>{asset.label}</span></a>)}
@@ -453,10 +453,10 @@ const platformAvailability = [
               </a>
             </div>
             <small>
-              The website does not host large binaries. Use the direct
-              architecture links below, or open the Release page to read the
-              changes and verify SHA256. If the GitHub API is unavailable, the
-              stable fallback remains usable.
+              The website does not host large binaries. Choose the direct
+              architecture download below, or open the Release page to read the
+              changes and verify SHA256. The stable download remains usable even
+              when the version information cannot be refreshed.
             </small>
           </div>
           <div class="download-stamp">
