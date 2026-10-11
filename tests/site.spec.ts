@@ -316,10 +316,10 @@ test('all public pages share the paper-grain visual layer', async ({ page }) => 
 
 test('all public pages share the bilingual footer navigation', async ({ page }) => {
   const pages = [
-    { path: '/', labels: ['格式矩阵', '案例', '3D 实验室', '文档'] },
-    { path: '/formats/', labels: ['格式矩阵', '案例', '3D 实验室', '文档'] },
-    { path: '/cases/', labels: ['格式矩阵', '案例', '3D 实验室', '文档'] },
-    { path: '/lab/', labels: ['格式矩阵', '案例', '3D 实验室', '文档'] },
+    { path: '/', labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'] },
+    { path: '/formats/', labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'] },
+    { path: '/cases/', labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'] },
+    { path: '/lab/', labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'] },
     { path: '/en/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
     { path: '/en/formats/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
     { path: '/en/cases/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
@@ -357,6 +357,8 @@ test('bilingual homepages keep the same interaction rhythm', async ({ page }) =>
 test('bilingual homepages expose localized navigation destinations', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.nav-links a[href="#formats"]')).toHaveText('格式矩阵');
+  await expect(page.locator('.nav-links a[href="cases/"]')).toHaveText('转换案例');
+  await expect(page.locator('.mobile-nav a[href="cases/"]')).toHaveText('转换案例');
   await expect(page.locator('.nav-links a').filter({ hasText: '3D 实验室' })).toHaveAttribute('href', /lab\/$/);
   await expect(page.locator('.mobile-nav a[href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"]')).toHaveText('文档');
 
