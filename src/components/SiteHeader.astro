@@ -32,7 +32,7 @@ const headerClass = {
 <header class:list={["site-header", "shell", headerClass]}>
   <a class="brand" href={homeHref} aria-label={en ? "EasyKiConverter home" : "EasyKiConverter 首页"}>
     <img src={iconUrl.href} alt="" width="36" height="36" />
-    <span>EasyKiConverter{!isHome && isLab && <small> / Lab</small>}</span>
+    <span>EasyKiConverter{!isHome && isLab && <small>{en ? " / Lab" : " / 实验室"}</small>}</span>
   </a>
   <nav class="nav-links" aria-label={isHome ? (en ? "Main navigation" : "主导航") : (en ? "Page navigation" : "页面导航")}>
     {isHome ? <>

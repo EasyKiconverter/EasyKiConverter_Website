@@ -287,3 +287,9 @@
 - **Issue**: The Chinese homepage, Formats matrix and Cases page still mixed `Release` into ordinary Chinese guidance, forcing users to switch language context and weakening visual copy consistency.
 - **Change**: Localized ordinary Chinese guidance as “发布版本”, “发布说明” and “发布页”; English pages retain the precise GitHub ecosystem term `Release`, while technical links and version identifiers remain unchanged.
 - **Validation**: Added Chinese-route copy assertions confirming that visible copy on the homepage, Formats and Cases pages no longer exposes an unlocalized `Release`.
+
+## 2026-10-12 — Localize the 3D Lab brand marker
+
+- **Issue**: The shared Header on the Chinese 3D Lab page still rendered the English `Lab` marker, while the navigation and page copy were localized.
+- **Change**: The brand marker now follows the page language as `Lab / 实验室`; English keeps the existing wording and all other shared Header entries remain unchanged.
+- **Validation**: Updated the bilingual inner-page Header test and reran the full build, site validation, asset checks and browser suite.
