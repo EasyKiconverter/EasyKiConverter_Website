@@ -61,6 +61,17 @@ test('content and Lab headers keep the shared brand treatment', async ({ page })
   await expect(page.locator('.lab-warning')).toContainText('8.4 MB');
 });
 
+test('content pages offer a bilingual next-step release CTA', async ({ page }) => {
+  for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const cta = page.locator('.content-page-cta');
+    await expect(cta).toBeVisible();
+    await expect(cta.locator('[data-release-link]')).toHaveAttribute('href', /releases/);
+    await expect(cta.locator('.text-link')).toHaveAttribute('href', /^(\/|https?:)/);
+    await expect(cta.locator('h2')).toBeVisible();
+  }
+});
+
 test('reduced motion keeps content visible without marquee animation', async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
