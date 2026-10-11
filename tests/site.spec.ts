@@ -157,6 +157,8 @@ test('case studies expose their evidence scope and next-step paths', async ({ pa
     await expect(page.locator('.evidence-summary')).toContainText('v3.1.13');
     await expect(page.locator('.evidence-summary')).toContainText('3');
     await expect(page.locator('.case-proof')).toHaveCount(3);
+    await expect(page.locator('.case-evidence-action')).toHaveCount(6);
+    await expect(page.locator('.case-evidence-action').first()).toContainText(/打开测试样本|Open fixture/);
   }
 });
 
