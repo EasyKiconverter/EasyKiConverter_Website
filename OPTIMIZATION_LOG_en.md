@@ -86,3 +86,7 @@
 - Issue: The Chinese homepage mixed `Formats`, `3D Lab`, and `Docs` in its navigation and footer, while the English Download entry already existed; adding a duplicate entry was unnecessary.
 - Changes: Localized the Chinese desktop, mobile, and footer entries to “格式矩阵”, “3D 实验室”, and “文档” while preserving the same product destinations in both languages.
 - Validation: Added bilingual homepage navigation-destination coverage and ran the build, site validation, asset gate, and browser tests.
+## 2026-10-11 — Correct download asset architecture labels
+- Issue: The homepage download cards mislabeled the Windows x86_64, Linux x86_64, and macOS Apple Silicon assets, and called the SHA256 file “Release notes”.
+- Changes: Rendered the actual Release asset labels, aligned platform architecture naming, and renamed the checksum entry to SHA256 checks.
+- Validation: Added bilingual download-architecture coverage and ran the build, site validation, asset gate, and browser tests.
