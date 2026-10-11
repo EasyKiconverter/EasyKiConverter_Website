@@ -28,7 +28,7 @@ const englishUrl = new URL("en/lab/", siteBase);
   <body>
     <header class="lab-header shell">
       <a class="brand" href={siteBase.href} aria-label="返回 EasyKiConverter 首页">EasyKiConverter / Lab</a>
-      <nav aria-label="实验室导航"><a href={siteBase.href}>首页</a><a href={englishUrl}>English</a></nav>
+      <nav aria-label="实验室导航"><a href={siteBase.href}>首页</a><a href={new URL("formats/", siteBase)}>格式矩阵</a><a href={new URL("cases/", siteBase)}>转换案例</a><a href={englishUrl}>English</a></nav>
     </header>
     <main>
       <section class="lab-intro" aria-labelledby="lab-title">
