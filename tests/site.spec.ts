@@ -509,6 +509,8 @@ test('Chinese Lab keeps its entry label localized', async ({ page }) => {
   await expect(page.locator('.motion-chapter-input > span')).toHaveText('01 — 输入');
   await expect(page.locator('.motion-chapter-library > span')).toHaveText('02 — 构建元件库');
   await expect(page.locator('.motion-artifacts')).toHaveText('符号+封装+3D 模型');
+  await expect(page.locator('[data-visual="footprint"]')).toContainText('俯视图 · 非按比例');
+  await expect(page.locator('[data-visual="footprint"]')).not.toContainText('TOP VIEW');
   await expect(page.locator('.morph-orbit-import')).toHaveText('导入轨道 ↥');
   await expect(page.locator('.tomogram-import')).toHaveText('导入 ↥');
   await expect(page.locator('.motion-chapter-product > span')).toHaveText('03 — 真实工作台');
@@ -517,6 +519,7 @@ test('Chinese Lab keeps its entry label localized', async ({ page }) => {
   await expect(page.locator('.lab-intro .kicker')).toHaveText('ON DEMAND · EXPERIMENTAL 3D');
   await expect(page.locator('.motion-chapter-input > span')).toHaveText('01 — INPUT');
   await expect(page.locator('.motion-artifacts')).toHaveText('SYMBOL+FOOTPRINT+3D MODEL');
+  await expect(page.locator('[data-visual="footprint"]')).toContainText('TOP VIEW · NOT TO SCALE');
   await expect(page.locator('.morph-orbit-import')).toHaveText('ORBIT ↥');
 });
 

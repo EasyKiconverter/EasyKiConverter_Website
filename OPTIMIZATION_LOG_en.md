@@ -299,3 +299,9 @@
 - **Issue**: Some advanced controls remain dependent on model data, scan results or imported content after the panel opens, while the previous note implied that every control was immediately usable.
 - **Change**: The bilingual note now explains that controls unlock progressively as model data, scans and imports become available, while keeping the panel collapsed by default.
 - **Validation**: Added bilingual readiness-copy assertions and reran the full build, site validation, asset checks and browser suite.
+
+## 2026-10-12 — Localize the footprint-study annotation
+
+- **Issue**: The Chinese Lab footprint-study SVG still displayed `TOP VIEW · NOT TO SCALE`, unlike the surrounding Chinese experiment copy.
+- **Change**: Chinese now displays “俯视图 · 非按比例” and “封装焊盘”; English retains the original engineering labels.
+- **Validation**: Added bilingual SVG-label assertions and reran the full build, site validation, asset checks and browser suite.
