@@ -1,6 +1,7 @@
 ---
 import "../../css/styles.css";
 import "../../css/accessibility.css";
+import "../../css/content-page.css";
 import "../../css/motion-narrative.css";
 import "../../css/lab.css";
 import MotionNarrative from "../../components/MotionNarrative.astro";
@@ -27,11 +28,13 @@ const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase);
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
-    <header class="lab-header shell">
+    <a class="content-page-skip" href="#lab-main">跳转到实验室正文</a>
+    <header class="lab-header site-header content-page-header shell">
       <a class="brand" href={siteBase.href} aria-label="返回 EasyKiConverter 首页"><img src={iconUrl.href} alt="" width="36" height="36" /><span>EasyKiConverter <small>/ Lab</small></span></a>
-      <nav aria-label="实验室导航"><a href={siteBase.href}>首页</a><a href={new URL("formats/", siteBase)}>格式矩阵</a><a href={new URL("cases/", siteBase)}>转换案例</a><a href={englishUrl}>English</a></nav>
+      <nav class="nav-links" aria-label="实验室导航"><a href={siteBase.href}>首页</a><a href={new URL("formats/", siteBase)}>格式矩阵</a><a href={new URL("cases/", siteBase)}>转换案例</a><a href={new URL("lab/", siteBase)} aria-current="page">3D 实验室</a><a href={englishUrl}>English</a></nav>
+      <a class="github-link" href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">GitHub <span>↗</span></a>
     </header>
-    <main>
+    <main id="lab-main">
       <section class="lab-intro" aria-labelledby="lab-title">
         <p class="kicker">按需加载 · EXPERIMENTAL 3D</p>
         <h1 id="lab-title">真实几何，独立实验。</h1>
