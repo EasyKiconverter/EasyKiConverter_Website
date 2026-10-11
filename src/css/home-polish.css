@@ -404,8 +404,21 @@
     transform: translate3d(0, var(--story-lift, 0px), var(--story-z, 0px)) rotateY(var(--story-turn, 0deg));
   }
 
-  .story-card-b p {
-    max-width: 185px;
+  .story-card p {
+    max-width: 265px;
+  }
+
+  .story-card .story-pulse,
+  .story-card .story-stack,
+  .story-card .story-check {
+    position: static;
+    width: max-content;
+    margin-top: 18px;
+    margin-left: auto;
+  }
+
+  .story-card .story-stack {
+    transform: rotate(-7deg);
   }
 }
 
