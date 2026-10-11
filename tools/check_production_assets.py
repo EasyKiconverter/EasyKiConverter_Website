@@ -46,6 +46,7 @@ def main() -> int:
         "/lab/",
         "/en/lab/",
         "/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B.glb",
+        "/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B-mobile.glb",
         "/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B.step",
         "/assets/vendor/occt-import-js.wasm",
     ]
@@ -54,13 +55,14 @@ def main() -> int:
     for result in results:
         if result.status != 200:
             errors.append(f"{result.path}: expected HTTP 200, got {result.status}")
-    glb = next(result for result in results if result.path.endswith(".glb"))
+    glbs = [result for result in results if result.path.endswith(".glb")]
     wasm = next(result for result in results if result.path.endswith(".wasm"))
-    if not glb.content_type.startswith("model/gltf-binary"):
-        errors.append(f"{glb.path}: expected model/gltf-binary, got {glb.content_type or 'missing'}")
+    for glb in glbs:
+        if not glb.content_type.startswith("model/gltf-binary"):
+            errors.append(f"{glb.path}: expected model/gltf-binary, got {glb.content_type or 'missing'}")
     if not wasm.content_type.startswith("application/wasm"):
         errors.append(f"{wasm.path}: expected application/wasm, got {wasm.content_type or 'missing'}")
-    for asset in (glb, wasm):
+    for asset in (*glbs, wasm):
         if not {"public", "immutable"}.issubset({part.strip() for part in asset.cache_control.split(",")}):
             errors.append(f"{asset.path}: expected public, immutable cache policy, got {asset.cache_control or 'missing'}")
         if "max-age=" not in asset.cache_control:

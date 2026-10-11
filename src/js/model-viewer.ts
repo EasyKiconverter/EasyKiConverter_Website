@@ -7083,8 +7083,13 @@ export const setupModel = async (): Promise<void> => {
 
   const loadGlb = (): void => {
     const loader = new GLTFLoader();
+    const mobileAsset = stage.clientWidth < 520 || window.matchMedia("(max-width: 760px)").matches;
+    const modelAsset = mobileAsset
+      ? "assets/model/Easykiconverter_展示模型-mobile.glb"
+      : "assets/model/Easykiconverter_展示模型.glb";
+    stage.dataset.modelAsset = mobileAsset ? "mobile" : "desktop";
     loader.load(
-      new URL("assets/model/Easykiconverter_展示模型.glb", assetRoot).href,
+      new URL(modelAsset, assetRoot).href,
       (gltf) => {
         try {
           const meshes: NonNullable<MeshMessage["meshes"]> = [];

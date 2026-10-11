@@ -29,6 +29,7 @@ Sync only the generated `dist/` contents to the web root or target subdirectory;
 - `dist/index.html`, `dist/en/index.html`, `dist/formats/index.html`, `dist/en/formats/index.html`, `dist/cases/index.html`, `dist/en/cases/index.html`
 - `dist/_astro/`, `dist/assets/`
 - `dist/assets/model/Easykiconverter_展示模型.glb` (the default 3D Lab delivery model)
+- `dist/assets/model/Easykiconverter_展示模型-mobile.glb` (the narrow-viewport 3D Lab delivery model)
 - `dist/assets/model/Easykiconverter_展示模型.step` (when deploying the 3D Lab)
 - `robots.txt`, `sitemap.xml`
 

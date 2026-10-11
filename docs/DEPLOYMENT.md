@@ -29,6 +29,7 @@ pnpm run preview
 - `dist/index.html`、`dist/en/index.html`、`dist/formats/index.html`、`dist/en/formats/index.html`、`dist/cases/index.html`、`dist/en/cases/index.html`
 - `dist/_astro/`、`dist/assets/`
 - `dist/assets/model/Easykiconverter_展示模型.glb`（3D Lab 默认交付模型）
+- `dist/assets/model/Easykiconverter_展示模型-mobile.glb`（窄屏 3D Lab 交付模型）
 - `dist/assets/model/Easykiconverter_展示模型.step`（若部署 3D Lab）
 - `robots.txt`、`sitemap.xml`
 
