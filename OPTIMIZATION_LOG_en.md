@@ -159,3 +159,9 @@
 - **Issue**: The homepage platform section listed architectures, but users still had to inspect the download cards to learn how many assets each platform offered; the bilingual summaries lacked the same information hierarchy.
 - **Change**: Kept the platform summary derived from `latestRelease.assets` and added the actual asset count for Windows, Linux and macOS, with matching bilingual accessible labels.
 - **Validation**: Added assertions for the 2/3/2 platform asset counts; build, site validation, asset checks, desktop/mobile render checks and all 62 browser tests pass.
+
+## 2026-10-12 — Unify the shared Header across home and inner pages
+
+- **Issue**: The homepage and the Formats, Cases and 3D Lab pages maintained separate Headers, allowing brand entry points, language switching and mobile navigation to drift between bilingual routes.
+- **Change**: Added a `home/inner` variant-based `SiteHeader` that centralizes the brand, GitHub entry and mobile menu while preserving homepage anchor navigation, inner-page current state and the Lab brand marker.
+- **Validation**: Updated static site validation to recognize the shared Header, then reran bilingual navigation, current-state, mobile-menu, build, site validation, asset checks and all 62 browser tests.
