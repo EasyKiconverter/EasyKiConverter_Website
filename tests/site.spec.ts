@@ -268,9 +268,12 @@ test('homepage platform summary mirrors the available Release assets', async ({ 
     await expect(platforms.nth(0)).toContainText(/Windows/);
     await expect(platforms.nth(0)).toContainText(/x86_64/);
     await expect(platforms.nth(0)).toContainText(/arm64/);
+    await expect(platforms.nth(0).locator('.platform-count')).toContainText(/2/);
     await expect(platforms.nth(1)).toContainText(/aarch64/);
+    await expect(platforms.nth(1).locator('.platform-count')).toContainText(/3/);
     await expect(platforms.nth(2)).toContainText(/Intel/);
     await expect(platforms.nth(2)).toContainText(/Apple Silicon/);
+    await expect(platforms.nth(2).locator('.platform-count')).toContainText(/2/);
   }
 });
 
