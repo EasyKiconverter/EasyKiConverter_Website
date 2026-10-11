@@ -72,6 +72,26 @@ test('content and Lab headers keep the shared brand treatment', async ({ page })
   await expect(page.locator('.content-page-skip')).toHaveText('Skip to lab content');
 });
 
+test('inner pages share the same localized header navigation', async ({ page }) => {
+  const pages = [
+    { path: '/formats/', current: '格式矩阵', lab: false },
+    { path: '/cases/', current: '转换案例', lab: false },
+    { path: '/lab/', current: '3D 实验室', lab: true },
+    { path: '/en/formats/', current: 'Formats', lab: false },
+    { path: '/en/cases/', current: 'Cases', lab: false },
+    { path: '/en/lab/', current: '3D Lab', lab: true },
+  ];
+  for (const { path, current, lab } of pages) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const header = page.locator('.content-page-header');
+    await expect(header.locator('.nav-links a')).toHaveCount(5);
+    await expect(header.locator('.nav-links a[aria-current="page"]')).toHaveText(current);
+    await expect(page.locator('.mobile-nav a')).toHaveCount(6);
+    if (lab) await expect(header.locator('.brand')).toContainText('/ Lab');
+    else await expect(header.locator('.brand')).not.toContainText('/ Lab');
+  }
+});
+
 test('Lab pages use the shared mobile navigation behavior', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/lab/', '/en/lab/']) {

@@ -141,3 +141,9 @@
 - **Issue**: The homepage exposed the full site navigation, while Formats, Cases and 3D Lab only offered copyright and a home link.
 - **Change**: Extracted a bilingual `SiteFooter` component with shared GitHub, Formats, Cases, 3D Lab, Docs, Contribute and Issues entry points, reused across all eight public routes.
 - **Validation**: Added a footer-consistency test covering all eight bilingual routes; build, site validation, asset checks and browser tests pass.
+
+## 2026-10-12 — Unify the bilingual Header across content and Lab pages
+
+- **Issue**: Formats, Cases and 3D Lab maintained separate Header templates, creating drift risk in navigation, current-page state and the Lab brand marker.
+- **Change**: Extracted a shared `InnerPageHeader` component for the six inner routes, covering desktop navigation, mobile navigation, language switching and current-page state.
+- **Validation**: Added an inner-page Header consistency test; build, site validation, asset checks and browser tests pass.
