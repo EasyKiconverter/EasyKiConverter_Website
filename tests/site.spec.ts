@@ -14,6 +14,8 @@ for (const path of pages) {
     await expect(page.locator('main')).toBeVisible();
     await expect(page.locator('[data-release-version]').first()).toHaveText('v3.1.13');
     await expect(page.locator('[data-release-link]').first()).toHaveAttribute('href', /v3\.1\.13/);
+    await expect(page.locator('.hero-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
+    await expect(page.locator('.download-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
     await expect(page.locator('h1')).toBeVisible();
 
     const duplicateIds = await page.locator('[id]').evaluateAll((elements) => {
@@ -97,7 +99,7 @@ test('format matrix offers evidence and release next steps in both languages', a
   for (const path of ['/formats/', '/en/formats/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.format-matrix-actions .button-dark')).toHaveAttribute('href', /cases/);
-    await expect(page.locator('.format-matrix-actions .text-link')).toHaveAttribute('href', /github\.com\/EasyKiconverter\/EasyKiConverter\/releases/);
+    await expect(page.locator('.format-matrix-actions .text-link')).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(page.locator('.format-legend')).toBeVisible();
     await expect(page.locator('.format-status-primary')).toHaveCount(2);
     await expect(page.locator('.format-status-registered')).toHaveCount(9);
