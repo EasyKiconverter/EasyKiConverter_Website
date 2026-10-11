@@ -30,6 +30,7 @@ const isCurrent = (href: string) => new URL(href).pathname === pageUrl.pathname;
     <SeoHead lang={lang} pageUrl={pageUrl} alternateUrl={alternateUrl} title={title} description={description} />
   </head>
   <body>
+    <div class="grain" aria-hidden="true"></div>
     <a class="content-page-skip" href="#content-page-main">{en ? "Skip to content" : "跳转到正文"}</a>
     <header class="site-header content-page-header shell">
       <a class="brand" href={homeUrl} aria-label={en ? "EasyKiConverter home" : "EasyKiConverter 首页"}>

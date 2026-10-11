@@ -89,6 +89,13 @@ test('the heavy 3D runtime is isolated to the Lab route', async ({ request }) =>
   }
 });
 
+test('all public pages share the paper-grain visual layer', async ({ page }) => {
+  for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('body > .grain')).toHaveCount(1);
+  }
+});
+
 test('Lab runtime assets remain reachable from nested routes', async ({ request }) => {
   for (const asset of [
     '/assets/vendor/occt-import-js.js',
