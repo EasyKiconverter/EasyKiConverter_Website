@@ -83,8 +83,8 @@ export const setupModel = async (): Promise<void> => {
     const english = document.documentElement.lang === "en";
     experimentControlsToggle.setAttribute("aria-expanded", String(open));
     experimentControlsToggle.textContent = open
-      ? english ? "TOOLS −" : "工具 −"
-      : english ? "TOOLS +" : "工具 +";
+      ? english ? "ADVANCED −" : "高级工具 −"
+      : english ? "ADVANCED +" : "高级工具 +";
     experimentControlsNote?.setAttribute("aria-hidden", String(!open));
   };
   experimentControlsToggle?.addEventListener("click", () => {
