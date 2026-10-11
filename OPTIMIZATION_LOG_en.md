@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — State the cross-platform scope directly
+
+- **Issue:** The platform section’s “Your system, it knows it” headline had personality but did not directly state the supported systems, and the Chinese/English headings were not semantically aligned.
+- **Changes:** List Windows, Linux and macOS directly in both headings and use the shared “跨平台支持 / CROSS-PLATFORM SUPPORT” hierarchy; retain the architecture download guidance below for the concrete choice.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite.
+
 ## 2026-10-12 — Use user-facing language for platform downloads
 
 - **Issue:** The homepage platform section called download choices “assets” and exposed GitHub API details in the guidance, making users interpret implementation terminology before choosing a package.

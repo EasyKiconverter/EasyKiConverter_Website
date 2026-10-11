@@ -428,6 +428,16 @@ test('homepage platform copy speaks in user-facing download terms', async ({ pag
   await expect(page.locator('.download-copy')).not.toContainText('GitHub API');
 });
 
+test('bilingual platform headings identify the supported systems directly', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.platform-intro .kicker')).toHaveText('跨平台支持');
+  await expect(page.locator('#platforms-title')).toContainText('Windows、Linux、macOS');
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.platform-intro .kicker')).toHaveText('CROSS-PLATFORM SUPPORT');
+  await expect(page.locator('#platforms-title')).toContainText('Windows, Linux and macOS');
+});
+
 test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const homepage = page.locator('main');
