@@ -132,6 +132,8 @@ test('format matrix offers evidence and release next steps in both languages', a
     await expect(page.locator('.format-matrix-actions .text-link')).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(page.locator('.format-summary')).toContainText(/2/);
     await expect(page.locator('.format-summary')).toContainText(/9/);
+    await expect(page.locator('.evidence-summary')).toContainText('v3.1.13');
+    await expect(page.locator('.evidence-summary')).toContainText('11');
     await expect(page.locator('thead th').nth(2)).toHaveText(/Release status|版本状态/);
     await expect(page.locator('.format-legend')).toBeVisible();
     await expect(page.locator('.format-status-primary')).toHaveCount(2);
@@ -144,6 +146,8 @@ test('case studies expose their evidence scope and next-step paths', async ({ pa
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.case-studies-actions .button-dark')).toHaveAttribute('href', /formats/);
     await expect(page.locator('.case-studies-actions .text-link')).toHaveAttribute('href', /github\.com\/EasyKiconverter\/EasyKiConverter$/);
+    await expect(page.locator('.evidence-summary')).toContainText('v3.1.13');
+    await expect(page.locator('.evidence-summary')).toContainText('3');
     await expect(page.locator('.case-proof')).toHaveCount(3);
   }
 });
