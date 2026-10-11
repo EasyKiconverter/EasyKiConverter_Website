@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Connect platform guidance to downloads
+
+- **Issue:** The platform section already listed Windows, Linux, macOS, and their architectures, but visitors still had to find the actual download cards by continuing down the page.
+- **Changes:** Add a bilingual “查看平台下载项 / See platform downloads” anchor directly below the platform guidance, linking to the stable download area; also remove an extra space in the Chinese format-support note.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite.
+
 ## 2026-10-12 — Name the primary EDA destinations in the hero
 
 - **Issue:** The hero explained the LCSC / EasyEDA input but described the output only as “the EDA libraries you already know,” making first-time visitors scroll to the format section to confirm KiCad and Altium.
