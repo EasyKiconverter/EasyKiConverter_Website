@@ -42,3 +42,9 @@
 - **Issue:** The English homepage lacked the magnetic class on its download button, matching reveal delays on story/workflow/platform sections, and the shared hover-animation structure for the GitHub arrow.
 - **Changes:** Matched the English homepage `magnetic` and `reveal-delay` classes and GitHub arrow markup, added an accessible label to the English scroll cue, and added a browser regression test for bilingual interaction rhythm.
 - **Validation:** Run the build, static site checks, and browser suite after the change; both homepages continue to share the same visual and interaction states.
+
+## 2026-10-11 — Complete homepage download and feature-card motion parity
+
+- **Issue:** The English homepage download button lacked the magnetic and arrow motion, its hero arrow did not use the shared animated markup, and its three colored feature cards lacked the staggered reveal rhythm used by the Chinese page.
+- **Changes:** Matched the English download button classes, arrow markup, and feature-card reveal delays; expanded bilingual browser coverage across the hero, feature, and download sections.
+- **Validation:** Run the build, static site checks, GLB asset gate, and both-browser regression suite; the change remains presentation-only.
