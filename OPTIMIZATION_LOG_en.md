@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Prevent story-card decoration from covering mobile copy
+
+- **Issue:** On narrow screens, the symbols, footprint, and 3D-model labels in the “整理/ORGANIZE” story card overlapped its paragraph; the desktop layout was unaffected.
+- **Changes:** Reserved a readable text width for that card in the mobile layout while keeping its decorative stack and staggered visual treatment; added a bilingual geometry regression test.
+- **Validation:** Run the build, static site checks, asset checks, the full browser suite, and review a 390px screenshot.
+
 ## 2026-10-12 — Close the Dependency Review gate when dependencies are unchanged
 
 - **Issue:** `master` requires the `Dependency Review` status, but the Security workflow did not produce a usable success state for website PRs that changed no dependency manifests, incorrectly blocking normal promotion PRs.

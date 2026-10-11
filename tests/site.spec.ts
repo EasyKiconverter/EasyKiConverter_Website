@@ -40,6 +40,23 @@ test('mobile navigation opens, closes, and restores focus', async ({ page }) => 
   await expect(menu).toBeFocused();
 });
 
+test('mobile story cards keep decorative labels clear of their copy', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'networkidle' });
+    const storyCard = page.locator('.story-card-b');
+    await storyCard.scrollIntoViewIfNeeded();
+    const bounds = await storyCard.evaluate((card) => {
+      const copy = card.querySelector('p')?.getBoundingClientRect();
+      const labels = card.querySelector('.story-stack')?.getBoundingClientRect();
+      if (!copy || !labels) return null;
+      return { copy, labels };
+    });
+    expect(bounds).not.toBeNull();
+    expect(bounds!.copy.right).toBeLessThanOrEqual(bounds!.labels.left + 1);
+  }
+});
+
 test('homepage format summary matches the capability matrix data', async ({ page }) => {
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
