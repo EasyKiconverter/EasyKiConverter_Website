@@ -52,6 +52,14 @@ test('content pages keep navigation reachable on narrow screens', async ({ page 
   await expect(menu).toBeFocused();
 });
 
+test('format matrix rows remain readable on narrow screens', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.format-table-wrap table')).toHaveCSS('min-width', '0px');
+  await expect(page.locator('.format-table-wrap tbody tr').first()).toBeVisible();
+  await expect(page.locator('.format-table-wrap tbody tr').first().locator('td[data-label="版本状态"]')).toBeVisible();
+});
+
 test('content and Lab headers keep the shared brand treatment', async ({ page }) => {
   await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.content-page-header .brand img')).toHaveAttribute('src', /easyki-icon\.svg/);
