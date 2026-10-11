@@ -13,6 +13,7 @@
 - `master` 与 `version/V0.0.1` 已启用 PR、至少一名审批、强制通过 `Static site checks` 与 `Dependency Review`、禁止强推和会话解决门禁。
 - 2026-10-11 已在 `https://easykiconverter.org.cn/` 验证八个生产路由返回 HTTP 200；首页不加载 3D 运行时，`/lab/` 与 `/en/lab/` 的同源模型资源可访问，旧版根路径 `.msix` 下载链接仍可用。
 - 2026-10-11 使用 Chromium SwiftShader 访问生产 `/lab/`，真实 STEP 模型成功加载（`278,784` 个三角面、无 fallback、无控制台错误），工具入口初始化完成且默认收起。
+- 2026-10-11 生产 GLB 返回 `model/gltf-binary`、约 9.6 MB 和 `max-age=2592000`；WASM 返回 `application/wasm` 并带有同等长期缓存策略。
 
 ## 资源边界
 
@@ -20,4 +21,4 @@
 
 ## 尚未完成的验证
 
-真实移动设备上的性能和不同网络条件下的缓存表现仍需单独记录；这些不能由静态构建、CI 或桌面 SwiftShader 结果替代。
+真实移动设备上的性能和不同网络条件下的缓存表现仍需单独记录；单次生产响应头检查不能替代不同网络条件下的实测。
