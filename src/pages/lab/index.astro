@@ -32,8 +32,19 @@ const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase);
     <header class="lab-header site-header content-page-header shell">
       <a class="brand" href={siteBase.href} aria-label="返回 EasyKiConverter 首页"><img src={iconUrl.href} alt="" width="36" height="36" /><span>EasyKiConverter <small>/ Lab</small></span></a>
       <nav class="nav-links" aria-label="实验室导航"><a href={siteBase.href}>首页</a><a href={new URL("formats/", siteBase)}>格式矩阵</a><a href={new URL("cases/", siteBase)}>转换案例</a><a href={new URL("lab/", siteBase)} aria-current="page">3D 实验室</a><a href={englishUrl}>English</a></nav>
-      <a class="github-link" href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">GitHub <span>↗</span></a>
+      <div class="header-actions">
+        <a class="github-link" href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">GitHub <span>↗</span></a>
+        <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-nav">菜单</button>
+      </div>
     </header>
+    <nav id="mobile-nav" class="mobile-nav" aria-label="移动端实验室导航">
+      <a href={siteBase.href}>首页</a>
+      <a href={new URL("formats/", siteBase)}>格式矩阵</a>
+      <a href={new URL("cases/", siteBase)}>转换案例</a>
+      <a href={new URL("lab/", siteBase)} aria-current="page">3D 实验室</a>
+      <a href={englishUrl}>English</a>
+      <a href="https://github.com/EasyKiconverter/EasyKiConverter" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
     <main id="lab-main">
       <section class="lab-intro" aria-labelledby="lab-title">
         <p class="kicker">按需加载 · EXPERIMENTAL 3D</p>
@@ -48,6 +59,9 @@ const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase);
       <MotionNarrative lang="zh" />
     </main>
     <footer class="site-footer shell"><p>© EasyKiConverter · GPL-3.0</p><a href={siteBase.href}>返回首页</a></footer>
+    <script>
+      import "../../js/app";
+    </script>
     <script>
       import { setupModel } from "../../js/model-viewer";
       setupModel();
