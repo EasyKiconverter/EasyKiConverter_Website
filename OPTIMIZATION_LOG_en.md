@@ -130,3 +130,9 @@
 - Issue: The Formats and Cases pages shared the same generic CTA, so readers saw only “READY TO USE” after reviewing either a target list or evidence cases.
 - Changes: The Formats CTA now leads users to choose a target and keep the evidence close; the Cases CTA leads users to verify fixtures and tests before downloading the stable release, with the same bilingual layout and actions.
 - Validation: Added Formats/Cases CTA-copy assertions and ran the build, site validation, asset gate, and 56 browser tests.
+
+## 2026-10-11 — Keep the platform summary aligned with Release assets
+
+- **Issue**: The homepage platform section used a hand-written architecture summary while the download area was driven by current Release assets, allowing the two to drift.
+- **Change**: The bilingual homepages now derive platform summaries from `latestRelease.assets`; the Chinese page localizes installer labels while retaining every available architecture and package type.
+- **Validation**: Added a bilingual homepage platform-summary test; build, site validation, and browser tests run with this PR.
