@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "release:sync": "python3 tools/sync_release.py",
+    "assets:check": "python3 tools/check_model_assets.py",
     "test:browser": "playwright test"
   },
   "dependencies": {

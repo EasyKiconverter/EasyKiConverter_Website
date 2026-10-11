@@ -32,7 +32,7 @@ pnpm install
 pnpm dev
 ```
 
-For a production build, run `pnpm run build` and preview it with `pnpm run preview`. Do not open the 3D Lab through `file://`; browsers block STEP/WASM reads, which makes local rendering differ from production.
+For a production build, run `pnpm run build` and preview it with `pnpm run preview`. Validate the browser-delivery GLB structure, normals, source metadata, and triangle budgets with `pnpm run assets:check`. Do not open the 3D Lab through `file://`; browsers block STEP/WASM reads, which makes local rendering differ from production.
 
 See [deployment and preview parity](docs/DEPLOYMENT_en.md) for self-hosting and release checks. To simulate a production subpath, serve the repository parent directory and open `http://localhost:4174/EasyKiConverter_Website/`.
 

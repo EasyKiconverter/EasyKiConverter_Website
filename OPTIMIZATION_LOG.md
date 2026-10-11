@@ -17,3 +17,10 @@
 - **验证：** `pnpm run check` 与 `pnpm run build` 通过（Astro 0 errors / 0 warnings / 0 hints）；`python3 tools/validate_site.py` 通过；`git diff --check` 通过。没有独立 test、lint 或 benchmark 脚本；本轮仅改文档，未做浏览器测试。
 - **风险与回滚：** 仅文档变化；如目录描述有误，可单独回滚 README 与本条记录，不影响站点运行。
 - **下一步：** 优先评估浏览器回归测试，其次量测 STEP → GLB 管线收益。
+
+## 2026-10-11 — 建立 GLB 交付资产质量门禁
+
+- **问题：** STEP→GLB 生成器已经存在，但构建流程没有验证 GLB 容器、法线、源模型元数据或三角面增长；桌面资产曾缺少生成器应写入的源模型元数据。
+- **处理：** 使用 `tools/prepare_model_asset.py` 重建桌面 GLB；新增跨平台 Python 校验器 `tools/check_model_assets.py`，检查 STEP 源文件、GLB 结构、303 组法线、源尺寸元数据，以及桌面 300,000 / 移动 250,000 三角面预算；将 `pnpm run assets:check` 接入 README 和 Site Quality。
+- **验证：** 桌面资产为 9,989,676 bytes / 278,784 triangles，移动资产为 8,431,996 bytes / 228,004 triangles；`pnpm run build`、`python3 tools/validate_site.py`、`pnpm run assets:check` 和 `pnpm run test:browser` 均通过（26 项浏览器测试）。
+- **边界：** 预算是意外膨胀的质量门，不是几何简化算法；真正的视觉简化仍需比较轮廓、连接器和焊盘细节后单独决定。

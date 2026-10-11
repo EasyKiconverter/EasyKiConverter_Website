@@ -39,6 +39,12 @@ pnpm run build
 pnpm run preview
 ```
 
+检查浏览器交付模型的 GLB 结构、法线、源模型元数据和三角面预算：
+
+```bash
+pnpm run assets:check
+```
+
 不要双击页面使用 `file://`。首页可直接查看静态内容；若要验证 3D Lab，必须通过 Astro HTTP 服务器访问，以允许 STEP/WASM 同源加载。
 
 自有服务器部署和发布前检查见：[部署与预览一致性](docs/DEPLOYMENT.md)。如果服务器使用子路径，可在仓库父目录启动 HTTP 服务并访问 `http://localhost:4174/EasyKiConverter_Website/`，模拟线上路径。
