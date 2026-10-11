@@ -281,8 +281,8 @@ const platformAvailability = [
             <div>
               <h3>多目标输出</h3>
               <p>
-                当前稳定版以 KiCad、Altium 为主要目标；其他目标格式的可用范围，
-                请以对应 Release 和格式矩阵中的状态为准。
+                当前稳定版以 KiCad、Altium 为主要目标；其他目标格式的可用范围，请以对应
+                Release 和格式矩阵中的状态为准。
               </p>
               <div class="format-pills" data-format-summary>
                 {primaryFormats.map((format) => <b>{format.name}</b>)}
@@ -384,6 +384,7 @@ const platformAvailability = [
             <em>都能运行。</em>
           </h2>
           <p>当前稳定版提供 Windows、Linux 和 macOS 安装包；请按设备架构选择对应下载项。</p>
+          <a class="text-link platform-intro-link" href="#download">查看平台下载项 <span>↓</span></a>
         </div>
         <div class="platform-list reveal reveal-delay">
           {platformAvailability.map((platform, index) => <div aria-label={`${platform.name} ${platform.assetCount} 个可用下载`}>
