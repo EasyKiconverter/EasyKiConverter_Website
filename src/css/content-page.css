@@ -123,6 +123,36 @@
   border-color: #d6d0c599;
 }
 
+.evidence-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 34px;
+}
+
+.evidence-summary span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  background: #fff8;
+}
+
+.evidence-summary span:first-child {
+  border-color: #6f61d83d;
+  color: var(--violet);
+}
+
+.evidence-summary b {
+  font-size: 18px;
+  line-height: 1;
+  color: inherit;
+}
+
 @media (max-width: 850px) {
   .content-page-cta {
     display: block;

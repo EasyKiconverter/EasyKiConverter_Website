@@ -1,5 +1,6 @@
 ---
 import { caseStudies } from "../data/cases";
+import { latestRelease } from "../data/release";
 interface Props { lang: "zh" | "en"; }
 const { lang } = Astro.props;
 const en = lang === "en";
@@ -17,6 +18,10 @@ const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase);
     <div class="case-studies-actions">
       <a class="button button-dark" href={formatsUrl}>{en ? "Compare all targets" : "比较全部目标格式"} <span>→</span></a>
       <a class="text-link" href={repository} target="_blank" rel="noreferrer">{en ? "Open source evidence" : "打开源码证据"} <span>↗</span></a>
+    </div>
+    <div class="evidence-summary" aria-label={en ? "Case evidence baseline" : "案例证据基线"}>
+      <span><b>{latestRelease.tag}</b>{en ? " release baseline" : " Release 基线"}</span>
+      <span><b>{caseStudies.length}</b>{en ? " traceable cases" : " 个可追溯案例"}</span>
     </div>
   </div>
   <div class="case-grid">
