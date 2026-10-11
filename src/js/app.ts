@@ -1,3 +1,4 @@
+document.documentElement.classList.add('js-ready');
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 const stableRelease = { tag: 'v3.1.11', url: 'https://github.com/EasyKiconverter/EasyKiConverter/releases/tag/v3.1.11' };
 const toast = document.querySelector<HTMLElement>('.egg-toast') || (() => { const element = document.createElement('div'); element.className = 'egg-toast'; element.setAttribute('role', 'status'); element.setAttribute('aria-live', 'polite'); document.body.append(element); return element; })();
@@ -80,31 +81,9 @@ if ('IntersectionObserver' in window) {
 } else {
   revealElements.forEach((element) => element.classList.add('is-visible'));
 }
-
-void import('./model-viewer').then(({ setupModel }) => setupModel());
-
-document.querySelectorAll<HTMLElement>('[data-model-stage]').forEach((stage) => {
-  const caption = stage.querySelector<HTMLElement>('.artifact-caption');
-  const modeLabel = stage.querySelector<HTMLElement>('[data-artifact-label]');
-  stage.querySelectorAll<HTMLButtonElement>('[data-artifact-view]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const view = button.dataset.artifactView;
-      if (!view) return;
-      stage.dataset.artifactView = view;
-      stage.querySelectorAll<HTMLButtonElement>('[data-artifact-view]').forEach((option) => {
-        option.setAttribute('aria-pressed', String(option === button));
-      });
-      const captionKey = document.documentElement.lang === 'en' ? 'captionEn' : 'captionZh';
-      const labelKey = document.documentElement.lang === 'en' ? 'labelEn' : 'labelZh';
-      caption?.replaceChildren(document.createTextNode(button.dataset[captionKey] ?? ''));
-      if (modeLabel) modeLabel.textContent = button.dataset[labelKey] ?? '';
-    });
-  });
-  stage.querySelector<HTMLButtonElement>('[data-tomogram-reveal-atlas]')?.addEventListener('click', () => {
-    stage.querySelector<HTMLButtonElement>('[data-artifact-view="atlas"]')?.click();
-    requestAnimationFrame(() => stage.querySelector<HTMLCanvasElement>('[data-mesh-atlas]')?.focus({ preventScroll: true }));
-  });
-});
+if (window.location.hash) {
+  revealElements.forEach((element) => element.classList.add('is-visible'));
+}
 
 document.querySelectorAll<HTMLElement>('.magnetic').forEach((button) => {
   button.addEventListener('pointermove', (event) => { if (motionPreference.matches) return; const box = button.getBoundingClientRect(); const x = (event.clientX - box.left - box.width / 2) * 0.1; const y = (event.clientY - box.top - box.height / 2) * 0.14; button.style.transform = `translate(${x}px,${y}px)`; });
@@ -113,6 +92,67 @@ document.querySelectorAll<HTMLElement>('.magnetic').forEach((button) => {
 motionPreference.addEventListener('change', ({ matches }) => {
   if (matches) document.querySelectorAll<HTMLElement>('.magnetic').forEach((button) => { button.style.transform = ''; });
 });
+
+const depthStage = document.querySelector<HTMLElement>('.hero-product-stage');
+const depthRail = document.querySelector<HTMLElement>('[data-story-rail]');
+const processStory = document.querySelector<HTMLElement>('[data-process-story]');
+if ((depthStage || processStory) && !motionPreference.matches) {
+  let pointerX = 0;
+  let pointerY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let frame = 0;
+  let active = true;
+
+  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+  const renderDepth = () => {
+    frame = 0;
+    if (!active) return;
+    const stageBox = depthStage?.getBoundingClientRect();
+    const progress = stageBox ? clamp((window.innerHeight * 0.72 - stageBox.top) / Math.max(1, window.innerHeight * 1.2), 0, 1) : 0;
+    currentX += (pointerX - currentX) * 0.12;
+    currentY += (pointerY - currentY) * 0.12;
+    if (depthStage) {
+      depthStage.style.setProperty('--scene-x', currentX.toFixed(3));
+      depthStage.style.setProperty('--scene-y', currentY.toFixed(3));
+      depthStage.style.setProperty('--scene-progress', progress.toFixed(3));
+    }
+    if (depthRail) {
+      depthRail.style.setProperty('--story-progress', progress.toFixed(3));
+      depthRail.querySelectorAll<HTMLElement>('.story-card').forEach((card, index) => {
+        const centerOffset = index - 1;
+        card.style.setProperty('--story-z', `${Math.round((1 - progress) * 18 - Math.abs(centerOffset) * 15)}px`);
+        card.style.setProperty('--story-turn', `${(centerOffset * (3 + progress * 4)).toFixed(2)}deg`);
+      });
+    }
+    if (processStory) {
+      const processBox = processStory.getBoundingClientRect();
+      const processProgress = clamp((window.innerHeight * 0.82 - processBox.top) / Math.max(1, processBox.height + window.innerHeight * 0.24), 0, 1);
+      processStory.style.setProperty('--process-progress', processProgress.toFixed(3));
+      processStory.querySelectorAll<HTMLElement>('.steps > li').forEach((step, index) => {
+        const activation = clamp(processProgress * 1.55 - index * 0.25, 0, 1);
+        step.style.setProperty('--step-depth', `${Math.round((1 - activation) * 24)}px`);
+        step.style.setProperty('--step-turn', `${((1 - activation) * (index % 2 ? -4 : 4)).toFixed(2)}deg`);
+        step.toggleAttribute('data-active', activation > 0.52);
+      });
+    }
+    if (Math.abs(pointerX - currentX) > 0.002 || Math.abs(pointerY - currentY) > 0.002) scheduleDepthFrame();
+  };
+  const scheduleDepthFrame = () => {
+    if (!frame) frame = window.requestAnimationFrame(renderDepth);
+  };
+
+  depthStage?.addEventListener('pointermove', (event) => {
+    const box = depthStage.getBoundingClientRect();
+    pointerX = clamp((event.clientX - box.left) / box.width * 2 - 1, -1, 1);
+    pointerY = clamp((event.clientY - box.top) / box.height * 2 - 1, -1, 1);
+    scheduleDepthFrame();
+  }, { passive: true });
+  depthStage?.addEventListener('pointerleave', () => { pointerX = 0; pointerY = 0; scheduleDepthFrame(); }, { passive: true });
+  window.addEventListener('scroll', scheduleDepthFrame, { passive: true });
+  document.addEventListener('visibilitychange', () => { active = !document.hidden; if (active) scheduleDepthFrame(); }, { passive: true });
+  scheduleDepthFrame();
+}
 
 const secretKeys = ['q', 't', '6']; let keyBuffer: string[] = [];
 document.addEventListener('keydown', (event) => { const target = event.target; if (event.key.length !== 1 || (target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)))) return; keyBuffer = [...keyBuffer, event.key.toLowerCase()].slice(-3); if (keyBuffer.join('') === secretKeys.join('')) { showToast('Qt 6 mode · smoothness increased'); keyBuffer = []; } });

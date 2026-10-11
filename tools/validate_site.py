@@ -10,10 +10,18 @@ pages = [ROOT / "src/pages/index.astro", ROOT / "src/pages/en/index.astro"]
 shared_components = [ROOT / "src/components/MotionNarrative.astro"]
 errors = []
 accessibility_css = (ROOT / "src/css/accessibility.css").read_text(encoding="utf-8")
+home_polish_css = (ROOT / "src/css/home-polish.css").read_text(encoding="utf-8")
+app_source = (ROOT / "src/js/app.ts").read_text(encoding="utf-8")
 if ":focus-visible" not in accessibility_css:
     errors.append("src/css/accessibility.css: missing visible keyboard focus rule")
 if "prefers-reduced-motion" not in (ROOT / "src/css/styles.css").read_text(encoding="utf-8"):
     errors.append("src/css/styles.css: missing reduced-motion rule")
+if ".reveal" not in home_polish_css or "opacity: 1" not in home_polish_css:
+    errors.append("src/css/home-polish.css: content is not visible without JavaScript")
+if "html:not(.js-ready) .mobile-nav" not in home_polish_css:
+    errors.append("src/css/home-polish.css: mobile navigation has no no-JavaScript fallback")
+if "classList.add('js-ready')" not in app_source:
+    errors.append("src/js/app.ts: JavaScript readiness marker is missing")
 
 for page in pages:
     text = page.read_text(encoding="utf-8")
@@ -26,12 +34,15 @@ for page in pages:
         errors.append(f"{page}: duplicate HTML id")
     if "Xpedition" in text:
         errors.append(f"{page}: stable homepage must not claim Xpedition")
-    if "data-model-stage" not in text or "model-canvas" not in text:
-        errors.append(f"{page}: missing interactive model stage")
+    has_model_stage = "data-model-stage" in text and "model-canvas" in text
+    has_product_stage = "hero-product-stage" in text and "hero-product-window" in text
+    if not has_model_stage and not has_product_stage:
+        errors.append(f"{page}: missing interactive product or model stage")
     for marker in ("name=\"description\"", "rel=\"canonical\"", "property=\"og:title\"", "name=\"twitter:card\"", "application/ld+json", "hreflang=\"en\"", "hreflang=\"zh-CN\""):
         if marker not in text:
             errors.append(f"{page}: missing SEO marker {marker}")
-    if "model-fallback-copy" not in text or "menu-button" not in text:
+    has_accessible_stage_fallback = "model-fallback-copy" in text or "hero-product-window" in text
+    if not has_accessible_stage_fallback or "menu-button" not in text:
         errors.append(f"{page}: missing accessible interaction fallback or mobile navigation")
     if "aria-label=" not in text or "<main" not in text or "<footer" not in text:
         errors.append(f"{page}: missing semantic/accessibility landmarks")
