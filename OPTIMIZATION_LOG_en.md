@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Localize the Chinese footer feedback entry
+
+- **Issue:** The Chinese footer had localized GitHub, docs, and contribution entries, but kept the feedback link as `Issues`, breaking the navigation language hierarchy.
+- **Changes:** Show “问题反馈” on Chinese pages while retaining `Issues` on English pages; preserve the existing destination and external-link behavior.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite.
+
 ## 2026-10-12 — Align Chinese download-card language
 
 - **Issue:** The Chinese homepage’s platform summary used “安装包,” while the actual download cards still showed the English `installer` label, creating an inconsistent language hierarchy on the same page.
