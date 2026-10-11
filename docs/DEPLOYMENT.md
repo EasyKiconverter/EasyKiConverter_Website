@@ -43,6 +43,20 @@ STEP 和 WASM 必须允许同源 GET 请求。不要给静态资源增加会阻�
 
 正式域名为 `https://easykiconverter.org.cn/`。`astro.config.ts` 将其作为默认 `site`，并以 `/` 为默认 `base`；页面的 canonical、`og:url`、hreflang、`sitemap.xml` 和 `robots.txt` 都从此配置生成。若部署路径或域名改变，只需在构建环境设置 `SITE_URL` 与 `SITE_BASE`，不要在页面中分别手改 URL。
 
+## 生产部署脚本
+
+使用 [`tools/deploy-production.sh`](../tools/deploy-production.sh) 发布时，必须显式提供服务器地址；脚本会构建 `dist/`、创建带时间戳的备份、精确替换站点目录、检查 Nginx 配置并重新加载服务。Nginx 检查失败会恢复上一份站点目录。
+
+```bash
+DEPLOY_HOST=8.137.164.32 \
+DEPLOY_USER=dennis \
+DEPLOY_PORT=2267 \
+DEPLOY_KEY="$HOME/.ssh/ChatGPT_KEY" \
+./tools/deploy-production.sh
+```
+
+脚本不会触碰 `/var/www/downloads/`；该目录中的旧版下载文件由 Nginx 的 `/downloads/` 和兼容路径继续提供。
+
 ## 发布前验收
 
 ```bash
