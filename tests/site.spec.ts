@@ -27,6 +27,21 @@ for (const path of pages) {
   });
 }
 
+test('release refresh stays same-origin and keeps the static fallback path', async ({ page }) => {
+  const releaseRequests: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('latest-release.json') || request.url().includes('api.github.com/repos/EasyKiconverter/EasyKiConverter/releases/latest')) {
+      releaseRequests.push(request.url());
+    }
+  });
+
+  await page.goto('/', { waitUntil: 'networkidle' });
+  expect(releaseRequests).toHaveLength(1);
+  expect(new URL(releaseRequests[0]).origin).toBe(new URL(page.url()).origin);
+  expect(releaseRequests[0]).toContain('/data/latest-release.json');
+  await expect(page.locator('[data-release-version]').first()).toHaveText('v3.1.13');
+});
+
 test('mobile navigation opens, closes, and restores focus', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/', { waitUntil: 'networkidle' });

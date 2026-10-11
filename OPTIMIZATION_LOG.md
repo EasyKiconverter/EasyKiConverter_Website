@@ -2,6 +2,12 @@
 
 [English](OPTIMIZATION_LOG_en.md)
 
+## 2026-10-12 — 让 Release 刷新使用本站同源数据
+
+- **问题：** 浏览器在每个页面直接请求 GitHub Releases API；API 限流时会产生 403 失败请求，虽然静态版本回退仍可用，但访客共享外部限流点。
+- **处理：** 构建期将已验证的 Release 资产写入 `public/data/latest-release.json`，运行时改为同源刷新，并继续保留 Git 中的 `src/data/release.ts` 回退；新增同源请求回归测试并更新架构说明。
+- **验证：** 将运行构建、静态站点检查、资产检查和完整浏览器测试，并在线确认不再请求 GitHub Releases API。
+
 ## 2026-10-12 — 修正英文二级页面移动端溢出
 
 - **问题：** 英文格式矩阵、案例和 3D 实验室在 390px 下仍存在横向溢出：CTA 强调标题、页脚链接和 Lab 视图切换器分别超出视口。
