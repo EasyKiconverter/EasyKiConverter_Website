@@ -600,6 +600,18 @@ test('Lab asset guidance matches the generated delivery path', async ({ page }) 
   await expect(page.locator('.lab-warning')).toContainText('STEP/WASM');
 });
 
+test('Lab loading strategy stays scannable in both languages', async ({ page }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const facts = page.locator('.lab-facts');
+    await expect(facts).toHaveCount(1);
+    await expect(facts.locator('li')).toHaveCount(3);
+    await expect(facts).toContainText(/GLB 优先|GLB first/);
+    await expect(facts).toContainText(/STEP \/ WASM/);
+    await expect(facts).toContainText(/保持隔离|Isolated/);
+  }
+});
+
 test('reduced motion renders the Lab without a continuous animation loop', async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
