@@ -1,5 +1,7 @@
 .lab-header{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:24px;padding-bottom:24px}
 .lab-header nav{display:flex;gap:18px;color:var(--muted);font-size:13px}
+.lab-header .brand{gap:10px}
+.lab-header .brand small{color:var(--muted);font-size:.72em;font-weight:600;letter-spacing:0}
 .lab-header nav a:hover{color:var(--violet)}
 .lab-intro{max-width:720px;margin:40px auto 0;padding:0 24px;text-align:center}
 .lab-intro p:last-child{color:var(--muted)}
