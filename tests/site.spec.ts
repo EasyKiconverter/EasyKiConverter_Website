@@ -216,6 +216,23 @@ test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
   await expect(homepage.locator('.kicker').filter({ hasText: '随时可以开始' })).toHaveCount(1);
 });
 
+test('Chinese homepage keeps visual microcopy localized', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const homepage = page.locator('main');
+  await expect(homepage.locator('.hero-product-window figcaption')).toContainText('元件库');
+  await expect(homepage.locator('.hero-float-input')).toContainText('元件数据已就绪');
+  await expect(homepage.locator('.hero-float-output')).toContainText('库文件输出');
+  await expect(homepage.locator('.hero-float-output')).toContainText('3D 模型');
+  await expect(homepage.locator('.hero-stage-tag')).toHaveText('元件数据 → EDA 库');
+  await expect(homepage.locator('.story-card-a .story-index')).toHaveText('01 / 输入');
+  await expect(homepage.locator('.story-card-b .story-index')).toHaveText('02 / 整理');
+  await expect(homepage.locator('.story-card-c .story-index')).toHaveText('03 / 回到工作流');
+  await expect(homepage.locator('.story-check')).toHaveText('✓ 已准备就绪');
+  await expect(homepage).not.toContainText('Component data ready');
+  await expect(homepage).not.toContainText('LIBRARY OUTPUT');
+  await expect(homepage).not.toContainText('ready to use');
+});
+
 test('Chinese Lab keeps its entry label localized', async ({ page }) => {
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.lab-intro .kicker')).toHaveText('按需加载 · 实验性 3D');
