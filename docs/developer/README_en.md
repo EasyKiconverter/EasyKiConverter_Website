@@ -8,6 +8,7 @@ This directory is the entry point for EasyKiConverter Website development rules.
 
 - [Development Guidelines](DEVELOPMENT_GUIDELINES_en.md) / [中文](DEVELOPMENT_GUIDELINES.md): code, directory, compatibility, and resource constraints.
 - [Development Workflow](DEVELOPMENT_WORKFLOW_en.md) / [中文](DEVELOPMENT_WORKFLOW.md): issue, branch, testing, version, and merge process.
+- [AI Development Rules](AI_DEVELOPMENT_RULES_en.md) / [中文](AI_DEVELOPMENT_RULES.md): inherited AI policy, CodeGraph, evidence, and delivery rules from the main project.
 
 ## Required Principles
 
