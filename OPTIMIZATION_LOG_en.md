@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Use user-facing language for platform downloads
+
+- **Issue:** The homepage platform section called download choices “assets” and exposed GitHub API details in the guidance, making users interpret implementation terminology before choosing a package.
+- **Changes:** Use “downloads” and clearer user-facing wording, explicitly tell visitors to match their device architecture, and explain that stable download links remain usable when version information cannot refresh; updated the English page and accessibility labels in parallel.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite.
+
 ## 2026-10-12 — Establish hierarchy for homepage format and case actions
 
 - **Issue:** The “format matrix” and “conversion cases” links in the multiple-target card shared the same low-contrast text treatment, making the primary path unclear and reducing readability on the dark card.

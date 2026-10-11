@@ -414,6 +414,20 @@ test('homepage platform summary mirrors the available Release assets', async ({ 
   }
 });
 
+test('homepage platform copy speaks in user-facing download terms', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.platform-intro')).toContainText('按设备架构选择对应下载项');
+  await expect(page.locator('.platform-list > div').first()).toContainText('2 个下载项');
+  await expect(page.locator('.download-links')).toHaveAttribute('aria-label', '平台下载入口');
+  await expect(page.locator('.download-copy')).not.toContainText('GitHub API');
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.platform-intro')).toContainText('Choose the download that matches your architecture');
+  await expect(page.locator('.platform-list > div').first()).toContainText('2 downloads');
+  await expect(page.locator('.download-links')).toHaveAttribute('aria-label', 'Platform download entries');
+  await expect(page.locator('.download-copy')).not.toContainText('GitHub API');
+});
+
 test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const homepage = page.locator('main');

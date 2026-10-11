@@ -383,13 +383,13 @@ const platformAvailability = [
             <br />
             <em>它都认识。</em>
           </h2>
-          <p>稳定版 Release 提供对应平台安装包；下载时请按设备架构选择资产。</p>
+          <p>当前稳定版提供 Windows、Linux 和 macOS 安装包；请按设备架构选择对应下载项。</p>
         </div>
         <div class="platform-list reveal reveal-delay">
-          {platformAvailability.map((platform, index) => <div aria-label={`${platform.name} ${platform.assetCount} 个可下载资产`}>
+          {platformAvailability.map((platform, index) => <div aria-label={`${platform.name} ${platform.assetCount} 个可用下载`}>
             <b>{platform.name}</b>
             <span>{platform.labels}</span>
-            <small class="platform-count">{platform.assetCount} 个资产</small>
+            <small class="platform-count">{platform.assetCount} 个下载项</small>
             <i>{String(index + 1).padStart(2, "0")}</i>
           </div>)}
         </div>
@@ -432,7 +432,7 @@ const platformAvailability = [
                 查看全部 Release
               </a>
             </div>
-            <div class="download-links" aria-label="Release 入口">
+            <div class="download-links" aria-label="平台下载入口">
               {latestRelease.assets.windows.map((asset, index) => <a data-release-asset={`windows-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Windows</b><span>{asset.label}</span></a>)}
               {latestRelease.assets.linux.map((asset, index) => <a data-release-asset={`linux-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Linux</b><span>{asset.label}</span></a>)}
               {latestRelease.assets.macos.map((asset, index) => <a data-release-asset={`macos-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>macOS</b><span>{asset.label}</span></a>)}
@@ -447,8 +447,8 @@ const platformAvailability = [
               </a>
             </div>
             <small>
-              官网不托管大型安装包；下方提供各平台架构的直达入口，也可以进入对应
-              Release 页面阅读变更说明并核对 SHA256。若 GitHub API 不可用，页面保留稳定版回退信息。
+              官网不托管大型安装包；请从下方选择匹配设备架构的直达下载，或进入对应
+              Release 页面阅读变更说明并核对 SHA256。即使版本信息暂时无法刷新，稳定版下载入口仍可用。
             </small>
           </div>
           <div class="download-stamp" aria-hidden="true">
