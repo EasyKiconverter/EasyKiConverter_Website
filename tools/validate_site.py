@@ -14,6 +14,8 @@ output_pages = [
     ROOT / "dist/en/lab/index.html",
     ROOT / "dist/formats/index.html",
     ROOT / "dist/en/formats/index.html",
+    ROOT / "dist/cases/index.html",
+    ROOT / "dist/en/cases/index.html",
 ]
 errors = []
 accessibility_css = (ROOT / "src/css/accessibility.css").read_text(encoding="utf-8")

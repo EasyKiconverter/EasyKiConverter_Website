@@ -49,12 +49,13 @@ test('reduced motion keeps content visible without marquee animation', async ({ 
 });
 
 test('the heavy 3D runtime is isolated to the Lab route', async ({ request }) => {
-  for (const path of ['/lab/', '/en/lab/', '/formats/', '/en/formats/']) {
+  for (const path of ['/lab/', '/en/lab/', '/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
     const response = await request.get(path);
     expect(response.ok()).toBeTruthy();
     const html = await response.text();
     if (path.includes('lab')) expect(html).toContain('model-canvas');
-    else expect(html).toContain('format-matrix-title');
+    else if (path.includes('formats')) expect(html).toContain('format-matrix-title');
+    else expect(html).toContain('case-studies-title');
   }
   for (const path of ['/', '/en/']) {
     const response = await request.get(path);
