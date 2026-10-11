@@ -12,17 +12,6 @@ const releaseAssetCount = Object.values(releaseAssetSuffixes).reduce((count, suf
 const toast = document.querySelector<HTMLElement>('.egg-toast') || (() => { const element = document.createElement('div'); element.className = 'egg-toast'; element.setAttribute('role', 'status'); element.setAttribute('aria-live', 'polite'); document.body.append(element); return element; })();
 let toastTimer: number | undefined;
 
-const getReleaseAssetUrls = (assets: Array<{ name?: string; browser_download_url?: string }>) => {
-  const urls: Record<string, string> = {};
-  Object.entries(releaseAssetSuffixes).forEach(([platform, suffixes]) => suffixes.forEach((suffix, index) => {
-    const asset = assets.find((candidate) => candidate.name?.endsWith(suffix));
-    if (asset?.browser_download_url) urls[`${platform}-${index}`] = asset.browser_download_url;
-  }));
-  const checksum = assets.find((asset) => asset.name === 'SHA256SUMS');
-  if (checksum?.browser_download_url) urls.checksum = checksum.browser_download_url;
-  return urls;
-};
-
 const applyRelease = (tag: string, url: string, assetUrls: Record<string, string> = {}) => {
   document.querySelectorAll('[data-release-version], .hero-facts span:first-child b, .download-copy strong').forEach((element) => { element.textContent = tag; });
   const links = document.querySelectorAll<HTMLAnchorElement>('[data-release-link], .download-actions .button-light');
@@ -44,7 +33,7 @@ const showToast = (message: string) => {
 };
 
 const refreshRelease = async () => {
-  if (!['http:', 'https:'].includes(window.location.protocol) || ['localhost', '127.0.0.1'].includes(window.location.hostname)) return;
+  if (!['http:', 'https:'].includes(window.location.protocol)) return;
   let cached = null;
   try { cached = window.sessionStorage.getItem('easyki-latest-release'); } catch { /* Storage can be disabled by privacy settings. */ }
   if (cached) {
@@ -59,14 +48,15 @@ const refreshRelease = async () => {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 2800);
   try {
-    const response = await fetch('https://api.github.com/repos/EasyKiconverter/EasyKiConverter/releases/latest', { headers: { Accept: 'application/vnd.github+json' }, signal: controller.signal });
+    const releaseDataUrl = new URL(`${import.meta.env.BASE_URL}data/latest-release.json`, window.location.origin).href;
+    const response = await fetch(releaseDataUrl, { headers: { Accept: 'application/json' }, signal: controller.signal });
     if (!response.ok) return;
     const release = await response.json();
-    if (!release.tag_name || release.prerelease || release.draft) return;
-    const assetUrls = getReleaseAssetUrls(Array.isArray(release.assets) ? release.assets : []);
+    if (!release.tag || !release.url || !release.assetUrls || typeof release.assetUrls !== 'object') return;
+    const assetUrls = release.assetUrls as Record<string, string>;
     if (Object.keys(assetUrls).length !== releaseAssetCount) return;
-    applyRelease(release.tag_name, release.html_url || stableRelease.url, assetUrls);
-    try { window.sessionStorage.setItem('easyki-latest-release', JSON.stringify({ tag: release.tag_name, url: release.html_url, assetUrls, expires: Date.now() + 600000 })); } catch { /* The static fallback remains available without storage. */ }
+    applyRelease(release.tag, release.url, assetUrls);
+    try { window.sessionStorage.setItem('easyki-latest-release', JSON.stringify({ tag: release.tag, url: release.url, assetUrls, expires: Date.now() + 600000 })); } catch { /* The static fallback remains available without storage. */ }
   } catch { /* The checked-in Release data remains usable when API/rate limit/network fails. */ }
   finally { window.clearTimeout(timeout); }
 };

@@ -19,9 +19,11 @@ The official EasyKiConverter website, built with Astro and TypeScript. The Chine
 └── .github/workflows/      # GitHub Actions workflows
 ```
 
+`public/data/latest-release.json` is the build-generated same-origin Release asset snapshot; browsers refresh it from this site, while `src/data/release.ts` remains the static fallback.
+
 The homepage is a lightweight product presentation using the real Qt Quick screenshot, CSS depth and download links; it does not load the CAD runtime. See the [EDA format matrix](src/pages/formats/index.astro) for capability scope and the [traceable conversion cases](src/pages/cases/index.astro) for test-backed examples. The former STEP/Three.js research work is isolated at [`/lab/`](src/pages/lab/index.astro). It uses the offline-generated GLB by default; `src/js/step-worker.ts` remains the fallback path and `src/js/model-viewer.ts` renders the experiments. The model source, measurements and STEP → GLB tool are documented in [3D model pipeline](public/assets/model/README.md).
 
-Put pages in `src/pages/` and reusable page sections in `src/components/`; keep styles in `src/css/`, scripts in `src/js/`, and images, models, icons, or runtime assets in `public/assets/`. There is no root-level `assets/` directory. Do not add source files or resources directly to the repository root.
+Put pages in `src/pages/` and reusable page sections in `src/components/`; keep styles in `src/css/`, scripts in `src/js/`, images, models, icons, or runtime assets in `public/assets/`, and build-generated same-origin data in `public/data/`. There is no root-level `assets/` directory. Do not add source files or resources directly to the repository root.
 
 See the [architecture guide](docs/ARCHITECTURE_en.md) and [developer documentation](docs/developer/README_en.md) for the complete rules.
 
