@@ -85,13 +85,23 @@ test('Lab pages use the shared mobile navigation behavior', async ({ page }) => 
 });
 
 test('content pages offer a bilingual next-step release CTA', async ({ page }) => {
-  for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
+  for (const path of ['/formats/', '/en/formats/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const cta = page.locator('.content-page-cta');
     await expect(cta).toBeVisible();
     await expect(cta.locator('[data-release-link]')).toHaveAttribute('href', /releases/);
     await expect(cta.locator('.text-link')).toHaveAttribute('href', /^(\/|https?:)/);
     await expect(cta.locator('h2')).toBeVisible();
+    await expect(cta).toContainText(/选定一个目标|CHOOSE A TARGET/);
+  }
+  for (const path of ['/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const cta = page.locator('.content-page-cta');
+    await expect(cta).toBeVisible();
+    await expect(cta.locator('[data-release-link]')).toHaveAttribute('href', /releases/);
+    await expect(cta.locator('.text-link')).toHaveAttribute('href', /^(\/|https?:)/);
+    await expect(cta.locator('h2')).toBeVisible();
+    await expect(cta).toContainText(/下一步，验证|NEXT, VERIFY/);
   }
 });
 

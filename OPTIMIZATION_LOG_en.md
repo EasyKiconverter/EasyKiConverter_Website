@@ -126,3 +126,7 @@
 - Issue: The matrix exposed row-level statuses, but users had to count stable and registered targets themselves, and the status column did not state its release-oriented meaning directly.
 - Changes: Added a bilingual target-count summary near the heading, renamed the table column to “Release status / 版本状态”, and retained the visual distinction between stable targets and targets requiring Release verification.
 - Validation: Added bilingual summary and header assertions and ran the build, site validation, asset gate, and 56 browser tests.
+## 2026-10-11 — Match content-page CTAs to reading context
+- Issue: The Formats and Cases pages shared the same generic CTA, so readers saw only “READY TO USE” after reviewing either a target list or evidence cases.
+- Changes: The Formats CTA now leads users to choose a target and keep the evidence close; the Cases CTA leads users to verify fixtures and tests before downloading the stable release, with the same bilingual layout and actions.
+- Validation: Added Formats/Cases CTA-copy assertions and ran the build, site validation, asset gate, and 56 browser tests.

@@ -21,6 +21,7 @@ const casesUrl = new URL(en ? "en/cases/" : "cases/", siteBase).href;
 const labUrl = new URL(en ? "en/lab/" : "lab/", siteBase).href;
 const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase).href;
 const isCurrent = (href: string) => new URL(href).pathname === pageUrl.pathname;
+const isCasesPage = pageUrl.pathname.includes("/cases/");
 ---
 
 <!doctype html>
@@ -63,14 +64,16 @@ const isCurrent = (href: string) => new URL(href).pathname === pageUrl.pathname;
     </main>
     <section class="content-page-cta shell" aria-labelledby="content-page-cta-title">
       <div>
-        <p class="kicker">{en ? "READY TO USE" : "准备开始"}</p>
+        <p class="kicker">{en ? (isCasesPage ? "NEXT, VERIFY" : "CHOOSE A TARGET") : (isCasesPage ? "下一步，验证" : "选定一个目标")}</p>
         <h2 id="content-page-cta-title">
-          {en ? <>Bring the next part<br /><em>back to your work.</em></> : <>把下一块元件<br /><em>带回你的工作流。</em></>}
+          {en
+            ? (isCasesPage ? <>Found a path?<br /><em>Make it part of your work.</em></> : <>Choose a target.<br /><em>Keep the evidence close.</em></>)
+            : (isCasesPage ? <>找到一条路径？<br /><em>带回你的工作流。</em></> : <>选定一个目标。<br /><em>把证据留在手边。</em></>)}
         </h2>
         <p>
           {en
-            ? <>Download the current stable release <strong>{latestRelease.tag}</strong>, or return to the homepage for the full workflow.</>
-            : <>下载当前稳定版 <strong>{latestRelease.tag}</strong>，或回到首页了解完整工作流。</>}
+            ? (isCasesPage ? <>Download the current stable release <strong>{latestRelease.tag}</strong> after checking the fixture and test evidence.</> : <>Download the current stable release <strong>{latestRelease.tag}</strong> after choosing a target, or return home for the full workflow.</>)
+            : (isCasesPage ? <>复核测试样本与测试证据后，下载当前稳定版 <strong>{latestRelease.tag}</strong>。</> : <>选定目标后下载当前稳定版 <strong>{latestRelease.tag}</strong>，或回到首页了解完整工作流。</>)}
         </p>
       </div>
       <div class="content-page-cta-actions">
