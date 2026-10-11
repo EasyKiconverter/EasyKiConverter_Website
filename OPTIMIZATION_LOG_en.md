@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Remove narrow-screen overflow from the English homepage
+
+- **Issue:** At 390px, the English homepage's long emphasized heading used a no-wrap rule and footer links could not wrap, producing a 507px document width and allowing horizontal dragging.
+- **Changes:** Allow emphasized section and download headings to wrap on mobile, and let footer links wrap with readable spacing; added a bilingual homepage overflow regression test.
+- **Validation:** Run the full build, static site checks, asset checks, and browser suite.
+
 ## 2026-10-12 — Prevent story-card decoration from covering mobile copy
 
 - **Issue:** On narrow screens, the symbols, footprint, and 3D-model labels in the “整理/ORGANIZE” story card overlapped its paragraph; the desktop layout was unaffected.

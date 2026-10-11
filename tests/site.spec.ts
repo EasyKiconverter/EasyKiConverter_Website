@@ -71,6 +71,18 @@ test('mobile story cards keep decorative labels clear of their copy', async ({ p
   }
 });
 
+test('bilingual homepages do not overflow horizontally on narrow screens', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'networkidle' });
+    const dimensions = await page.evaluate(() => ({
+      documentWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+    }));
+    expect(dimensions.documentWidth).toBeLessThanOrEqual(dimensions.viewportWidth);
+  }
+});
+
 test('homepage format summary matches the capability matrix data', async ({ page }) => {
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
