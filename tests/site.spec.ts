@@ -438,6 +438,14 @@ test('bilingual platform headings identify the supported systems directly', asyn
   await expect(page.locator('#platforms-title')).toContainText('Windows, Linux and macOS');
 });
 
+test('bilingual hero copy identifies the primary EDA destinations', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.hero-lede')).toContainText('KiCad、Altium');
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.hero-lede')).toContainText('KiCad, Altium');
+});
+
 test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const homepage = page.locator('main');
