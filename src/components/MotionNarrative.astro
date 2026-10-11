@@ -195,6 +195,16 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
       <div class="model-fallback-copy" role="status">{en ? '3D preview is unavailable. The page and download links remain usable.' : '3D 预览暂不可用，页面内容和下载入口仍可正常使用。'}</div>
       <span class="motion-model-tag">{en ? 'SCROLL TO TRANSFORM' : '向下滚动，继续转化'}</span>
     </div>
+    <button
+      type="button"
+      class="experiment-controls-toggle"
+      data-experiment-controls
+      aria-expanded="false"
+      aria-describedby="lab-experiment-controls"
+    >{en ? 'TOOLS +' : '工具 +'}</button>
+    <div id="lab-experiment-controls" class="lab-experiment-controls" aria-live="polite">
+      <span>{en ? 'Advanced experiments are hidden until opened.' : '高级实验控件默认收起，打开后可使用。'}</span>
+    </div>
 
     <div class="motion-progress" aria-hidden="true"><span></span></div>
     <article class="motion-chapter motion-chapter-input" data-motion-chapter="input">
