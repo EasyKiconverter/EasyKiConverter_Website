@@ -1,0 +1,56 @@
+---
+interface Props {
+  lang: "zh-CN" | "en";
+  pageUrl: URL;
+  alternateUrl: URL;
+  title: string;
+  description: string;
+}
+
+const { lang, pageUrl, alternateUrl, title, description } = Astro.props;
+const en = lang === "en";
+const siteRoot = new URL(import.meta.env.SITE);
+const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
+const homeUrl = siteBase.href;
+const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase).href;
+const casesUrl = new URL(en ? "en/cases/" : "cases/", siteBase).href;
+const labUrl = new URL(en ? "en/lab/" : "lab/", siteBase).href;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={pageUrl} />
+    <link rel="alternate" hreflang="zh-CN" href={en ? alternateUrl : pageUrl} />
+    <link rel="alternate" hreflang="en" href={en ? pageUrl : alternateUrl} />
+    <link rel="alternate" hreflang="x-default" href={en ? alternateUrl : pageUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header shell">
+      <a class="brand" href={homeUrl}>EasyKiConverter</a>
+      <nav class="nav-links" aria-label={en ? "Page navigation" : "页面导航"}>
+        <a href={homeUrl}>{en ? "Home" : "首页"}</a>
+        <a href={formatsUrl}>{en ? "Formats" : "格式矩阵"}</a>
+        <a href={casesUrl}>{en ? "Cases" : "转换案例"}</a>
+        <a href={labUrl}>{en ? "3D Lab" : "3D 实验室"}</a>
+        <a href={alternateUrl}>{en ? "中文" : "English"}</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer shell">
+      <p>© EasyKiConverter · GPL-3.0</p>
+      <a href={homeUrl}>{en ? "Return home" : "返回首页"}</a>
+    </footer>
+  </body>
+</html>
