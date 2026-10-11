@@ -29,4 +29,4 @@ STEP 是实验室的工程源资产，GLB 由 `tools/prepare_model_asset.py` 离
 
 ## Chromium 生产观测
 
-2026-10-11 在生产站点使用桌面 Chromium 与 390px 移动视口模拟：首页传输约 175 KB，且未请求 GLB/WASM；Lab 请求约 9.99 MB 桌面 GLB 或约 8.43 MB 移动 GLB。部署后单次采样的模型就绪时间约为 31.6 秒和 35.6 秒；网络与 SwiftShader/CAD 场景初始化会造成明显波动。这是浏览器模拟结果，不是真机 SLA；移动端仍需真实设备测量。
+2026-10-11 在生产站点使用桌面 Chromium 与 390px 移动视口模拟：首页传输约 175 KB，且未请求 GLB/WASM；Lab 的原始 GLB 大小约为 9.99 MB 和 8.43 MB，启用 gzip 后实际响应体采样约为 4.03 MB 和 3.27 MB。启用压缩后的单次模型就绪采样约为 7.5 秒和 9.1 秒；网络与 SwiftShader/CAD 场景初始化会造成明显波动。这是浏览器模拟结果，不是真机 SLA；移动端仍需真实设备测量。

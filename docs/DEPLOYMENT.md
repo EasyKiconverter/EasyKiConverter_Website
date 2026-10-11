@@ -41,7 +41,7 @@ pnpm run preview
 - `.step`：`application/step`；若服务器没有该类型，也可以使用 `application/octet-stream`
 
 STEP 和 WASM 必须允许同源 GET 请求。不要给静态资源增加会阻止页面读取它们的跨域策略；如果资源与页面不在同一域名，需额外配置 CORS，并同时验证浏览器控制台无错误。
-GLB、WASM 和带内容哈希的 `_astro` 资源应返回明确的长期缓存头（例如 `public, immutable` 与 `max-age=2592000`）；HTML 应保持短缓存或不缓存。
+GLB、WASM 和带内容哈希的 `_astro` 资源应返回明确的长期缓存头（例如 `public, immutable` 与 `max-age=2592000`）；GLB/WASM 还必须在客户端声明支持时返回 `Content-Encoding: gzip` 和 `Vary: Accept-Encoding`；HTML 应保持短缓存或不缓存。
 
 ## 域名配置
 

@@ -41,7 +41,7 @@ The server should return at least these MIME types:
 - `.step`: `application/step`; `application/octet-stream` is also acceptable
 
 STEP and WASM must allow same-origin GET requests. Do not add a cross-origin policy that prevents the page from reading static assets. If assets are hosted on another origin, configure CORS and verify the browser console as well.
-GLB, WASM, and content-hashed `_astro` resources should return an explicit long-lived cache policy (for example `public, immutable` with `max-age=2592000`); HTML should remain short-lived or uncached.
+GLB, WASM, and content-hashed `_astro` resources should return an explicit long-lived cache policy (for example `public, immutable` with `max-age=2592000`); GLB/WASM must also return `Content-Encoding: gzip` and `Vary: Accept-Encoding` when the client advertises support; HTML should remain short-lived or uncached.
 
 ## Domain configuration
 
