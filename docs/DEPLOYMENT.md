@@ -28,16 +28,19 @@ pnpm run preview
 
 - `dist/index.html`、`dist/en/index.html`、`dist/formats/index.html`、`dist/en/formats/index.html`、`dist/cases/index.html`、`dist/en/cases/index.html`
 - `dist/_astro/`、`dist/assets/`
+- `dist/assets/model/Easykiconverter_展示模型.glb`（3D Lab 默认交付模型）
 - `dist/assets/model/Easykiconverter_展示模型.step`（若部署 3D Lab）
 - `robots.txt`、`sitemap.xml`
 
 服务器至少需要正确返回这些 MIME 类型：
 
 - `.wasm`：`application/wasm`
+- `.glb`：`model/gltf-binary`
 - `.js`：`text/javascript` 或 `application/javascript`
 - `.step`：`application/step`；若服务器没有该类型，也可以使用 `application/octet-stream`
 
 STEP 和 WASM 必须允许同源 GET 请求。不要给静态资源增加会阻止页面读取它们的跨域策略；如果资源与页面不在同一域名，需额外配置 CORS，并同时验证浏览器控制台无错误。
+GLB、WASM 和带内容哈希的 `_astro` 资源应返回明确的长期缓存头（例如 `public, immutable` 与 `max-age=2592000`）；HTML 应保持短缓存或不缓存。
 
 ## 域名配置
 
@@ -79,6 +82,7 @@ DEPLOY_HOST=example.org python3 tools/deploy_production.py --dry-run
 
 ```bash
 python3 tools/validate_site.py
+python3 tools/check_production_assets.py
 git diff --check
 ```
 

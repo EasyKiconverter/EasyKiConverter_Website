@@ -28,16 +28,19 @@ Sync only the generated `dist/` contents to the web root or target subdirectory;
 
 - `dist/index.html`, `dist/en/index.html`, `dist/formats/index.html`, `dist/en/formats/index.html`, `dist/cases/index.html`, `dist/en/cases/index.html`
 - `dist/_astro/`, `dist/assets/`
+- `dist/assets/model/Easykiconverter_展示模型.glb` (the default 3D Lab delivery model)
 - `dist/assets/model/Easykiconverter_展示模型.step` (when deploying the 3D Lab)
 - `robots.txt`, `sitemap.xml`
 
 The server should return at least these MIME types:
 
 - `.wasm`: `application/wasm`
+- `.glb`: `model/gltf-binary`
 - `.js`: `text/javascript` or `application/javascript`
 - `.step`: `application/step`; `application/octet-stream` is also acceptable
 
 STEP and WASM must allow same-origin GET requests. Do not add a cross-origin policy that prevents the page from reading static assets. If assets are hosted on another origin, configure CORS and verify the browser console as well.
+GLB, WASM, and content-hashed `_astro` resources should return an explicit long-lived cache policy (for example `public, immutable` with `max-age=2592000`); HTML should remain short-lived or uncached.
 
 ## Domain configuration
 
@@ -61,6 +64,7 @@ The script does not touch `/var/www/downloads/`; legacy release files remain ava
 
 ```bash
 python3 tools/validate_site.py
+python3 tools/check_production_assets.py
 git diff --check
 ```
 
