@@ -147,3 +147,9 @@
 - **Issue**: Formats, Cases and 3D Lab maintained separate Header templates, creating drift risk in navigation, current-page state and the Lab brand marker.
 - **Change**: Extracted a shared `InnerPageHeader` component for the six inner routes, covering desktop navigation, mobile navigation, language switching and current-page state.
 - **Validation**: Added an inner-page Header consistency test; build, site validation, asset checks and browser tests pass.
+
+## 2026-10-12 — Make the Formats and Cases evidence baseline explicit
+
+- **Issue**: The Formats matrix and conversion cases linked Release and test evidence, but users had to infer which version range the evidence described.
+- **Change**: Added a shared bilingual evidence-summary strip showing the current Release baseline and the number of targets or traceable cases.
+- **Validation**: Added evidence-summary assertions for both pages; build, site validation, asset checks and browser tests pass.
