@@ -47,6 +47,8 @@ if 'assets/vendor/' not in model_source or 'assets/model/Easykiconverter_展示�
     errors.append("src/js/model-viewer.ts: Lab asset URLs are incomplete")
 if 'modelNormals' not in model_source or 'computeVertexNormals' not in model_source:
     errors.append("src/js/model-viewer.ts: GLB normals must be preserved with a STEP fallback computation")
+if 'rendering' not in model_source or 'reducedMotion' not in model_source or 'clearTimeout' not in model_source:
+    errors.append("src/js/model-viewer.ts: reduced-motion scheduler must stop continuous Lab animation")
 for marker in (
     "name=\"description\"",
     "rel=\"canonical\"",
