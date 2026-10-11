@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Remove narrow-screen overflow from English secondary pages
+
+- **Issue:** At 390px, the English Formats, Cases, and 3D Lab pages still overflowed horizontally through CTA emphasis text, footer links, and the Lab view switcher.
+- **Changes:** Let shared secondary-page CTA and footer content wrap, and make the Lab view switcher wrap on mobile; added overflow coverage for six bilingual secondary routes.
+- **Validation:** Run the full build, static site checks, asset checks, and browser suite.
+
 ## 2026-10-12 — Remove narrow-screen overflow from the English homepage
 
 - **Issue:** At 390px, the English homepage's long emphasized heading used a no-wrap rule and footer links could not wrap, producing a 507px document width and allowing horizontal dragging.

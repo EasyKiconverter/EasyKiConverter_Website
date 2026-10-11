@@ -163,6 +163,15 @@
   .content-page-cta-actions {
     margin-top: 32px;
   }
+
+  .content-page-cta h2 em {
+    white-space: normal;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 10px 16px;
+  }
 }
 
 @media (max-width: 850px) {
