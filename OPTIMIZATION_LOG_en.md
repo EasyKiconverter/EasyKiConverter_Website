@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Align Chinese download-card language
+
+- **Issue:** The Chinese homepage’s platform summary used “安装包,” while the actual download cards still showed the English `installer` label, creating an inconsistent language hierarchy on the same page.
+- **Changes:** Localize the Windows installer labels to “安装包” on the Chinese cards while retaining technical format names such as AppImage, DEB, and DMG; keep the original Release labels on the English page.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite.
+
 ## 2026-10-12 — Connect platform guidance to downloads
 
 - **Issue:** The platform section already listed Windows, Linux, macOS, and their architectures, but visitors still had to find the actual download cards by continuing down the page.

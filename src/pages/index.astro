@@ -19,12 +19,13 @@ const socialImageUrl = new URL(
 const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
 const registeredFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
+const localizeAssetLabel = (label: string) => label.replace(" installer", " 安装包");
 const platformAvailability = [
   {
     name: "Windows",
     assetCount: latestRelease.assets.windows.length,
     labels: latestRelease.assets.windows
-      .map((asset) => asset.label.replace(" installer", " 安装包"))
+      .map((asset) => localizeAssetLabel(asset.label))
       .join(" · "),
   },
   {
@@ -434,9 +435,9 @@ const platformAvailability = [
               </a>
             </div>
             <div class="download-links" aria-label="平台下载入口">
-              {latestRelease.assets.windows.map((asset, index) => <a data-release-asset={`windows-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Windows</b><span>{asset.label}</span></a>)}
-              {latestRelease.assets.linux.map((asset, index) => <a data-release-asset={`linux-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Linux</b><span>{asset.label}</span></a>)}
-              {latestRelease.assets.macos.map((asset, index) => <a data-release-asset={`macos-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>macOS</b><span>{asset.label}</span></a>)}
+              {latestRelease.assets.windows.map((asset, index) => <a data-release-asset={`windows-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Windows</b><span>{localizeAssetLabel(asset.label)}</span></a>)}
+              {latestRelease.assets.linux.map((asset, index) => <a data-release-asset={`linux-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Linux</b><span>{localizeAssetLabel(asset.label)}</span></a>)}
+              {latestRelease.assets.macos.map((asset, index) => <a data-release-asset={`macos-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>macOS</b><span>{localizeAssetLabel(asset.label)}</span></a>)}
               <a
                 data-release-asset="checksum"
                 href={latestRelease.checksumUrl}
