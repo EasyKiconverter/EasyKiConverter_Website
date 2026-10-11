@@ -26,7 +26,7 @@ pnpm run preview
 
 只将构建生成的 `dist/` 内容同步到 Web 根目录或目标子目录，不要把源码仓库直接作为静态根目录。必须保留以下文件：
 
-- `dist/index.html`、`dist/en/index.html`
+- `dist/index.html`、`dist/en/index.html`、`dist/formats/index.html`、`dist/en/formats/index.html`、`dist/cases/index.html`、`dist/en/cases/index.html`
 - `dist/_astro/`、`dist/assets/`
 - `dist/assets/model/Easykiconverter_展示模型.step`（若部署 3D Lab）
 - `robots.txt`、`sitemap.xml`
@@ -50,4 +50,4 @@ python3 tools/validate_site.py
 git diff --check
 ```
 
-在实际域名上检查：中文首页、`/en/`、`/lab/`、`/en/lab/`、导航锚点、下载链接、移动宽度、减少动态效果设置，以及浏览器控制台没有错误。首页和 Lab 的资源边界应分别核对；发布服务器上的浏览器访问应使用 `http://` 或 `https://`，不能用 `file://`。
+在实际域名上检查八个构建路由：中文首页、`/en/`、`/lab/`、`/en/lab/`、`/formats/`、`/en/formats/`、`/cases/`、`/en/cases/`，并检查导航锚点、下载链接、移动宽度、减少动态效果设置，以及浏览器控制台没有错误。首页和 Lab 的资源边界应分别核对；发布服务器上的浏览器访问应使用 `http://` 或 `https://`，不能用 `file://`。
