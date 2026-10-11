@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Unify the Chinese conversion-case navigation label
+
+- **Issue:** The Chinese homepage, inner-page Header, and footer pointed to the same case page with three different labels: “案例”, “转换案例”, and “案例”.
+- **Changes:** Use “转换案例” consistently for Chinese site navigation while retaining contextual body copy such as “真实转换案例” and “测试案例”; added bilingual public-route navigation terminology coverage.
+- **Validation:** Run the build, static site checks, asset checks, and the full browser suite.
+
 ## 2026-10-12 — Keep footer entries readable
 
 - **Issue:** The desktop inner-page footer squeezed its shared Grid column, causing Chinese entries to wrap character by character and splitting the English `3D Lab` label.
