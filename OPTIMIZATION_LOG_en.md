@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-12 — Close the Dependency Review gate when dependencies are unchanged
+
+- **Issue:** `master` requires the `Dependency Review` status, but the Security workflow did not produce a usable success state for website PRs that changed no dependency manifests, incorrectly blocking normal promotion PRs.
+- **Changes:** Keep the audit path for dependency-manifest changes, explicitly succeed when no manifests change, and handle manual workflow dispatches safely.
+- **Validation:** Confirm both `Dependency Review` and `Static site checks` succeed on the version PR and the promotion PR before merging.
+
 ## 2026-10-12 — Align the homepage capability summary with the format matrix
 
 - **Issue:** The homepage feature card hard-coded a `3D` label even though the shared matrix tracks EDA targets; it also hid the current stable-target and registered-target counts.
