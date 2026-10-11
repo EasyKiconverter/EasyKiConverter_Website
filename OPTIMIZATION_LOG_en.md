@@ -66,3 +66,7 @@
 - **Issue:** Advanced Lab experiments were collapsed by default, but the entry only said “TOOLS +”, did not describe the available experiments, and did not connect the toggle to its explanatory region with `aria-controls`.
 - **Changes:** Renamed the bilingual entry to “ADVANCED/高级工具”, described topology, orbit, and cross-tab experiments, synchronized the expanded state text, and completed the accessible control relationship.
 - **Validation:** Added bilingual Lab control-hierarchy coverage and ran the build, site validation, asset gate, and full browser suite.
+## 2026-10-11 — Unify the Lab navigation shell
+- Issue: The 3D Lab used a separate navigation without the shared GitHub entry, current-page state, skip link, or the same narrow-screen behavior as the Formats and Cases pages.
+- Changes: Reused the content-page navigation shell on both Lab pages, adding the GitHub link, current-page state, skip link, and shared mobile layout.
+- Validation: Added bilingual Lab navigation coverage and ran the build, site validation, asset gate, and browser tests.

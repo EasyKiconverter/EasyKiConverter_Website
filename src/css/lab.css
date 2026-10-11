@@ -1,5 +1,5 @@
-.lab-header{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:24px;padding-bottom:24px}
-.lab-header nav{display:flex;gap:18px;color:var(--muted);font-size:13px}
+.lab-header{padding-top:24px;padding-bottom:24px}
+.lab-header nav{color:var(--muted);font-size:13px}
 .lab-header .brand{gap:10px}
 .lab-header .brand small{color:var(--muted);font-size:.72em;font-weight:600;letter-spacing:0}
 .lab-header nav a:hover{color:var(--violet)}
@@ -8,4 +8,4 @@
 .lab-warning{margin:20px auto 0;max-width:680px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:12px}
 .lab-intro-actions{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:22px;margin-top:28px}
 .lab-intro-actions .text-link{color:var(--muted)}
-@media(max-width:760px){.lab-header{align-items:flex-start}.lab-header nav{gap:10px;text-align:right}.lab-intro{margin-top:20px}}
+@media(max-width:760px){.lab-intro{margin-top:20px}}
