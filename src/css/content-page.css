@@ -23,6 +23,118 @@
   flex: 0 0 auto;
 }
 
+.content-page-cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  min-height: 270px;
+  margin-bottom: 110px;
+  padding: 48px 54px;
+  border-radius: 32px;
+  background: var(--dark);
+  color: #fff;
+}
+
+.content-page-cta::before,
+.content-page-cta::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border: 1px solid #ffffff30;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.content-page-cta::before {
+  width: 420px;
+  height: 420px;
+  right: -110px;
+  top: -175px;
+}
+
+.content-page-cta::after {
+  width: 210px;
+  height: 210px;
+  right: 70px;
+  top: 28px;
+  border-color: #d9d2ff55;
+}
+
+.content-page-cta h2 {
+  position: relative;
+  z-index: 1;
+  margin: 14px 0 16px;
+  font-size: clamp(38px, 5vw, 66px);
+  line-height: 1;
+  letter-spacing: -.08em;
+}
+
+.content-page-cta h2 em {
+  position: relative;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.content-page-cta h2 em::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -3%;
+  right: -3%;
+  bottom: 2px;
+  height: .2em;
+  border-radius: 50%;
+  background: var(--lilac);
+  transform: rotate(-2deg);
+}
+
+.content-page-cta p:not(.kicker) {
+  position: relative;
+  z-index: 1;
+  max-width: 470px;
+  margin: 0;
+  color: #c8c1b6;
+  font-size: 14px;
+}
+
+.content-page-cta p strong {
+  color: #fff;
+}
+
+.content-page-cta-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 22px;
+}
+
+.content-page-cta .button-light,
+.content-page-cta .text-link {
+  color: #fff;
+}
+
+.content-page-cta .text-link {
+  border-color: #d6d0c599;
+}
+
+@media (max-width: 850px) {
+  .content-page-cta {
+    display: block;
+    margin-bottom: 90px;
+    padding: 42px 30px;
+  }
+
+  .content-page-cta-actions {
+    margin-top: 32px;
+  }
+}
+
 @media (max-width: 850px) {
   .content-page-header {
     height: auto;
