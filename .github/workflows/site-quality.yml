@@ -34,6 +34,7 @@ jobs:
         run: |
           pnpm run build
           python3 tools/validate_site.py
+          pnpm run assets:check
       - name: Check CSS structure
         run: |
           python3 - <<'PY'
