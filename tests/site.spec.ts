@@ -38,6 +38,15 @@ test('mobile navigation opens, closes, and restores focus', async ({ page }) => 
   await expect(menu).toBeFocused();
 });
 
+test('content pages keep navigation reachable on narrow screens', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/en/formats/', { waitUntil: 'networkidle' });
+  await expect(page.locator('.content-page-header .nav-links')).toBeVisible();
+  await expect(page.locator('.content-page-header a[aria-current="page"]')).toHaveText('Formats');
+  await page.keyboard.press('Tab');
+  await expect(page.locator('.content-page-skip')).toBeFocused();
+});
+
 test('reduced motion keeps content visible without marquee animation', async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
