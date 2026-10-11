@@ -600,6 +600,24 @@ test('Lab asset guidance matches the generated delivery path', async ({ page }) 
   await expect(page.locator('.lab-warning')).toContainText('STEP/WASM');
 });
 
+test('Lab artifact switcher updates the active view and delivery copy', async ({ page }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const stage = page.locator('[data-model-stage]');
+    await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+    const atlas = stage.locator('[data-artifact-view="atlas"]');
+    await atlas.dispatchEvent('click');
+    await expect(stage).toHaveAttribute('data-artifact-view', 'atlas');
+    await expect(atlas).toHaveAttribute('aria-pressed', 'true');
+    await expect(stage.locator('.artifact-caption')).toContainText(/mesh|网格/i);
+    const model = stage.locator('[data-artifact-view="model"]');
+    await model.dispatchEvent('click');
+    await expect(stage).toHaveAttribute('data-artifact-view', 'model');
+    await expect(model).toHaveAttribute('aria-pressed', 'true');
+    await expect(stage.locator('[data-artifact-label]')).toContainText(/GLB DELIVERY MODEL|GLB 交付模型/);
+  }
+});
+
 test('Lab loading strategy stays scannable in both languages', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });

@@ -12,7 +12,7 @@ Recorded: 2026-10-11. This document records facts reproducible from the reposito
 - Release data is generated at build time by `tools/sync_release.py`; CI sets `RELEASE_SYNC_REQUIRED=1`, so network or API failure fails the build.
 - `master` and `version/V0.0.1` require PRs, at least one approval, `Static site checks` and `Dependency Review`, conversation resolution, and disallow force-pushes.
 - On 2026-10-11, all eight production routes at `https://easykiconverter.org.cn/` returned HTTP 200; the homepage did not load the 3D runtime, same-origin model assets worked on `/lab/` and `/en/lab/`, and the legacy root-level `.msix` download remained available.
-- On 2026-10-11, Chromium with SwiftShader loaded the real STEP model on production `/lab/` (278,784 triangles, no fallback, and no console errors); the tools entry initialized and remained collapsed by default.
+- On 2026-10-11, Chromium with SwiftShader loaded the GLB model generated from STEP geometry on production `/lab/` (278,784 triangles, no fallback, and no console errors); the tools entry initialized and remained collapsed by default.
 - On 2026-10-11, both production desktop and mobile GLBs returned `model/gltf-binary`, approximately 9.6 MB and 8.1 MB, with `max-age=2592000`; WASM returned `application/wasm` with the same long-lived cache policy.
 
 ## Asset boundary
