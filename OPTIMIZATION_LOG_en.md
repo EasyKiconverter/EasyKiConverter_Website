@@ -329,3 +329,9 @@
 - **Issue**: The Lab's Atlas, Tomogram and Oracle buttons were clickable but did not update the stage state or selected marker; the default label also said “A REAL STEP MODEL” even though GLB is the preferred delivery path.
 - **Change**: Restored view-state, bilingual label and caption synchronization; the default model now identifies itself as a “GLB DELIVERY MODEL” generated from STEP geometry.
 - **Validation**: Added bilingual artifact-switcher regression coverage, updated the performance baseline, and reran the build, site validation, asset checks and the complete browser suite.
+
+## 2026-10-12 — Improve delivery-model material and CAD detail
+
+- **Issue**: GLB meshes were re-uploaded with one fixed material profile, so the source PBR values were discarded; on the light stage, the model could look flat and sharp part boundaries were difficult to read.
+- **Change**: Preserve GLB roughness and metalness, add a budgeted sharp-edge detail layer, and introduce a soft front fill so primary geometry remains legible across viewpoints without changing the existing animation or mobile asset selection.
+- **Validation**: Added an assertion for generated model-edge segments; build, site validation, asset checks and the complete browser suite remain the gates for this change.

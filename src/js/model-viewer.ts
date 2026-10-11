@@ -2,7 +2,14 @@ import type * as THREE from "three";
 
 type MeshMessage = {
   type: "mesh" | "error";
-  meshes?: { positions: ArrayBuffer; normals?: ArrayBuffer; indices: ArrayBuffer; color: number[] }[];
+  meshes?: {
+    positions: ArrayBuffer;
+    normals?: ArrayBuffer;
+    indices: ArrayBuffer;
+    color: number[];
+    roughness?: number;
+    metalness?: number;
+  }[];
   triangleCount?: number;
   modelSpanMm?: number;
   modelCenterMm?: number[];
@@ -1052,10 +1059,13 @@ export const setupModel = async (): Promise<void> => {
   const keyLight = new THREE.DirectionalLight(0xffffff, 1.55);
   keyLight.position.set(-2, 3, 4);
   scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0xcbd9ff, 0.42);
+  const fillLight = new THREE.DirectionalLight(0xcbd9ff, 0.56);
   fillLight.position.set(3, 0.5, -2);
   scene.add(fillLight);
-  const rimLight = new THREE.DirectionalLight(0x9fe0cb, 0.68);
+  const frontLight = new THREE.DirectionalLight(0xfff7ed, 0.46);
+  frontLight.position.set(0, 1.5, 5);
+  scene.add(frontLight);
+  const rimLight = new THREE.DirectionalLight(0x9fe0cb, 0.58);
   rimLight.position.set(-3, -1, -4);
   scene.add(rimLight);
 
@@ -4335,8 +4345,10 @@ export const setupModel = async (): Promise<void> => {
     modelSpanMm = spanMm;
     modelCenterMm = centerMm.length === 3 ? centerMm : [0, 0, 0];
     const materials = new Map<string, THREE.MeshStandardMaterial>();
+    const edgeSegmentBudget = 120_000;
+    let edgeSegments = 0;
     stage.dataset.modelNormals = meshes.every(({ normals }) => normals) ? "provided" : "computed";
-    meshes.forEach(({ positions, normals, indices, color }, meshIndex) => {
+    meshes.forEach(({ positions, normals, indices, color, roughness = 0.34, metalness = 0.16 }, meshIndex) => {
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute(
         "position",
@@ -4350,13 +4362,13 @@ export const setupModel = async (): Promise<void> => {
       geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
       geometry.computeBoundingBox();
       geometry.computeBoundingSphere();
-      const key = color.join(",");
+      const key = `${color.join(",")}|${roughness}|${metalness}`;
       let material = materials.get(key);
       if (!material) {
         material = new THREE.MeshStandardMaterial({
           color: new THREE.Color(color[0], color[1], color[2]),
-          roughness: 0.34,
-          metalness: 0.16,
+          roughness,
+          metalness,
           side: THREE.DoubleSide,
         });
         materials.set(key, material);
@@ -4386,6 +4398,40 @@ export const setupModel = async (): Promise<void> => {
     state.modelRadius = Math.max(sphere.radius, 0.1);
     fitCamera();
     stage.dataset.modelTriangles = String(triangleCount);
+    stage.dataset.modelEdgeSegments = "pending";
+    const edgeParts = explodedMeshes.filter(({ index, mesh }) =>
+      index < 96 && (mesh.geometry.index?.count ?? 0) <= 6_000,
+    );
+    let edgePartIndex = 0;
+    const addEdgeChunk = (): void => {
+      const chunkEnd = Math.min(edgePartIndex + 8, edgeParts.length);
+      for (; edgePartIndex < chunkEnd && edgeSegments < edgeSegmentBudget; edgePartIndex += 1) {
+        const { mesh } = edgeParts[edgePartIndex];
+        const edgeGeometry = new THREE.EdgesGeometry(mesh.geometry, 32);
+        const segmentCount = (edgeGeometry.getAttribute("position")?.count ?? 0) / 2;
+        if (segmentCount <= 0 || edgeSegments + segmentCount > edgeSegmentBudget) {
+          edgeGeometry.dispose();
+          continue;
+        }
+        const edgeMaterial = new THREE.LineBasicMaterial({
+          color: 0x4a4358,
+          transparent: true,
+          opacity: 0.18,
+          depthWrite: false,
+        });
+        const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+        edgeLines.renderOrder = 1;
+        mesh.add(edgeLines);
+        edgeSegments += segmentCount;
+      }
+      if (edgePartIndex < edgeParts.length && edgeSegments < edgeSegmentBudget) {
+        window.setTimeout(addEdgeChunk, 16);
+        return;
+      }
+      stage.dataset.modelEdgeSegments = String(edgeSegments);
+      wake();
+    };
+    window.setTimeout(addEdgeChunk, 100);
     const explodeInput = stage.querySelector<HTMLInputElement>("[data-model-explode]");
     const explodeStats = stage.querySelector<HTMLElement>("[data-model-explode-stats]");
     const explodeValue = stage.querySelector<HTMLOutputElement>("[data-model-explode-value]");
@@ -7143,7 +7189,14 @@ export const setupModel = async (): Promise<void> => {
             const color = material instanceof THREE.MeshStandardMaterial
               ? [material.color.r, material.color.g, material.color.b]
               : [0.52, 0.71, 0.62];
-            meshes.push({ positions: positions.buffer, normals: normals?.buffer as ArrayBuffer | undefined, indices: indices.buffer, color });
+            meshes.push({
+              positions: positions.buffer,
+              normals: normals?.buffer as ArrayBuffer | undefined,
+              indices: indices.buffer,
+              color,
+              roughness: material instanceof THREE.MeshStandardMaterial ? material.roughness : undefined,
+              metalness: material instanceof THREE.MeshStandardMaterial ? material.metalness : undefined,
+            });
           });
           const triangleCount = meshes.reduce((total, mesh) => total + mesh.indices.byteLength / Uint32Array.BYTES_PER_ELEMENT / 3, 0);
           const asset = gltf.asset as { extras?: { sourceModelSpanMm?: number; sourceModelCenterMm?: number[] } };
