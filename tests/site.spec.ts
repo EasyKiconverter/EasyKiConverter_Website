@@ -42,6 +42,20 @@ test('release refresh stays same-origin and keeps the static fallback path', asy
   await expect(page.locator('[data-release-version]').first()).toHaveText('v3.1.13');
 });
 
+test('bilingual footers keep each navigation entry readable on one line', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'networkidle' });
+    const links = await page.locator('.site-footer .footer-links a').evaluateAll((elements) => elements.map((element) => {
+      const bounds = element.getBoundingClientRect();
+      const styles = getComputedStyle(element);
+      return { height: bounds.height, lineHeight: Number.parseFloat(styles.lineHeight) };
+    }));
+    expect(links).toHaveLength(7);
+    links.forEach(({ height, lineHeight }) => expect(height).toBeLessThanOrEqual(lineHeight + 1));
+  }
+});
+
 test('mobile navigation opens, closes, and restores focus', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/', { waitUntil: 'networkidle' });
