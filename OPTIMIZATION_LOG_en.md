@@ -293,3 +293,9 @@
 - **Issue**: The shared Header on the Chinese 3D Lab page still rendered the English `Lab` marker, while the navigation and page copy were localized.
 - **Change**: The brand marker now follows the page language as `Lab / 实验室`; English keeps the existing wording and all other shared Header entries remain unchanged.
 - **Validation**: Updated the bilingual inner-page Header test and reran the full build, site validation, asset checks and browser suite.
+
+## 2026-10-12 — Explain 3D experiment-control readiness
+
+- **Issue**: Some advanced controls remain dependent on model data, scan results or imported content after the panel opens, while the previous note implied that every control was immediately usable.
+- **Change**: The bilingual note now explains that controls unlock progressively as model data, scans and imports become available, while keeping the panel collapsed by default.
+- **Validation**: Added bilingual readiness-copy assertions and reran the full build, site validation, asset checks and browser suite.

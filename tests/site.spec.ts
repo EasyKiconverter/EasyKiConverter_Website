@@ -303,7 +303,7 @@ test('Lab advanced controls explain their collapsed hierarchy', async ({ page })
     const toggle = page.locator('[data-experiment-controls]');
     await expect(toggle).toHaveAttribute('aria-controls', 'lab-experiment-controls');
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    await expect(page.locator('#lab-experiment-controls')).toContainText(/Topology|拓扑/);
+    await expect(page.locator('#lab-experiment-controls')).toContainText(/some unlock after model data|加载模型、完成扫描或导入数据/);
     await toggle.click({ force: true });
     await expect(toggle).toHaveText(/ADVANCED|高级工具/);
   }
