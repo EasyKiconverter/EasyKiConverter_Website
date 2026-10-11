@@ -28,13 +28,13 @@ const chineseUrl = new URL("lab/", siteBase);
   <body>
     <header class="lab-header shell">
       <a class="brand" href={siteBase.href} aria-label="Return to EasyKiConverter home">EasyKiConverter / Lab</a>
-      <nav aria-label="Lab navigation"><a href={siteBase.href}>Home</a><a href={chineseUrl}>中文</a></nav>
+      <nav aria-label="Lab navigation"><a href={siteBase.href}>Home</a><a href={new URL("en/formats/", siteBase)}>Formats</a><a href={new URL("en/cases/", siteBase)}>Cases</a><a href={chineseUrl}>中文</a></nav>
     </header>
     <main>
       <section class="lab-intro" aria-labelledby="lab-title">
         <p class="kicker">ON DEMAND · EXPERIMENTAL 3D</p>
         <h1 id="lab-title">Real geometry, isolated experiments.</h1>
-        <p>This lab retains the STEP, Three.js, section and topology research work. The homepage stays lightweight; CAD/WASM loads only when this lab is opened.</p>
+        <p>This lab retains the STEP, Three.js, cross-section and topology research work. The homepage stays lightweight; CAD/WASM loads only when this lab is opened.</p>
         <p class="lab-warning">The lab loads about 19 MB of experimental assets. Use a desktop browser for technical validation; return home for product information and downloads.</p>
       </section>
       <MotionNarrative lang="en" />
