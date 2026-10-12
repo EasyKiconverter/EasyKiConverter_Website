@@ -6,6 +6,7 @@ import "../../css/home-polish.css";
 import SeoHead from "../../components/SeoHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
+import WorkbenchActions from "../../components/WorkbenchActions.astro";
 import { targetFormats } from "../../data/formats";
 import { latestRelease } from "../../data/release";
 const siteRoot = new URL(import.meta.env.SITE);
@@ -251,16 +252,7 @@ const platformAvailability = [
             <span>from main project resources/imgs/screenshot1.png</span>
           </figcaption>
         </figure>
-        <div class="showcase-actions reveal reveal-delay">
-          <p>
-            After seeing the real interface, follow a reusable conversion path
-            or open the 3D Lab to inspect the model delivery.
-          </p>
-          <div>
-            <a class="showcase-action-primary showcase-action-internal" href="cases/">View conversion cases <span>→</span></a>
-            <a class="text-link text-link-internal" href="lab/">Open the 3D Lab <span>→</span></a>
-          </div>
-        </div>
+        <WorkbenchActions lang="en" />
       </section>
       <section
         id="features"

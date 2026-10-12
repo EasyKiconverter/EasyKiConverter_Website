@@ -490,3 +490,9 @@
 - **Issue:** The Lab compressed desktop/mobile GLB sizes, the STEP/WASM fallback, and usage guidance into one small paragraph, making the initial loading cost hard to scan on mobile.
 - **Change:** Use a structured bilingual loading panel with prominent `10.0 MB` desktop GLB, `8.4 MB` mobile GLB, and `GLB first` cues; retain the detailed fallback boundary in the supporting paragraph.
 - **Validation:** Add bilingual assertions for sizes, priority, and fallback copy, then check the build, static validation, and mobile browser regression.
+
+## 2026-10-13 — Unify the bilingual workbench next-step CTA
+
+- **Issue:** The bilingual workbench CTA was maintained as duplicated markup, and its copy said to “follow” or “inspect” without clearly expressing the path from the real interface to conversion evidence and then 3D delivery.
+- **Change:** Extract a shared `WorkbenchActions` component, align both languages’ entry hierarchy, internal arrows, and hover semantics, and make the copy describe the three-step action path.
+- **Validation:** Add bilingual path-copy assertions, then check the build, static validation, and homepage mobile presentation.
