@@ -9,6 +9,7 @@ import SiteFooter from "../components/SiteFooter.astro";
 import PlatformAvailability from "../components/PlatformAvailability.astro";
 import ShowcaseCaption from "../components/ShowcaseCaption.astro";
 import WorkbenchActions from "../components/WorkbenchActions.astro";
+import WorkflowActions from "../components/WorkflowActions.astro";
 import { targetFormats } from "../data/formats";
 import { getPlatformAvailability } from "../data/platforms";
 import { latestRelease } from "../data/release";
@@ -322,14 +323,7 @@ const platformAvailability = getPlatformAvailability("zh");
           <p>
             没有复杂的导入仪式。选择输入，选择目标，确认输出，继续你的板子。
           </p>
-          <a
-            class="text-link text-link-external"
-            href="https://github.com/EasyKiconverter/EasyKiConverter/blob/master/docs/user/GETTING_STARTED.md"
-            target="_blank"
-            rel="noreferrer"
-          >
-            阅读快速入门 <span>↗</span>
-          </a>
+          <WorkflowActions lang="zh" />
         </div>
         <ol class="steps reveal reveal-delay">
           <li>

@@ -225,7 +225,7 @@ test('text-link hover directions match their navigation semantics', async ({ pag
 test('homepage feature actions keep internal-arrow motion horizontal', async ({ page }) => {
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.showcase-action-internal')).toHaveClass(/showcase-action-internal/);
+    await expect(page.locator('.showcase-actions .showcase-action-internal')).toHaveClass(/showcase-action-internal/);
     await expect(page.locator('.feature-link-internal')).toHaveCount(2);
   }
 });
@@ -275,6 +275,16 @@ test('bilingual workflow quick-start links use the shared external-arrow treatme
     await expect(link).toContainText(label);
     await expect(link.locator('span')).toHaveText('↗');
     await expect(link).toHaveAttribute('target', '_blank');
+  }
+});
+
+test('bilingual workflow actions pair in-site cases with the external quick start', async ({ page }) => {
+  for (const [path, label] of [['/', '查看真实转换案例'], ['/en/', 'View conversion cases']] as const) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const actions = page.locator('.workflow-actions');
+    await expect(actions.locator('a[href="cases/"]')).toContainText(label);
+    await expect(actions.locator('.text-link-external')).toHaveAttribute('target', '_blank');
+    await expect(actions.locator('.text-link-external span')).toHaveText('↗');
   }
 });
 
