@@ -165,6 +165,20 @@ test('homepage format and case actions have a clear primary hierarchy', async ({
   }
 });
 
+test('homepage workbench evidence offers bilingual next steps', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const chineseActions = page.locator('.showcase-actions');
+  await expect(chineseActions).toContainText('查看转换案例');
+  await expect(chineseActions).toContainText('打开 3D 实验室');
+  await expect(chineseActions.locator('a[href="cases/"]')).toHaveClass(/showcase-action-primary/);
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  const englishActions = page.locator('.showcase-actions');
+  await expect(englishActions).toContainText('View conversion cases');
+  await expect(englishActions).toContainText('Open the 3D Lab');
+  await expect(englishActions.locator('a[href="cases/"]')).toHaveClass(/showcase-action-primary/);
+});
+
 test('content pages keep navigation reachable on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/formats/', { waitUntil: 'networkidle' });
