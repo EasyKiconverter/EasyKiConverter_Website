@@ -478,3 +478,9 @@
 - **Issue:** On narrow screens, full repository paths in case cards could break between directory and filename, making the exact fixture or test file harder to scan.
 - **Change:** Split evidence links into a prominent filename and a muted directory path; retain the full `aria-label`, destination, and safe external-link attributes, and align the English Altium output path to the singular form.
 - **Validation:** Add bilingual mobile assertions for the filename, directory, and accessible name, then check the build, static validation, and narrow case layout.
+
+## 2026-10-13 — Consolidate brand tokens and accessibility-layer responsibilities
+
+- **Issue:** `accessibility.css` redefined `--muted` and `--violet`, making final colors depend on CSS import order and weakening visual consistency across the homepage, content pages, and Lab.
+- **Change:** Remove brand-token overrides from the accessibility layer and use the base stylesheet’s brand colors everywhere; retain focus-visible, mobile-navigation visibility, and degraded-rendering rules there.
+- **Validation:** Add bilingual homepage and format-page token assertions, then check the build, static validation, and browser tests.
