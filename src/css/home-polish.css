@@ -45,6 +45,35 @@
   color: var(--line);
 }
 
+.story-link {
+  position: absolute;
+  left: 27px;
+  bottom: 29px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  border-bottom: 1px solid #29282466;
+  padding-bottom: 2px;
+  transition: color .25s var(--ease), transform .35s var(--spring), border-color .25s var(--ease);
+}
+
+.story-link span {
+  color: var(--violet);
+  transition: transform .35s var(--spring);
+}
+
+.story-link:hover {
+  border-color: var(--violet);
+  transform: translateY(-2px);
+}
+
+.story-link:hover span {
+  transform: translateX(4px);
+}
+
 .feature-links {
   display: flex;
   align-items: center;
@@ -562,6 +591,12 @@
     width: max-content;
     margin-top: 18px;
     margin-left: auto;
+  }
+
+  .story-card .story-link {
+    position: static;
+    width: max-content;
+    margin-top: 20px;
   }
 
   .story-card .story-stack {
