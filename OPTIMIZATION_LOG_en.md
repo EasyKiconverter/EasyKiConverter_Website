@@ -455,3 +455,9 @@
 - **Issue:** After the GLB model becomes available, outline detail continues to generate asynchronously, but the interface did not distinguish “model ready” from “detail still improving.”
 - **Change:** Added a low-noise bilingual status cue in the Lab model area: it starts as detail loading and ends with the actual mesh coverage count.
 - **Validation:** Added bilingual status-copy regression coverage and checked the build, static validation, and Lab browser regression.
+
+## 2026-10-13 — Unify external-navigation cues
+
+- **Issue:** The homepage header docs entry and every footer GitHub, docs, contribution, and feedback entry opened external pages without a consistent `↗` cue, unlike the homepage GitHub, Release, and case-evidence links.
+- **Changes:** Added a separate external-arrow node to the bilingual desktop and mobile navigation, with the same upper-right hover motion used by the other external entries; destinations and safe new-window attributes remain unchanged.
+- **Validation:** Added bilingual public-page assertions for the external cue nodes, then checked the build, static checks, and the full browser suite.

@@ -532,7 +532,20 @@ test('all public pages share the bilingual footer navigation', async ({ page }) 
     await expect(footer.locator('.brand')).toBeVisible();
     await expect(footer.locator('.footer-links a')).toHaveCount(7);
     for (const label of labels) await expect(footer).toContainText(label);
-    await expect(footer.locator('a[href*="EasyKiConverter/issues"]')).toHaveText(path.startsWith('/en/') ? 'Issues' : '问题反馈');
+    await expect(footer.locator('a[href*="EasyKiConverter/issues"]')).toContainText(path.startsWith('/en/') ? 'Issues' : '问题反馈');
+  }
+});
+
+test('bilingual external navigation entries expose the exit cue', async ({ page }) => {
+  for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const externalLinks = page.locator('.site-footer .footer-link-external');
+    await expect(externalLinks).toHaveCount(4);
+    await expect(externalLinks.locator('span[aria-hidden="true"]')).toHaveCount(4);
+    await expect(page.locator('.site-header .nav-link-external span[aria-hidden="true"]')).toHaveCount(path === '/' || path === '/en/' ? 1 : 0);
+    if (path === '/' || path === '/en/') {
+      await expect(page.locator('.mobile-nav .nav-link-external span[aria-hidden="true"]')).toHaveCount(1);
+    }
   }
 });
 
@@ -571,7 +584,7 @@ test('bilingual homepages expose localized navigation destinations', async ({ pa
   await expect(page.locator('.nav-links a[href="cases/"]')).toHaveText('转换案例');
   await expect(page.locator('.mobile-nav a[href="cases/"]')).toHaveText('转换案例');
   await expect(page.locator('.nav-links a').filter({ hasText: '3D 实验室' })).toHaveAttribute('href', /lab\/$/);
-  await expect(page.locator('.mobile-nav a[href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"]')).toHaveText('文档');
+  await expect(page.locator('.mobile-nav a[href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"]')).toContainText('文档');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.nav-links a[href="#download"]')).toHaveText('Download');
