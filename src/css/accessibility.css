@@ -79,3 +79,16 @@
     transition: none;
   }
 }
+
+/* Keep text-link motion aligned with the direction communicated by its arrow. */
+.text-link-internal:hover span {
+  transform: translateX(5px);
+}
+
+.text-link-external:hover span {
+  transform: translate(4px, -4px);
+}
+
+.text-link-down:hover span {
+  transform: translateY(5px);
+}
