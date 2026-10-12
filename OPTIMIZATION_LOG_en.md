@@ -435,3 +435,8 @@
 - **Issue:** The homepage workbench and format-card entries used the in-site `→` arrow, but their component-specific styles still moved the arrow up-right instead of horizontally.
 - **Change:** Added in-site semantic classes to the homepage-specific entries and aligned their hover motion with other internal links.
 - **Validation:** Added bilingual homepage entry assertions and checked the build, static validation and browser regression.
+
+## 2026-10-13 — Complete the download-section external-release cue
+- **Issue:** The download card's primary button showed an external-link arrow, but the “All releases” text entry did not, making it harder to distinguish from an in-site link.
+- **Change:** Added `↗` and matching up-right hover motion to the bilingual release-page entry while preserving its new-window and security attributes.
+- **Validation:** Added bilingual download-entry assertions and checked the build, static validation and browser regression.
