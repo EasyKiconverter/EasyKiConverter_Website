@@ -787,6 +787,15 @@ test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
   await expect(stage).not.toHaveClass(/model-fallback/);
 });
 
+test('Lab explains that surface detail continues after the GLB is ready', async ({ page }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const stage = page.locator('[data-model-stage]');
+    await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+    await expect(stage.locator('[data-model-detail-status]')).toContainText(/表面细节|SURFACE DETAIL/);
+  }
+});
+
 test('Lab asset guidance matches the generated delivery path', async ({ page }) => {
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.lab-warning')).toContainText('10.0 MB');

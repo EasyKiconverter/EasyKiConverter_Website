@@ -338,6 +338,7 @@
 .motion-model[data-artifact-view="symbol"] .motion-model-note small,.motion-model[data-artifact-view="footprint"] .motion-model-note small{display:none}
 .motion-model[data-artifact-view="symbol"] .motion-model-tag,.motion-model[data-artifact-view="footprint"] .motion-model-tag{opacity:0}
 .motion-model-note,.motion-model-tag{position:absolute;z-index:2;left:7%;top:8%;font-size:10px;letter-spacing:.12em;color:var(--muted,#746f66)}
+.model-detail-status{position:absolute;z-index:2;left:7%;top:13%;font-size:9px;letter-spacing:.08em;color:var(--muted,#746f66);opacity:.78}
 .motion-model-note small{margin-left:20px}.motion-model-tag{left:auto;top:auto;right:7%;bottom:9%}
 .neural-memory-readout{position:absolute;z-index:3;right:7%;top:8%;max-width:42%;padding:5px 8px;border:1px solid #9fe0cb66;border-radius:999px;background:#fffdf866;color:#5145a8;font:700 9px/1.2 ui-monospace,SFMono-Regular,monospace;letter-spacing:.08em;text-align:right;opacity:.78;transition:color .3s,border-color .3s,box-shadow .3s,transform .3s}
 .motion-model[data-neural-memory="active"] .neural-memory-readout{color:#087d78;border-color:#8ffff2cc;box-shadow:0 0 18px #8ffff244;transform:translateY(-1px)}
