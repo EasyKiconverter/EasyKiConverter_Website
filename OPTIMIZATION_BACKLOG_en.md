@@ -28,6 +28,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 | P2 | Compact repeated format-matrix status copy | 3×4×3 / (1×2) = 18 | Complete; use short mobile row labels while retaining full meaning in the legend, guidance, and accessible name |
 | P2 | Refine bilingual conversion-case copy | 3×4×3 / (1×2) = 18 | Complete; align single input → output routes and explain the BOM evidence as repeatable GUI/CLI checking |
 | P2 | Improve narrow-screen hierarchy for case evidence paths | 3×4×3 / (1×2) = 18 | Complete; separate filenames from directories while retaining the full accessible path and external-link semantics |
+| P2 | Consolidate brand tokens and accessibility-layer responsibilities | 3×4×3 / (1×2) = 18 | Complete; homepage, content pages, and Lab share the base brand tokens without accessibility-layer color overrides |
 
 The resolved Dependency Review workflow issue is documented in the [optimization log](OPTIMIZATION_LOG_en.md) and is not repeated here.
 

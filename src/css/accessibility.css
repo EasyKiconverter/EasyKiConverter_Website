@@ -1,9 +1,4 @@
 /* Small, shared safety layer for keyboard and degraded rendering states. */
-:root {
-  --muted: #6b665e;
-  --violet: #6254c8;
-}
-
 /* Keep external destinations legible in both desktop and mobile navigation. */
 .nav-link-external span {
   display: inline-block;
