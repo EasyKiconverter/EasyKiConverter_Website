@@ -521,7 +521,7 @@ test('homepage platform summary mirrors the available Release assets', async ({ 
     await expect(platforms.nth(1)).toContainText(/aarch64/);
     await expect(platforms.nth(1).locator('.platform-count')).toContainText(/3/);
     await expect(platforms.nth(2)).toContainText(/Intel/);
-    await expect(platforms.nth(2)).toContainText(/Apple Silicon/);
+    await expect(platforms.nth(2)).toContainText(path === '/' ? 'Apple 芯片' : 'Apple Silicon');
     await expect(platforms.nth(2).locator('.platform-count')).toContainText(/2/);
   }
 });
