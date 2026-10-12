@@ -755,6 +755,15 @@ test('Chinese case summaries keep evidence terms localized', async ({ page }) =>
   await expect(page.locator('.case-card').nth(0)).toContainText('CAD fixtures');
 });
 
+test('bilingual case copy keeps each output path singular and actionable', async ({ page }) => {
+  await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.case-card').nth(1)).toHaveText(/EasyEDA 元件 → Altium 库/);
+  await expect(page.locator('.case-card').nth(2)).toContainText('GUI 和 CLI 流程中重复检查');
+  await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.case-card').nth(1)).toHaveText(/EasyEDA component → Altium library/);
+  await expect(page.locator('.case-card').nth(2)).toContainText('checked repeatedly through GUI and CLI workflows');
+});
+
 test('download cards show the actual Release asset architectures', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const chineseLinks = page.locator('.download-links > a');

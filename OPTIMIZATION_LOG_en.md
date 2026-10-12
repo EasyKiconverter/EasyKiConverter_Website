@@ -467,3 +467,9 @@
 - **Issue:** On mobile, every format-matrix card repeated the full “Primary stable target” or “Registered target; verify per Release” sentence, competing with the target name and making the status scan heavier than necessary.
 - **Changes:** Use concise bilingual row labels, “稳定版目标 / Stable target” and “按发布验证 / Verify per Release”; retain the complete meaning in the shared legend, page guidance, and the status element’s accessible name.
 - **Validation:** Add bilingual assertions for the short labels and full accessible meaning, then check the narrow format matrix, build, and static page validation.
+
+## 2026-10-13 — Refine bilingual conversion-case copy
+
+- **Issue:** The BOM case description leaned on internal implementation language, and the English Altium output title used a plural that did not match the other single input → output routes.
+- **Changes:** Use a singular Altium library path and explain the BOM case in user-facing terms: the same test fixture can be checked repeatedly through GUI and CLI workflows; retain the fixture, automated-evidence, and manual-acceptance boundaries.
+- **Validation:** Add bilingual assertions for the case title and explanation, then check the case-page build, static validation, and narrow layout.
