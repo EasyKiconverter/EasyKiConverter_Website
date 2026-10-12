@@ -22,7 +22,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 | P2 | Complete homepage-specific in-site arrow motion | 2×4×3 / (2×2) = 6 | Complete; workbench and format-card entries use horizontal hover feedback |
 | P2 | Complete the download-section external-release cue | 2×4×3 / (2×2) = 6 | Complete; the bilingual all-releases entry shows the external arrow and matching hover motion |
 | P2 | Align the bilingual Hero downward cue | 2×4×3 / (2×2) = 6 | Complete; the bilingual “See how it works” entry uses a separate arrow and matching hover motion |
-| P1 | Improve visible 3D model surface detail | 4×4×3 / (3×2) = 8 | Complete; the edge pass covers every eligible mesh while retaining asynchronous budget control |
+| P1 | Improve visible 3D model surface detail | 4×4×3 / (3×2) = 8 | Complete; the edge pass prioritizes up to 160 detail meshes while retaining asynchronous budget control |
 
 The resolved Dependency Review workflow issue is documented in the [optimization log](OPTIMIZATION_LOG_en.md) and is not repeated here.
 

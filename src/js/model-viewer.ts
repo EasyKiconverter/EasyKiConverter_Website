@@ -4399,9 +4399,10 @@ export const setupModel = async (): Promise<void> => {
     fitCamera();
     stage.dataset.modelTriangles = String(triangleCount);
     stage.dataset.modelEdgeSegments = "pending";
-    const edgeParts = explodedMeshes.filter(({ mesh }) =>
-      (mesh.geometry.index?.count ?? 0) <= 6_000,
-    );
+    const edgeParts = explodedMeshes
+      .filter(({ mesh }) => (mesh.geometry.index?.count ?? 0) <= 6_000)
+      .sort((left, right) => (left.mesh.geometry.index?.count ?? 0) - (right.mesh.geometry.index?.count ?? 0))
+      .slice(0, 160);
     stage.dataset.modelEdgeMeshes = String(edgeParts.length);
     let edgePartIndex = 0;
     const addEdgeChunk = (): void => {
