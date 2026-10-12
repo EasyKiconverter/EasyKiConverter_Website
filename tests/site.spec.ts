@@ -211,6 +211,14 @@ test('text-link hover directions match their navigation semantics', async ({ pag
   await expect(page.locator('.lab-intro-actions .text-link-internal')).toHaveCount(2);
 });
 
+test('homepage feature actions keep internal-arrow motion horizontal', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.showcase-action-internal')).toHaveClass(/showcase-action-internal/);
+    await expect(page.locator('.feature-link-internal')).toHaveCount(2);
+  }
+});
+
 test('content pages keep navigation reachable on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/formats/', { waitUntil: 'networkidle' });
