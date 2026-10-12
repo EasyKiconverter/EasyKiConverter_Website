@@ -598,10 +598,14 @@ test('bilingual workbench captions preserve the same product evidence', async ({
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM/);
   await expect(page.locator('.app-window figcaption')).toContainText('resources/imgs/screenshot1.png');
+  await expect(page.locator('.showcase-proof-items')).toContainText('添加元件');
+  await expect(page.locator('.showcase-proof-items')).toContainText('导入 BOM');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM import and export settings/);
   await expect(page.locator('.app-window figcaption')).toContainText('resources/imgs/screenshot1.png');
+  await expect(page.locator('.showcase-proof-items')).toContainText('Add components');
+  await expect(page.locator('.showcase-proof-items')).toContainText('Import BOM');
 });
 
 test('bilingual homepages expose localized navigation destinations', async ({ page }) => {

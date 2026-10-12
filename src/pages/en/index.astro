@@ -7,6 +7,7 @@ import SeoHead from "../../components/SeoHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import PlatformAvailability from "../../components/PlatformAvailability.astro";
+import ShowcaseCaption from "../../components/ShowcaseCaption.astro";
 import WorkbenchActions from "../../components/WorkbenchActions.astro";
 import { targetFormats } from "../../data/formats";
 import { getPlatformAvailability } from "../../data/platforms";
@@ -248,10 +249,7 @@ const platformAvailability = getPlatformAvailability("en");
               alt="The actual EasyKiConverter Qt Quick main window with component entry, BOM import and export settings"
             loading="lazy"
           />
-          <figcaption>
-            <span>REAL QT QUICK UI</span>
-            <span>from main project resources/imgs/screenshot1.png</span>
-          </figcaption>
+          <ShowcaseCaption lang="en" />
         </figure>
         <WorkbenchActions lang="en" />
       </section>
