@@ -208,6 +208,16 @@ test('bilingual case pages explain the evidence-reading order', async ({ page })
   }
 });
 
+test('bilingual workflow quick-start links use the shared external-arrow treatment', async ({ page }) => {
+  for (const [path, label] of [['/', '阅读快速入门'], ['/en/', 'Read the quick start']] as const) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const link = page.locator('.workflow-copy .text-link');
+    await expect(link).toContainText(label);
+    await expect(link.locator('span')).toHaveText('↗');
+    await expect(link).toHaveAttribute('target', '_blank');
+  }
+});
+
 test('desktop Chinese case title avoids an orphan line', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
