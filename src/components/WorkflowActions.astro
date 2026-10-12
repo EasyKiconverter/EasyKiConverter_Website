@@ -1,0 +1,24 @@
+---
+interface Props {
+  lang: "zh" | "en";
+}
+
+const { lang } = Astro.props;
+const en = lang === "en";
+---
+
+<div class="workflow-actions">
+  <a class="showcase-action-primary showcase-action-internal" href="cases/">
+    {en ? "View conversion cases" : "查看真实转换案例"} <span>→</span>
+  </a>
+  <a
+    class="text-link text-link-external"
+    href={en
+      ? "https://github.com/EasyKiconverter/EasyKiConverter/blob/master/docs/user/GETTING_STARTED_en.md"
+      : "https://github.com/EasyKiconverter/EasyKiConverter/blob/master/docs/user/GETTING_STARTED.md"}
+    target="_blank"
+    rel="noreferrer"
+  >
+    {en ? "Read the quick start" : "阅读快速入门"} <span>↗</span>
+  </a>
+</div>

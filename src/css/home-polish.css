@@ -194,6 +194,14 @@
   gap: 18px;
 }
 
+.workflow-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 24px;
+}
+
 .showcase-action-primary {
   display: inline-flex;
   align-items: center;
@@ -694,6 +702,12 @@
   .showcase-actions > div {
     justify-content: flex-start;
     margin-top: 18px;
+  }
+
+  .workflow-actions {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
   }
 
   .footer-links {
