@@ -86,7 +86,7 @@ const platformAvailability = [
             >
               Download stable <span>↗</span>
             </a>
-            <a class="text-link" href="#story">
+            <a class="text-link text-link-down" href="#story">
               See how it works ↓
             </a>
           </div>
@@ -258,7 +258,7 @@ const platformAvailability = [
           </p>
           <div>
             <a class="showcase-action-primary" href="cases/">View conversion cases <span>→</span></a>
-            <a class="text-link" href="lab/">Open the 3D Lab <span>→</span></a>
+            <a class="text-link text-link-internal" href="lab/">Open the 3D Lab <span>→</span></a>
           </div>
         </div>
       </section>
@@ -347,7 +347,7 @@ const platformAvailability = [
             confirm the output and continue your board.
           </p>
           <a
-            class="text-link"
+            class="text-link text-link-external"
             href="https://github.com/EasyKiconverter/EasyKiConverter/blob/master/docs/user/GETTING_STARTED_en.md"
             target="_blank"
             rel="noreferrer"
@@ -401,7 +401,7 @@ const platformAvailability = [
             The current stable release provides packages for Windows, Linux and
             macOS. Choose the download that matches your architecture.
           </p>
-          <a class="text-link platform-intro-link" href="#download">See platform downloads <span>↓</span></a>
+          <a class="text-link text-link-down platform-intro-link" href="#download">See platform downloads <span>↓</span></a>
         </div>
         <div class="platform-list reveal reveal-delay">
           {platformAvailability.map((platform, index) => <div aria-label={`${platform.name} ${platform.assetCount} available downloads`}>

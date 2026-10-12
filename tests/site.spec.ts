@@ -195,6 +195,22 @@ test('bilingual internal actions use the in-site arrow treatment', async ({ page
   }
 });
 
+test('text-link hover directions match their navigation semantics', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.showcase-actions .text-link-internal')).toHaveClass(/text-link-internal/);
+  await expect(page.locator('.workflow-copy .text-link-external')).toHaveClass(/text-link-external/);
+  await expect(page.locator('.platform-intro-link')).toHaveClass(/text-link-down/);
+
+  await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.format-matrix-actions .text-link')).toHaveClass(/text-link-external/);
+  await page.locator('.format-matrix-actions .text-link').hover();
+  const externalTransform = await page.locator('.format-matrix-actions .text-link span').evaluate((element) => getComputedStyle(element).transform);
+  expect(externalTransform).not.toBe('none');
+
+  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.lab-intro-actions .text-link-internal')).toHaveCount(2);
+});
+
 test('content pages keep navigation reachable on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/formats/', { waitUntil: 'networkidle' });

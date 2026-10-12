@@ -425,3 +425,8 @@
 - **Issue:** Some internal entries on the homepage and 3D Lab still used the external-link arrow `↗`, making them inconsistent with the shared in-site `→` treatment and less clear at a glance.
 - **Change:** Use `→` for the bilingual homepage format/case entries and the Lab format entry, while keeping `↗` for GitHub, Release and quick-start links that leave the site.
 - **Validation:** Added bilingual homepage and Lab arrow-semantics assertions and checked the build, static validation and narrow layouts.
+
+## 2026-10-13 — Match text-link hover motion to arrow semantics
+- **Issue:** In-site `→`, external `↗` and downward-anchor `↓` arrows had different characters but shared one downward hover motion, so the feedback did not match the link direction.
+- **Change:** Added semantic classes for in-site, external and downward-anchor text links with horizontal, up-right and downward motion respectively across the bilingual homepage, content pages and Lab.
+- **Validation:** Added hover structure and motion assertions and checked the full browser regression, build and static validation.
