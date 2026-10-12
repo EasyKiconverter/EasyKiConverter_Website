@@ -208,6 +208,16 @@ test('bilingual case pages explain the evidence-reading order', async ({ page })
   }
 });
 
+test('desktop Chinese case title avoids an orphan line', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
+  const title = page.locator('#case-studies-title');
+  const box = await title.boundingBox();
+  const lineHeight = await title.evaluate((element) => Number.parseFloat(getComputedStyle(element).lineHeight));
+  expect(box).not.toBeNull();
+  expect(box!.height).toBeLessThan(lineHeight * 1.4);
+});
+
 test('content and Lab headers keep the shared brand treatment', async ({ page }) => {
   await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.content-page-header .brand img')).toHaveAttribute('src', /easyki-icon\.svg/);
