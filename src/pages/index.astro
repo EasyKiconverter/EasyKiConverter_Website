@@ -6,6 +6,7 @@ import "../css/home-polish.css";
 import SeoHead from "../components/SeoHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import WorkbenchActions from "../components/WorkbenchActions.astro";
 import { targetFormats } from "../data/formats";
 import { latestRelease } from "../data/release";
 const siteRoot = new URL(import.meta.env.SITE);
@@ -259,15 +260,7 @@ const platformAvailability = [
             <span>来自主项目 resources/imgs/screenshot1.png</span>
           </figcaption>
         </figure>
-        <div class="showcase-actions reveal reveal-delay">
-          <p>
-            看见真实界面之后，继续核对一条可复用的转换路径，或打开 3D 实验室查看模型交付。
-          </p>
-          <div>
-            <a class="showcase-action-primary showcase-action-internal" href="cases/">查看转换案例 <span>→</span></a>
-            <a class="text-link text-link-internal" href="lab/">打开 3D 实验室 <span>→</span></a>
-          </div>
-        </div>
+        <WorkbenchActions lang="zh" />
       </section>
       <section
         id="features"

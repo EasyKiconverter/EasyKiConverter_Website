@@ -1,0 +1,20 @@
+---
+interface Props {
+  lang: "zh" | "en";
+}
+
+const { lang } = Astro.props;
+const en = lang === "en";
+---
+
+<div class="showcase-actions reveal reveal-delay">
+  <p>
+    {en
+      ? "Start from the real interface, then follow a reusable conversion path to check the result—or open the 3D Lab to inspect the delivered model."
+      : "先从真实界面确认工作方式，再沿着一条可复用的转换路径核对结果，或打开 3D 实验室查看模型交付。"}
+  </p>
+  <div>
+    <a class="showcase-action-primary showcase-action-internal" href="cases/">{en ? "View conversion cases" : "查看转换案例"} <span>→</span></a>
+    <a class="text-link text-link-internal" href="lab/">{en ? "Open the 3D Lab" : "打开 3D 实验室"} <span>→</span></a>
+  </div>
+</div>
