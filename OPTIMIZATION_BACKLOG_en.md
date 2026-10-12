@@ -19,6 +19,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 | P2 | Align the homepage quick-start external-arrow treatment | 2×3×3 / (2×2) = 4.5 | Complete; bilingual quick-start links use the same external-arrow structure as the rest of the site |
 | P2 | Align in-site navigation arrow semantics | 3×4×3 / (2×2) = 9 | Complete; in-site entries use `→`, external links keep `↗`, consistently across the bilingual homepage and Lab |
 | P2 | Match text-link hover motion to arrow semantics | 3×4×3 / (2×2) = 9 | Complete; in-site, external and downward-anchor links use direction-matched motion |
+| P2 | Complete homepage-specific in-site arrow motion | 2×4×3 / (2×2) = 6 | Complete; workbench and format-card entries use horizontal hover feedback |
 
 The resolved Dependency Review workflow issue is documented in the [optimization log](OPTIMIZATION_LOG_en.md) and is not repeated here.
 

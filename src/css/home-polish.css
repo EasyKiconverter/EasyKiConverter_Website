@@ -52,6 +52,10 @@
   transform: translate(3px, -3px);
 }
 
+.feature-link-internal:hover span {
+  transform: translateX(3px);
+}
+
 .feature-link-primary {
   padding: 9px 12px;
   border: 1px solid #fff;
@@ -136,6 +140,10 @@
 
 .showcase-action-primary:hover span {
   transform: translate(3px, -3px);
+}
+
+.showcase-action-internal:hover span {
+  transform: translateX(3px);
 }
 
 .hero-product-stage {
