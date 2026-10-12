@@ -19,6 +19,12 @@
   font-weight: 800;
 }
 
+.content-page-header ~ .mobile-nav a[aria-current="page"] {
+  background: var(--lilac);
+  color: var(--ink);
+  font-weight: 800;
+}
+
 .content-page-header .github-link {
   flex: 0 0 auto;
 }
