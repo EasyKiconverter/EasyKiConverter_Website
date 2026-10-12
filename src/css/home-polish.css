@@ -87,6 +87,57 @@
   font-size: clamp(58px, 5.6vw, 78px);
 }
 
+.showcase-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  margin-top: 28px;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.showcase-actions p {
+  max-width: 430px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.showcase-actions > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 18px;
+}
+
+.showcase-action-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: var(--dark);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  transition: transform .35s var(--spring), background-color .25s var(--ease);
+}
+
+.showcase-action-primary span {
+  transition: transform .35s var(--spring);
+}
+
+.showcase-action-primary:hover {
+  background: var(--violet);
+  transform: translateY(-2px);
+}
+
+.showcase-action-primary:hover span {
+  transform: translate(3px, -3px);
+}
+
 .hero-product-stage {
   height: auto;
   min-height: 460px;
@@ -522,6 +573,15 @@
   .section h2 em,
   .download h2 em {
     white-space: normal;
+  }
+
+  .showcase-actions {
+    display: block;
+  }
+
+  .showcase-actions > div {
+    justify-content: flex-start;
+    margin-top: 18px;
   }
 
   .footer-links {
