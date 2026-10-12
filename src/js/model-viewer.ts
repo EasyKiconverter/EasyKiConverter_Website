@@ -4399,9 +4399,10 @@ export const setupModel = async (): Promise<void> => {
     fitCamera();
     stage.dataset.modelTriangles = String(triangleCount);
     stage.dataset.modelEdgeSegments = "pending";
-    const edgeParts = explodedMeshes.filter(({ index, mesh }) =>
-      index < 96 && (mesh.geometry.index?.count ?? 0) <= 6_000,
+    const edgeParts = explodedMeshes.filter(({ mesh }) =>
+      (mesh.geometry.index?.count ?? 0) <= 6_000,
     );
+    stage.dataset.modelEdgeMeshes = String(edgeParts.length);
     let edgePartIndex = 0;
     const addEdgeChunk = (): void => {
       const chunkEnd = Math.min(edgePartIndex + 8, edgeParts.length);
@@ -4416,7 +4417,7 @@ export const setupModel = async (): Promise<void> => {
         const edgeMaterial = new THREE.LineBasicMaterial({
           color: 0x4a4358,
           transparent: true,
-          opacity: 0.18,
+          opacity: 0.24,
           depthWrite: false,
         });
         const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);

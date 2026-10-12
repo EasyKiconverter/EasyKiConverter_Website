@@ -445,3 +445,8 @@
 - **Issue:** The Chinese homepage used a separate arrow element for “See how it works”, while the English entry kept `↓` in plain text, so its arrow did not receive the shared hover motion.
 - **Change:** Matched the English entry to the Chinese `<span>` arrow structure and added a bilingual regression assertion.
 - **Validation:** Checked the link semantics, arrow node, build, static validation and browser regression.
+
+## 2026-10-13 — Improve visible 3D model surface detail
+- **Issue:** The Lab edge pass only processed the first 96 mesh objects. Later meshes still loaded and rendered, but lacked outline assistance, making holes, steps and part boundaries harder to read on the complex model.
+- **Change:** Process every eligible mesh within the existing 120,000-segment budget and slightly raise outline contrast; edge generation remains chunked and asynchronous so it does not block the first frame. Screenshot regression kept the existing light rig instead of adding environment light that washed out the white housing.
+- **Validation:** Added an edge-mesh coverage regression assertion and checked the build, static validation, and desktop/mobile Lab browser regression.
