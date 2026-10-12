@@ -347,3 +347,9 @@
 - **Issue**: On a 390px viewport, the dark CTA's decorative rings crossed the heading and underline, reducing reading clarity.
 - **Change**: Move the rings toward the right-side action area only at the mobile breakpoint, preserving the desktop composition and brand texture while separating the heading, copy and download action.
 - **Validation**: Added mobile title/primary-action layout assertions for all four bilingual content routes, then ran the build, site validation, asset checks and the complete browser suite.
+
+## 2026-10-13 — Add a direct download path to the 3D Lab
+
+- **Issue**: The Lab offered technical validation, but users had to return to the homepage before downloading the stable release, adding an unnecessary step between verification and delivery.
+- **Change**: Add a current stable-release link to both bilingual Lab intros while retaining the product-home and format-matrix paths; the link reuses the checked-in Release fallback instead of duplicating the version.
+- **Validation**: Added bilingual stable-download assertions and ran the build, site validation, asset checks and the complete browser suite.

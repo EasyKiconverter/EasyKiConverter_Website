@@ -325,7 +325,7 @@ test('Lab pages keep the experiment connected to product navigation', async ({ p
     const actions = page.locator('.lab-intro-actions');
     await expect(actions).toBeVisible();
     await expect(actions.locator('.button-dark')).toHaveAttribute('href', /^(\/|https?:)/);
-    await expect(actions.locator('.text-link')).toHaveAttribute('href', /formats/);
+    await expect(actions.locator('a[href*="formats"]')).toHaveAttribute('href', /formats/);
   }
 });
 
@@ -661,6 +661,17 @@ test('Lab loading strategy stays scannable in both languages', async ({ page }) 
     await expect(facts).toContainText(/GLB 优先|GLB first/);
     await expect(facts).toContainText(/STEP \/ WASM/);
     await expect(facts).toContainText(/保持隔离|Isolated/);
+  }
+});
+
+test('Lab pages expose a direct bilingual stable-download path', async ({ page }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const link = page.locator('[data-release-link]');
+    await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', 'noreferrer');
+    await expect(link).toContainText(/下载稳定版 v3\.1\.13|Download stable v3\.1\.13/);
   }
 });
 
