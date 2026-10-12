@@ -426,6 +426,20 @@ test('format matrix offers evidence and release next steps in both languages', a
   }
 });
 
+test('format matrix rows use concise bilingual status labels with full accessible meaning', async ({ page }) => {
+  for (const [path, shortLabels, fullLabel] of [
+    ['/formats/', ['稳定版目标', '按发布验证'], '已注册导出目标，按发布版本验证'],
+    ['/en/formats/', ['Stable target', 'Verify per Release'], 'Registered target; verify per Release'],
+  ] as const) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const statuses = page.locator('.format-status');
+    await expect(statuses).toHaveCount(11);
+    await expect(statuses.filter({ hasText: shortLabels[0] })).toHaveCount(2);
+    await expect(statuses.filter({ hasText: shortLabels[1] })).toHaveCount(9);
+    await expect(statuses.nth(2)).toHaveAttribute('aria-label', fullLabel);
+  }
+});
+
 test('case studies expose their evidence scope and next-step paths', async ({ page }) => {
   for (const path of ['/cases/', '/en/cases/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
