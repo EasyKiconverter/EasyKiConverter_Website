@@ -146,6 +146,16 @@
   transform: translateX(3px);
 }
 
+.download-link-external span {
+  display: inline-block;
+  margin-left: 6px;
+  transition: transform .35s var(--spring);
+}
+
+.download-link-external:hover span {
+  transform: translate(4px, -4px);
+}
+
 .hero-product-stage {
   height: auto;
   min-height: 460px;

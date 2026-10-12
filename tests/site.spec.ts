@@ -219,6 +219,15 @@ test('homepage feature actions keep internal-arrow motion horizontal', async ({ 
   }
 });
 
+test('bilingual download cards mark the all-releases exit as external', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const link = page.locator('.download-link-external');
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link.locator('span')).toHaveText('↗');
+  }
+});
+
 test('content pages keep navigation reachable on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/formats/', { waitUntil: 'networkidle' });
