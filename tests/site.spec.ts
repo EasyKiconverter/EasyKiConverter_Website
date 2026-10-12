@@ -225,6 +225,24 @@ test('inner pages share the same localized header navigation', async ({ page }) 
   }
 });
 
+test('inner mobile navigation marks the current page in both languages', async ({ page }) => {
+  const pages = [
+    { path: '/formats/', current: '格式矩阵' },
+    { path: '/cases/', current: '转换案例' },
+    { path: '/lab/', current: '3D 实验室' },
+    { path: '/en/formats/', current: 'Formats' },
+    { path: '/en/cases/', current: 'Cases' },
+    { path: '/en/lab/', current: '3D Lab' },
+  ];
+  for (const { path, current } of pages) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const currentLink = page.locator('.mobile-nav a[aria-current="page"]');
+    await expect(currentLink).toHaveText(current);
+    await expect(currentLink).toHaveCSS('font-weight', '800');
+    await expect(currentLink).toHaveCSS('background-color', 'rgb(217, 210, 255)');
+  }
+});
+
 test('Lab pages use the shared mobile navigation behavior', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/lab/', '/en/lab/']) {
