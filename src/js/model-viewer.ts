@@ -165,6 +165,7 @@ export const setupModel = async (): Promise<void> => {
 
   const artifactButtons = Array.from(stage.querySelectorAll<HTMLButtonElement>("[data-artifact-view]"));
   const artifactLabel = stage.querySelector<HTMLElement>("[data-artifact-label]");
+  const detailStatus = stage.querySelector<HTMLElement>("[data-model-detail-status]");
   const artifactCaption = stage.querySelector<HTMLElement>(".artifact-caption");
   stage.dataset.artifactView = stage.dataset.artifactView || "model";
 
@@ -4399,6 +4400,9 @@ export const setupModel = async (): Promise<void> => {
     fitCamera();
     stage.dataset.modelTriangles = String(triangleCount);
     stage.dataset.modelEdgeSegments = "pending";
+    if (detailStatus) detailStatus.textContent = document.documentElement.lang === "en"
+      ? "SURFACE DETAIL · LOADING"
+      : "表面细节 · 加载中";
     const edgeParts = explodedMeshes
       .filter(({ mesh }) => (mesh.geometry.index?.count ?? 0) <= 6_000)
       .sort((left, right) => (left.mesh.geometry.index?.count ?? 0) - (right.mesh.geometry.index?.count ?? 0))
@@ -4431,6 +4435,9 @@ export const setupModel = async (): Promise<void> => {
         return;
       }
       stage.dataset.modelEdgeSegments = String(edgeSegments);
+      if (detailStatus) detailStatus.textContent = document.documentElement.lang === "en"
+        ? `SURFACE DETAIL · ${edgeParts.length} MESHES`
+        : `表面细节 · ${edgeParts.length} 个网格`;
       wake();
     };
     window.setTimeout(addEdgeChunk, 100);
