@@ -419,6 +419,16 @@ test('bilingual homepages keep the same interaction rhythm', async ({ page }) =>
   }
 });
 
+test('bilingual workbench captions preserve the same product evidence', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM/);
+  await expect(page.locator('.app-window figcaption')).toContainText('resources/imgs/screenshot1.png');
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM import and export settings/);
+  await expect(page.locator('.app-window figcaption')).toContainText('resources/imgs/screenshot1.png');
+});
+
 test('bilingual homepages expose localized navigation destinations', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.nav-links a[href="#formats"]')).toHaveText('格式矩阵');

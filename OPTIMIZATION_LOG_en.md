@@ -363,3 +363,7 @@
 - **Issue:** The format matrix showed two statistic-pill groups with “registered targets” repeated, unlike the single evidence-summary pattern used by the cases page.
 - **Change:** Merged the current Release, stable-target count and registered-target count into one shared `evidence-summary`, removing the duplicate format-summary styling.
 - **Validation:** Updated bilingual format-matrix assertions and checked the build, static site validation, desktop/mobile pages and narrow layouts.
+## 2026-10-13 — Align bilingual workbench evidence copy
+- **Issue:** The Chinese workbench caption named the source file and visible workflow details, while English only said “from the main project”; its accessible alternative text also omitted BOM and export context.
+- **Change:** Add the English source path `resources/imgs/screenshot1.png` and describe component entry, BOM import and export settings in the English alternative text.
+- **Validation:** Added bilingual workbench-evidence assertions and checked the build, static pages and desktop/mobile presentation.
