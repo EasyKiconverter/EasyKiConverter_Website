@@ -402,3 +402,9 @@
 - **Issue:** The homepage download cards localized the Windows installer label, while the platform summary still exposed `Apple Silicon` directly on the Chinese page.
 - **Change:** Use “Apple 芯片” consistently in Chinese platform summaries and download cards, while retaining `Apple Silicon` in English; other architecture names keep their engineering conventions.
 - **Validation:** Added bilingual platform-summary assertions and checked narrow-screen overflow and the build.
+
+## 2026-10-13 — Promote the stable download in the Lab intro actions
+
+- **Issue:** The Lab intro used a light primary button, but “Back to product” appeared before the stable download in DOM and visual order, making the next step less explicit on mobile.
+- **Change:** Put the stable download first in both bilingual Lab action rows, while retaining product-home and format-matrix links as secondary text actions.
+- **Validation:** Added a primary-action order assertion and checked bilingual Lab narrow layouts and download links.
