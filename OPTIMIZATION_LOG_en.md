@@ -367,3 +367,7 @@
 - **Issue:** The Chinese workbench caption named the source file and visible workflow details, while English only said “from the main project”; its accessible alternative text also omitted BOM and export context.
 - **Change:** Add the English source path `resources/imgs/screenshot1.png` and describe component entry, BOM import and export settings in the English alternative text.
 - **Validation:** Added bilingual workbench-evidence assertions and checked the build, static pages and desktop/mobile presentation.
+## 2026-10-13 — Mark the current page in inner mobile navigation
+- **Issue:** Desktop inner navigation highlighted the current page, while the mobile menu presented Formats, Cases and 3D Lab like ordinary links.
+- **Change:** Give the current inner-page mobile link a lilac background, ink text and bold weight so it matches the desktop navigation state.
+- **Validation:** Added assertions for all six bilingual inner pages and checked the build, static validation and narrow layouts.
