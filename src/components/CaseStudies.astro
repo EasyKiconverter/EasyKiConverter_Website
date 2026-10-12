@@ -23,6 +23,11 @@ const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase);
       <span><b>{latestRelease.tag}</b>{en ? " release baseline" : " 发布版本基线"}</span>
       <span><b>{caseStudies.length}</b>{en ? " traceable cases" : " 个可追溯案例"}</span>
     </div>
+    <ol class="case-reading-guide" aria-label={en ? "How to read a case" : "案例阅读步骤"}>
+      <li><span>01</span><div><b>{en ? "Choose a route" : "选定路径"}</b><small>{en ? "Start with the input → output pair." : "先确认输入 → 输出路径。"}</small></div></li>
+      <li><span>02</span><div><b>{en ? "Open the fixture" : "打开样本"}</b><small>{en ? "See the exact source data used by the case." : "查看案例使用的真实源数据。"}</small></div></li>
+      <li><span>03</span><div><b>{en ? "Review the test" : "复核测试"}</b><small>{en ? "Check the automated evidence before production use." : "用于生产前复核自动化证据。"}</small></div></li>
+    </ol>
   </div>
   <div class="case-grid">
     {caseStudies.map((item, index) => <article class="case-card" id={item.id}>
