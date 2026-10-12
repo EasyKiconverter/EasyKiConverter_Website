@@ -27,6 +27,24 @@
   white-space: nowrap;
 }
 
+.platform-architectures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.platform-list .platform-architecture {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.platform-list .platform-architecture + .platform-architecture::before {
+  content: "·";
+  margin-right: 8px;
+  color: var(--line);
+}
+
 .feature-links {
   display: flex;
   align-items: center;

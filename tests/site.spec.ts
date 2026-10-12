@@ -641,6 +641,9 @@ test('homepage platform summary mirrors the available Release assets', async ({ 
     await expect(platforms.nth(2)).toContainText(/Intel/);
     await expect(platforms.nth(2)).toContainText(path === '/' ? 'Apple 芯片' : 'Apple Silicon');
     await expect(platforms.nth(2).locator('.platform-count')).toContainText(/2/);
+    await expect(platforms.nth(0).locator('.platform-architecture')).toHaveCount(2);
+    await expect(platforms.nth(1).locator('.platform-architecture')).toHaveCount(3);
+    await expect(platforms.nth(2).locator('.platform-architecture')).toHaveCount(2);
   }
 });
 
