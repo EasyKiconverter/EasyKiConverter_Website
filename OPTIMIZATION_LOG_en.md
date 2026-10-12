@@ -380,3 +380,8 @@
 - **Issue:** After showing the real Qt Quick workbench, the homepage did not give visitors a clear next step to verify a conversion case or inspect the 3D delivery model.
 - **Change:** Added a matching bilingual action row below the workbench evidence, linking to conversion cases and the 3D Lab; the mobile layout stacks the actions while preserving the primary hierarchy.
 - **Validation:** Added bilingual action assertions and checked desktop/mobile layout and destination links.
+
+## 2026-10-13 — Add input-to-output routes to conversion cases
+- **Issue:** Visitors had to read the full case title and paragraph to identify its input source and output target, especially on mobile.
+- **Change:** Added a consistent bilingual input → output route block to all three cases, with route facts stored in case data instead of inferred from titles.
+- **Validation:** Added bilingual route assertions and checked narrow-card layout, evidence links and the build.
