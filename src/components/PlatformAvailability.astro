@@ -1,0 +1,25 @@
+---
+import type { PlatformAvailability } from "../data/platforms";
+
+interface Props {
+  language: "zh" | "en";
+  platforms: PlatformAvailability[];
+}
+
+const { language, platforms } = Astro.props;
+const downloadLabel = language === "zh" ? "个下载项" : "downloads";
+const availableLabel = language === "zh" ? "个可用下载" : "available downloads";
+---
+
+<div class="platform-list reveal reveal-delay">
+  {platforms.map((platform, index) => (
+    <div aria-label={`${platform.name} ${platform.assetCount} ${availableLabel}`}>
+      <b>{platform.name}</b>
+      <span class="platform-architectures">
+        {platform.labels.map((label) => <span class="platform-architecture">{label}</span>)}
+      </span>
+      <small class="platform-count">{platform.assetCount} {downloadLabel}</small>
+      <i>{String(index + 1).padStart(2, "0")}</i>
+    </div>
+  ))}
+</div>
