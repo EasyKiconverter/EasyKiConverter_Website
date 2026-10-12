@@ -382,6 +382,7 @@ test('Lab pages keep the experiment connected to product navigation', async ({ p
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const actions = page.locator('.lab-intro-actions');
     await expect(actions).toBeVisible();
+    await expect(actions.locator('a').first()).toHaveAttribute('data-release-link', '');
     await expect(actions.locator('a.text-link').first()).toHaveAttribute('href', /^(\/|https?:)/);
     await expect(actions.locator('[data-release-link]')).toHaveClass(/button-light/);
     await expect(actions.locator('a[href*="formats"]')).toHaveAttribute('href', /formats/);
