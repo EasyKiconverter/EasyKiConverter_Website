@@ -408,3 +408,9 @@
 - **Issue:** The Lab intro used a light primary button, but “Back to product” appeared before the stable download in DOM and visual order, making the next step less explicit on mobile.
 - **Change:** Put the stable download first in both bilingual Lab action rows, while retaining product-home and format-matrix links as secondary text actions.
 - **Validation:** Added a primary-action order assertion and checked bilingual Lab narrow layouts and download links.
+
+## 2026-10-13 — Correct the desktop Chinese case-title wrap
+
+- **Issue:** The desktop Chinese case title had too little available width, leaving the final “件。” on a lone second line and weakening the hero rhythm.
+- **Change:** Widen the case-title container to match the content-page visual measure while keeping natural wrapping on mobile.
+- **Validation:** Added a desktop title-height assertion and checked bilingual case-page narrow overflow.
