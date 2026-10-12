@@ -461,3 +461,9 @@
 - **Issue:** The homepage header docs entry and every footer GitHub, docs, contribution, and feedback entry opened external pages without a consistent `↗` cue, unlike the homepage GitHub, Release, and case-evidence links.
 - **Changes:** Added a separate external-arrow node to the bilingual desktop and mobile navigation, with the same upper-right hover motion used by the other external entries; destinations and safe new-window attributes remain unchanged.
 - **Validation:** Added bilingual public-page assertions for the external cue nodes, then checked the build, static checks, and the full browser suite.
+
+## 2026-10-13 — Compact repeated format-status copy
+
+- **Issue:** On mobile, every format-matrix card repeated the full “Primary stable target” or “Registered target; verify per Release” sentence, competing with the target name and making the status scan heavier than necessary.
+- **Changes:** Use concise bilingual row labels, “稳定版目标 / Stable target” and “按发布验证 / Verify per Release”; retain the complete meaning in the shared legend, page guidance, and the status element’s accessible name.
+- **Validation:** Add bilingual assertions for the short labels and full accessible meaning, then check the narrow format matrix, build, and static page validation.
