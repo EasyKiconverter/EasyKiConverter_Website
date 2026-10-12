@@ -27,6 +27,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 | P2 | Unify external-navigation cues across the site | 3×4×3 / (2×2) = 9 | Complete; the header docs and footer external entries now show `↗` with matching hover motion and bilingual regression coverage |
 | P2 | Compact repeated format-matrix status copy | 3×4×3 / (1×2) = 18 | Complete; use short mobile row labels while retaining full meaning in the legend, guidance, and accessible name |
 | P2 | Refine bilingual conversion-case copy | 3×4×3 / (1×2) = 18 | Complete; align single input → output routes and explain the BOM evidence as repeatable GUI/CLI checking |
+| P2 | Improve narrow-screen hierarchy for case evidence paths | 3×4×3 / (1×2) = 18 | Complete; separate filenames from directories while retaining the full accessible path and external-link semantics |
 
 The resolved Dependency Review workflow issue is documented in the [optimization log](OPTIMIZATION_LOG_en.md) and is not repeated here.
 

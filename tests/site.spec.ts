@@ -764,6 +764,17 @@ test('bilingual case copy keeps each output path singular and actionable', async
   await expect(page.locator('.case-card').nth(2)).toContainText('checked repeatedly through GUI and CLI workflows');
 });
 
+test('case evidence paths foreground filenames while retaining directories', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const firstEvidence = page.locator('.case-evidence-link').first();
+    await expect(firstEvidence.locator('.case-evidence-name')).toHaveText('symbol_basic.json');
+    await expect(firstEvidence.locator('.case-evidence-directory')).toHaveText('tests/fixtures/easyeda/');
+    await expect(firstEvidence).toHaveAttribute('aria-label', /symbol_basic\.json/);
+  }
+});
+
 test('download cards show the actual Release asset architectures', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const chineseLinks = page.locator('.download-links > a');

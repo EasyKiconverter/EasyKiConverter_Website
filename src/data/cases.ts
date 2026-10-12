@@ -36,7 +36,7 @@ export const caseStudies: CaseStudy[] = [
     inputZh: "EasyEDA 元件",
     inputEn: "EasyEDA component",
     outputZh: "Altium 库",
-    outputEn: "Altium libraries",
+    outputEn: "Altium library",
     fixture: "tests/fixtures/easyeda/footprint_basic.json",
     test: "tests/integration/test_parallel_export_cancellation.cpp",
   },
