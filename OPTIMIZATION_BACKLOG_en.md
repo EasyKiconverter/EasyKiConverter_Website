@@ -21,6 +21,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 | P2 | Match text-link hover motion to arrow semantics | 3×4×3 / (2×2) = 9 | Complete; in-site, external and downward-anchor links use direction-matched motion |
 | P2 | Complete homepage-specific in-site arrow motion | 2×4×3 / (2×2) = 6 | Complete; workbench and format-card entries use horizontal hover feedback |
 | P2 | Complete the download-section external-release cue | 2×4×3 / (2×2) = 6 | Complete; the bilingual all-releases entry shows the external arrow and matching hover motion |
+| P2 | Align the bilingual Hero downward cue | 2×4×3 / (2×2) = 6 | Complete; the bilingual “See how it works” entry uses a separate arrow and matching hover motion |
 
 The resolved Dependency Review workflow issue is documented in the [optimization log](OPTIMIZATION_LOG_en.md) and is not repeated here.
 

@@ -195,6 +195,15 @@ test('bilingual internal actions use the in-site arrow treatment', async ({ page
   }
 });
 
+test('bilingual hero story links keep the animated downward cue', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const link = page.locator('.hero-actions a[href="#story"]');
+    await expect(link).toHaveClass(/text-link-down/);
+    await expect(link.locator('span')).toHaveText('↓');
+  }
+});
+
 test('text-link hover directions match their navigation semantics', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.showcase-actions .text-link-internal')).toHaveClass(/text-link-internal/);

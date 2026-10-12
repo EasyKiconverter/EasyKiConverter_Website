@@ -440,3 +440,8 @@
 - **Issue:** The download card's primary button showed an external-link arrow, but the “All releases” text entry did not, making it harder to distinguish from an in-site link.
 - **Change:** Added `↗` and matching up-right hover motion to the bilingual release-page entry while preserving its new-window and security attributes.
 - **Validation:** Added bilingual download-entry assertions and checked the build, static validation and browser regression.
+
+## 2026-10-13 — Align the bilingual Hero downward cue
+- **Issue:** The Chinese homepage used a separate arrow element for “See how it works”, while the English entry kept `↓` in plain text, so its arrow did not receive the shared hover motion.
+- **Change:** Matched the English entry to the Chinese `<span>` arrow structure and added a bilingual regression assertion.
+- **Validation:** Checked the link semantics, arrow node, build, static validation and browser regression.
