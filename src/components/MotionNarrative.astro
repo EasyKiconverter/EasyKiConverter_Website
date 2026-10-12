@@ -15,6 +15,7 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
 
     <div class="motion-model" data-model-stage data-artifact-view="model">
       <div class="motion-model-note"><span class="live-dot"></span><span data-artifact-label>{en ? 'GLB DELIVERY MODEL' : 'GLB 交付模型'}</span><small>01 / 04</small></div>
+      <div class="model-detail-status" data-model-detail-status aria-live="polite">{en ? 'SURFACE DETAIL · LOADING' : '表面细节 · 加载中'}</div>
       <div class="neural-memory-readout" data-neural-memory aria-live="polite">{en ? 'SYNAPTIC MEMORY · 0 PATHS' : '突触记忆 · 0 条路径'}</div>
       <div class="swarm-lineage-readout" data-swarm-lineage-readout aria-live="polite">{en ? 'LINEAGE ∞ 0' : '谱系 ∞ 0'}</div>
       <div class="swarm-lineage-picker" data-swarm-lineage-picker role="group" aria-label={en ? 'Recall an archived topology genome' : '回溯已归档的拓扑基因'}></div>

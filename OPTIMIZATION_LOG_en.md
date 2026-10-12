@@ -450,3 +450,8 @@
 - **Issue:** The Lab edge pass only processed the first 96 mesh objects. Later meshes still loaded and rendered, but lacked outline assistance, making holes, steps and part boundaries harder to read on the complex model.
 - **Change:** Prioritize up to 160 smaller meshes within the existing 120,000-segment budget to improve detail coverage, and slightly raise outline contrast; edge generation remains chunked and asynchronous so it does not block the first frame. Screenshot regression kept the existing light rig instead of adding environment light that washed out the white housing.
 - **Validation:** Added an edge-mesh coverage regression assertion and checked the build, static validation, and desktop/mobile Lab browser regression.
+
+## 2026-10-13 — Add 3D detail-generation feedback
+- **Issue:** After the GLB model becomes available, outline detail continues to generate asynchronously, but the interface did not distinguish “model ready” from “detail still improving.”
+- **Change:** Added a low-noise bilingual status cue in the Lab model area: it starts as detail loading and ends with the actual mesh coverage count.
+- **Validation:** Added bilingual status-copy regression coverage and checked the build, static validation, and Lab browser regression.
