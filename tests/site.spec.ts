@@ -295,10 +295,11 @@ test('format matrix offers evidence and release next steps in both languages', a
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.format-matrix-actions .button-dark')).toHaveAttribute('href', /cases/);
     await expect(page.locator('.format-matrix-actions .text-link')).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
-    await expect(page.locator('.format-summary')).toContainText(/2/);
-    await expect(page.locator('.format-summary')).toContainText(/9/);
-    await expect(page.locator('.evidence-summary')).toContainText('v3.1.13');
-    await expect(page.locator('.evidence-summary')).toContainText('11');
+    const summary = page.locator('.format-matrix .evidence-summary');
+    await expect(summary).toContainText('v3.1.13');
+    await expect(summary).toContainText(/2/);
+    await expect(summary).toContainText(/9/);
+    await expect(page.locator('.format-summary')).toHaveCount(0);
     await expect(page.locator('thead th').nth(2)).toHaveText(/Release status|版本状态/);
     await expect(page.locator('.format-legend')).toBeVisible();
     await expect(page.locator('.format-status-primary')).toHaveCount(2);

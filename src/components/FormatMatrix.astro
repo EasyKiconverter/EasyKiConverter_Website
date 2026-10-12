@@ -23,9 +23,6 @@ const registeredCount = targetFormats.filter((format) => format.tier === "regist
     </div>
     <div class="evidence-summary" aria-label={en ? "Format evidence baseline" : "格式证据基线"}>
       <span><b>{latestRelease.tag}</b>{en ? " release baseline" : " 发布版本基线"}</span>
-      <span><b>{targetFormats.length}</b>{en ? " registered targets" : " 个已注册目标"}</span>
-    </div>
-    <div class="format-summary" aria-label={en ? "Format capability summary" : "格式能力摘要"}>
       <span><b>{stableCount}</b>{en ? " stable targets" : " 个稳定版目标"}</span>
       <span><b>{registeredCount}</b>{en ? " registered targets" : " 个已注册目标"}</span>
     </div>
