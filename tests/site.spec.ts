@@ -604,6 +604,17 @@ test('Chinese homepage keeps visual microcopy localized', async ({ page }) => {
   await expect(homepage.locator('.download-stamp')).not.toContainText('OPEN SOURCE');
 });
 
+test('bilingual platform summaries localize architecture labels consistently', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const chinesePlatforms = page.locator('.platform-list');
+  await expect(chinesePlatforms).toContainText('Apple 芯片 DMG');
+  await expect(chinesePlatforms).not.toContainText('Apple Silicon');
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  const englishPlatforms = page.locator('.platform-list');
+  await expect(englishPlatforms).toContainText('Apple Silicon DMG');
+});
+
 test('Chinese Lab keeps its entry label localized', async ({ page }) => {
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.lab-intro .kicker')).toHaveText('按需加载 · 实验性 3D');

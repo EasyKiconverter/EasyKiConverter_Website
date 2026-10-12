@@ -19,7 +19,9 @@ const socialImageUrl = new URL(
 const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
 const registeredFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
-const localizeAssetLabel = (label: string) => label.replace(" installer", " 安装包");
+const localizeAssetLabel = (label: string) => label
+  .replace(" installer", " 安装包")
+  .replace("Apple Silicon", "Apple 芯片");
 const platformAvailability = [
   {
     name: "Windows",
@@ -31,12 +33,12 @@ const platformAvailability = [
   {
     name: "Linux",
     assetCount: latestRelease.assets.linux.length,
-    labels: latestRelease.assets.linux.map((asset) => asset.label).join(" · "),
+    labels: latestRelease.assets.linux.map((asset) => localizeAssetLabel(asset.label)).join(" · "),
   },
   {
     name: "macOS",
     assetCount: latestRelease.assets.macos.length,
-    labels: latestRelease.assets.macos.map((asset) => asset.label).join(" · "),
+    labels: latestRelease.assets.macos.map((asset) => localizeAssetLabel(asset.label)).join(" · "),
   },
 ];
 ---
