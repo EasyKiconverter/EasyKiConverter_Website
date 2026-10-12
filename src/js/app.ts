@@ -15,7 +15,17 @@ let toastTimer: number | undefined;
 const applyRelease = (tag: string, url: string, assetUrls: Record<string, string> = {}) => {
   document.querySelectorAll('[data-release-version], .hero-facts span:first-child b, .download-copy strong').forEach((element) => { element.textContent = tag; });
   const links = document.querySelectorAll<HTMLAnchorElement>('[data-release-link], .download-actions .button-light');
-  links.forEach((link) => { if (url) { link.href = url; if (link.firstChild) link.firstChild.textContent = `${document.documentElement.lang === 'en' ? 'Download' : '下载'} ${tag}${link.querySelector('span') ? ' ' : ' ↗'}`; } });
+  links.forEach((link) => {
+    if (!url) return;
+    link.href = url;
+    if (link.firstChild) {
+      const isStableLabel = /stable|稳定版/i.test(link.firstChild.textContent || '');
+      const label = isStableLabel
+        ? (document.documentElement.lang === 'en' ? 'Download stable' : '下载稳定版')
+        : (document.documentElement.lang === 'en' ? 'Download' : '下载');
+      link.firstChild.textContent = `${label} ${tag}${link.querySelector('span') ? ' ' : ' ↗'}`;
+    }
+  });
   document.querySelectorAll<HTMLAnchorElement>('[data-release-asset]').forEach((link) => { const assetUrl = assetUrls[link.dataset.releaseAsset || '']; if (assetUrl) link.href = assetUrl; });
   const schema = document.querySelector('script[type="application/ld+json"]');
   if (schema) {
