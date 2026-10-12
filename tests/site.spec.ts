@@ -521,7 +521,7 @@ test('homepage platform summary mirrors the available Release assets', async ({ 
     await expect(platforms.nth(1)).toContainText(/aarch64/);
     await expect(platforms.nth(1).locator('.platform-count')).toContainText(/3/);
     await expect(platforms.nth(2)).toContainText(/Intel/);
-    await expect(platforms.nth(2)).toContainText(/Apple Silicon/);
+    await expect(platforms.nth(2)).toContainText(path === '/' ? 'Apple 芯片' : 'Apple Silicon');
     await expect(platforms.nth(2).locator('.platform-count')).toContainText(/2/);
   }
 });
@@ -602,6 +602,17 @@ test('Chinese homepage keeps visual microcopy localized', async ({ page }) => {
   await expect(homepage.locator('.download-stamp')).toContainText('开源');
   await expect(homepage.locator('.download-stamp')).toContainText('工程师而做');
   await expect(homepage.locator('.download-stamp')).not.toContainText('OPEN SOURCE');
+});
+
+test('bilingual platform summaries localize architecture labels consistently', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const chinesePlatforms = page.locator('.platform-list');
+  await expect(chinesePlatforms).toContainText('Apple 芯片 DMG');
+  await expect(chinesePlatforms).not.toContainText('Apple Silicon');
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  const englishPlatforms = page.locator('.platform-list');
+  await expect(englishPlatforms).toContainText('Apple Silicon DMG');
 });
 
 test('Chinese Lab keeps its entry label localized', async ({ page }) => {
