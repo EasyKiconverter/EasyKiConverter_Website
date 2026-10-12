@@ -371,3 +371,7 @@
 - **Issue:** Desktop inner navigation highlighted the current page, while the mobile menu presented Formats, Cases and 3D Lab like ordinary links.
 - **Change:** Give the current inner-page mobile link a lilac background, ink text and bold weight so it matches the desktop navigation state.
 - **Validation:** Added assertions for all six bilingual inner pages and checked the build, static validation and narrow layouts.
+## 2026-10-13 — Turn the 3D Lab introduction into a product story
+- **Issue:** The Lab introduction led with STEP, Three.js and CAD/WASM implementation details without telling visitors what they could actually inspect.
+- **Change:** Explain the experience as real STEP geometry becoming a GLB delivery model, followed by the mesh atlas, section tomogram and topology views; retain the homepage isolation and on-demand loading boundary.
+- **Validation:** Added bilingual Lab-introduction assertions and checked the build, static validation and desktop/mobile pages.
