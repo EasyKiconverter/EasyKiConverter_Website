@@ -45,6 +45,37 @@
   color: var(--line);
 }
 
+.app-window figcaption {
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.showcase-proof {
+  display: grid;
+  gap: 3px;
+}
+
+.showcase-proof-label {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.showcase-proof-items {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .01em;
+}
+
+.showcase-source {
+  max-width: 390px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.35;
+  text-align: right;
+}
+
 .story-link {
   position: absolute;
   left: 27px;
@@ -648,6 +679,16 @@
 
   .showcase-actions {
     display: block;
+  }
+
+  .app-window figcaption {
+    display: block;
+  }
+
+  .app-window figcaption .showcase-source {
+    display: block;
+    margin-top: 5px;
+    text-align: left;
   }
 
   .showcase-actions > div {
