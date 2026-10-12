@@ -37,7 +37,14 @@ const englishUrl = new URL("en/lab/", siteBase);
         <p class="kicker">按需加载 · 实验性 3D</p>
         <h1 id="lab-title">真实几何，独立实验。</h1>
         <p>从真实 STEP 几何生成的 GLB 交付模型开始，再切换网格星图、剖面断层和拓扑视图；模型数据就绪后，实验控件会逐步解锁。官网首页保持轻量，只有进入实验室时才加载 CAD/WASM 运行时。</p>
-        <p class="lab-warning">实验室默认加载约 10.0 MB 桌面 GLB 或约 8.4 MB 移动 GLB；仅在模型加载失败时才启用 STEP/WASM 回退。适合桌面浏览器与技术验证；可直接使用下方稳定版下载入口，产品信息请返回首页。</p>
+        <div class="lab-warning" aria-label="实验室加载说明">
+          <div class="lab-warning-heading"><span>加载说明</span><strong>GLB 优先</strong></div>
+          <div class="lab-warning-metrics">
+            <span><b>10.0 MB</b><small>桌面 GLB</small></span>
+            <span><b>8.4 MB</b><small>移动 GLB</small></span>
+          </div>
+          <p>只有模型加载失败时才回退到 STEP/WASM。适合桌面浏览器与技术验证；下载软件请使用下方稳定版入口，产品信息请返回首页。</p>
+        </div>
         <ul class="lab-facts" aria-label="实验室加载策略">
           <li><span>交付格式</span><strong>GLB 优先</strong></li>
           <li><span>故障回退</span><strong>STEP / WASM</strong></li>

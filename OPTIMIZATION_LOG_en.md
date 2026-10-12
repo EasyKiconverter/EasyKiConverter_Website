@@ -484,3 +484,9 @@
 - **Issue:** `accessibility.css` redefined `--muted` and `--violet`, making final colors depend on CSS import order and weakening visual consistency across the homepage, content pages, and Lab.
 - **Change:** Remove brand-token overrides from the accessibility layer and use the base stylesheet’s brand colors everywhere; retain focus-visible, mobile-navigation visibility, and degraded-rendering rules there.
 - **Validation:** Add bilingual homepage and format-page token assertions, then check the build, static validation, and browser tests.
+
+## 2026-10-13 — Reorder the Lab loading guidance for scanning
+
+- **Issue:** The Lab compressed desktop/mobile GLB sizes, the STEP/WASM fallback, and usage guidance into one small paragraph, making the initial loading cost hard to scan on mobile.
+- **Change:** Use a structured bilingual loading panel with prominent `10.0 MB` desktop GLB, `8.4 MB` mobile GLB, and `GLB first` cues; retain the detailed fallback boundary in the supporting paragraph.
+- **Validation:** Add bilingual assertions for sizes, priority, and fallback copy, then check the build, static validation, and mobile browser regression.
