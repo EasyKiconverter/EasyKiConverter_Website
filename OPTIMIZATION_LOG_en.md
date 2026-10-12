@@ -430,3 +430,8 @@
 - **Issue:** In-site `→`, external `↗` and downward-anchor `↓` arrows had different characters but shared one downward hover motion, so the feedback did not match the link direction.
 - **Change:** Added semantic classes for in-site, external and downward-anchor text links with horizontal, up-right and downward motion respectively across the bilingual homepage, content pages and Lab.
 - **Validation:** Added hover structure and motion assertions and checked the full browser regression, build and static validation.
+
+## 2026-10-13 — Complete the homepage-specific in-site arrow motion
+- **Issue:** The homepage workbench and format-card entries used the in-site `→` arrow, but their component-specific styles still moved the arrow up-right instead of horizontally.
+- **Change:** Added in-site semantic classes to the homepage-specific entries and aligned their hover motion with other internal links.
+- **Validation:** Added bilingual homepage entry assertions and checked the build, static validation and browser regression.
