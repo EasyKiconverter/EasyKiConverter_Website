@@ -24,6 +24,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 | P2 | Align the bilingual Hero downward cue | 2×4×3 / (2×2) = 6 | Complete; the bilingual “See how it works” entry uses a separate arrow and matching hover motion |
 | P1 | Improve visible 3D model surface detail | 4×4×3 / (3×2) = 8 | Complete; the edge pass prioritizes up to 160 detail meshes while retaining asynchronous budget control |
 | P2 | Add 3D detail-generation feedback | 3×4×3 / (1×2) = 18 | Complete; the bilingual Lab distinguishes a usable model from detail still being generated |
+| P2 | Unify external-navigation cues across the site | 3×4×3 / (2×2) = 9 | Complete; the header docs and footer external entries now show `↗` with matching hover motion and bilingual regression coverage |
 
 The resolved Dependency Review workflow issue is documented in the [optimization log](OPTIMIZATION_LOG_en.md) and is not repeated here.
 
