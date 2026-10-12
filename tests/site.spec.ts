@@ -904,6 +904,17 @@ test('Lab loading strategy stays scannable in both languages', async ({ page }) 
   }
 });
 
+test('Lab loading guidance separates delivery sizes from fallback copy', async ({ page }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const warning = page.locator('.lab-warning');
+    await expect(warning.locator('.lab-warning-heading strong')).toHaveText(/GLB 优先|GLB first/);
+    await expect(warning.locator('.lab-warning-metrics')).toHaveCount(1);
+    await expect(warning.locator('.lab-warning-metrics b')).toHaveText(['10.0 MB', '8.4 MB']);
+    await expect(warning.locator('p')).toContainText(/STEP\/WASM/);
+  }
+});
+
 test('Lab introductions explain the real geometry story in both languages', async ({ page }) => {
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.lab-intro')).toContainText('真实 STEP 几何');
