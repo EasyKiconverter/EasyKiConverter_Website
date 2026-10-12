@@ -37,7 +37,14 @@ const chineseUrl = new URL("lab/", siteBase);
         <p class="kicker">ON DEMAND · EXPERIMENTAL 3D</p>
         <h1 id="lab-title">Real geometry, isolated experiments.</h1>
         <p>Start with the GLB delivery model generated from real STEP geometry, then switch to the mesh atlas, section tomogram and topology views; experimental controls unlock as model data becomes ready. The homepage stays lightweight; CAD/WASM loads only when this lab is opened.</p>
-        <p class="lab-warning">The Lab normally loads about 10.0 MB of desktop GLB or 8.4 MB of mobile GLB; STEP/WASM is used only as a fallback. Use a desktop browser for technical validation; use the stable-release link below for downloads, or return home for product information.</p>
+        <div class="lab-warning" aria-label="Lab loading guidance">
+          <div class="lab-warning-heading"><span>Loading plan</span><strong>GLB first</strong></div>
+          <div class="lab-warning-metrics">
+            <span><b>10.0 MB</b><small>desktop GLB</small></span>
+            <span><b>8.4 MB</b><small>mobile GLB</small></span>
+          </div>
+          <p>STEP/WASM is used only if the model fails to load. Use a desktop browser for technical validation; use the stable-release link below for downloads, or return home for product information.</p>
+        </div>
         <ul class="lab-facts" aria-label="Lab loading strategy">
           <li><span>Delivery</span><strong>GLB first</strong></li>
           <li><span>Fallback</span><strong>STEP / WASM</strong></li>
