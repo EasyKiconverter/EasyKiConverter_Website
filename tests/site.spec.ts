@@ -270,6 +270,26 @@ test('content pages offer a bilingual next-step release CTA', async ({ page }) =
   }
 });
 
+test('mobile content CTAs keep the title and primary action readable', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const cta = page.locator('.content-page-cta');
+    await cta.scrollIntoViewIfNeeded();
+    const layout = await cta.evaluate((element) => {
+      const title = element.querySelector('h2')?.getBoundingClientRect();
+      const button = element.querySelector('[data-release-link]')?.getBoundingClientRect();
+      return {
+        titleBottom: title?.bottom ?? 0,
+        buttonTop: button?.top ?? 0,
+        overflow: document.documentElement.scrollWidth > window.innerWidth,
+      };
+    });
+    expect(layout.buttonTop).toBeGreaterThan(layout.titleBottom);
+    expect(layout.overflow).toBeFalsy();
+  }
+});
+
 test('format matrix offers evidence and release next steps in both languages', async ({ page }) => {
   for (const path of ['/formats/', '/en/formats/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
