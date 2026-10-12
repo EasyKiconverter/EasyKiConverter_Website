@@ -385,3 +385,8 @@
 - **Issue:** Visitors had to read the full case title and paragraph to identify its input source and output target, especially on mobile.
 - **Change:** Added a consistent bilingual input → output route block to all three cases, with route facts stored in case data instead of inferred from titles.
 - **Validation:** Added bilingual route assertions and checked narrow-card layout, evidence links and the build.
+
+## 2026-10-13 — Recompose the Lab model on mobile
+- **Issue:** At 390px, the artifact switcher sat across the center of the loaded GLB model, making the real geometry difficult to inspect.
+- **Change:** Move the default model-view switcher above the stage geometry on mobile only, preserving the desktop composition and other experimental views.
+- **Validation:** Added a mobile switcher-position assertion and rechecked real model loading, narrow overflow and screenshots.
