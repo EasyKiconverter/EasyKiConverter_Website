@@ -359,3 +359,7 @@
 - **Issue**: The stable download is the key next step after technical validation, but the Lab still rendered it as a plain text link; its guidance also called the link “above” while the action was below the warning.
 - **Change**: Make the stable download a consistent white primary button in both Lab languages, demote the homepage return to a text link, and correct the bilingual position guidance.
 - **Validation**: Updated the Lab action-hierarchy assertion and rechecked desktop/mobile layout, download attributes and bilingual copy.
+## 2026-10-13 — Consolidate the format-matrix evidence summary
+- **Issue:** The format matrix showed two statistic-pill groups with “registered targets” repeated, unlike the single evidence-summary pattern used by the cases page.
+- **Change:** Merged the current Release, stable-target count and registered-target count into one shared `evidence-summary`, removing the duplicate format-summary styling.
+- **Validation:** Updated bilingual format-matrix assertions and checked the build, static site validation, desktop/mobile pages and narrow layouts.
