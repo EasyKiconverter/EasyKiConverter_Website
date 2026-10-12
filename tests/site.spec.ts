@@ -499,7 +499,7 @@ test('Lab pages keep the experiment connected to product navigation', async ({ p
     await expect(actions).toBeVisible();
     await expect(actions.locator('a').first()).toHaveAttribute('data-release-link', '');
     await expect(actions.locator('a.text-link').first()).toHaveAttribute('href', /^(\/|https?:)/);
-    await expect(actions.locator('[data-release-link]')).toHaveClass(/button-light/);
+    await expect(actions.locator('[data-release-link]')).toHaveClass(/button-dark/);
     await expect(actions.locator('a[href*="formats"]')).toHaveAttribute('href', /formats/);
   }
 });
@@ -976,6 +976,7 @@ test('Lab pages expose a direct bilingual stable-download path', async ({ page }
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const link = page.locator('[data-release-link]');
+    await expect(link).toHaveClass(/button-dark/);
     await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noreferrer');
