@@ -43,7 +43,7 @@ const headerClass = {
       <a href="#download">{en ? "Download" : "下载"}</a>
       <a href={homeLabHref}>{en ? "3D Lab" : "3D 实验室"}</a>
       <a href={homeCasesHref}>{en ? "Cases" : "转换案例"}</a>
-      <a href={docsUrl} target="_blank" rel="noreferrer">{en ? "Docs" : "文档"}</a>
+      <a class="nav-link-external" href={docsUrl} target="_blank" rel="noreferrer">{en ? "Docs" : "文档"} <span aria-hidden="true">↗</span></a>
     </> : <>
       <a href={homeHref}>{en ? "Home" : "首页"}</a>
       <a href={formatsUrl} aria-current={isCurrent(formatsUrl) ? "page" : undefined}>{en ? "Formats" : "格式矩阵"}</a>
@@ -67,7 +67,7 @@ const headerClass = {
     <a href="#download">{en ? "Download" : "下载"}</a>
     <a href={homeLabHref}>{en ? "3D Lab" : "3D 实验室"}</a>
     <a href={homeCasesHref}>{en ? "Cases" : "转换案例"}</a>
-    <a href={docsUrl} target="_blank" rel="noreferrer">{en ? "Docs" : "文档"}</a>
+    <a class="nav-link-external" href={docsUrl} target="_blank" rel="noreferrer">{en ? "Docs" : "文档"} <span aria-hidden="true">↗</span></a>
     <a href={alternateUrl}>{en ? "中文" : "English"}</a>
   </> : <>
     <a href={homeHref}>{en ? "Home" : "首页"}</a>

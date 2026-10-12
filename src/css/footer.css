@@ -9,3 +9,13 @@
   flex: 0 0 auto;
   white-space: nowrap;
 }
+
+.footer-link-external span {
+  display: inline-block;
+  margin-left: 3px;
+  transition: transform .35s var(--spring);
+}
+
+.footer-link-external:hover span {
+  transform: translate(3px, -3px);
+}
