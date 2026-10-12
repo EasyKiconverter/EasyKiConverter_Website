@@ -627,6 +627,17 @@ test('homepage story navigation uses the descriptive story anchor', async ({ pag
   }
 });
 
+test('homepage story cards connect the narrative to evidence and action', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const links = page.locator('.story-rail .story-link');
+    await expect(links).toHaveCount(3);
+    await expect(links.nth(0)).toHaveAttribute('href', 'cases/');
+    await expect(links.nth(1)).toHaveAttribute('href', 'lab/');
+    await expect(links.nth(2)).toHaveAttribute('href', '#download');
+  }
+});
+
 test('homepage platform summary mirrors the available Release assets', async ({ page }) => {
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
