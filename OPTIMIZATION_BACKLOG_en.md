@@ -12,6 +12,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 | P1 | Unify the brand header and asset guidance across the homepage, content pages, and 3D Lab | 4×4×3 / (2×2) = 12 | Complete; icon, GitHub entry, bilingual guidance, and size copy are aligned and covered by browser regression tests |
 | P1 | Show the input → output route directly on conversion cases to reduce mobile scanning cost | 4×5×3 / (2×2) = 15 | Complete; all three bilingual cases use data-driven route labels covered by browser regression tests |
 | P1 | Fix Lab mobile view controls obscuring the real model | 5×5×3 / (2×2) = 18.75 | Complete; the default mobile view switcher is above the model and covered by a geometry-visibility layout test |
+| P2 | Add an evidence-reading order to conversion cases | 3×4×3 / (2×2) = 9 | Complete; the case page now explains the bilingual choose route → open fixture → review test sequence |
 
 The resolved Dependency Review workflow issue is documented in the [optimization log](OPTIMIZATION_LOG_en.md) and is not repeated here.
 

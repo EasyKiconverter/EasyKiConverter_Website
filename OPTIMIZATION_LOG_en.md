@@ -390,3 +390,9 @@
 - **Issue:** At 390px, the artifact switcher sat across the center of the loaded GLB model, making the real geometry difficult to inspect.
 - **Change:** Move the default model-view switcher above the stage geometry on mobile only, preserving the desktop composition and other experimental views.
 - **Validation:** Added a mobile switcher-position assertion and rechecked real model loading, narrow overflow and screenshots.
+
+## 2026-10-13 — Add an evidence-reading order to conversion cases
+
+- **Issue:** The case page exposed the input → output route, fixture and test links, but visitors still had to infer the order for reviewing them.
+- **Change:** Add a bilingual three-step guide—choose a route, open the fixture, review the test—while preserving the existing case-card and CTA hierarchy.
+- **Validation:** Added bilingual guide-copy assertions and checked narrow-card layout and the page build.
