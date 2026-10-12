@@ -323,7 +323,21 @@
 }
 
 .case-evidence-link code {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
   color: var(--ink);
   font-size: 11px;
   line-height: 1.4;
+}
+
+.case-evidence-name {
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.case-evidence-directory {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 10px;
 }

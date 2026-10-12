@@ -473,3 +473,8 @@
 - **Issue:** The BOM case description leaned on internal implementation language, and the English Altium output title used a plural that did not match the other single input → output routes.
 - **Changes:** Use a singular Altium library path and explain the BOM case in user-facing terms: the same test fixture can be checked repeatedly through GUI and CLI workflows; retain the fixture, automated-evidence, and manual-acceptance boundaries.
 - **Validation:** Add bilingual assertions for the case title and explanation, then check the case-page build, static validation, and narrow layout.
+## 2026-10-13 — Improve narrow-screen hierarchy for case evidence paths
+
+- **Issue:** On narrow screens, full repository paths in case cards could break between directory and filename, making the exact fixture or test file harder to scan.
+- **Change:** Split evidence links into a prominent filename and a muted directory path; retain the full `aria-label`, destination, and safe external-link attributes, and align the English Altium output path to the singular form.
+- **Validation:** Add bilingual mobile assertions for the filename, directory, and accessible name, then check the build, static validation, and narrow case layout.
