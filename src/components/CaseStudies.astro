@@ -7,7 +7,7 @@ const en = lang === "en";
 const repository = "https://github.com/EasyKiconverter/EasyKiConverter";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
-const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase);
+const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase).pathname;
 ---
 
 <section class="case-studies shell" aria-labelledby="case-studies-title">

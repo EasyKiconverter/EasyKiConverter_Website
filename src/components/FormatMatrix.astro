@@ -6,7 +6,7 @@ const { lang } = Astro.props;
 const en = lang === "en";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
-const casesUrl = new URL(en ? "en/cases/" : "cases/", siteBase);
+const casesUrl = new URL(en ? "en/cases/" : "cases/", siteBase).pathname;
 const releasesUrl = latestRelease.url;
 const stableCount = targetFormats.filter((format) => format.tier === "primary").length;
 const registeredCount = targetFormats.filter((format) => format.tier === "registered").length;
