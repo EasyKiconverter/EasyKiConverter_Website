@@ -782,6 +782,8 @@ test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
   await expect(stage).toHaveAttribute('data-model-asset', test.info().project.name === 'chromium-mobile' ? 'mobile' : 'desktop');
   await expect(stage).toHaveAttribute('data-model-normals', 'provided');
   await expect(stage).toHaveAttribute('data-model-edge-segments');
+  const edgeMeshes = Number(await stage.getAttribute('data-model-edge-meshes'));
+  expect(edgeMeshes).toBeGreaterThan(96);
   await expect(stage).not.toHaveClass(/model-fallback/);
 });
 
