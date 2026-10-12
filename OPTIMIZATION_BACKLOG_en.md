@@ -13,6 +13,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 | P1 | Show the input → output route directly on conversion cases to reduce mobile scanning cost | 4×5×3 / (2×2) = 15 | Complete; all three bilingual cases use data-driven route labels covered by browser regression tests |
 | P1 | Fix Lab mobile view controls obscuring the real model | 5×5×3 / (2×2) = 18.75 | Complete; the default mobile view switcher is above the model and covered by a geometry-visibility layout test |
 | P2 | Add an evidence-reading order to conversion cases | 3×4×3 / (2×2) = 9 | Complete; the case page now explains the bilingual choose route → open fixture → review test sequence |
+| P2 | Align bilingual architecture labels in the homepage platform summary | 2×3×3 / (2×2) = 4.5 | Complete; Chinese platform summaries and download cards use “Apple 芯片” while English retains the engineering label |
 
 The resolved Dependency Review workflow issue is documented in the [optimization log](OPTIMIZATION_LOG_en.md) and is not repeated here.
 

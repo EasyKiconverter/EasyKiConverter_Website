@@ -396,3 +396,9 @@
 - **Issue:** The case page exposed the input → output route, fixture and test links, but visitors still had to infer the order for reviewing them.
 - **Change:** Add a bilingual three-step guide—choose a route, open the fixture, review the test—while preserving the existing case-card and CTA hierarchy.
 - **Validation:** Added bilingual guide-copy assertions and checked narrow-card layout and the page build.
+
+## 2026-10-13 — Align bilingual architecture labels in the homepage platform summary
+
+- **Issue:** The homepage download cards localized the Windows installer label, while the platform summary still exposed `Apple Silicon` directly on the Chinese page.
+- **Change:** Use “Apple 芯片” consistently in Chinese platform summaries and download cards, while retaining `Apple Silicon` in English; other architecture names keep their engineering conventions.
+- **Validation:** Added bilingual platform-summary assertions and checked narrow-screen overflow and the build.
