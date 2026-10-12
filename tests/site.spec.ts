@@ -352,6 +352,22 @@ test('case studies expose their evidence scope and next-step paths', async ({ pa
   }
 });
 
+test('case studies expose bilingual input and output routes', async ({ page }) => {
+  await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
+  const chineseRoutes = page.locator('.case-route');
+  await expect(chineseRoutes).toHaveCount(3);
+  await expect(chineseRoutes.first()).toContainText('输入');
+  await expect(chineseRoutes.first()).toContainText('EasyEDA 元件');
+  await expect(chineseRoutes.first()).toContainText('KiCad 库');
+
+  await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
+  const englishRoutes = page.locator('.case-route');
+  await expect(englishRoutes).toHaveCount(3);
+  await expect(englishRoutes.first()).toContainText('INPUT');
+  await expect(englishRoutes.first()).toContainText('EasyEDA component');
+  await expect(englishRoutes.first()).toContainText('KiCad library');
+});
+
 test('Lab pages keep the experiment connected to product navigation', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
