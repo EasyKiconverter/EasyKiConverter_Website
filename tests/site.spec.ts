@@ -199,6 +199,15 @@ test('format matrix rows remain readable on narrow screens', async ({ page }) =>
   await expect(page.locator('.format-table-wrap tbody tr').first().locator('td[data-label="版本状态"]')).toBeVisible();
 });
 
+test('bilingual case pages explain the evidence-reading order', async ({ page }) => {
+  for (const [path, steps] of [['/cases/', ['选定路径', '打开样本', '复核测试']], ['/en/cases/', ['Choose a route', 'Open the fixture', 'Review the test']]] as const) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const guide = page.locator('.case-reading-guide');
+    await expect(guide.locator('li')).toHaveCount(3);
+    for (const step of steps) await expect(guide).toContainText(step);
+  }
+});
+
 test('content and Lab headers keep the shared brand treatment', async ({ page }) => {
   await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.content-page-header .brand img')).toHaveAttribute('src', /easyki-icon\.svg/);
