@@ -16,6 +16,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 | P2 | Align bilingual architecture labels in the homepage platform summary | 2×3×3 / (2×2) = 4.5 | Complete; Chinese platform summaries and download cards use “Apple 芯片” while English retains the engineering label |
 | P2 | Promote the stable download in the Lab intro actions | 3×4×3 / (2×2) = 9 | Complete; both bilingual Lab pages place the stable download first and keep secondary entries as text links |
 | P2 | Correct the desktop Chinese case-title wrap | 2×3×3 / (2×2) = 4.5 | Complete; the case title has enough width to avoid an orphan final character while retaining natural mobile wrapping |
+| P2 | Align the homepage quick-start external-arrow treatment | 2×3×3 / (2×2) = 4.5 | Complete; bilingual quick-start links use the same external-arrow structure as the rest of the site |
 
 The resolved Dependency Review workflow issue is documented in the [optimization log](OPTIMIZATION_LOG_en.md) and is not repeated here.
 

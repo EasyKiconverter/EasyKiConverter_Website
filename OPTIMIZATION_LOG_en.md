@@ -414,3 +414,9 @@
 - **Issue:** The desktop Chinese case title had too little available width, leaving the final “件。” on a lone second line and weakening the hero rhythm.
 - **Change:** Widen the case-title container to match the content-page visual measure while keeping natural wrapping on mobile.
 - **Validation:** Added a desktop title-height assertion and checked bilingual case-page narrow overflow.
+
+## 2026-10-13 — Align the homepage quick-start external-arrow treatment
+
+- **Issue:** The bilingual homepage quick-start link rendered its external arrow as plain text instead of using the shared text-link arrow structure, so its hover behavior differed from the rest of the site.
+- **Change:** Use the shared `<span>↗</span>` structure while preserving the existing destination and external-link safety attributes.
+- **Validation:** Added bilingual structure assertions and checked the homepage mobile scroll presentation.
