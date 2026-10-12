@@ -353,3 +353,9 @@
 - **Issue**: The Lab offered technical validation, but users had to return to the homepage before downloading the stable release, adding an unnecessary step between verification and delivery.
 - **Change**: Add a current stable-release link to both bilingual Lab intros while retaining the product-home and format-matrix paths; the link reuses the checked-in Release fallback instead of duplicating the version.
 - **Validation**: Added bilingual stable-download assertions and ran the build, site validation, asset checks and the complete browser suite.
+
+## 2026-10-13 — Align the 3D Lab download hierarchy
+
+- **Issue**: The stable download is the key next step after technical validation, but the Lab still rendered it as a plain text link; its guidance also called the link “above” while the action was below the warning.
+- **Change**: Make the stable download a consistent white primary button in both Lab languages, demote the homepage return to a text link, and correct the bilingual position guidance.
+- **Validation**: Updated the Lab action-hierarchy assertion and rechecked desktop/mobile layout, download attributes and bilingual copy.
