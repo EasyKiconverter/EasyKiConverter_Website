@@ -10,10 +10,11 @@ const { lang, homeHref } = Astro.props;
 const en = lang === "en";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
-const homeUrl = homeHref ?? siteBase.href;
-const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase);
-const casesUrl = new URL(en ? "en/cases/" : "cases/", siteBase);
-const labUrl = new URL(en ? "en/lab/" : "lab/", siteBase);
+const internalPath = (path: string) => new URL(path, siteBase).pathname;
+const homeUrl = homeHref ?? internalPath("");
+const formatsUrl = internalPath(en ? "en/formats/" : "formats/");
+const casesUrl = internalPath(en ? "en/cases/" : "cases/");
+const labUrl = internalPath(en ? "en/lab/" : "lab/");
 const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase);
 ---
 
