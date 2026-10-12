@@ -179,6 +179,22 @@ test('homepage workbench evidence offers bilingual next steps', async ({ page })
   await expect(englishActions.locator('a[href="cases/"]')).toHaveClass(/showcase-action-primary/);
 });
 
+test('bilingual internal actions use the in-site arrow treatment', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    for (const href of ['formats/', 'cases/']) {
+      const link = page.locator(`a[href="${href}"]`).filter({ has: page.locator('span') }).first();
+      await expect(link.locator('span')).toHaveText('→');
+    }
+    await expect(page.locator('.showcase-actions a[href="cases/"] span')).toHaveText('→');
+  }
+
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.lab-intro-actions a').filter({ hasText: /格式矩阵|format matrix/ }).locator('span')).toHaveText('→');
+  }
+});
+
 test('content pages keep navigation reachable on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/formats/', { waitUntil: 'networkidle' });
