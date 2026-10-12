@@ -420,3 +420,8 @@
 - **Issue:** The bilingual homepage quick-start link rendered its external arrow as plain text instead of using the shared text-link arrow structure, so its hover behavior differed from the rest of the site.
 - **Change:** Use the shared `<span>↗</span>` structure while preserving the existing destination and external-link safety attributes.
 - **Validation:** Added bilingual structure assertions and checked the homepage mobile scroll presentation.
+
+## 2026-10-13 — Align the in-site navigation arrow semantics
+- **Issue:** Some internal entries on the homepage and 3D Lab still used the external-link arrow `↗`, making them inconsistent with the shared in-site `→` treatment and less clear at a glance.
+- **Change:** Use `→` for the bilingual homepage format/case entries and the Lab format entry, while keeping `↗` for GitHub, Release and quick-start links that leave the site.
+- **Validation:** Added bilingual homepage and Lab arrow-semantics assertions and checked the build, static validation and narrow layouts.
