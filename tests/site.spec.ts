@@ -694,6 +694,22 @@ test('Lab loading strategy stays scannable in both languages', async ({ page }) 
   }
 });
 
+test('Lab introductions explain the real geometry story in both languages', async ({ page }) => {
+  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.lab-intro')).toContainText('真实 STEP 几何');
+  await expect(page.locator('.lab-intro')).toContainText('GLB 交付模型');
+  await expect(page.locator('.lab-intro')).toContainText('网格星图');
+  await expect(page.locator('.lab-intro')).toContainText('剖面断层');
+  await expect(page.locator('.lab-intro')).toContainText('拓扑视图');
+
+  await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.lab-intro')).toContainText('GLB delivery model');
+  await expect(page.locator('.lab-intro')).toContainText('real STEP geometry');
+  await expect(page.locator('.lab-intro')).toContainText('mesh atlas');
+  await expect(page.locator('.lab-intro')).toContainText('section tomogram');
+  await expect(page.locator('.lab-intro')).toContainText('topology views');
+});
+
 test('Lab pages expose a direct bilingual stable-download path', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
