@@ -341,3 +341,9 @@
 - **Issue**: The stable-download button on the bilingual Formats and Cases pages used the dark-button style inside an equally dark CTA container, making the primary download path nearly invisible.
 - **Change**: Use the light primary button consistently while retaining the dark CTA surface and white secondary link, aligning the action hierarchy with the homepage.
 - **Validation**: Added computed-background and class assertions for all four bilingual content routes, then ran the build, site validation, asset checks and the complete browser suite.
+
+## 2026-10-12 — Rebalance the mobile CTA decoration
+
+- **Issue**: On a 390px viewport, the dark CTA's decorative rings crossed the heading and underline, reducing reading clarity.
+- **Change**: Move the rings toward the right-side action area only at the mobile breakpoint, preserving the desktop composition and brand texture while separating the heading, copy and download action.
+- **Validation**: Added mobile title/primary-action layout assertions for all four bilingual content routes, then ran the build, site validation, asset checks and the complete browser suite.

@@ -163,6 +163,16 @@
     padding: 42px 30px;
   }
 
+  .content-page-cta::before {
+    right: -240px;
+    top: -120px;
+  }
+
+  .content-page-cta::after {
+    right: -100px;
+    top: 74px;
+  }
+
   .content-page-cta-actions {
     margin-top: 32px;
   }
