@@ -6,8 +6,10 @@ import "../../css/home-polish.css";
 import SeoHead from "../../components/SeoHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
+import PlatformAvailability from "../../components/PlatformAvailability.astro";
 import WorkbenchActions from "../../components/WorkbenchActions.astro";
 import { targetFormats } from "../../data/formats";
+import { getPlatformAvailability } from "../../data/platforms";
 import { latestRelease } from "../../data/release";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
@@ -20,11 +22,7 @@ const socialImageUrl = new URL(
 const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
 const registeredFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
-const platformAvailability = [
-  { name: "Windows", assetCount: latestRelease.assets.windows.length, labels: latestRelease.assets.windows.map((asset) => asset.label).join(" · ") },
-  { name: "Linux", assetCount: latestRelease.assets.linux.length, labels: latestRelease.assets.linux.map((asset) => asset.label).join(" · ") },
-  { name: "macOS", assetCount: latestRelease.assets.macos.length, labels: latestRelease.assets.macos.map((asset) => asset.label).join(" · ") },
-];
+const platformAvailability = getPlatformAvailability("en");
 ---
 
 <!doctype html>
@@ -395,14 +393,7 @@ const platformAvailability = [
           </p>
           <a class="text-link text-link-down platform-intro-link" href="#download">See platform downloads <span>↓</span></a>
         </div>
-        <div class="platform-list reveal reveal-delay">
-          {platformAvailability.map((platform, index) => <div aria-label={`${platform.name} ${platform.assetCount} available downloads`}>
-            <b>{platform.name}</b>
-            <span>{platform.labels}</span>
-            <small class="platform-count">{platform.assetCount} downloads</small>
-            <i>{String(index + 1).padStart(2, "0")}</i>
-          </div>)}
-        </div>
+        <PlatformAvailability language="en" platforms={platformAvailability} />
       </section>
       <section
         id="download"

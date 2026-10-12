@@ -6,8 +6,10 @@ import "../css/home-polish.css";
 import SeoHead from "../components/SeoHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import PlatformAvailability from "../components/PlatformAvailability.astro";
 import WorkbenchActions from "../components/WorkbenchActions.astro";
 import { targetFormats } from "../data/formats";
+import { getPlatformAvailability } from "../data/platforms";
 import { latestRelease } from "../data/release";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
@@ -23,25 +25,7 @@ const registeredFormatCount = targetFormats.filter((format) => format.tier === "
 const localizeAssetLabel = (label: string) => label
   .replace(" installer", " 安装包")
   .replace("Apple Silicon", "Apple 芯片");
-const platformAvailability = [
-  {
-    name: "Windows",
-    assetCount: latestRelease.assets.windows.length,
-    labels: latestRelease.assets.windows
-      .map((asset) => localizeAssetLabel(asset.label))
-      .join(" · "),
-  },
-  {
-    name: "Linux",
-    assetCount: latestRelease.assets.linux.length,
-    labels: latestRelease.assets.linux.map((asset) => localizeAssetLabel(asset.label)).join(" · "),
-  },
-  {
-    name: "macOS",
-    assetCount: latestRelease.assets.macos.length,
-    labels: latestRelease.assets.macos.map((asset) => localizeAssetLabel(asset.label)).join(" · "),
-  },
-];
+const platformAvailability = getPlatformAvailability("zh");
 ---
 
 <!doctype html>
@@ -391,14 +375,7 @@ const platformAvailability = [
           <p>当前稳定版提供 Windows、Linux 和 macOS 安装包；请按设备架构选择对应下载项。</p>
           <a class="text-link text-link-down platform-intro-link" href="#download">查看平台下载项 <span>↓</span></a>
         </div>
-        <div class="platform-list reveal reveal-delay">
-          {platformAvailability.map((platform, index) => <div aria-label={`${platform.name} ${platform.assetCount} 个可用下载`}>
-            <b>{platform.name}</b>
-            <span>{platform.labels}</span>
-            <small class="platform-count">{platform.assetCount} 个下载项</small>
-            <i>{String(index + 1).padStart(2, "0")}</i>
-          </div>)}
-        </div>
+        <PlatformAvailability language="zh" platforms={platformAvailability} />
       </section>
       <section
         id="download"
