@@ -17,7 +17,7 @@ const { lang, pageUrl, alternateUrl, title, description } = Astro.props;
 const en = lang === "en";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
-const homeUrl = siteBase.href;
+const homeUrl = new URL("", siteBase).pathname;
 const isCasesPage = pageUrl.pathname.includes("/cases/");
 ---
 

@@ -338,6 +338,17 @@ test('inner pages share the same localized header navigation', async ({ page }) 
   }
 });
 
+test('internal navigation stays on the current preview origin', async ({ page }) => {
+  for (const path of ['/formats/', '/cases/', '/lab/', '/en/formats/', '/en/cases/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const links = await page.locator('.site-header .nav-links a').evaluateAll((anchors) =>
+      anchors.map((anchor) => new URL(anchor.href)),
+    );
+    expect(links.every((link) => link.origin === new URL(page.url()).origin)).toBe(true);
+    expect(links.map((link) => link.pathname)).toContain(path);
+  }
+});
+
 test('inner mobile navigation marks the current page in both languages', async ({ page }) => {
   const pages = [
     { path: '/formats/', current: '格式矩阵' },

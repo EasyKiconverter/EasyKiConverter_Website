@@ -53,7 +53,7 @@ const chineseUrl = new URL("lab/", siteBase);
         <div class="lab-intro-actions">
           <a class="button button-light" data-release-link href={latestRelease.url} target="_blank" rel="noreferrer">Download stable {latestRelease.tag} <span>↗</span></a>
           <a class="text-link text-link-internal" href={siteBase.href}>Back to product <span>→</span></a>
-          <a class="text-link text-link-internal" href={new URL("en/formats/", siteBase)}>View format matrix <span>→</span></a>
+          <a class="text-link text-link-internal" href={new URL("en/formats/", siteBase).pathname}>View format matrix <span>→</span></a>
         </div>
       </section>
       <MotionNarrative lang="en" />
