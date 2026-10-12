@@ -9,6 +9,7 @@ import SiteFooter from "../../components/SiteFooter.astro";
 import PlatformAvailability from "../../components/PlatformAvailability.astro";
 import ShowcaseCaption from "../../components/ShowcaseCaption.astro";
 import WorkbenchActions from "../../components/WorkbenchActions.astro";
+import WorkflowActions from "../../components/WorkflowActions.astro";
 import { targetFormats } from "../../data/formats";
 import { getPlatformAvailability } from "../../data/platforms";
 import { latestRelease } from "../../data/release";
@@ -337,14 +338,7 @@ const platformAvailability = getPlatformAvailability("en");
             No elaborate import ceremony. Choose the input, choose the target,
             confirm the output and continue your board.
           </p>
-          <a
-            class="text-link text-link-external"
-            href="https://github.com/EasyKiconverter/EasyKiConverter/blob/master/docs/user/GETTING_STARTED_en.md"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Read the quick start <span>↗</span>
-          </a>
+          <WorkflowActions lang="en" />
         </div>
         <ol class="steps reveal reveal-delay">
           <li>
