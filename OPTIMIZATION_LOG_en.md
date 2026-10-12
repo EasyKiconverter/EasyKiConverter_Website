@@ -375,3 +375,8 @@
 - **Issue:** The Lab introduction led with STEP, Three.js and CAD/WASM implementation details without telling visitors what they could actually inspect.
 - **Change:** Explain the experience as real STEP geometry becoming a GLB delivery model, followed by the mesh atlas, section tomogram and topology views; retain the homepage isolation and on-demand loading boundary.
 - **Validation:** Added bilingual Lab-introduction assertions and checked the build, static validation and desktop/mobile pages.
+
+## 2026-10-13 — Add next-step actions below the real workbench
+- **Issue:** After showing the real Qt Quick workbench, the homepage did not give visitors a clear next step to verify a conversion case or inspect the 3D delivery model.
+- **Change:** Added a matching bilingual action row below the workbench evidence, linking to conversion cases and the 3D Lab; the mobile layout stacks the actions while preserving the primary hierarchy.
+- **Validation:** Added bilingual action assertions and checked desktop/mobile layout and destination links.
