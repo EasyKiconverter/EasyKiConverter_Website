@@ -100,7 +100,7 @@ const platformAvailability = [
             >
               下载稳定版 <span>↗</span>
             </a>
-            <a class="text-link" href="#story">
+            <a class="text-link text-link-down" href="#story">
               看看它如何工作 <span>↓</span>
             </a>
           </div>
@@ -265,7 +265,7 @@ const platformAvailability = [
           </p>
           <div>
             <a class="showcase-action-primary" href="cases/">查看转换案例 <span>→</span></a>
-            <a class="text-link" href="lab/">打开 3D 实验室 <span>→</span></a>
+            <a class="text-link text-link-internal" href="lab/">打开 3D 实验室 <span>→</span></a>
           </div>
         </div>
       </section>
@@ -345,7 +345,7 @@ const platformAvailability = [
             没有复杂的导入仪式。选择输入，选择目标，确认输出，继续你的板子。
           </p>
           <a
-            class="text-link"
+            class="text-link text-link-external"
             href="https://github.com/EasyKiconverter/EasyKiConverter/blob/master/docs/user/GETTING_STARTED.md"
             target="_blank"
             rel="noreferrer"
@@ -396,7 +396,7 @@ const platformAvailability = [
             <em>都能运行。</em>
           </h2>
           <p>当前稳定版提供 Windows、Linux 和 macOS 安装包；请按设备架构选择对应下载项。</p>
-          <a class="text-link platform-intro-link" href="#download">查看平台下载项 <span>↓</span></a>
+          <a class="text-link text-link-down platform-intro-link" href="#download">查看平台下载项 <span>↓</span></a>
         </div>
         <div class="platform-list reveal reveal-delay">
           {platformAvailability.map((platform, index) => <div aria-label={`${platform.name} ${platform.assetCount} 个可用下载`}>
