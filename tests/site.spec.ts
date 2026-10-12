@@ -582,6 +582,16 @@ test('bilingual homepages keep the same interaction rhythm', async ({ page }) =>
   }
 });
 
+test('bilingual pages share the base brand tokens with the accessibility layer', async ({ page }) => {
+  for (const path of ['/', '/en/', '/formats/', '/en/formats/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect.poll(() => page.evaluate(() => ({
+      muted: getComputedStyle(document.documentElement).getPropertyValue('--muted').trim(),
+      violet: getComputedStyle(document.documentElement).getPropertyValue('--violet').trim(),
+    }))).toEqual({ muted: '#746f66', violet: '#6f61d8' });
+  }
+});
+
 test('bilingual workbench captions preserve the same product evidence', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM/);
