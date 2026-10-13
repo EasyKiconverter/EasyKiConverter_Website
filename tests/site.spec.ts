@@ -1217,6 +1217,36 @@ test('Lab model controls stay inside the visible stage at phone, tablet, and des
   }
 });
 
+test('Lab advanced-tools entry stays with the model and clear of the view switcher', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const bounds = await page.evaluate(() => {
+        const stage = document.querySelector<HTMLElement>('[data-model-stage]');
+        const toggle = stage?.querySelector<HTMLElement>('[data-experiment-controls]');
+        const switcher = stage?.querySelector<HTMLElement>('.artifact-switcher');
+        if (!stage || !toggle || !switcher) return null;
+        const rect = (element: HTMLElement) => {
+          const { top, right, bottom, left } = element.getBoundingClientRect();
+          return { top, right, bottom, left };
+        };
+        return { stage: rect(stage), toggle: rect(toggle), switcher: rect(switcher) };
+      });
+      expect(bounds).not.toBeNull();
+      expect(bounds!.toggle.top).toBeGreaterThanOrEqual(bounds!.stage.top);
+      expect(bounds!.toggle.right).toBeLessThanOrEqual(bounds!.stage.right);
+      expect(bounds!.toggle.bottom).toBeLessThanOrEqual(bounds!.stage.bottom);
+      expect(bounds!.toggle.left).toBeGreaterThanOrEqual(bounds!.stage.left);
+      const overlaps = bounds!.toggle.left < bounds!.switcher.right &&
+        bounds!.toggle.right > bounds!.switcher.left &&
+        bounds!.toggle.top < bounds!.switcher.bottom &&
+        bounds!.toggle.bottom > bounds!.switcher.top;
+      expect(overlaps).toBe(false);
+    }
+  }
+});
+
 test('Lab story keeps a concise scroll runway across desktop and mobile', async ({ page }) => {
   for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(viewport);
