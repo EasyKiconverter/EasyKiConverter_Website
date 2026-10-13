@@ -366,6 +366,16 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
 @media(max-width:760px){.tomogram-hop{left:14px;top:58px;bottom:auto}.tomogram-arc{left:80px;top:58px;bottom:auto}.tomogram-reel{right:274px;top:58px;bottom:auto}.tomogram-branches{left:14px;top:88px;right:auto}.tomogram-forecast{left:112px;top:88px;right:auto}.tomogram-multiverse{left:14px;top:118px;right:auto}.tomogram-splice{left:14px;top:148px;right:auto}.tomogram-audio{left:112px;top:118px;right:auto}.tomogram-cinema{left:14px;top:178px;right:auto}.tomogram-share{right:190px;top:58px;bottom:auto}.tomogram-events{right:92px;top:58px;bottom:auto}.tomogram-import{right:14px;top:58px;bottom:auto}.tomogram-crossover{left:14px;right:14px;bottom:112px}.tomogram-crossover-end{left:14px;right:14px;bottom:142px}}
 
 @media(max-width:760px){.motion-model[data-artifact-view="model"] .artifact-switcher{top:6%;bottom:auto}}
+@media(max-width:760px) and (prefers-reduced-motion:no-preference){
+  .artifact-switcher{left:14px;right:14px;top:6%;bottom:auto;width:auto;max-width:none;justify-content:flex-start;flex-wrap:nowrap;gap:4px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none;transform:none}
+  .artifact-switcher::-webkit-scrollbar{display:none}
+  .artifact-switcher button{flex:0 0 auto;white-space:nowrap}
+  .model-explode{gap:4px 8px;padding:7px 10px}
+  .model-explode:not(:has(.model-slice-toggle[aria-pressed="true"])) .model-slice-heading,
+  .model-explode:not(:has(.model-slice-toggle[aria-pressed="true"])) .model-slice-axes,
+  .model-explode:not(:has(.model-slice-toggle[aria-pressed="true"])) .model-slice-range,
+  .model-explode:not(:has(.model-slice-toggle[aria-pressed="true"])) .model-slice-value{display:none}
+}
 
 .experiment-controls-toggle{position:absolute;z-index:6;top:16px;right:16px;padding:7px 10px;border:1px solid #29282424;border-radius:999px;background:#fffdf8d9;color:var(--muted,#746f66);font:700 9px ui-monospace,SFMono-Regular,monospace;letter-spacing:.08em;cursor:pointer;pointer-events:auto;box-shadow:0 8px 24px #29282416;backdrop-filter:blur(10px);transition:background .2s,color .2s,transform .2s}
 .experiment-controls-toggle:hover,.experiment-controls-toggle:focus-visible{background:var(--ink,#292824);color:#fffdf8;transform:translateY(-1px);outline:2px solid var(--violet,#6254c8);outline-offset:3px}
