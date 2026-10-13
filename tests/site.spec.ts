@@ -766,13 +766,33 @@ test('bilingual homepages keep the same interaction rhythm', async ({ page }) =>
   }
 });
 
-test('bilingual pages share the base brand tokens with the accessibility layer', async ({ page }) => {
+test('bilingual shared text colors meet WCAG AA on light brand surfaces', async ({ page }) => {
   for (const path of ['/', '/en/', '/formats/', '/en/formats/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect.poll(() => page.evaluate(() => ({
-      muted: getComputedStyle(document.documentElement).getPropertyValue('--muted').trim(),
-      violet: getComputedStyle(document.documentElement).getPropertyValue('--violet').trim(),
-    }))).toEqual({ muted: '#746f66', violet: '#6f61d8' });
+    const tokens = await page.evaluate(() => {
+      const style = getComputedStyle(document.documentElement);
+      return Object.fromEntries(['muted', 'violet', 'paper', 'peach', 'lilac', 'mint', 'yellow'].map((token) => [
+        token,
+        style.getPropertyValue(`--${token}`).trim(),
+      ])) as Record<string, string>;
+    });
+    expect(tokens).toMatchObject({ muted: '#5b564f', violet: '#5848b8' });
+
+    const luminance = (color: string): number => {
+      const channels = color.match(/[\da-f]{2}/gi)?.map((value) => parseInt(value, 16) / 255) ?? [];
+      const [red, green, blue] = channels.map((channel) =>
+        channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+      );
+      return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+    };
+    const contrastRatio = (foreground: string, background: string): number => {
+      const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+      return (values[0] + 0.05) / (values[1] + 0.05);
+    };
+    for (const surface of [tokens.paper, tokens.peach, tokens.lilac, tokens.mint, tokens.yellow]) {
+      expect(contrastRatio(tokens.muted, surface)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(tokens.violet, surface)).toBeGreaterThanOrEqual(4.5);
+    }
   }
 });
 
