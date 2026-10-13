@@ -36,7 +36,7 @@ const chineseUrl = new URL("lab/", siteBase);
       <section class="lab-intro" aria-labelledby="lab-title">
         <p class="kicker">ON DEMAND · EXPERIMENTAL 3D</p>
         <h1 id="lab-title">Real geometry, isolated experiments.</h1>
-        <p>Start with the GLB delivery model generated from real STEP geometry, then switch to the mesh atlas, section tomogram and topology views; experimental controls unlock as model data becomes ready. The homepage stays lightweight; CAD/WASM loads only when this lab is opened.</p>
+        <p>Explore the GLB delivery model generated from real STEP geometry, then switch to the mesh atlas, section tomogram and topology views. Experimental controls unlock as data becomes ready; CAD/WASM stays off the homepage.</p>
         <div class="lab-warning" aria-label="Lab loading guidance">
           <div class="lab-warning-heading"><span>Loading plan</span><strong>GLB first</strong></div>
           <div class="lab-warning-metrics">
@@ -45,11 +45,6 @@ const chineseUrl = new URL("lab/", siteBase);
           </div>
           <p>STEP/WASM is used only if the model fails to load. Use a desktop browser for technical validation; use the stable-release link below for downloads, or return home for product information.</p>
         </div>
-        <ul class="lab-facts" aria-label="Lab loading strategy">
-          <li><span>Delivery</span><strong>GLB first</strong></li>
-          <li><span>Fallback</span><strong>STEP / WASM</strong></li>
-          <li><span>Homepage</span><strong>Isolated</strong></li>
-        </ul>
         <div class="lab-intro-actions">
           <a class="button button-dark" data-release-link href={latestRelease.url} target="_blank" rel="noreferrer">Download stable {latestRelease.tag} <span>↗</span></a>
           <a class="text-link text-link-internal" href={siteBase.href}>Back to product <span>→</span></a>

@@ -65,8 +65,9 @@ const platformAvailability = getPlatformAvailability("zh");
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
+    <a class="skip-link" href="#top">跳转到正文</a>
     <SiteHeader lang="zh-CN" variant="home" homeHref="#top" alternateUrl={new URL(englishUrl)} />
-    <main id="top">
+    <main id="top" tabindex="-1">
       <section class="hero shell" aria-labelledby="hero-title">
         <div class="hero-copy reveal">
           <p class="kicker">开源 · Qt 6 桌面工具</p>

@@ -164,6 +164,14 @@ export const setupModel = async (): Promise<void> => {
   }
 
   const artifactButtons = Array.from(stage.querySelectorAll<HTMLButtonElement>("[data-artifact-view]"));
+  const artifactCanvases: Record<string, HTMLCanvasElement | null> = {
+    model: canvas,
+    atlas: stage.querySelector<HTMLCanvasElement>(".mesh-atlas"),
+    tomogram: stage.querySelector<HTMLCanvasElement>(".model-tomogram"),
+    oracle: stage.querySelector<HTMLCanvasElement>(".model-oracle"),
+    trinity: stage.querySelector<HTMLCanvasElement>(".model-trinity"),
+    morph: stage.querySelector<HTMLCanvasElement>(".model-morph"),
+  };
   const artifactLabel = stage.querySelector<HTMLElement>("[data-artifact-label]");
   const detailStatus = stage.querySelector<HTMLElement>("[data-model-detail-status]");
   const artifactCaption = stage.querySelector<HTMLElement>(".artifact-caption");
@@ -3107,6 +3115,13 @@ export const setupModel = async (): Promise<void> => {
     if (!view) return;
     stage.dataset.artifactView = view;
     artifactButtons.forEach((candidate) => candidate.setAttribute("aria-pressed", String(candidate === button)));
+    Object.entries(artifactCanvases).forEach(([canvasView, viewCanvas]) => {
+      if (!viewCanvas) return;
+      const active = canvasView === view;
+      viewCanvas.inert = !active;
+      if (active) viewCanvas.removeAttribute("aria-hidden");
+      else viewCanvas.setAttribute("aria-hidden", "true");
+    });
     const english = document.documentElement.lang === "en";
     const label = english ? button.dataset.labelEn : button.dataset.labelZh;
     const caption = english ? button.dataset.captionEn : button.dataset.captionZh;

@@ -69,6 +69,20 @@ test('mobile navigation opens, closes, and restores focus', async ({ page }) => 
   await expect(menu).toBeFocused();
 });
 
+test('homepage skip links are localized and move keyboard focus to main content', async ({ page }) => {
+  for (const [path, label] of [['/', '跳转到正文'], ['/en/', 'Skip to content']]) {
+    await page.goto(path, { waitUntil: 'networkidle' });
+    const skipLink = page.locator('.skip-link');
+    await expect(skipLink).toHaveText(label);
+    await page.keyboard.press('Tab');
+    await expect(skipLink).toBeFocused();
+    await expect(skipLink).toBeInViewport();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('main#top')).toBeFocused();
+    await expect(page).toHaveURL(/#top$/);
+  }
+});
+
 test('mobile story cards keep decorative labels clear of their copy', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/', '/en/']) {
@@ -1021,11 +1035,18 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
     await atlas.dispatchEvent('click');
     await expect(stage).toHaveAttribute('data-artifact-view', 'atlas');
     await expect(atlas).toHaveAttribute('aria-pressed', 'true');
+    await expect(stage.locator('.mesh-atlas')).not.toHaveAttribute('inert', '');
+    await expect(stage.locator('.mesh-atlas')).not.toHaveAttribute('aria-hidden', 'true');
+    await expect(stage.locator('#model-canvas')).toHaveAttribute('inert', '');
+    await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-hidden', 'true');
     await expect(stage.locator('.artifact-caption')).toContainText(/mesh|网格/i);
     const model = stage.locator('[data-artifact-view="model"]');
     await model.dispatchEvent('click');
     await expect(stage).toHaveAttribute('data-artifact-view', 'model');
     await expect(model).toHaveAttribute('aria-pressed', 'true');
+    await expect(stage.locator('#model-canvas')).not.toHaveAttribute('inert', '');
+    await expect(stage.locator('#model-canvas')).not.toHaveAttribute('aria-hidden', 'true');
+    await expect(stage.locator('.mesh-atlas')).toHaveAttribute('inert', '');
     await expect(stage.locator('[data-artifact-label]')).toContainText(/GLB DELIVERY MODEL|GLB 交付模型/);
   }
 });
@@ -1113,6 +1134,20 @@ test('Lab model controls stay inside the visible stage at phone, tablet, and des
   }
 });
 
+test('Lab story keeps a concise scroll runway across desktop and mobile', async ({ page }) => {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    const maxViewports = viewport.width <= 760 ? 2.9 : 3.3;
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const storyHeight = await page.locator('.motion-narrative').evaluate((element) =>
+        element.getBoundingClientRect().height,
+      );
+      expect(storyHeight / viewport.height).toBeLessThanOrEqual(maxViewports);
+    }
+  }
+});
+
 test('mobile Lab controls keep the model open and reveal slice controls on demand', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/lab/', '/en/lab/']) {
@@ -1156,15 +1191,13 @@ test('mobile Lab controls keep the model open and reveal slice controls on deman
   }
 });
 
-test('Lab loading strategy stays scannable in both languages', async ({ page }) => {
+test('Lab loading guidance avoids repeating the same delivery facts', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const facts = page.locator('.lab-facts');
-    await expect(facts).toHaveCount(1);
-    await expect(facts.locator('li')).toHaveCount(3);
-    await expect(facts).toContainText(/GLB 优先|GLB first/);
-    await expect(facts).toContainText(/STEP \/ WASM/);
-    await expect(facts).toContainText(/保持隔离|Isolated/);
+    await expect(page.locator('.lab-facts')).toHaveCount(0);
+    await expect(page.locator('.lab-intro')).toContainText(/首页不加载 CAD\/WASM|CAD\/WASM stays off the homepage/);
+    await expect(page.locator('.lab-warning')).toContainText(/GLB 优先|GLB first/);
+    await expect(page.locator('.lab-warning')).toContainText(/STEP\/WASM/);
   }
 });
 
