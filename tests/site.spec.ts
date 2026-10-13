@@ -796,7 +796,7 @@ test('macOS download caveat links to the known Gatekeeper issue in both language
     );
     await expect(notice.locator('a')).toHaveAttribute('target', '_blank');
     await expect(notice.locator('a')).toHaveAttribute('rel', 'noreferrer');
-    await expect(notice).toContainText(path === '/' ? '请勿根据未经核实的教程关闭系统安全防护' : 'do not disable macOS security protections');
+    await expect(notice).toContainText(path === '/' ? '请勿根据未经核实的教程关闭系统安全防护' : 'Do not disable macOS security protections');
   }
 });
 
