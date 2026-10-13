@@ -751,38 +751,65 @@ test('homepage platform summary mirrors the available Release assets', async ({ 
 
 test('homepage platform copy speaks in user-facing download terms', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro')).toContainText('按设备架构选择对应下载项');
+  await expect(page.locator('.platform-summary')).toContainText('macOS 构建尚未完成维护者验收');
+  await expect(page.locator('.platform-summary')).toContainText('按设备架构选择对应下载项');
   await expect(page.locator('.platform-list > div').first()).toContainText('2 个下载项');
   await expect(page.locator('.download-links')).toHaveAttribute('aria-label', '平台下载入口');
   await expect(page.locator('.download-copy')).not.toContainText('GitHub API');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro')).toContainText('Choose the download that matches your architecture');
+  await expect(page.locator('.platform-summary')).toContainText('macOS builds have not completed maintainer validation');
+  await expect(page.locator('.platform-summary')).toContainText('Choose the download that matches your architecture');
   await expect(page.locator('.platform-list > div').first()).toContainText('2 downloads');
   await expect(page.locator('.download-links')).toHaveAttribute('aria-label', 'Platform download entries');
   await expect(page.locator('.download-copy')).not.toContainText('GitHub API');
 });
 
-test('bilingual platform headings identify the supported systems directly', async ({ page }) => {
+test('bilingual platform headings distinguish experimental macOS builds', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro .kicker')).toHaveText('跨平台支持');
-  await expect(page.locator('#platforms-title')).toContainText('Windows、Linux、macOS');
+  await expect(page.locator('.platform-intro .kicker')).toHaveText('平台状态');
+  await expect(page.locator('#platforms-title')).toContainText('macOS 安装包');
+  await expect(page.locator('#platforms-title')).toContainText('仍属实验阶段');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro .kicker')).toHaveText('CROSS-PLATFORM SUPPORT');
-  await expect(page.locator('#platforms-title')).toContainText('Windows, Linux and macOS');
+  await expect(page.locator('.platform-intro .kicker')).toHaveText('PLATFORM STATUS');
+  await expect(page.locator('#platforms-title')).toContainText('macOS packages');
+  await expect(page.locator('#platforms-title')).toContainText('still experimental');
+});
+
+test('macOS download caveat links to the known Gatekeeper issue in both languages', async ({ page }) => {
+  for (const [path, languageText] of [
+    ['/', 'Apple Silicon 用户曾报告 Gatekeeper 提示'],
+    ['/en/', 'An Apple Silicon user reported Gatekeeper’s'],
+  ]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const notice = page.locator('.download-platform-notice');
+    const actions = page.locator('.download-actions');
+    await expect(notice).toContainText(languageText);
+    const noticeBox = await notice.boundingBox();
+    const actionBox = await actions.boundingBox();
+    if (!noticeBox || !actionBox) throw new Error('Download notice or actions are not visible');
+    expect(noticeBox.y + noticeBox.height).toBeLessThan(actionBox.y);
+    await expect(notice.locator('a')).toHaveAttribute(
+      'href',
+      'https://github.com/EasyKiconverter/EasyKiConverter/issues/153',
+    );
+    await expect(notice.locator('a')).toHaveAttribute('target', '_blank');
+    await expect(notice.locator('a')).toHaveAttribute('rel', 'noreferrer');
+    await expect(notice).toContainText(path === '/' ? '请勿根据未经核实的教程关闭系统安全防护' : 'do not disable macOS security protections');
+  }
 });
 
 test('platform sections offer a direct path to the matching download area', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.platform-intro-link')).toHaveAttribute('href', '#download');
   await expect(page.locator('.platform-intro-link')).toContainText('查看平台下载项');
-  await expect(page.locator('.platform-intro > p:not(.kicker)')).toHaveCSS('max-width', '400px');
+  await expect(page.locator('.platform-summary')).toHaveCSS('max-width', '400px');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.platform-intro-link')).toHaveAttribute('href', '#download');
   await expect(page.locator('.platform-intro-link')).toContainText('See platform downloads');
-  await expect(page.locator('.platform-intro > p:not(.kicker)')).toHaveCSS('max-width', '400px');
+  await expect(page.locator('.platform-summary')).toHaveCSS('max-width', '400px');
 });
 
 test('bilingual hero copy names target EDAs and generated library content', async ({ page }) => {

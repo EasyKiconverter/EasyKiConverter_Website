@@ -27,6 +27,20 @@
   white-space: nowrap;
 }
 
+.download-platform-notice {
+  max-width: 620px;
+  margin: 18px 0 0;
+  color: #d8d2c8;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.download-platform-notice a {
+  color: var(--lilac);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .platform-architectures {
   display: flex;
   flex-wrap: wrap;
