@@ -495,6 +495,8 @@ test('format matrix offers evidence and release next steps in both languages', a
     await expect(page.locator('.format-legend')).toBeVisible();
     await expect(page.locator('.format-status-primary')).toHaveCount(2);
     await expect(page.locator('.format-status-registered')).toHaveCount(9);
+    await expect(page.locator('.format-artifacts-cell')).toHaveCount(11);
+    await expect(page.locator('.format-artifacts-cell a')).toHaveCount(11);
   }
 });
 
@@ -509,6 +511,21 @@ test('format matrix rows use concise bilingual status labels with full accessibl
     await expect(statuses.filter({ hasText: shortLabels[0] })).toHaveCount(2);
     await expect(statuses.filter({ hasText: shortLabels[1] })).toHaveCount(9);
     await expect(statuses.nth(2)).toHaveAttribute('aria-label', fullLabel);
+  }
+});
+
+test('format matrix explains tested output artifacts and links each row to main-project evidence', async ({ page }) => {
+  for (const [path, outputs, linkLabel] of [
+    ['/formats/', ['.kicad_sym', 'SchLib + PcbLib', 'XML 符号库', '.lplib', '.pool 符号数据'], '查看仓库测试'],
+    ['/en/formats/', ['.kicad_sym', 'SchLib + PcbLib', 'XML symbol library', '.lplib', '.pool symbol data'], 'Open repository test'],
+  ] as const) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const artifacts = page.locator('.format-artifacts-cell');
+    await expect(artifacts).toHaveCount(11);
+    for (const output of outputs) await expect(page.locator('.format-table-wrap')).toContainText(output);
+    await expect(artifacts.first().locator('a')).toContainText(linkLabel);
+    await expect(artifacts.first().locator('a')).toHaveAttribute('href', /test_parallel_export_cancellation\.cpp$/);
+    await expect(page.locator('#format-matrix-title').locator('..')).toContainText(/不等同于已在目标桌面软件中验收|desktop-app validation/);
   }
 });
 
