@@ -288,7 +288,7 @@
   }
 
   .format-table-wrap tbody th::before {
-    content: "ID";
+    content: attr(data-label);
   }
 
   .format-table-wrap tbody td::before {
@@ -308,6 +308,23 @@
   .format-table-wrap tbody th code,
   .format-table-wrap .format-status {
     text-align: right;
+  }
+
+  .format-table-wrap tbody td.format-artifacts-cell {
+    display: block;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .format-table-wrap tbody td.format-artifacts-cell::before {
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .format-table-wrap .format-artifacts-cell p,
+  .format-table-wrap .format-artifacts-cell a {
+    text-align: left;
   }
 }
 
