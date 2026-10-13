@@ -2,6 +2,15 @@ import { expect, test } from '@playwright/test';
 
 const pages = ['/', '/en/'];
 
+test('bilingual homepages render one localized document title', async ({ page }) => {
+  for (const path of pages) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('head title')).toHaveCount(1);
+    const expectedTitle = path === '/' ? 'EasyKiConverter · 让元件库转换顺手一点' : 'EasyKiConverter · Make parts EDA-ready';
+    await expect(page).toHaveTitle(expectedTitle);
+  }
+});
+
 for (const path of pages) {
   test(`${path} serves the release-backed static page`, async ({ page }) => {
     const errors: string[] = [];
@@ -153,6 +162,22 @@ test('Chinese mobile hero keeps the conversion phrase together', async ({ page }
   expect(lineCount).toBe(1);
   const titleHeight = await page.locator('#hero-title').evaluate((element) => element.getBoundingClientRect().height);
   expect(titleHeight).toBeLessThan(125);
+});
+
+test('English mobile hero keeps a compact promise and brings product proof higher', async ({ page }) => {
+  test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+
+  const title = page.locator('#hero-title');
+  await expect(title).toHaveText('Make parts EDA-ready.');
+  expect(await title.evaluate((element) => element.getBoundingClientRect().height)).toBeLessThan(110);
+  const ledeHeight = await page.locator('.hero-lede').evaluate((element) => element.getBoundingClientRect().height);
+  const productImageTop = await page
+    .locator('.hero-product-window img')
+    .evaluate((element) => element.getBoundingClientRect().top);
+  expect(ledeHeight).toBeLessThan(60);
+  expect(productImageTop).toBeLessThan(600);
 });
 
 test('bilingual mobile hero keeps its facts compact and product proof in view', async ({ page }) => {
@@ -832,8 +857,8 @@ test('bilingual hero copy names target EDAs and generated library content', asyn
   await expect(page.locator('.hero-lede')).toContainText('符号、封装与 3D 模型');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.hero-lede')).toContainText('KiCad and Altium');
-  await expect(page.locator('.hero-lede')).toContainText('symbols, footprints, and 3D models');
+  await expect(page.locator('.hero-lede')).toContainText('KiCad or Altium');
+  await expect(page.locator('.hero-lede')).toContainText('symbols, footprints & 3D models');
 });
 
 test('English homepage keeps product section labels concrete', async ({ page }) => {
