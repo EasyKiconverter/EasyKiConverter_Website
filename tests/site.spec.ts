@@ -1134,6 +1134,20 @@ test('Lab model controls stay inside the visible stage at phone, tablet, and des
   }
 });
 
+test('Lab story keeps a concise scroll runway across desktop and mobile', async ({ page }) => {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    const maxViewports = viewport.width <= 760 ? 2.9 : 3.3;
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const storyHeight = await page.locator('.motion-narrative').evaluate((element) =>
+        element.getBoundingClientRect().height,
+      );
+      expect(storyHeight / viewport.height).toBeLessThanOrEqual(maxViewports);
+    }
+  }
+});
+
 test('mobile Lab controls keep the model open and reveal slice controls on demand', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/lab/', '/en/lab/']) {
@@ -1177,15 +1191,13 @@ test('mobile Lab controls keep the model open and reveal slice controls on deman
   }
 });
 
-test('Lab loading strategy stays scannable in both languages', async ({ page }) => {
+test('Lab loading guidance avoids repeating the same delivery facts', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const facts = page.locator('.lab-facts');
-    await expect(facts).toHaveCount(1);
-    await expect(facts.locator('li')).toHaveCount(3);
-    await expect(facts).toContainText(/GLB 优先|GLB first/);
-    await expect(facts).toContainText(/STEP \/ WASM/);
-    await expect(facts).toContainText(/保持隔离|Isolated/);
+    await expect(page.locator('.lab-facts')).toHaveCount(0);
+    await expect(page.locator('.lab-intro')).toContainText(/首页不加载 CAD\/WASM|CAD\/WASM stays off the homepage/);
+    await expect(page.locator('.lab-warning')).toContainText(/GLB 优先|GLB first/);
+    await expect(page.locator('.lab-warning')).toContainText(/STEP\/WASM/);
   }
 });
 
