@@ -1036,9 +1036,11 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
       await page.setViewportSize(viewport);
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const stage = page.locator('[data-model-stage]');
+      const switcher = page.locator('.artifact-switcher');
       await expect(stage).toHaveClass(/model-loaded/, { timeout: 20000 });
+      await expect(switcher).toBeVisible();
       const stageBox = await stage.boundingBox();
-      const switcherBox = await stage.locator('.artifact-switcher').boundingBox();
+      const switcherBox = await switcher.boundingBox();
       expect(stageBox).not.toBeNull();
       expect(switcherBox).not.toBeNull();
       expect((switcherBox?.y ?? 0) - (stageBox?.y ?? 0)).toBeLessThan((stageBox?.height ?? 0) * 0.25);
