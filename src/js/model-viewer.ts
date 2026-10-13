@@ -3132,6 +3132,7 @@ export const setupModel = async (): Promise<void> => {
   artifactButtons.forEach((button) => button.addEventListener("click", () => syncArtifactView(button)));
   const initialArtifactButton = artifactButtons.find((button) => button.dataset.artifactView === stage.dataset.artifactView) ?? artifactButtons[0];
   if (initialArtifactButton) syncArtifactView(initialArtifactButton, false);
+  stage.dataset.artifactControlsReady = "true";
 
   const setScanButtonState = (scanning: boolean): void => {
     const scanButton = stage.querySelector<HTMLButtonElement>("[data-model-scan]");

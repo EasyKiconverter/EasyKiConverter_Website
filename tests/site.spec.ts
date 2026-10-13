@@ -1094,10 +1094,12 @@ test('Lab asset guidance matches the generated delivery path', async ({ page }) 
 });
 
 test('Lab artifact switcher updates the active view and delivery copy', async ({ page }) => {
+  test.setTimeout(60_000);
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const stage = page.locator('[data-model-stage]');
     await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+    await expect(stage).toHaveAttribute('data-artifact-controls-ready', 'true', { timeout: 30000 });
     await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-label', /GLB delivery model|GLB 交付模型/);
     const atlas = stage.locator('[data-artifact-view="atlas"]');
     await atlas.dispatchEvent('click');
@@ -1291,9 +1293,7 @@ test('Lab introductions explain the real geometry story in both languages', asyn
   await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.lab-intro')).toContainText('GLB');
   await expect(page.locator('.lab-intro')).toContainText('real STEP geometry');
-  await expect(page.locator('.lab-intro')).toContainText('mesh atlas');
-  await expect(page.locator('.lab-intro')).toContainText('section tomogram');
-  await expect(page.locator('.lab-intro')).toContainText('topology views');
+  await expect(page.locator('.lab-intro')).toContainText('mesh, section, and topology views');
 });
 
 test('Lab pages expose a direct bilingual stable-download path', async ({ page }) => {
