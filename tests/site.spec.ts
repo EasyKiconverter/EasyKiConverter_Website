@@ -1077,8 +1077,13 @@ test('mobile Lab controls keep the model open and reveal slice controls on deman
     expect(controls.sliceAxesDisplay).toBe('none');
     expect(controls.sliceRangeDisplay).toBe('none');
 
-    const expandedControls = await page.locator('.model-slice-toggle').evaluate((toggle) => {
-      toggle.setAttribute('aria-pressed', 'true');
+    const stage = page.locator('[data-model-stage]');
+    const sliceToggle = page.locator('.model-slice-toggle');
+    await expect(stage).toHaveAttribute('data-controls-ready', 'true');
+    await sliceToggle.evaluate((toggle: HTMLButtonElement) => { toggle.disabled = false; });
+    await sliceToggle.click();
+    await expect(sliceToggle).toHaveAttribute('aria-pressed', 'true');
+    const expandedControls = await sliceToggle.evaluate((toggle) => {
       const panel = toggle.closest('.model-explode');
       return {
         sliceAxesDisplay: getComputedStyle(panel?.querySelector('.model-slice-axes') as Element).display,
