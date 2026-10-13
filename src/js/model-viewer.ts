@@ -1087,6 +1087,7 @@ export const setupModel = async (): Promise<void> => {
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
       .matches,
   };
+  const baseModelScale = (): number => state.width <= 760 ? 0.92 : 0.8;
   let branchWarpStartedAt = 0;
   let branchWarpIntensity = 0;
   let temporalGhostStartedAt = 0;
@@ -4315,7 +4316,7 @@ export const setupModel = async (): Promise<void> => {
       (state.reducedMotion ? 0 : state.pointerY * 0.06) + Math.cos(now * 0.0024) * modelFeedback * 0.012 + forecastDrift * forecastPulse * 0.022;
     group.position.x = blend(from.x, to.x) + directorX;
     group.position.y = blend(from.y, to.y) + directorY;
-    group.scale.setScalar(0.8 * blend(from.scale, to.scale) * (1 + branchWarp * 0.1 + neuralReflex * 0.06 + forecastDrift * forecastPulse * 0.035));
+    group.scale.setScalar(baseModelScale() * blend(from.scale, to.scale) * (1 + branchWarp * 0.1 + neuralReflex * 0.06 + forecastDrift * forecastPulse * 0.035));
     applyExplode();
     updateSectionPlane();
     renderer.render(scene, camera);
