@@ -1052,6 +1052,67 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
   }
 });
 
+test('Lab tablet layout keeps the narrative heading clear of the model in both languages', async ({ page }) => {
+  await page.setViewportSize({ width: 768, height: 1024 });
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const layout = await page.evaluate(() => {
+      const heading = document.querySelector<HTMLElement>('.motion-heading');
+      const model = document.querySelector<HTMLElement>('[data-model-stage]');
+      if (!heading || !model) return null;
+      const headingRect = heading.getBoundingClientRect();
+      const modelRect = model.getBoundingClientRect();
+      return { headingBottom: headingRect.bottom, modelTop: modelRect.top, scrollWidth: document.documentElement.scrollWidth };
+    });
+    expect(layout).not.toBeNull();
+    expect(layout!.headingBottom).toBeLessThan(layout!.modelTop);
+    expect(layout!.scrollWidth).toBeLessThanOrEqual(768);
+  }
+});
+
+test('Lab desktop model stage stays clear of the narrative heading', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const layout = await page.evaluate(() => {
+      const heading = document.querySelector<HTMLElement>('.motion-heading');
+      const model = document.querySelector<HTMLElement>('[data-model-stage]');
+      if (!heading || !model) return null;
+      const headingRect = heading.getBoundingClientRect();
+      const modelRect = model.getBoundingClientRect();
+      return { headingRight: headingRect.right, modelLeft: modelRect.left, scrollWidth: document.documentElement.scrollWidth };
+    });
+    expect(layout).not.toBeNull();
+    expect(layout!.headingRight).toBeLessThan(layout!.modelLeft);
+    expect(layout!.scrollWidth).toBeLessThanOrEqual(1440);
+  }
+});
+
+test('Lab model controls stay inside the visible stage at phone, tablet, and desktop widths', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const bounds = await page.evaluate(() => {
+        const stage = document.querySelector<HTMLElement>('[data-model-stage]');
+        const controls = stage?.querySelector<HTMLElement>('.model-explode');
+        if (!stage || !controls) return null;
+        const stageRect = stage.getBoundingClientRect();
+        const controlsRect = controls.getBoundingClientRect();
+        return {
+          stage: { top: stageRect.top, right: stageRect.right, bottom: stageRect.bottom, left: stageRect.left },
+          controls: { top: controlsRect.top, right: controlsRect.right, bottom: controlsRect.bottom, left: controlsRect.left },
+        };
+      });
+      expect(bounds).not.toBeNull();
+      expect(bounds!.controls.top).toBeGreaterThanOrEqual(bounds!.stage.top);
+      expect(bounds!.controls.right).toBeLessThanOrEqual(bounds!.stage.right);
+      expect(bounds!.controls.bottom).toBeLessThanOrEqual(bounds!.stage.bottom);
+      expect(bounds!.controls.left).toBeGreaterThanOrEqual(bounds!.stage.left);
+    }
+  }
+});
+
 test('mobile Lab controls keep the model open and reveal slice controls on demand', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/lab/', '/en/lab/']) {
