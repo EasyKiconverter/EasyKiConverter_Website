@@ -1052,6 +1052,49 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
   }
 });
 
+test('mobile Lab controls keep the model open and reveal slice controls on demand', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const controls = await page.locator('.artifact-switcher').evaluate((switcher) => {
+      const stage = switcher.closest('[data-model-stage]');
+      const panel = stage?.querySelector('.model-explode');
+      return {
+        flexWrap: getComputedStyle(switcher).flexWrap,
+        overflowX: getComputedStyle(switcher).overflowX,
+        clientWidth: switcher.clientWidth,
+        scrollWidth: switcher.scrollWidth,
+        switcherHeight: switcher.getBoundingClientRect().height,
+        sliceAxesDisplay: getComputedStyle(panel?.querySelector('.model-slice-axes') as Element).display,
+        sliceRangeDisplay: getComputedStyle(panel?.querySelector('.model-slice-range') as Element).display,
+      };
+    });
+
+    expect(controls.flexWrap).toBe('nowrap');
+    expect(controls.overflowX).toBe('auto');
+    expect(controls.scrollWidth).toBeGreaterThan(controls.clientWidth);
+    expect(controls.switcherHeight).toBeLessThan(48);
+    expect(controls.sliceAxesDisplay).toBe('none');
+    expect(controls.sliceRangeDisplay).toBe('none');
+
+    const stage = page.locator('[data-model-stage]');
+    const sliceToggle = page.locator('.model-slice-toggle');
+    await expect(stage).toHaveAttribute('data-controls-ready', 'true');
+    await sliceToggle.evaluate((toggle: HTMLButtonElement) => { toggle.disabled = false; });
+    await sliceToggle.click();
+    await expect(sliceToggle).toHaveAttribute('aria-pressed', 'true');
+    const expandedControls = await sliceToggle.evaluate((toggle) => {
+      const panel = toggle.closest('.model-explode');
+      return {
+        sliceAxesDisplay: getComputedStyle(panel?.querySelector('.model-slice-axes') as Element).display,
+        sliceRangeDisplay: getComputedStyle(panel?.querySelector('.model-slice-range') as Element).display,
+      };
+    });
+    expect(expandedControls.sliceAxesDisplay).not.toBe('none');
+    expect(expandedControls.sliceRangeDisplay).not.toBe('none');
+  }
+});
+
 test('Lab loading strategy stays scannable in both languages', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
