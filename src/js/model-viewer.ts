@@ -3076,7 +3076,6 @@ export const setupModel = async (): Promise<void> => {
     const rect = stage.getBoundingClientRect();
     state.width = Math.max(1, rect.width);
     state.height = Math.max(1, rect.height);
-    stage.dataset.modelScale = baseModelScale().toFixed(2);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(state.width, state.height, false);
     fitCamera();
