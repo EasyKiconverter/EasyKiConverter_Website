@@ -643,6 +643,14 @@
   }
 }
 
+@media (max-width: 520px) {
+  .hero-product-window img {
+    height: 226px;
+    object-fit: cover;
+    object-position: center top;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-stage-orbit {
     animation: none;

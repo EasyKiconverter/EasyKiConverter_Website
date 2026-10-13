@@ -112,6 +112,18 @@ test('bilingual homepages do not overflow horizontally on narrow screens', async
   }
 });
 
+test('mobile homepage keeps the Hero product proof readable', async ({ page }) => {
+  test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const image = page.locator('.hero-product-window img');
+    await expect(image).toHaveCSS('object-fit', 'cover');
+    await expect(image).toHaveCSS('object-position', '50% 0%');
+    const box = await image.boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(220);
+  }
+});
+
 test('bilingual secondary pages do not overflow horizontally on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
