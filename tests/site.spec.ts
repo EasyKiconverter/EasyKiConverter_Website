@@ -239,7 +239,7 @@ test('Chinese pages keep release guidance localized', async ({ page }) => {
     await expect(page.locator('main')).not.toContainText('Release');
   }
   await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.format-matrix-actions .text-link')).toHaveText(/阅读当前发布页/);
+  await expect(page.locator('.format-matrix-actions .text-link')).toHaveText(/当前发布/);
   await expect(page.locator('.format-legend-registered')).toHaveText(/按发布版本验证/);
 });
 
@@ -526,9 +526,9 @@ test('format matrix offers evidence and release next steps in both languages', a
     const casesLink = page.locator('.format-matrix-actions .button-dark');
     const releaseLink = page.locator('.format-matrix-actions .text-link');
     await expect(casesLink).toHaveAttribute('href', /cases/);
-    await expect(casesLink).toContainText(/查看测试案例|See test cases/);
+    await expect(casesLink).toContainText(/查看测试案例|Test cases/);
     await expect(releaseLink).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
-    await expect(releaseLink).toContainText(/阅读当前发布页|Latest Release/);
+    await expect(releaseLink).toContainText(/当前发布|Latest Release/);
     const summary = page.locator('.format-matrix .evidence-summary');
     await expect(summary).toContainText('v3.1.13');
     await expect(summary).toContainText(/2/);
@@ -544,21 +544,23 @@ test('format matrix offers evidence and release next steps in both languages', a
 });
 
 test('bilingual evidence-page actions stay on one row on mobile', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  for (const [path, selector] of [
-    ['/formats/', '.format-matrix-actions'],
-    ['/en/formats/', '.format-matrix-actions'],
-    ['/cases/', '.case-studies-actions'],
-    ['/en/cases/', '.case-studies-actions'],
-  ]) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const centerOffset = await page.locator(selector).evaluate((container) => {
-      const [primary, secondary] = Array.from(container.children);
-      const first = primary.getBoundingClientRect();
-      const second = secondary.getBoundingClientRect();
-      return Math.abs(first.top + first.height / 2 - second.top - second.height / 2);
-    });
-    expect(centerOffset).toBeLessThan(2);
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const [path, selector] of [
+      ['/formats/', '.format-matrix-actions'],
+      ['/en/formats/', '.format-matrix-actions'],
+      ['/cases/', '.case-studies-actions'],
+      ['/en/cases/', '.case-studies-actions'],
+    ]) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const centerOffset = await page.locator(selector).evaluate((container) => {
+        const [primary, secondary] = Array.from(container.children);
+        const first = primary.getBoundingClientRect();
+        const second = secondary.getBoundingClientRect();
+        return Math.abs(first.top + first.height / 2 - second.top - second.height / 2);
+      });
+      expect(centerOffset, `${path} at ${width}px`).toBeLessThan(2);
+    }
   }
 });
 
@@ -898,7 +900,7 @@ test('bilingual hero copy names target EDAs and generated library content', asyn
   await expect(page.locator('.hero-lede')).toContainText('符号、封装与 3D 模型');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.hero-lede')).toContainText('KiCad or Altium');
+  await expect(page.locator('.hero-lede')).toContainText('KiCad / Altium');
   await expect(page.locator('.hero-lede')).toContainText('symbols, footprints & 3D models');
 });
 
