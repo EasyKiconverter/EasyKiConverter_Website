@@ -62,8 +62,9 @@ const platformAvailability = getPlatformAvailability("en");
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
+    <a class="skip-link" href="#top">Skip to content</a>
     <SiteHeader lang="en" variant="home" homeHref="#top" alternateUrl={new URL(chineseUrl)} />
-    <main id="top">
+    <main id="top" tabindex="-1">
       <section class="hero shell" aria-labelledby="hero-title">
         <div class="hero-copy reveal">
           <p class="kicker">OPEN SOURCE · Qt 6 DESKTOP TOOL</p>

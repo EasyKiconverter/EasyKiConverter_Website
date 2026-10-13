@@ -69,6 +69,20 @@ test('mobile navigation opens, closes, and restores focus', async ({ page }) => 
   await expect(menu).toBeFocused();
 });
 
+test('homepage skip links are localized and move keyboard focus to main content', async ({ page }) => {
+  for (const [path, label] of [['/', '跳转到正文'], ['/en/', 'Skip to content']]) {
+    await page.goto(path, { waitUntil: 'networkidle' });
+    const skipLink = page.locator('.skip-link');
+    await expect(skipLink).toHaveText(label);
+    await page.keyboard.press('Tab');
+    await expect(skipLink).toBeFocused();
+    await expect(skipLink).toBeInViewport();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('main#top')).toBeFocused();
+    await expect(page).toHaveURL(/#top$/);
+  }
+});
+
 test('mobile story cards keep decorative labels clear of their copy', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/', '/en/']) {

@@ -1,4 +1,22 @@
 /* Small, shared safety layer for keyboard and degraded rendering states. */
+.skip-link,
+.content-page-skip {
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  z-index: 20;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--dark);
+  color: #fff;
+  transform: translateY(-180%);
+}
+
+.skip-link:focus,
+.content-page-skip:focus {
+  transform: translateY(0);
+}
+
 /* Keep external destinations legible in both desktop and mobile navigation. */
 .nav-link-external span {
   display: inline-block;
