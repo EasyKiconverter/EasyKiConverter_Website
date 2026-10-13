@@ -124,6 +124,43 @@ test('mobile homepage keeps the Hero product proof readable', async ({ page }) =
   }
 });
 
+test('Chinese mobile hero keeps the conversion phrase together', async ({ page }) => {
+  test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+  const phrase = page.locator('.hero-title-conversion');
+  const lineCount = await phrase.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    return range.getClientRects().length;
+  });
+
+  expect(lineCount).toBe(1);
+  const titleHeight = await page.locator('#hero-title').evaluate((element) => element.getBoundingClientRect().height);
+  expect(titleHeight).toBeLessThan(125);
+});
+
+test('bilingual mobile hero keeps its facts compact and product proof in view', async ({ page }) => {
+  test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const factTops = await page.locator('.hero-facts span').evaluateAll((facts) =>
+      facts.map((fact) => fact.getBoundingClientRect().top),
+    );
+    expect(factTops).toHaveLength(3);
+    expect(Math.max(...factTops) - Math.min(...factTops)).toBeLessThan(2);
+
+    const visibleProductHeight = await page.locator('.hero-product-window img').evaluate((image) => {
+      const bounds = image.getBoundingClientRect();
+      return Math.max(0, Math.min(bounds.bottom, window.innerHeight) - Math.max(bounds.top, 0));
+    });
+    expect(visibleProductHeight).toBeGreaterThanOrEqual(180);
+  }
+});
+
 test('bilingual secondary pages do not overflow horizontally on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
@@ -731,12 +768,14 @@ test('platform sections offer a direct path to the matching download area', asyn
   await expect(page.locator('.platform-intro > p:not(.kicker)')).toHaveCSS('max-width', '400px');
 });
 
-test('bilingual hero copy identifies the primary EDA destinations', async ({ page }) => {
+test('bilingual hero copy names target EDAs and generated library content', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.hero-lede')).toContainText('KiCad、Altium');
+  await expect(page.locator('.hero-lede')).toContainText('符号、封装与 3D 模型');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.hero-lede')).toContainText('KiCad, Altium');
+  await expect(page.locator('.hero-lede')).toContainText('KiCad and Altium');
+  await expect(page.locator('.hero-lede')).toContainText('symbols, footprints, and 3D models');
 });
 
 test('English homepage keeps product section labels concrete', async ({ page }) => {
