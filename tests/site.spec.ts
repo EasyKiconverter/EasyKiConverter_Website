@@ -1035,6 +1035,8 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
     for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
       await page.setViewportSize(viewport);
       await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const stage = page.locator('[data-model-stage]');
+      await expect(stage).toHaveAttribute('data-model-scale', viewport.width <= 760 ? '0.92' : '0.80');
       const switcher = page.locator('.artifact-switcher');
       await switcher.scrollIntoViewIfNeeded();
       await expect(switcher).toBeVisible();
