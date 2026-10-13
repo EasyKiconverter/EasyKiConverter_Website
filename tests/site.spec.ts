@@ -624,6 +624,19 @@ test('case studies expose their evidence scope and next-step paths', async ({ pa
   }
 });
 
+test('case-study introductions keep the evidence-first promise aligned in both languages', async ({ page }) => {
+  for (const [path, title, evidenceCopy, manualCopy] of [
+    ['/cases/', '先核对证据，再看路径。', '关联集成测试实际验证的内容', '仍需人工检查'],
+    ['/en/cases/', 'Check the evidence, then trace each route.', 'only what linked tests verify', 'checks remain manual'],
+  ]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#case-studies-title')).toHaveText(title);
+    const summary = page.locator('.case-studies-heading > p').nth(1);
+    await expect(summary).toContainText(evidenceCopy);
+    await expect(summary).toContainText(manualCopy);
+  }
+});
+
 test('case studies expose bilingual input and output routes', async ({ page }) => {
   await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
   const chineseRoutes = page.locator('.case-route');

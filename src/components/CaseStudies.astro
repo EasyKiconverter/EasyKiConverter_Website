@@ -15,8 +15,8 @@ const directoryName = (path: string) => path.slice(0, path.lastIndexOf("/")) + "
 <section class="case-studies shell" aria-labelledby="case-studies-title">
   <div class="case-studies-heading">
     <p class="kicker">{en ? "TRACEABLE EXAMPLES" : "可追溯案例"}</p>
-    <h1 id="case-studies-title">{en ? "Trace each conversion route." : "先核对证据，再看路径。"}</h1>
-    <p>{en ? "Each route shows tested outputs. Generated inputs are distinguished from EasyEDA fixtures; desktop EDA checks remain manual." : "每条路径只描述其关联集成测试实际验证的内容。测试代码生成的数据会与 EasyEDA 样本明确区分；在桌面 EDA 软件中打开结果仍需人工检查。"}</p>
+    <h1 id="case-studies-title">{en ? "Check the evidence, then trace each route." : "先核对证据，再看路径。"}</h1>
+    <p>{en ? "Routes show only what linked tests verify. Generated data is distinguished from EasyEDA fixtures; desktop EDA checks remain manual." : "每条路径只描述其关联集成测试实际验证的内容。测试代码生成的数据会与 EasyEDA 样本明确区分；在桌面 EDA 软件中打开结果仍需人工检查。"}</p>
     <div class="case-studies-actions">
       <a class="button button-dark" href={formatsUrl}>{en ? "Compare formats" : "比较格式"} <span>→</span></a>
       <a class="text-link text-link-external" href={repository} target="_blank" rel="noreferrer">{en ? "View source" : "查看源码"} <span>↗</span></a>
