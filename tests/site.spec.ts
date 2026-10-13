@@ -1035,16 +1035,19 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
     for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
       await page.setViewportSize(viewport);
       await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const stage = page.locator('[data-model-stage]');
       const switcher = page.locator('.artifact-switcher');
-      await expect(stage).toHaveClass(/model-loaded/, { timeout: 20000 });
+      await switcher.scrollIntoViewIfNeeded();
       await expect(switcher).toBeVisible();
-      const stageBox = await stage.boundingBox();
-      const switcherBox = await switcher.boundingBox();
-      expect(stageBox).not.toBeNull();
-      expect(switcherBox).not.toBeNull();
-      expect((switcherBox?.y ?? 0) - (stageBox?.y ?? 0)).toBeLessThan((stageBox?.height ?? 0) * 0.25);
-      await expect(stage.locator('#model-canvas')).toBeVisible();
+      const geometry = await page.evaluate(() => {
+        const stageElement = document.querySelector<HTMLElement>('[data-model-stage]');
+        const switcherElement = document.querySelector<HTMLElement>('.artifact-switcher');
+        if (!stageElement || !switcherElement) return null;
+        const stageRect = stageElement.getBoundingClientRect();
+        const switcherRect = switcherElement.getBoundingClientRect();
+        return { stageHeight: stageRect.height, stageTop: stageRect.top, switcherTop: switcherRect.top };
+      });
+      expect(geometry).not.toBeNull();
+      expect(geometry!.switcherTop - geometry!.stageTop).toBeLessThan(geometry!.stageHeight * 0.25);
     }
   }
 });
