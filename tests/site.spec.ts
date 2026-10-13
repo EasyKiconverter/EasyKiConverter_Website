@@ -523,8 +523,12 @@ test('mobile content CTAs keep the title and primary action readable', async ({ 
 test('format matrix offers evidence and release next steps in both languages', async ({ page }) => {
   for (const path of ['/formats/', '/en/formats/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.format-matrix-actions .button-dark')).toHaveAttribute('href', /cases/);
-    await expect(page.locator('.format-matrix-actions .text-link')).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
+    const casesLink = page.locator('.format-matrix-actions .button-dark');
+    const releaseLink = page.locator('.format-matrix-actions .text-link');
+    await expect(casesLink).toHaveAttribute('href', /cases/);
+    await expect(casesLink).toContainText(/查看测试案例|See test cases/);
+    await expect(releaseLink).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
+    await expect(releaseLink).toContainText(/阅读当前发布页|Latest Release/);
     const summary = page.locator('.format-matrix .evidence-summary');
     await expect(summary).toContainText('v3.1.13');
     await expect(summary).toContainText(/2/);
@@ -537,6 +541,43 @@ test('format matrix offers evidence and release next steps in both languages', a
     await expect(page.locator('.format-artifacts-cell')).toHaveCount(11);
     await expect(page.locator('.format-artifacts-cell a')).toHaveCount(11);
   }
+});
+
+test('bilingual evidence-page actions stay on one row on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const [path, selector] of [
+    ['/formats/', '.format-matrix-actions'],
+    ['/en/formats/', '.format-matrix-actions'],
+    ['/cases/', '.case-studies-actions'],
+    ['/en/cases/', '.case-studies-actions'],
+  ]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const centerOffset = await page.locator(selector).evaluate((container) => {
+      const [primary, secondary] = Array.from(container.children);
+      const first = primary.getBoundingClientRect();
+      const second = secondary.getBoundingClientRect();
+      return Math.abs(first.top + first.height / 2 - second.top - second.height / 2);
+    });
+    expect(centerOffset).toBeLessThan(2);
+  }
+});
+
+test('English evidence-page introductions stay concise on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const [path, selector, maxHeight] of [
+    ['/en/formats/', '.format-matrix-heading > p:not(.kicker)', 106],
+    ['/en/cases/', '.case-studies-heading > p:not(.kicker)', 106],
+  ] as const) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const height = await page.locator(selector).evaluate((element) => element.getBoundingClientRect().height);
+    expect(height).toBeLessThanOrEqual(maxHeight);
+  }
+
+  await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#lab-title')).toHaveText('Explore real geometry.');
+  expect(await page.locator('#lab-title').evaluate((element) => element.getBoundingClientRect().height)).toBeLessThan(110);
+  expect(await page.locator('.lab-intro > p:not(.kicker)').evaluate((element) => element.getBoundingClientRect().height)).toBeLessThanOrEqual(80);
+  expect(await page.locator('.lab-warning').evaluate((element) => element.getBoundingClientRect().top)).toBeLessThan(380);
 });
 
 test('format matrix rows use concise bilingual status labels with full accessible meaning', async ({ page }) => {
@@ -1246,7 +1287,7 @@ test('Lab introductions explain the real geometry story in both languages', asyn
   await expect(page.locator('.lab-intro')).toContainText('拓扑视图');
 
   await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-intro')).toContainText('GLB delivery model');
+  await expect(page.locator('.lab-intro')).toContainText('GLB');
   await expect(page.locator('.lab-intro')).toContainText('real STEP geometry');
   await expect(page.locator('.lab-intro')).toContainText('mesh atlas');
   await expect(page.locator('.lab-intro')).toContainText('section tomogram');
