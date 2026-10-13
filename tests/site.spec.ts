@@ -1030,17 +1030,19 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
   }
 });
 
-test('mobile Lab keeps the model view switcher above the geometry', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
-  const stage = page.locator('[data-model-stage]');
-  await expect(stage).toHaveClass(/model-loaded/, { timeout: 15000 });
-  const stageBox = await stage.boundingBox();
-  const switcherBox = await stage.locator('.artifact-switcher').boundingBox();
-  expect(stageBox).not.toBeNull();
-  expect(switcherBox).not.toBeNull();
-  expect((switcherBox?.y ?? 0) - (stageBox?.y ?? 0)).toBeLessThan((stageBox?.height ?? 0) * 0.25);
-  await expect(stage.locator('#model-canvas')).toBeVisible();
+test('Lab keeps the model view switcher above the geometry on desktop and mobile', async ({ page }) => {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
+    const stage = page.locator('[data-model-stage]');
+    await expect(stage).toHaveClass(/model-loaded/, { timeout: 20000 });
+    const stageBox = await stage.boundingBox();
+    const switcherBox = await stage.locator('.artifact-switcher').boundingBox();
+    expect(stageBox).not.toBeNull();
+    expect(switcherBox).not.toBeNull();
+    expect((switcherBox?.y ?? 0) - (stageBox?.y ?? 0)).toBeLessThan((stageBox?.height ?? 0) * 0.25);
+    await expect(stage.locator('#model-canvas')).toBeVisible();
+  }
 });
 
 test('Lab loading strategy stays scannable in both languages', async ({ page }) => {
