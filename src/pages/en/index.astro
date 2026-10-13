@@ -374,15 +374,16 @@ const platformAvailability = getPlatformAvailability("en");
         aria-labelledby="platforms-title"
       >
         <div class="platform-intro reveal">
-          <p class="kicker">CROSS-PLATFORM SUPPORT</p>
+          <p class="kicker">PLATFORM STATUS</p>
           <h2 id="platforms-title">
-            Windows, Linux and macOS,
+            macOS packages,
             <br />
-            <em>ready to go.</em>
+            <em>still experimental.</em>
           </h2>
-          <p>
+          <p class="platform-summary">
             The current stable release provides packages for Windows, Linux and
-            macOS. Choose the download that matches your architecture.
+            macOS; macOS builds have not completed maintainer validation. Choose
+            the download that matches your architecture.
           </p>
           <a class="text-link text-link-down platform-intro-link" href="#download">See platform downloads <span>↓</span></a>
         </div>
@@ -406,6 +407,11 @@ const platformAvailability = getPlatformAvailability("en");
             <p>
               Current stable <strong data-release-version>{latestRelease.tag}</strong> ·
               Free · GPL-3.0
+            </p>
+            <p class="download-platform-notice">
+              The macOS build has not completed maintainer validation. An Apple Silicon user reported Gatekeeper’s
+              “damaged or incomplete” warning. <a href="https://github.com/EasyKiconverter/EasyKiConverter/issues/153" target="_blank" rel="noreferrer">See the known issue <span aria-hidden="true">↗</span></a>.
+              Do not disable macOS security protections based on unverified advice.
             </p>
             <div class="download-actions">
               <a
