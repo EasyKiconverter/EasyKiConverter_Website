@@ -16,10 +16,10 @@ const directoryName = (path: string) => path.slice(0, path.lastIndexOf("/")) + "
   <div class="case-studies-heading">
     <p class="kicker">{en ? "TRACEABLE EXAMPLES" : "可追溯案例"}</p>
     <h1 id="case-studies-title">{en ? "Trace each conversion route." : "先核对证据，再看路径。"}</h1>
-    <p>{en ? "Each route is limited to what its linked integration test actually verifies. Test-generated inputs are identified separately from EasyEDA fixtures; opening results in desktop EDA software remains a manual check." : "每条路径只描述其关联集成测试实际验证的内容。测试代码生成的数据会与 EasyEDA 样本明确区分；在桌面 EDA 软件中打开结果仍需人工检查。"}</p>
+    <p>{en ? "Each route shows tested outputs. Generated inputs are distinguished from EasyEDA fixtures; desktop EDA checks remain manual." : "每条路径只描述其关联集成测试实际验证的内容。测试代码生成的数据会与 EasyEDA 样本明确区分；在桌面 EDA 软件中打开结果仍需人工检查。"}</p>
     <div class="case-studies-actions">
-      <a class="button button-dark" href={formatsUrl}>{en ? "Compare all targets" : "比较全部目标格式"} <span>→</span></a>
-      <a class="text-link text-link-external" href={repository} target="_blank" rel="noreferrer">{en ? "Open source evidence" : "打开源码证据"} <span>↗</span></a>
+      <a class="button button-dark" href={formatsUrl}>{en ? "Compare formats" : "比较格式"} <span>→</span></a>
+      <a class="text-link text-link-external" href={repository} target="_blank" rel="noreferrer">{en ? "View source" : "查看源码"} <span>↗</span></a>
     </div>
     <div class="evidence-summary" aria-label={en ? "Case evidence baseline" : "案例证据基线"}>
       <span><b>{latestRelease.tag}</b>{en ? " release baseline" : " 发布版本基线"}</span>
@@ -70,3 +70,16 @@ const directoryName = (path: string) => path.slice(0, path.lastIndexOf("/")) + "
   </div>
   <p class="case-disclaimer">{en ? "Evidence scope: the linked fixtures and integration assertions only. Passing automated tests does not replace opening and checking exported files in KiCad, Altium, or another target EDA." : "证据范围仅限页面链接的测试样本与集成断言。自动化测试通过不等同于已在 KiCad、Altium 或其他目标 EDA 中打开并检查导出文件。"}</p>
 </section>
+
+<style>
+  @media (max-width: 480px) {
+    .case-studies-actions {
+      flex-wrap: nowrap;
+      gap: clamp(12px, 4vw, 16px);
+    }
+
+    .case-studies-actions > * {
+      white-space: nowrap;
+    }
+  }
+</style>

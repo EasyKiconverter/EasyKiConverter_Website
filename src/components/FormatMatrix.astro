@@ -17,10 +17,10 @@ const registeredCount = targetFormats.filter((format) => format.tier === "regist
   <div class="format-matrix-heading">
     <p class="kicker">{en ? "VERSIONED CAPABILITY" : "版本化能力"}</p>
     <h1 id="format-matrix-title">{en ? "EDA format capability matrix" : "EDA 格式能力矩阵"}</h1>
-    <p>{en ? "This page lists targets registered in the main-project source and the output types exercised by its checked-in tests. Neither row implies complete object coverage or desktop-app validation for every Release." : "本页列出主项目源码中注册的目标格式，以及仓库测试实际覆盖的输出类型；这不代表每个发布版本都完整支持所有对象，也不等同于已在目标桌面软件中验收。"}</p>
+    <p>{en ? "Lists registered EDA targets and test-checked outputs; this is not a guarantee of full format support or desktop-app validation." : "本页列出主项目源码中注册的目标格式，以及仓库测试实际覆盖的输出类型；这不代表每个发布版本都完整支持所有对象，也不等同于已在目标桌面软件中验收。"}</p>
     <div class="format-matrix-actions">
-      <a class="button button-dark" href={casesUrl}>{en ? "See tested cases" : "查看测试案例"} <span>→</span></a>
-      <a class="text-link text-link-external" href={releasesUrl} target="_blank" rel="noreferrer">{en ? "Read the current Release" : "阅读当前发布页"} <span>↗</span></a>
+      <a class="button button-dark" href={casesUrl}>{en ? "Test cases" : "查看测试案例"} <span>→</span></a>
+      <a class="text-link text-link-external" href={releasesUrl} target="_blank" rel="noreferrer">{en ? "Latest Release" : "当前发布"} <span>↗</span></a>
     </div>
     <div class="evidence-summary" aria-label={en ? "Format evidence baseline" : "格式证据基线"}>
       <span><b>{latestRelease.tag}</b>{en ? " release baseline" : " 发布版本基线"}</span>
@@ -53,3 +53,16 @@ const registeredCount = targetFormats.filter((format) => format.tier === "regist
   </div>
   <p class="format-matrix-note">{en ? "The output notes summarize repository-test assertions, not exhaustive format support. Check the linked test and matching Release notes, then validate files in the target EDA before production use." : "输出说明仅概括仓库测试断言，不代表格式能力穷举。正式使用前请查看对应测试和发布说明，并在目标 EDA 中实际检查文件。"}</p>
 </section>
+
+<style>
+  @media (max-width: 480px) {
+    .format-matrix-actions {
+      flex-wrap: nowrap;
+      gap: clamp(12px, 4vw, 16px);
+    }
+
+    .format-matrix-actions > * {
+      white-space: nowrap;
+    }
+  }
+</style>
