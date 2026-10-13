@@ -1035,11 +1035,18 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
     await atlas.dispatchEvent('click');
     await expect(stage).toHaveAttribute('data-artifact-view', 'atlas');
     await expect(atlas).toHaveAttribute('aria-pressed', 'true');
+    await expect(stage.locator('.mesh-atlas')).not.toHaveAttribute('inert', '');
+    await expect(stage.locator('.mesh-atlas')).not.toHaveAttribute('aria-hidden', 'true');
+    await expect(stage.locator('#model-canvas')).toHaveAttribute('inert', '');
+    await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-hidden', 'true');
     await expect(stage.locator('.artifact-caption')).toContainText(/mesh|网格/i);
     const model = stage.locator('[data-artifact-view="model"]');
     await model.dispatchEvent('click');
     await expect(stage).toHaveAttribute('data-artifact-view', 'model');
     await expect(model).toHaveAttribute('aria-pressed', 'true');
+    await expect(stage.locator('#model-canvas')).not.toHaveAttribute('inert', '');
+    await expect(stage.locator('#model-canvas')).not.toHaveAttribute('aria-hidden', 'true');
+    await expect(stage.locator('.mesh-atlas')).toHaveAttribute('inert', '');
     await expect(stage.locator('[data-artifact-label]')).toContainText(/GLB DELIVERY MODEL|GLB 交付模型/);
   }
 });
