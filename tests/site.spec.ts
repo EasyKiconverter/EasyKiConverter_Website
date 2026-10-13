@@ -727,6 +727,12 @@ test('bilingual hero copy identifies the primary EDA destinations', async ({ pag
   await expect(page.locator('.hero-lede')).toContainText('KiCad, Altium');
 });
 
+test('English homepage keeps product section labels concrete', async ({ page }) => {
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.product-showcase .kicker')).toHaveText('THE REAL WORKBENCH');
+  await expect(page.locator('#workflow .kicker')).toHaveText('A SMALL WORKFLOW');
+});
+
 test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const homepage = page.locator('main');
