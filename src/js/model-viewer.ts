@@ -1087,7 +1087,8 @@ export const setupModel = async (): Promise<void> => {
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
       .matches,
   };
-  const baseModelScale = (): number => state.width <= 760 ? 0.92 : 0.8;
+  let cameraFitRadius = state.modelRadius;
+  const baseModelScale = (): number => 0.92;
   let branchWarpStartedAt = 0;
   let branchWarpIntensity = 0;
   let temporalGhostStartedAt = 0;
@@ -3064,7 +3065,7 @@ export const setupModel = async (): Promise<void> => {
 
   const fitCamera = (): void => {
     const aspect = state.width / state.height;
-    const halfHeight = (state.modelRadius * 1.16) / Math.min(1, aspect);
+    const halfHeight = (cameraFitRadius * 1.16) / Math.min(1, aspect);
     camera.left = -halfHeight * aspect;
     camera.right = halfHeight * aspect;
     camera.top = halfHeight;
@@ -4397,6 +4398,13 @@ export const setupModel = async (): Promise<void> => {
     const sphere = new THREE.Box3()
       .setFromObject(group)
       .getBoundingSphere(new THREE.Sphere());
+    const physicalBounds = new THREE.Box3();
+    explodedMeshes.forEach(({ mesh }) => physicalBounds.expandByObject(mesh));
+    const physicalSphere = physicalBounds.getBoundingSphere(new THREE.Sphere());
+    const fitRadius = window.matchMedia("(max-width: 760px)").matches
+      ? sphere.radius
+      : physicalSphere.radius * 1.12;
+    cameraFitRadius = Math.max(fitRadius, 0.1);
     state.modelRadius = Math.max(sphere.radius, 0.1);
     fitCamera();
     stage.dataset.modelTriangles = String(triangleCount);
