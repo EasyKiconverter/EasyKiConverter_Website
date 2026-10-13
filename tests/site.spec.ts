@@ -309,7 +309,7 @@ test('format matrix rows remain readable on narrow screens', async ({ page }) =>
 });
 
 test('bilingual case pages explain the evidence-reading order', async ({ page }) => {
-  for (const [path, steps] of [['/cases/', ['选定路径', '打开样本', '复核测试']], ['/en/cases/', ['Choose a route', 'Open the fixture', 'Review the test']]] as const) {
+  for (const [path, steps] of [['/cases/', ['选定路径', '核对输入依据', '复核测试']], ['/en/cases/', ['Choose a route', 'Inspect the input', 'Review the test']]] as const) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const guide = page.locator('.case-reading-guide');
     await expect(guide.locator('li')).toHaveCount(3);
@@ -518,9 +518,9 @@ test('case studies expose their evidence scope and next-step paths', async ({ pa
     await expect(page.locator('.case-studies-actions .button-dark')).toHaveAttribute('href', /formats/);
     await expect(page.locator('.case-studies-actions .text-link')).toHaveAttribute('href', /github\.com\/EasyKiconverter\/EasyKiConverter$/);
     await expect(page.locator('.evidence-summary')).toContainText('v3.1.13');
-    await expect(page.locator('.evidence-summary')).toContainText('3');
-    await expect(page.locator('.case-proof')).toHaveCount(3);
-    await expect(page.locator('.case-evidence-action')).toHaveCount(6);
+    await expect(page.locator('.evidence-summary')).toContainText('2');
+    await expect(page.locator('.case-proof')).toHaveCount(2);
+    await expect(page.locator('.case-evidence-action')).toHaveCount(4);
     await expect(page.locator('.case-evidence-action').first()).toContainText(/打开测试样本|Open fixture/);
   }
 });
@@ -528,17 +528,17 @@ test('case studies expose their evidence scope and next-step paths', async ({ pa
 test('case studies expose bilingual input and output routes', async ({ page }) => {
   await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
   const chineseRoutes = page.locator('.case-route');
-  await expect(chineseRoutes).toHaveCount(3);
+  await expect(chineseRoutes).toHaveCount(2);
   await expect(chineseRoutes.first()).toContainText('输入');
-  await expect(chineseRoutes.first()).toContainText('EasyEDA 元件');
-  await expect(chineseRoutes.first()).toContainText('KiCad 库');
+  await expect(chineseRoutes.first()).toContainText('符号与封装样本');
+  await expect(chineseRoutes.first()).toContainText('KiCad 符号库 + 封装');
 
   await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
   const englishRoutes = page.locator('.case-route');
-  await expect(englishRoutes).toHaveCount(3);
+  await expect(englishRoutes).toHaveCount(2);
   await expect(englishRoutes.first()).toContainText('INPUT');
-  await expect(englishRoutes.first()).toContainText('EasyEDA component');
-  await expect(englishRoutes.first()).toContainText('KiCad library');
+  await expect(englishRoutes.first()).toContainText('Symbol and footprint fixtures');
+  await expect(englishRoutes.first()).toContainText('KiCad symbol library + footprint');
 });
 
 test('Lab pages keep the experiment connected to product navigation', async ({ page }) => {
@@ -853,23 +853,32 @@ test('Chinese Lab keeps its entry label localized', async ({ page }) => {
   await expect(page.locator('.morph-orbit-import')).toHaveText('ORBIT ↥');
 });
 
-test('Chinese case summaries keep evidence terms localized', async ({ page }) => {
+test('case studies describe only conversion routes supported by linked integration tests', async ({ page }) => {
   await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.case-card').nth(0)).toContainText('CAD 测试样本');
-  await expect(page.locator('.case-card').nth(2)).toContainText('BOM 测试样本');
-  const chineseSummaries = await page.locator('.case-card > p').allTextContents();
-  expect(chineseSummaries.join(' ')).not.toContain('fixture');
+  await expect(page.locator('.case-card')).toHaveCount(2);
+  await expect(page.locator('#easyeda-kicad')).toContainText('符号与封装样本');
+  await expect(page.locator('#easyeda-kicad .case-evidence-link')).toHaveCount(3);
+  await expect(page.locator('#easyeda-kicad .case-evidence-link').nth(1)).toHaveAttribute('href', /footprint_basic\.json$/);
+  await expect(page.locator('#altium-pipeline')).toContainText('本地构造确定性元件数据');
+  await expect(page.locator('#altium-pipeline')).toContainText('不代表 EasyEDA 在线导入');
+  await expect(page.locator('#altium-pipeline .case-evidence-link')).toHaveAttribute('href', /test_parallel_export_cancellation\.cpp$/);
+  await expect(page.locator('#bom-batch')).toHaveCount(0);
   await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.case-card').nth(0)).toContainText('CAD fixtures');
+  await expect(page.locator('.case-card')).toHaveCount(2);
+  await expect(page.locator('#easyeda-kicad')).toContainText('Both EasyEDA JSON fixtures are read directly by this test.');
+  await expect(page.locator('#altium-pipeline')).toContainText('does not represent an EasyEDA online import');
+  await expect(page.locator('#bom-batch')).toHaveCount(0);
 });
 
-test('bilingual case copy keeps each output path singular and actionable', async ({ page }) => {
+test('bilingual case copy keeps inputs, target files, and manual validation scope explicit', async ({ page }) => {
   await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.case-card').nth(1)).toHaveText(/EasyEDA 元件 → Altium 库/);
-  await expect(page.locator('.case-card').nth(2)).toContainText('GUI 和 CLI 流程中重复检查');
+  await expect(page.locator('#easyeda-kicad')).toContainText('KiCad 符号库 + 封装');
+  await expect(page.locator('#altium-pipeline')).toContainText('SchLib + PcbLib + STEP');
+  await expect(page.locator('.case-disclaimer')).toContainText('自动化测试通过不等同于已在');
   await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.case-card').nth(1)).toHaveText(/EasyEDA component → Altium library/);
-  await expect(page.locator('.case-card').nth(2)).toContainText('checked repeatedly through GUI and CLI workflows');
+  await expect(page.locator('#easyeda-kicad')).toContainText('KiCad symbol library + footprint');
+  await expect(page.locator('#altium-pipeline')).toContainText('SchLib + PcbLib + STEP');
+  await expect(page.locator('.case-disclaimer')).toContainText('does not replace opening and checking exported files');
 });
 
 test('case evidence paths foreground filenames while retaining directories', async ({ page }) => {
