@@ -6,7 +6,7 @@
 
 ## 已验证
 
-- 2026-10-15，检查 320px 双语视口发现 `/en/cases/` 的 “View source” CTA 溢出，页面宽度为 353px；在特性分支 `fix/cases-actions-320px` 为不大于 360px 的布局启用换行。中英文 320px 回归在 Chromium 与 Chromium Mobile 共通过 2 项，英文链接完整显示且文档宽度为 320px。`pnpm build`、`pnpm run check`（0 errors/warnings/hints）、`python3 tools/validate_site.py`、`pnpm run assets:check` 通过；Playwright 为 198 passed、4 skipped。Release API 返回 403，本地构建使用已提交的 `v3.1.13` 快照。改动尚未提交/合并。
+- 2026-10-15，检查 320px 双语视口发现 `/en/cases/` 的 “View source” CTA 溢出，页面宽度为 353px；在特性分支 `fix/cases-actions-320px` 为不大于 360px 的布局启用换行。中英文 320px 回归在 Chromium 与 Chromium Mobile 共通过 2 项，英文链接完整显示且文档宽度为 320px。`pnpm build`、`pnpm run check`（0 errors/warnings/hints）、`python3 tools/validate_site.py`、`pnpm run assets:check` 通过；Playwright 为 198 passed、4 skipped。Release API 返回 403，本地构建使用已提交的 `v3.1.13` 快照。PR #313 已合入 `version/V0.0.1`（merge `2e23100`），合并后 CI run `38644979827` 通过；未晋级 `master`、未部署生产。
 - 2026-10-15 状态复核：`master`=`8f447e7`，`version/V0.0.1`=`eb25b34`；PR #311/#312 已合并，master Site Quality run `38640180490` 成功（196 passed、4 skipped），当前无开放 PR。主项目最新 Release 为 `v3.1.13`。正式站八个路由 HTTP 200、canonical 正确；首页两路由各有两个 `<title>`，其余六路由各一个，Last-Modified 为 2026-10-13 00:20 UTC。未运行生产部署。
 - 2026-10-15 状态快照：`master`=`67c45bd`，`version/V0.0.1`=`9b10f58`，二者与远端一致。PR #291–#295 的下载与 CTA 批次由 PR #296 晋级 `master`；PR #298/#299 更新并晋级双语状态文档。PR #299 的必需 checks 和 master push run `38624194781` 均通过，后者 194 passed、4 skipped。PR #297/#300 仅同步祖先历史，未改网站内容。生产未部署。
 - 2026-10-15，双语 390px 下载卡截图显示，首页和 Lab 的“下载”主 CTA 打开的是 GitHub 版本发布页，而非直接文件；PR #292 将文案改为“查看下载项 / View downloads”和“查看稳定版下载 / View stable downloads”，并合入 `version/V0.0.1`。目标 Release URL 和直达安装包入口保持不变。工作树构建、完整 Playwright（192 passed、4 skipped）、CI、站点校验、模型资产检查及 `git diff --check` 通过。未验证真机体验，也未部署生产。
