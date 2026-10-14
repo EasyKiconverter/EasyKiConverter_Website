@@ -1,5 +1,7 @@
 # Deployment and preview parity
 
+[中文](DEPLOYMENT.md)
+
 This is an Astro-generated static website. Run `pnpm run build` before publishing and sync only the generated `dist/` directory; do not upload only source pages or only the image directory.
 
 ## Local preview
