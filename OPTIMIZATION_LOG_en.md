@@ -539,6 +539,6 @@
 - **Validation:** Add bilingual stage-size regression at `390×844` and `360×640`. The first PR CI run exposed a short-screen overlap between the chapter and model stage; move the short-screen stage lower and pass the overlap regression. The full browser suite reports 190 passed and 4 skipped; build, static validation, and scrolling screenshots at both phone sizes were reviewed.
 
 ## 2026-10-14 — Improve 3D model edge legibility
-- **Issue:** The white frame had weak contrast against the pale stage, and the existing test checked only that a detail-status element existed—not that asynchronous edge geometry finished generating.
-- **Change:** Darken and modestly strengthen model detail strokes without changing model colors, lighting, mesh limits, or asynchronous generation budget; make the browser regression wait for completed edge generation and require nonzero segments.
-- **Validation:** Compare 390×844 screenshots after edge generation. With browser concurrency capped at two workers by default, the full suite reports 190 passed and 4 skipped; `pnpm run build`, static-site validation, and `git diff --check` pass.
+- **Issue:** The white frame had weak contrast against the pale stage. Local rendering showed stronger geometry after edge generation, but the hosted runner did not complete that asynchronous pass reliably within 30 seconds.
+- **Change:** Darken and modestly strengthen model detail strokes without changing model colors, lighting, mesh limits, or asynchronous generation budget; retain coverage for the GLB and selected edge meshes without making browser tests wait on an unbounded detail pass.
+- **Validation:** Local edge generation produced 3,809 line segments; compare 390×844 before/after screenshots. With browser concurrency capped at two workers by default, the full suite reports 190 passed and 4 skipped; `pnpm run build`, static-site validation, and `git diff --check` pass.
