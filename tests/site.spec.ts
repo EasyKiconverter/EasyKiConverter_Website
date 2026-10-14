@@ -1583,6 +1583,20 @@ test('Lab pages clearly label the stable-release downloads page', async ({ page 
   }
 });
 
+test('Formats and Cases CTAs clearly direct visitors to Release download options', async ({ page }) => {
+  for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const link = page.locator('.content-page-cta [data-release-link]');
+    await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', 'noreferrer');
+    await expect(link).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
+
+    const copy = page.locator('.content-page-cta > div').first();
+    await expect(copy).toContainText(/版本发布页选择安装包|release page/);
+  }
+});
+
 test('reduced motion renders the Lab without a continuous animation loop', async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
