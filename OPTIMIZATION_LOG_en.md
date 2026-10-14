@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-14 — Keep mobile Lab story chapters clear of controls
+
+- **Issue:** During actual 3D Lab scrolling, chapter copy in bilingual steps 1–3 overlapped the model switcher, exploded-view controls, or detail status. Static screenshots and isolated control-visibility checks did not cover these combined states.
+- **Changes:** Place mobile chapters above the model stage when motion is enabled, move the stage lower on short screens, and hide it in the final “real workbench” chapter so the real-app screenshot and next-step links take focus; add bilingual three-step geometry checks at 390×844 and 360×640.
+- **Validation:** `pnpm run build` passed (Astro: 0 errors/warnings/hints). CI caught residual overlap in the English second chapter at 360×640; after moving the stage lower on short screens, the focused regression passed in Chromium and Chromium Mobile, and the full Playwright suite passed on rerun (186 passed, 4 skipped). The local Release API returned 403 and the build used checked-in fallback data.
+
 ## 2026-10-14 — Align case evidence promises and Lab control placement
 
 - **Issue:** The English case-page heading did not foreground evidence-first reading; the 3D Lab advanced-tools entry was detached from the model stage and unstable on narrow screens; shared text colors lacked contrast on light brand surfaces, and browser-test concurrency was high.
