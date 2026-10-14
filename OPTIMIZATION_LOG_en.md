@@ -535,5 +535,5 @@
 
 ## 2026-10-14 — Increase the mobile 3D Lab model's visible area
 - **Issue:** On narrow screens, scroll-driven rotation could leave the model edge-on; fitting the camera to a sphere that included helper-scene objects and a short mobile stage reduced geometric legibility.
-- **Change:** Fit the camera to the actual model geometry, limit narrow-screen narrative rotation to a half-turn, and increase the stage to `42svh` at 390px and `40svh` on short screens while preserving control and chapter spacing.
-- **Validation:** Add bilingual stage-size regression at `390×844` and `360×640`; the build and eight focused browser checks pass; the full browser suite reports 190 passed and 4 skipped, and scrolling screenshots were reviewed at both phone sizes.
+- **Change:** Fit the camera to the actual model geometry, limit narrow-screen narrative rotation to a half-turn, and increase the stage to `42svh` at 390px and `38svh` on short screens while moving chapter copy up to prevent overlap.
+- **Validation:** Add bilingual stage-size regression at `390×844` and `360×640`. The first PR CI run exposed a short-screen overlap between the chapter and model stage; move the short-screen stage lower and pass the overlap regression. The full browser suite reports 190 passed and 4 skipped; build, static validation, and scrolling screenshots at both phone sizes were reviewed.
