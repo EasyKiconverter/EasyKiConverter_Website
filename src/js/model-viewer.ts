@@ -4325,8 +4325,10 @@ export const setupModel = async (): Promise<void> => {
     group.rotation.z += forecastDrift * forecastPulse * 0.035;
     camera.zoom = 1 + branchWarp * 0.14 + modelFeedback * 0.06 + directorZoom + neuralReflex * 0.045 + forecastDrift * forecastPulse * 0.028;
     camera.updateProjectionMatrix();
+    const initialRotation = keyframes[0].ry;
+    const rotationTravel = state.width <= 760 ? 0.5 : 1;
     group.rotation.y =
-      blend(from.ry, to.ry) +
+      initialRotation + (blend(from.ry, to.ry) - initialRotation) * rotationTravel +
       (state.reducedMotion ? 0 : state.pointerX * 0.12) + branchWarp * 0.08;
     group.rotation.x =
       blend(from.rx, to.rx) +
@@ -4417,10 +4419,7 @@ export const setupModel = async (): Promise<void> => {
     const physicalBounds = new THREE.Box3();
     explodedMeshes.forEach(({ mesh }) => physicalBounds.expandByObject(mesh));
     const physicalSphere = physicalBounds.getBoundingSphere(new THREE.Sphere());
-    const fitRadius = window.matchMedia("(max-width: 760px)").matches
-      ? sphere.radius
-      : physicalSphere.radius * 1.12;
-    cameraFitRadius = Math.max(fitRadius, 0.1);
+    cameraFitRadius = Math.max(physicalSphere.radius * 1.12, 0.1);
     state.modelRadius = Math.max(sphere.radius, 0.1);
     fitCamera();
     stage.dataset.modelTriangles = String(triangleCount);

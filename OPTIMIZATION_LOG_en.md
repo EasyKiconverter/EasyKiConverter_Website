@@ -532,3 +532,8 @@
 - **Issue:** The bilingual workbench CTA was maintained as duplicated markup, and its copy said to “follow” or “inspect” without clearly expressing the path from the real interface to conversion evidence and then 3D delivery.
 - **Change:** Extract a shared `WorkbenchActions` component, align both languages’ entry hierarchy, internal arrows, and hover semantics, and make the copy describe the three-step action path.
 - **Validation:** Add bilingual path-copy assertions, then check the build, static validation, and homepage mobile presentation.
+
+## 2026-10-14 — Increase the mobile 3D Lab model's visible area
+- **Issue:** On narrow screens, scroll-driven rotation could leave the model edge-on; fitting the camera to a sphere that included helper-scene objects and a short mobile stage reduced geometric legibility.
+- **Change:** Fit the camera to the actual model geometry, limit narrow-screen narrative rotation to a half-turn, and increase the stage to `42svh` at 390px and `38svh` on short screens while moving chapter copy up to prevent overlap.
+- **Validation:** Add bilingual stage-size regression at `390×844` and `360×640`. The first PR CI run exposed a short-screen overlap between the chapter and model stage; move the short-screen stage lower and pass the overlap regression. The full browser suite reports 190 passed and 4 skipped; build, static validation, and scrolling screenshots at both phone sizes were reviewed.
