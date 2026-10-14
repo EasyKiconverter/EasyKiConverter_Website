@@ -8,6 +8,7 @@
 
 - 2026-10-15 状态快照：`master`=`80d603e`，`version/V0.0.1`=`44ff2a0`，二者与远端一致。PR #286（首页文案/状态）、#287（格式矩阵证据映射至版本分支）、#288（晋级 master）和 #291（补充 Release 其他包型及逐项校验文件入口）均已合并；审批及必需 `Static site checks`、`Dependency Review` 通过。PR #291 CI runs：`38609570312` / `38609570346`。本轮工作树 Astro 0 errors/warnings/hints，8 页站点校验和模型资产检查通过，Playwright 192 passed、4 skipped。发布 API 本地 403、使用回退数据；CI Release 同步通过。未部署生产。
 - 2026-10-15，双语 390px 下载卡截图显示，首页和 Lab 的“下载”主 CTA 打开的是 GitHub 版本发布页，而非直接文件；PR #292 将文案改为“查看下载项 / View downloads”和“查看稳定版下载 / View stable downloads”，并合入 `version/V0.0.1`。目标 Release URL 和直达安装包入口保持不变。工作树构建、完整 Playwright（192 passed、4 skipped）、CI、站点校验、模型资产检查及 `git diff --check` 通过。未验证真机体验，也未部署生产。
+- 2026-10-15，Formats 与 Cases 共用页尾 CTA 也被确认会打开版本发布页。PR #294 对齐四个内容路由的中英文按钮和说明，390px 完整页截图显示无横向溢出；四路由 CTA 回归通过。最终版本分支 CI run `38617247841` 为 194 passed、4 skipped；构建、站点校验及模型资产检查通过。CTA 改动在 `version/V0.0.1` 验证；生产未部署。
 - 2026-10-15，本轮 390px 双语截图覆盖首页、格式矩阵、案例和 3D Lab；另按实际滚动检查 Lab 三个章节及产品交接状态，未发现新布局缺陷。Chromium Mobile 不代表实机验证。
 - 2026-10-15，正式域名本轮只读复查请求返回 HTTP 403，线上当前状态无法确认。上一轮成功检查记录首页 `/` 与 `/en/` 各有两个 `<title>`；源码修复已在 `master`，没有运行部署脚本。
 - Astro 静态构建生成 `/`、`/en/`、`/lab/`、`/en/lab/`、`/formats/`、`/en/formats/`、`/cases/`、`/en/cases/` 八个页面。
