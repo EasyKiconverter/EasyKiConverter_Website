@@ -2,6 +2,12 @@
 
 [English](OPTIMIZATION_LOG_en.md)
 
+## 2026-10-14 — 将首页截图来源改为访客文案
+
+- **发现：** 首页中英文真实界面卡片将仓库内部路径 `resources/imgs/screenshot1.png` 显示给访客；它说明文件位置，却没有说明截图与产品的关系。
+- **处理：** 改为“截取自桌面软件实际运行界面” / “Captured from the running desktop app”，并将测试改为验证双语来源说明及不泄露 `resources/` 路径。更新双语优化待办。
+- **验证：** 本地 `pnpm run build`（Astro 0 errors/warnings/hints）、`python3 tools/validate_site.py`、`pnpm run assets:check` 和 `git diff --check` 均通过；定向 Playwright 用例在 Chromium 与 Chromium Mobile 通过。PR #272 必需 CI 全绿，完整套件 188 passed、4 skipped；未执行生产部署。
+
 ## 2026-10-14 — 跟踪首页重复标题与版本晋级边界
 
 - **发现：** 对正式域名逐页读取 HTML，八个公开路由均返回 200，但 `/` 与 `/en/` 各包含两个完全相同的 `<title>`。当前 `origin/master` 的两份首页在 `SeoHead` 之外还保留显式 `<title>`；`version/V0.0.1` 的构建产物各只有一个。

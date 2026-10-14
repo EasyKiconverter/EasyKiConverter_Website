@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-14 — Replace the homepage screenshot source with visitor-facing copy
+
+- **Finding:** The bilingual real-interface card exposed the repository path `resources/imgs/screenshot1.png`. It explained where the file lives, not how the screenshot relates to the product.
+- **Change:** Use “截取自桌面软件实际运行界面” / “Captured from the running desktop app”; update the browser regression to require both localized explanations and reject the `resources/` path. Update the bilingual optimization backlog.
+- **Validation:** Local `pnpm run build` (Astro: 0 errors/warnings/hints), `python3 tools/validate_site.py`, `pnpm run assets:check`, and `git diff --check` passed. The focused Playwright test passed in Chromium and Chromium Mobile. PR #272 required CI passed, with 188 passed / 4 skipped in the complete suite; no production deployment was run.
+
 ## 2026-10-14 — Track duplicate homepage titles and the promotion boundary
 
 - **Finding:** Direct HTML checks of the production domain returned 200 for all eight public routes, but `/` and `/en/` each contain two identical `<title>` elements. Both current `origin/master` homepage sources retain an explicit title in addition to `SeoHead`; the `version/V0.0.1` build emits one each.
