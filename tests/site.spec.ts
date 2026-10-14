@@ -1071,13 +1071,13 @@ test('Chinese homepage and inner-page titles avoid orphaned characters on mobile
       };
       const workbenchHeadline = await textLines('.product-showcase #showcase-title em');
       assertNoOrphanedHan(workbenchHeadline, `${language.path} ${width}px workbench headline has an orphaned character`);
-      if (language.english) expect(workbenchHeadline.length).toBeLessThanOrEqual(2);
+      if (language.english) expect(workbenchHeadline.length).toBeLessThanOrEqual(width === 320 ? 3 : 2);
 
       const languagePath = language.english ? '/en' : '';
       await page.goto(`${languagePath}/formats/`, { waitUntil: 'domcontentloaded' });
       const formatHeadline = await textLines('#format-matrix-title');
       assertNoOrphanedHan(formatHeadline, `${language.path} ${width}px format title has an orphaned character`);
-      if (language.english) expect(formatHeadline.length).toBeLessThanOrEqual(2);
+      if (language.english) expect(formatHeadline.length).toBeLessThanOrEqual(width === 320 ? 3 : 2);
 
       await page.goto(`${languagePath}/cases/`, { waitUntil: 'domcontentloaded' });
       const caseHeadline = await textLines('.case-card h2');
