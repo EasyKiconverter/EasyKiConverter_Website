@@ -19,12 +19,14 @@ for (const path of pages) {
       if (message.type() === 'error') errors.push(message.text());
     });
 
-    await page.goto(path, { waitUntil: 'networkidle' });
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('main')).toBeVisible();
     await expect(page.locator('[data-release-version]').first()).toHaveText('v3.1.13');
     await expect(page.locator('[data-release-link]').first()).toHaveAttribute('href', /v3\.1\.13/);
     await expect(page.locator('.hero-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
     await expect(page.locator('.download-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
+    await expect(page.locator('.hero-actions [data-release-link]')).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
+    await expect(page.locator('.download-actions [data-release-link]')).toContainText(/查看 v3\.1\.13 下载项|View downloads for v3\.1\.13/);
     await expect(page.locator('h1')).toBeVisible();
 
     const duplicateIds = await page.locator('[id]').evaluateAll((elements) => {
@@ -166,6 +168,7 @@ test('Chinese mobile hero keeps the conversion phrase together', async ({ page }
 
 test('English mobile hero keeps a compact promise and brings product proof higher', async ({ page }) => {
   test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
 
@@ -1568,7 +1571,7 @@ test('Lab introductions explain the real geometry story in both languages', asyn
   await expect(page.locator('.lab-intro')).toContainText('mesh, section, and topology views');
 });
 
-test('Lab pages expose a direct bilingual stable-download path', async ({ page }) => {
+test('Lab pages clearly label the stable-release downloads page', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const link = page.locator('[data-release-link]');
@@ -1576,7 +1579,7 @@ test('Lab pages expose a direct bilingual stable-download path', async ({ page }
     await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noreferrer');
-    await expect(link).toContainText(/下载稳定版 v3\.1\.13|Download stable v3\.1\.13/);
+    await expect(link).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
   }
 });
 

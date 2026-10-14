@@ -6,7 +6,8 @@
 
 ## 已验证
 
-- 2026-10-15，`master`=`d8eb6fe`，`version/V0.0.1`=`c0622fb`，当前无开放 PR/Issue。PR #286（首页文案/状态记录）、#287（格式矩阵证据映射至版本分支）、#288（晋级 master）均已合并；审批及必需 `Static site checks`、`Dependency Review` 通过。PR #287 CI runs：`38601836901` / `38601836709`；PR #288：`38602591809` / `38602591815`（晋级版本分支检查 `38602490806` 也通过）。当前 master 构建 Astro 为 0 errors/warnings/hints，站点校验 8 页、模型资产检查通过，Playwright 192 passed、4 skipped。发布 API 本地 403、使用回退数据；CI Release 同步通过。未部署生产。
+- 2026-10-15 状态快照：`master`=`80d603e`，`version/V0.0.1`=`44ff2a0`，二者与远端一致。PR #286（首页文案/状态）、#287（格式矩阵证据映射至版本分支）、#288（晋级 master）和 #291（补充 Release 其他包型及逐项校验文件入口）均已合并；审批及必需 `Static site checks`、`Dependency Review` 通过。PR #291 CI runs：`38609570312` / `38609570346`。本轮工作树 Astro 0 errors/warnings/hints，8 页站点校验和模型资产检查通过，Playwright 192 passed、4 skipped。发布 API 本地 403、使用回退数据；CI Release 同步通过。未部署生产。
+- 2026-10-15，双语 390px 下载卡截图显示，首页和 Lab 的“下载”主 CTA 打开的是 GitHub 版本发布页，而非直接文件；目前文案已改为“查看下载项 / View downloads”和“查看稳定版下载 / View stable downloads”。目标 Release URL 和直达安装包入口保持不变。工作树构建、6 项目标桌面/移动浏览器回归、完整 Playwright（192 passed、4 skipped）、站点校验、模型资产检查及 `git diff --check` 通过。未验证真机体验，也未部署生产。
 - 2026-10-15，本轮 390px 双语截图覆盖首页、格式矩阵、案例和 3D Lab；另按实际滚动检查 Lab 三个章节及产品交接状态，未发现新布局缺陷。Chromium Mobile 不代表实机验证。
 - 2026-10-15，正式域名本轮只读复查请求返回 HTTP 403，线上当前状态无法确认。上一轮成功检查记录首页 `/` 与 `/en/` 各有两个 `<title>`；源码修复已在 `master`，没有运行部署脚本。
 - Astro 静态构建生成 `/`、`/en/`、`/lab/`、`/en/lab/`、`/formats/`、`/en/formats/`、`/cases/`、`/en/cases/` 八个页面。
