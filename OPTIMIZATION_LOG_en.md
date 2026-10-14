@@ -542,3 +542,8 @@
 - **Issue:** The white frame had weak contrast against the pale stage. Local rendering showed stronger geometry after edge generation, but the hosted runner did not complete that asynchronous pass reliably within 30 seconds.
 - **Change:** Darken and modestly strengthen model detail strokes without changing model colors, lighting, mesh limits, or asynchronous generation budget; retain coverage for the GLB and selected edge meshes without making browser tests wait on an unbounded detail pass.
 - **Validation:** Local edge generation produced 3,809 line segments; compare 390×844 before/after screenshots. With browser concurrency capped at two workers by default, the full suite reports 190 passed and 4 skipped; `pnpm run build`, static-site validation, and `git diff --check` pass.
+
+## 2026-10-14 — Reduce edge-detail wait on constrained devices
+- **Issue:** Generating `EdgesGeometry` for up to 160 small meshes took about 24 seconds with 4× CPU throttling; the hosted runner did not reliably finish within 30 seconds, so slower devices may remain in the detail-loading state too long.
+- **Change:** Reduce the prioritized edge-mesh cap from 160 to 96 while keeping the same geometry filter, segment budget, and asynchronous chunking; do not reduce the primary model geometry.
+- **Validation:** About 10.9 seconds to generate under 4× CPU throttling (about 24 seconds for the 160-mesh baseline); a 390×844 screenshot confirms the silhouette and key details remain clear. Full browser suite: 190 passed, 4 skipped; `python3 tools/validate_site.py` validated 8 pages and assets; `pnpm run build` passed with zero Astro errors, warnings, or hints; `git diff --check` passed. Release API rate limiting correctly used checked-in data.
