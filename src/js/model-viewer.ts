@@ -80,7 +80,7 @@ const pointInPolygon = (point: [number, number], polygon: [number, number][]): b
 export const setupModel = async (): Promise<void> => {
   const stage = document.querySelector<HTMLElement>("[data-model-stage]");
   if (stage?.dataset.controlsReady === "true") return;
-  const controlsRoot = stage?.parentElement ?? document;
+  const controlsRoot = stage ?? document;
   const experimentControlsToggle = controlsRoot.querySelector<HTMLButtonElement>("[data-experiment-controls]");
   const experimentControlsNote = controlsRoot.querySelector<HTMLElement>(".lab-experiment-controls");
   const syncExperimentControls = (): void => {

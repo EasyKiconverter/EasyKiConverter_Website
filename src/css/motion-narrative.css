@@ -327,7 +327,7 @@
 .model-explode small{grid-column:1/-1;color:var(--muted,#746f66);font-size:9px;line-height:1.3}
 .model-slice-heading{grid-column:1;grid-row:3;font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--muted,#746f66)}
 .model-slice-toggle{grid-column:2;grid-row:3;border:0;border-radius:999px;padding:5px 9px;background:#e9e5dc;color:var(--muted,#746f66);font:700 9px ui-monospace,SFMono-Regular,monospace;cursor:pointer}
-.model-slice-toggle[aria-pressed="true"]{background:#6f61d8;color:#fff}
+.model-slice-toggle[aria-pressed="true"]{background:var(--violet);color:#fff}
 .model-slice-toggle:disabled,.model-slice-axes button:disabled{opacity:.45;cursor:wait}
 .model-slice-axes{grid-column:1;grid-row:4;display:flex;gap:4px}
 .model-slice-axes button{width:24px;height:21px;border:1px solid #29282420;border-radius:6px;background:#fff;color:var(--muted,#746f66);font:700 9px ui-monospace,SFMono-Regular,monospace;cursor:pointer}
@@ -385,7 +385,7 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
 .experiment-controls-toggle:hover,.experiment-controls-toggle:focus-visible{background:var(--ink,#292824);color:#fffdf8;transform:translateY(-1px);outline:2px solid var(--violet,#6254c8);outline-offset:3px}
 .experiment-controls-toggle[aria-expanded="true"]{background:var(--ink,#292824);color:#fffdf8}
 .lab-experiment-controls{position:absolute;z-index:5;top:50px;right:16px;max-width:220px;padding:6px 9px;border:1px solid #29282418;border-radius:8px;background:#fffdf8cc;color:var(--muted,#746f66);font:600 8px/1.35 ui-monospace,SFMono-Regular,monospace;text-align:right;opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .2s,transform .2s}
-.motion-pin[data-controls-open="true"] .lab-experiment-controls{opacity:1;transform:none}
+.motion-model[data-controls-open="true"] .lab-experiment-controls{opacity:1;transform:none}
 .motion-model button:disabled,.motion-model input:disabled{cursor:not-allowed}
 .motion-model:not([data-controls-open="true"]) [class^="morph-"],.motion-model:not([data-controls-open="true"]) [class*=" morph-"]{display:none!important}
-@media(max-width:760px){.experiment-controls-toggle{top:12px;right:12px;padding:6px 8px;font-size:8px}.lab-experiment-controls{top:46px;right:12px;max-width:180px}}
+@media(max-width:760px){.experiment-controls-toggle{top:64px;right:12px;padding:6px 8px;font-size:8px}.lab-experiment-controls{top:96px;right:12px;max-width:180px}}

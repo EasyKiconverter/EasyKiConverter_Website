@@ -2,6 +2,12 @@
 
 [English](OPTIMIZATION_LOG_en.md)
 
+## 2026-10-14 — 对齐案例证据承诺与 Lab 控件位置
+
+- **问题：** 英文案例页标题没有突出先核验证据；3D Lab 高级工具入口与模型舞台脱离，移动端位置也不稳定；浅色品牌表面上的正文色对比度不足，浏览器测试并发偏高。
+- **处理：** 双语案例页统一为证据优先的阅读顺序；将高级工具入口及说明收进模型舞台，并调整窄屏位置；提升共享正文色对比度并增加 WCAG AA 对比度回归测试；按 CI/本地环境限制 Playwright worker 数量。
+- **验证：** `pnpm run build` 成功，Astro 检查为 0 errors/warnings/hints；`pnpm run assets:check`、`python3 tools/validate_site.py`、`git diff --check` 均通过；`pnpm run test:browser` 为 182 passed、4 skipped。Release API 返回 HTTP 403，本地构建使用仓库静态回退数据；CI 的必需 Release 同步路径尚待远程检查确认。
+
 ## 2026-10-12 — 本地化中文 footer 的反馈入口
 
 - **问题：** 中文页面 footer 的 GitHub、文档和贡献入口已经本地化，但问题入口仍显示英文 `Issues`，破坏了导航语言层级的一致性。

@@ -624,6 +624,19 @@ test('case studies expose their evidence scope and next-step paths', async ({ pa
   }
 });
 
+test('case-study introductions keep the evidence-first promise aligned in both languages', async ({ page }) => {
+  for (const [path, title, evidenceCopy, manualCopy] of [
+    ['/cases/', '先核对证据，再看路径。', '关联集成测试实际验证的内容', '仍需人工检查'],
+    ['/en/cases/', 'Check the evidence, then trace each route.', 'only what linked tests verify', 'checks remain manual'],
+  ]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#case-studies-title')).toHaveText(title);
+    const summary = page.locator('.case-studies-heading > p').nth(1);
+    await expect(summary).toContainText(evidenceCopy);
+    await expect(summary).toContainText(manualCopy);
+  }
+});
+
 test('case studies expose bilingual input and output routes', async ({ page }) => {
   await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
   const chineseRoutes = page.locator('.case-route');
@@ -753,13 +766,33 @@ test('bilingual homepages keep the same interaction rhythm', async ({ page }) =>
   }
 });
 
-test('bilingual pages share the base brand tokens with the accessibility layer', async ({ page }) => {
+test('bilingual shared text colors meet WCAG AA on light brand surfaces', async ({ page }) => {
   for (const path of ['/', '/en/', '/formats/', '/en/formats/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect.poll(() => page.evaluate(() => ({
-      muted: getComputedStyle(document.documentElement).getPropertyValue('--muted').trim(),
-      violet: getComputedStyle(document.documentElement).getPropertyValue('--violet').trim(),
-    }))).toEqual({ muted: '#746f66', violet: '#6f61d8' });
+    const tokens = await page.evaluate(() => {
+      const style = getComputedStyle(document.documentElement);
+      return Object.fromEntries(['muted', 'violet', 'paper', 'peach', 'lilac', 'mint', 'yellow'].map((token) => [
+        token,
+        style.getPropertyValue(`--${token}`).trim(),
+      ])) as Record<string, string>;
+    });
+    expect(tokens).toMatchObject({ muted: '#5b564f', violet: '#5848b8' });
+
+    const luminance = (color: string): number => {
+      const channels = color.match(/[\da-f]{2}/gi)?.map((value) => parseInt(value, 16) / 255) ?? [];
+      const [red, green, blue] = channels.map((channel) =>
+        channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+      );
+      return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+    };
+    const contrastRatio = (foreground: string, background: string): number => {
+      const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+      return (values[0] + 0.05) / (values[1] + 0.05);
+    };
+    for (const surface of [tokens.paper, tokens.peach, tokens.lilac, tokens.mint, tokens.yellow]) {
+      expect(contrastRatio(tokens.muted, surface)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(tokens.violet, surface)).toBeGreaterThanOrEqual(4.5);
+    }
   }
 });
 
@@ -1200,6 +1233,36 @@ test('Lab model controls stay inside the visible stage at phone, tablet, and des
       expect(bounds!.controls.right).toBeLessThanOrEqual(bounds!.stage.right);
       expect(bounds!.controls.bottom).toBeLessThanOrEqual(bounds!.stage.bottom);
       expect(bounds!.controls.left).toBeGreaterThanOrEqual(bounds!.stage.left);
+    }
+  }
+});
+
+test('Lab advanced-tools entry stays with the model and clear of the view switcher', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const bounds = await page.evaluate(() => {
+        const stage = document.querySelector<HTMLElement>('[data-model-stage]');
+        const toggle = stage?.querySelector<HTMLElement>('[data-experiment-controls]');
+        const switcher = stage?.querySelector<HTMLElement>('.artifact-switcher');
+        if (!stage || !toggle || !switcher) return null;
+        const rect = (element: HTMLElement) => {
+          const { top, right, bottom, left } = element.getBoundingClientRect();
+          return { top, right, bottom, left };
+        };
+        return { stage: rect(stage), toggle: rect(toggle), switcher: rect(switcher) };
+      });
+      expect(bounds).not.toBeNull();
+      expect(bounds!.toggle.top).toBeGreaterThanOrEqual(bounds!.stage.top);
+      expect(bounds!.toggle.right).toBeLessThanOrEqual(bounds!.stage.right);
+      expect(bounds!.toggle.bottom).toBeLessThanOrEqual(bounds!.stage.bottom);
+      expect(bounds!.toggle.left).toBeGreaterThanOrEqual(bounds!.stage.left);
+      const overlaps = bounds!.toggle.left < bounds!.switcher.right &&
+        bounds!.toggle.right > bounds!.switcher.left &&
+        bounds!.toggle.top < bounds!.switcher.bottom &&
+        bounds!.toggle.bottom > bounds!.switcher.top;
+      expect(overlaps).toBe(false);
     }
   }
 });
