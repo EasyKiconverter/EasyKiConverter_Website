@@ -6,9 +6,9 @@
 
 ## 已验证
 
-- 2026-10-15，PR #286 将项目状态文档和双语首页文案晋级至 `master`（合并提交 `70dd2bf`）；审批、`Static site checks` 与 `Dependency Review` 均通过。仅为源码晋级，未部署生产。
-- 2026-10-15，格式矩阵证据链接审查发现除 LibrePCB 外的 10 行均指向并行取消测试。当前工作分支改为链接对应导出器测试，Altium 指向人工验证规程；Astro 构建、8 页站点校验、模型资产校验通过，完整浏览器回归 192 passed、4 skipped。
-
+- 2026-10-15，`master`=`d8eb6fe`，`version/V0.0.1`=`c0622fb`，当前无开放 PR/Issue。PR #286（首页文案/状态记录）、#287（格式矩阵证据映射至版本分支）、#288（晋级 master）均已合并；审批及必需 `Static site checks`、`Dependency Review` 通过。PR #287 CI runs：`38601836901` / `38601836709`；PR #288：`38602591809` / `38602591815`（晋级版本分支检查 `38602490806` 也通过）。当前 master 构建 Astro 为 0 errors/warnings/hints，站点校验 8 页、模型资产检查通过，Playwright 192 passed、4 skipped。发布 API 本地 403、使用回退数据；CI Release 同步通过。未部署生产。
+- 2026-10-15，本轮 390px 双语截图覆盖首页、格式矩阵、案例和 3D Lab；另按实际滚动检查 Lab 三个章节及产品交接状态，未发现新布局缺陷。Chromium Mobile 不代表实机验证。
+- 2026-10-15，正式域名本轮只读复查请求返回 HTTP 403，线上当前状态无法确认。上一轮成功检查记录首页 `/` 与 `/en/` 各有两个 `<title>`；源码修复已在 `master`，没有运行部署脚本。
 - Astro 静态构建生成 `/`、`/en/`、`/lab/`、`/en/lab/`、`/formats/`、`/en/formats/`、`/cases/`、`/en/cases/` 八个页面。
 - `python3 tools/validate_site.py` 检查最终 `dist/` 的重复 ID、片段链接、语义地标、本地资源和未发布 PNG。
 - `pnpm run test:browser` 覆盖中英文首页、桌面/移动 Chromium、移动菜单、reduced-motion、Release 版本、格式矩阵、Lab 路由隔离和控制台错误。

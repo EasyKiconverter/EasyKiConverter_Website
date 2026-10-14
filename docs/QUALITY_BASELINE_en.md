@@ -6,9 +6,9 @@ Recorded: 2026-10-15. This document records facts reproducible from the reposito
 
 ## Verified
 
-- 2026-10-15, PR #286 promoted the project status docs and bilingual homepage copy to `master` (merge commit `70dd2bf`). Approval, `Static site checks`, and `Dependency Review` passed. This promoted source only; production was not deployed.
-- 2026-10-15, a format-matrix evidence audit found that 10 rows (all except LibrePCB) linked to the parallel-cancellation test. The current work branch maps them to target-specific exporter tests, with Altium pointing to its manual validation procedure. Astro build, eight-page site validation, and model-asset checks passed; the full browser regression reported 192 passed and 4 skipped.
-
+- 2026-10-15, `master`=`d8eb6fe`, `version/V0.0.1`=`c0622fb`, with no open PRs/issues. PR #286 (homepage copy/status), #287 (format-matrix evidence mapping to the version branch), and #288 (promotion to master) are merged; approvals and required `Static site checks` and `Dependency Review` passed. PR #287 CI runs: `38601836901` / `38601836709`; PR #288: `38602591809` / `38602591815` (version-branch promotion check `38602490806` also passed). Current master build reports 0 Astro errors/warnings/hints, eight-page site validation and model-asset checks passed, and Playwright reported 192 passed / 4 skipped. Local Release API returned 403 and used fallback data; CI Release sync passed. Production was not deployed.
+- 2026-10-15, 390px bilingual screenshots covered Home, Formats, Cases, and 3D Lab; actual scrolling also verified the Lab’s three chapters and product handoff. No new layout defect was found. Chromium Mobile is not real-device validation.
+- 2026-10-15, read-only requests to the production domain returned HTTP 403, so its current state could not be confirmed. The previous successful check recorded two `<title>` elements on `/` and `/en/`; the source fix is on `master`, and no deployment script was run.
 - Astro generates eight static pages: `/`, `/en/`, `/lab/`, `/en/lab/`, `/formats/`, `/en/formats/`, `/cases/`, and `/en/cases/`.
 - `python3 tools/validate_site.py` checks final `dist/` output for duplicate IDs, fragment targets, semantic landmarks, local resources and unpublished PNG sources.
 - `pnpm run test:browser` covers both homepages, desktop/mobile Chromium, mobile navigation, reduced motion, the Release version, the format matrix, Lab-route isolation and console errors.
