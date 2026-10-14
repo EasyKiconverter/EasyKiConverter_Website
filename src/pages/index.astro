@@ -69,7 +69,7 @@ const platformAvailability = getPlatformAvailability("zh");
     <main id="top" tabindex="-1">
       <section class="hero shell" aria-labelledby="hero-title">
         <div class="hero-copy reveal">
-          <p class="kicker">开源 · Qt 6 桌面工具</p>
+          <p class="kicker">开源 · <span class="kicker-brand-case">Qt</span> 6 桌面工具</p>
           <h1 id="hero-title">
             让元件库<span class="hero-title-conversion">转换</span>，<em>顺手一点。</em>
           </h1>
@@ -271,8 +271,7 @@ const platformAvailability = getPlatformAvailability("zh");
             <div>
               <h3>多目标输出</h3>
               <p>
-                当前稳定版以 KiCad、Altium 为主要目标；其他目标格式的可用范围，请以对应
-                发布版本和格式矩阵中的状态为准。
+                当前稳定版以 KiCad、Altium 为主要目标；其他目标格式的具体支持范围，请查看对应版本的发布说明和格式矩阵。
               </p>
               <div class="format-pills" data-format-summary>
                 {primaryFormats.map((format) => <b>{format.name}</b>)}
@@ -427,10 +426,7 @@ const platformAvailability = getPlatformAvailability("zh");
                 <span>SHA256SUMS ↗</span>
               </a>
             </div>
-            <small>
-              官网不托管大型安装包；请从下方选择匹配设备架构的直达下载，或进入对应
-              发布页面阅读变更说明并核对 SHA256。即使版本信息暂时无法刷新，稳定版下载入口仍可用。
-            </small>
+            <small>官网不托管大型安装包。请选择匹配设备架构的直达下载，或查看对应版本发布说明并核对 SHA256；版本信息暂时无法刷新时，稳定版下载入口仍可用。</small>
           </div>
           <div class="download-stamp" aria-hidden="true">
             <span>

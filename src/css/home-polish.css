@@ -76,6 +76,11 @@
   letter-spacing: .02em;
 }
 
+.kicker-brand-case {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 .showcase-proof-items {
   color: var(--muted);
   font-size: 11px;
