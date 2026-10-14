@@ -596,17 +596,34 @@ test('format matrix rows use concise bilingual status labels with full accessibl
   }
 });
 
-test('format matrix explains tested output artifacts and links each row to main-project evidence', async ({ page }) => {
+test('format matrix describes evidence scope and links each target to relevant repository evidence', async ({ page }) => {
+  const evidencePaths = [
+    'tests/unit/test_kicad_exporter_golden.cpp',
+    'tests/manual/ALTIUM_EXPORT_MANUAL_TEST.md',
+    'tests/unit/test_xpedition_exporter.cpp',
+    'tests/unit/test_allegro_exporter.cpp',
+    'tests/unit/test_pads_exporter.cpp',
+    'tests/unit/test_eagle_exporter.cpp',
+    'tests/unit/test_pcad_exporter.cpp',
+    'tests/unit/test_cadstar_exporter.cpp',
+    'tests/unit/test_orcad_exporter.cpp',
+    'tests/unit/test_librepcb_exporter.cpp',
+    'tests/unit/test_horizon_exporter.cpp',
+  ];
   for (const [path, outputs, linkLabel] of [
-    ['/formats/', ['.kicad_sym', 'SchLib + PcbLib', 'XML 符号库', '.lplib', '.pool 符号数据'], '查看仓库测试'],
-    ['/en/formats/', ['.kicad_sym', 'SchLib + PcbLib', 'XML symbol library', '.lplib', '.pool symbol data'], 'Open repository test'],
+    ['/formats/', ['.kicad_sym', 'SchLib + PcbLib', 'XML 符号库', '.lplib', '.pool 符号数据'], '查看仓库验证依据'],
+    ['/en/formats/', ['.kicad_sym', 'SchLib + PcbLib', 'XML symbol library', '.lplib', '.pool symbol data'], 'Open repository evidence'],
   ] as const) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const artifacts = page.locator('.format-artifacts-cell');
     await expect(artifacts).toHaveCount(11);
     for (const output of outputs) await expect(page.locator('.format-table-wrap')).toContainText(output);
+    await expect(page.locator('thead th').nth(3)).toHaveText(/Evidence scope|验证依据涉及的产物/);
     await expect(artifacts.first().locator('a')).toContainText(linkLabel);
-    await expect(artifacts.first().locator('a')).toHaveAttribute('href', /test_parallel_export_cancellation\.cpp$/);
+    for (const [index, evidencePath] of evidencePaths.entries()) {
+      await expect(artifacts.nth(index).locator('a')).toHaveAttribute('href', new RegExp(`${evidencePath.replaceAll('.', '\\.')}$`));
+    }
+    await expect(page.locator('.format-matrix-note')).toContainText(/人工验证流程|manual procedure/);
     await expect(page.locator('#format-matrix-title').locator('..')).toContainText(/不等同于已在目标桌面软件中验收|desktop-app validation/);
   }
 });

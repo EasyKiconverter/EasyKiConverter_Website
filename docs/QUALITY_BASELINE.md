@@ -6,6 +6,9 @@
 
 ## 已验证
 
+- 2026-10-15，PR #286 将项目状态文档和双语首页文案晋级至 `master`（合并提交 `70dd2bf`）；审批、`Static site checks` 与 `Dependency Review` 均通过。仅为源码晋级，未部署生产。
+- 2026-10-15，格式矩阵证据链接审查发现除 LibrePCB 外的 10 行均指向并行取消测试。当前工作分支改为链接对应导出器测试，Altium 指向人工验证规程；Astro 构建、8 页站点校验、模型资产校验通过，完整浏览器回归 192 passed、4 skipped。
+
 - Astro 静态构建生成 `/`、`/en/`、`/lab/`、`/en/lab/`、`/formats/`、`/en/formats/`、`/cases/`、`/en/cases/` 八个页面。
 - `python3 tools/validate_site.py` 检查最终 `dist/` 的重复 ID、片段链接、语义地标、本地资源和未发布 PNG。
 - `pnpm run test:browser` 覆盖中英文首页、桌面/移动 Chromium、移动菜单、reduced-motion、Release 版本、格式矩阵、Lab 路由隔离和控制台错误。

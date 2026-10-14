@@ -6,6 +6,9 @@ Recorded: 2026-10-15. This document records facts reproducible from the reposito
 
 ## Verified
 
+- 2026-10-15, PR #286 promoted the project status docs and bilingual homepage copy to `master` (merge commit `70dd2bf`). Approval, `Static site checks`, and `Dependency Review` passed. This promoted source only; production was not deployed.
+- 2026-10-15, a format-matrix evidence audit found that 10 rows (all except LibrePCB) linked to the parallel-cancellation test. The current work branch maps them to target-specific exporter tests, with Altium pointing to its manual validation procedure. Astro build, eight-page site validation, and model-asset checks passed; the full browser regression reported 192 passed and 4 skipped.
+
 - Astro generates eight static pages: `/`, `/en/`, `/lab/`, `/en/lab/`, `/formats/`, `/en/formats/`, `/cases/`, and `/en/cases/`.
 - `python3 tools/validate_site.py` checks final `dist/` output for duplicate IDs, fragment targets, semantic landmarks, local resources and unpublished PNG sources.
 - `pnpm run test:browser` covers both homepages, desktop/mobile Chromium, mobile navigation, reduced motion, the Release version, the format matrix, Lab-route isolation and console errors.

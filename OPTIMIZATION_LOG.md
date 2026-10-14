@@ -2,6 +2,12 @@
 
 [English](OPTIMIZATION_LOG_en.md)
 
+## 2026-10-15 — 将格式矩阵证据链接对应到具体目标
+
+- **发现：** 格式矩阵 10 个目标行都指向同一个并行导出取消测试；Altium 等目标因此没有链接其相关验证依据，页面也把人工验证流程泛称为仓库测试。
+- **处理：** KiCad、各注册目标改为链接各自的导出器测试；Altium 指向仓库中的人工验证规程。表头与双语说明统一称“验证依据”，并明确测试/人工规程覆盖范围不等同于目标 EDA 验收。
+- **验证：** 为 11 行逐项增加双语链接回归，确认目标与证据路径一一对应。`pnpm run build`（Astro 0 errors/warnings/hints）、`python3 tools/validate_site.py`、`pnpm run assets:check` 均通过，完整 `pnpm run test:browser` 为 192 passed、4 skipped；主仓库仅通过 GitHub 只读 API 核实路径，本次未修改该项目。
+
 ## 2026-10-14 — 将首页截图来源改为访客文案
 
 - **发现：** 首页中英文真实界面卡片将仓库内部路径 `resources/imgs/screenshot1.png` 显示给访客；它说明文件位置，却没有说明截图与产品的关系。
