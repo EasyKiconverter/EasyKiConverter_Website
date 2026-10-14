@@ -2,6 +2,42 @@
 
 [English](OPTIMIZATION_LOG_en.md)
 
+## 2026-10-14 — 将首页截图来源改为访客文案
+
+- **发现：** 首页中英文真实界面卡片将仓库内部路径 `resources/imgs/screenshot1.png` 显示给访客；它说明文件位置，却没有说明截图与产品的关系。
+- **处理：** 改为“截取自桌面软件实际运行界面” / “Captured from the running desktop app”，并将测试改为验证双语来源说明及不泄露 `resources/` 路径。更新双语优化待办。
+- **验证：** 本地 `pnpm run build`（Astro 0 errors/warnings/hints）、`python3 tools/validate_site.py`、`pnpm run assets:check` 和 `git diff --check` 均通过；定向 Playwright 用例在 Chromium 与 Chromium Mobile 通过。PR #272 必需 CI 全绿，完整套件 188 passed、4 skipped；未执行生产部署。
+
+## 2026-10-14 — 跟踪首页重复标题与版本晋级边界
+
+- **发现：** 对正式域名逐页读取 HTML，八个公开路由均返回 200，但 `/` 与 `/en/` 各包含两个完全相同的 `<title>`。当前 `origin/master` 的两份首页在 `SeoHead` 之外还保留显式 `<title>`；`version/V0.0.1` 的构建产物各只有一个。
+- **处理：** 正式站由受控手动部署脚本发布，本轮只增加八路由唯一标题回归，并把生产仍重复、等待版本稳定后晋级的状态写入双语待办与质量基线；未运行部署脚本。
+- **验证：** `pnpm run build`（Astro 0 errors/warnings/hints）、站点校验、模型资产校验、`git diff --check` 均通过；完整 Playwright 套件 188 passed、4 skipped，且八个构建路由的唯一标题断言通过。尚未为这组本地改进创建远程 PR/CI。生产只读检查：八个 URL 均 HTTP 200；不会将版本分支已通过 CI 等同于生产已修复。
+
+## 2026-10-14 — 修正中文移动端页面标题孤字
+
+- **问题：** 实际手机截图/行盒审查发现 390px 首页产品展示标题末尾仅剩“台。”、360px 格式矩阵标题末尾仅剩“阵”、390px 案例标题末尾仅剩“库”，中文行尾出现孤字。
+- **处理：** 将三处中英文短标题改得更精炼：中文强调“这是真实界面。”、格式页使用“EDA 格式矩阵”、案例标题统一为“EasyEDA → KiCad”，具体样本和库类型继续由卡片详情说明；加入 390/360px 中英文行盒回归，直接检测孤立汉字并确保路径标题单行。
+- **验证：** 新测试在旧首页文案下于 Chromium 与 Chromium Mobile 均复现失败；修改后覆盖三组页面的定向回归在两项目通过。`pnpm run build`（Astro 0 errors/warnings/hints）、站点和模型资产校验通过；完整浏览器套件 188 passed、4 skipped。Release API 本地 TLS 连接中断，构建使用仓库静态回退数据。
+
+## 2026-10-14 — 修复 Lab 手机滚动叙事遮挡
+
+- **问题：** 实际滚动 3D Lab 时，中英文第 1、2、3 步的章节标题会压住模型切换器、爆炸视图控件或细节状态；页面静态截图和控件单独可见测试未覆盖这种状态组合。
+- **处理：** 在常规动态效果模式下将手机章节置于模型舞台上方，短屏再下移模型舞台，并为最终“真实工作台”步骤隐藏 3D 舞台，让真实软件截图和下一步入口清晰接管视线；增加 390×844、360×640 双语三步骤几何回归测试。
+- **验证：** `pnpm run build` 通过（Astro 0 errors/warnings/hints）；CI 首轮暴露英文 360×640 第二步仍有重叠，调整短屏舞台位置后新增回归在 Chromium 与 Chromium Mobile 均通过，完整 Playwright 套件复跑通过（186 passed、4 skipped）。Release API 本地 403，构建使用仓库静态回退数据。
+
+## 2026-10-14 — 对齐案例证据承诺与 Lab 控件位置
+
+- **问题：** 英文案例页标题没有突出先核验证据；3D Lab 高级工具入口与模型舞台脱离，移动端位置也不稳定；浅色品牌表面上的正文色对比度不足，浏览器测试并发偏高。
+- **处理：** 双语案例页统一为证据优先的阅读顺序；将高级工具入口及说明收进模型舞台，并调整窄屏位置；提升共享正文色对比度并增加 WCAG AA 对比度回归测试；按 CI/本地环境限制 Playwright worker 数量。
+- **验证：** `pnpm run build` 成功，Astro 检查为 0 errors/warnings/hints；`pnpm run assets:check`、`python3 tools/validate_site.py`、`git diff --check` 均通过；`pnpm run test:browser` 为 182 passed、4 skipped。Release API 在本地返回 HTTP 403并使用仓库静态回退数据；PR #266 的必需 CI Release 同步、`Static site checks` 与 `Dependency Review` 均成功。
+
+## 2026-10-14 — 修正手机与平板 Hero 浮卡裁切
+
+- **问题：** 本地预览截图和 Playwright 几何读数发现中英文首页的 BOM/输出浮卡在 390px 与 768px 超出视口；768px 时分别约裁切 22px 和 24px，页面没有横向滚动并不能发现该问题。
+- **处理：** 在窄屏断点内调整两张装饰浮卡的左右锚点，使其在手机、平板视口完整显示；新增中英文 390/768/1440px 视口边界回归测试。
+- **验证：** `pnpm run build`（Astro 0 errors/warnings/hints）、`pnpm run assets:check`、`python3 tools/validate_site.py`、`git diff --check` 均通过；完整浏览器套件为 184 passed、4 skipped。三档中英文截图复核及 Playwright 几何断言均通过。Release API 本地请求仍返回 403并使用静态回退；PR #266 的 CI Release 同步已成功。
+
 ## 2026-10-12 — 本地化中文 footer 的反馈入口
 
 - **问题：** 中文页面 footer 的 GitHub、文档和贡献入口已经本地化，但问题入口仍显示英文 `Issues`，破坏了导航语言层级的一致性。

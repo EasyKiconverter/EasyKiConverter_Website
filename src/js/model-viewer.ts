@@ -80,7 +80,7 @@ const pointInPolygon = (point: [number, number], polygon: [number, number][]): b
 export const setupModel = async (): Promise<void> => {
   const stage = document.querySelector<HTMLElement>("[data-model-stage]");
   if (stage?.dataset.controlsReady === "true") return;
-  const controlsRoot = stage?.parentElement ?? document;
+  const controlsRoot = stage ?? document;
   const experimentControlsToggle = controlsRoot.querySelector<HTMLButtonElement>("[data-experiment-controls]");
   const experimentControlsNote = controlsRoot.querySelector<HTMLElement>(".lab-experiment-controls");
   const syncExperimentControls = (): void => {
@@ -164,6 +164,14 @@ export const setupModel = async (): Promise<void> => {
   }
 
   const artifactButtons = Array.from(stage.querySelectorAll<HTMLButtonElement>("[data-artifact-view]"));
+  const artifactCanvases: Record<string, HTMLCanvasElement | null> = {
+    model: canvas,
+    atlas: stage.querySelector<HTMLCanvasElement>(".mesh-atlas"),
+    tomogram: stage.querySelector<HTMLCanvasElement>(".model-tomogram"),
+    oracle: stage.querySelector<HTMLCanvasElement>(".model-oracle"),
+    trinity: stage.querySelector<HTMLCanvasElement>(".model-trinity"),
+    morph: stage.querySelector<HTMLCanvasElement>(".model-morph"),
+  };
   const artifactLabel = stage.querySelector<HTMLElement>("[data-artifact-label]");
   const detailStatus = stage.querySelector<HTMLElement>("[data-model-detail-status]");
   const artifactCaption = stage.querySelector<HTMLElement>(".artifact-caption");
@@ -1087,6 +1095,8 @@ export const setupModel = async (): Promise<void> => {
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
       .matches,
   };
+  let cameraFitRadius = state.modelRadius;
+  const baseModelScale = (): number => 0.92;
   let branchWarpStartedAt = 0;
   let branchWarpIntensity = 0;
   let temporalGhostStartedAt = 0;
@@ -3063,7 +3073,7 @@ export const setupModel = async (): Promise<void> => {
 
   const fitCamera = (): void => {
     const aspect = state.width / state.height;
-    const halfHeight = (state.modelRadius * 1.16) / Math.min(1, aspect);
+    const halfHeight = (cameraFitRadius * 1.16) / Math.min(1, aspect);
     camera.left = -halfHeight * aspect;
     camera.right = halfHeight * aspect;
     camera.top = halfHeight;
@@ -3105,6 +3115,13 @@ export const setupModel = async (): Promise<void> => {
     if (!view) return;
     stage.dataset.artifactView = view;
     artifactButtons.forEach((candidate) => candidate.setAttribute("aria-pressed", String(candidate === button)));
+    Object.entries(artifactCanvases).forEach(([canvasView, viewCanvas]) => {
+      if (!viewCanvas) return;
+      const active = canvasView === view;
+      viewCanvas.inert = !active;
+      if (active) viewCanvas.removeAttribute("aria-hidden");
+      else viewCanvas.setAttribute("aria-hidden", "true");
+    });
     const english = document.documentElement.lang === "en";
     const label = english ? button.dataset.labelEn : button.dataset.labelZh;
     const caption = english ? button.dataset.captionEn : button.dataset.captionZh;
@@ -3115,6 +3132,7 @@ export const setupModel = async (): Promise<void> => {
   artifactButtons.forEach((button) => button.addEventListener("click", () => syncArtifactView(button)));
   const initialArtifactButton = artifactButtons.find((button) => button.dataset.artifactView === stage.dataset.artifactView) ?? artifactButtons[0];
   if (initialArtifactButton) syncArtifactView(initialArtifactButton, false);
+  stage.dataset.artifactControlsReady = "true";
 
   const setScanButtonState = (scanning: boolean): void => {
     const scanButton = stage.querySelector<HTMLButtonElement>("[data-model-scan]");
@@ -4315,7 +4333,7 @@ export const setupModel = async (): Promise<void> => {
       (state.reducedMotion ? 0 : state.pointerY * 0.06) + Math.cos(now * 0.0024) * modelFeedback * 0.012 + forecastDrift * forecastPulse * 0.022;
     group.position.x = blend(from.x, to.x) + directorX;
     group.position.y = blend(from.y, to.y) + directorY;
-    group.scale.setScalar(0.8 * blend(from.scale, to.scale) * (1 + branchWarp * 0.1 + neuralReflex * 0.06 + forecastDrift * forecastPulse * 0.035));
+    group.scale.setScalar(baseModelScale() * blend(from.scale, to.scale) * (1 + branchWarp * 0.1 + neuralReflex * 0.06 + forecastDrift * forecastPulse * 0.035));
     applyExplode();
     updateSectionPlane();
     renderer.render(scene, camera);
@@ -4396,6 +4414,13 @@ export const setupModel = async (): Promise<void> => {
     const sphere = new THREE.Box3()
       .setFromObject(group)
       .getBoundingSphere(new THREE.Sphere());
+    const physicalBounds = new THREE.Box3();
+    explodedMeshes.forEach(({ mesh }) => physicalBounds.expandByObject(mesh));
+    const physicalSphere = physicalBounds.getBoundingSphere(new THREE.Sphere());
+    const fitRadius = window.matchMedia("(max-width: 760px)").matches
+      ? sphere.radius
+      : physicalSphere.radius * 1.12;
+    cameraFitRadius = Math.max(fitRadius, 0.1);
     state.modelRadius = Math.max(sphere.radius, 0.1);
     fitCamera();
     stage.dataset.modelTriangles = String(triangleCount);

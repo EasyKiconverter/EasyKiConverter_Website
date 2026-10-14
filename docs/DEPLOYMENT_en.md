@@ -1,5 +1,7 @@
 # Deployment and preview parity
 
+[中文](DEPLOYMENT.md)
+
 This is an Astro-generated static website. Run `pnpm run build` before publishing and sync only the generated `dist/` directory; do not upload only source pages or only the image directory.
 
 ## Local preview
@@ -11,7 +13,7 @@ pnpm install
 pnpm dev
 ```
 
-Open <http://localhost:4173/>.
+Astro's development server defaults to port `4321`; open <http://localhost:4321/>. If the port is occupied, run `pnpm dev -- --port 4322` and use that port.
 
 To verify the production build:
 
@@ -20,7 +22,14 @@ pnpm run build
 pnpm run preview
 ```
 
-Then open `http://localhost:4174/EasyKiConverter_Website/`. Relative asset paths resolve the same way as they do under a production subpath.
+`astro preview` also defaults to port `4321`. For a root-path build, open <http://localhost:4321/>. To verify the GitHub Pages project subpath, rebuild with the matching `SITE_BASE` before starting preview:
+
+```bash
+SITE_BASE=/EasyKiConverter_Website/ pnpm run build
+pnpm run preview
+```
+
+Then open <http://localhost:4321/EasyKiConverter_Website/>. Do not confuse this Astro preview port with `4174`, which the README uses for a separate parent-directory HTTP server.
 
 ## Self-hosted server
 

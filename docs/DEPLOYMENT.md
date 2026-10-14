@@ -1,5 +1,7 @@
 # 部署与预览一致性
 
+[English](DEPLOYMENT_en.md)
+
 本项目是由 Astro 生成的静态网站。发布前运行 `pnpm run build`，服务器只需发布生成的 `dist/` 目录，不能只上传源码页面或图片目录。
 
 ## 本地预览
@@ -11,7 +13,7 @@ pnpm install
 pnpm dev
 ```
 
-打开：<http://localhost:4173/>。
+Astro 开发服务器默认使用端口 `4321`，打开：<http://localhost:4321/>。若端口被占用，可运行 `pnpm dev -- --port 4322` 并访问对应端口。
 
 验证发布构建：
 
@@ -20,7 +22,14 @@ pnpm run build
 pnpm run preview
 ```
 
-然后打开 `http://localhost:4174/EasyKiConverter_Website/`。相对资源路径会按线上子路径解析。
+`astro preview` 默认也使用端口 `4321`。根路径构建打开 <http://localhost:4321/>。若要验证 GitHub Pages 项目子路径，必须先以相同的 `SITE_BASE` 重新构建，再启动预览：
+
+```bash
+SITE_BASE=/EasyKiConverter_Website/ pnpm run build
+pnpm run preview
+```
+
+然后打开 <http://localhost:4321/EasyKiConverter_Website/>。不要把此 Astro 预览端口与 README 中用于父目录 HTTP 服务的 `4174` 端口混淆。
 
 ## 自有服务器
 

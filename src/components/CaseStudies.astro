@@ -8,16 +8,18 @@ const repository = "https://github.com/EasyKiconverter/EasyKiConverter";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
 const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase).pathname;
+const fileName = (path: string) => path.split("/").pop() ?? path;
+const directoryName = (path: string) => path.slice(0, path.lastIndexOf("/")) + "/";
 ---
 
 <section class="case-studies shell" aria-labelledby="case-studies-title">
   <div class="case-studies-heading">
     <p class="kicker">{en ? "TRACEABLE EXAMPLES" : "可追溯案例"}</p>
-    <h1 id="case-studies-title">{en ? "From fixture to library." : "从测试样本，到库文件。"}</h1>
-    <p>{en ? "These are evidence-led cases, not claims that every target supports every object. Follow the fixture and test links before treating a workflow as production-ready." : "这些是以证据为中心的案例，不代表每个目标格式支持所有对象。将某条流程用于生产前，请沿着测试样本和测试链接复核。"}</p>
+    <h1 id="case-studies-title">{en ? "Check the evidence, then trace each route." : "先核对证据，再看路径。"}</h1>
+    <p>{en ? "Routes show only what linked tests verify. Generated data is distinguished from EasyEDA fixtures; desktop EDA checks remain manual." : "每条路径只描述其关联集成测试实际验证的内容。测试代码生成的数据会与 EasyEDA 样本明确区分；在桌面 EDA 软件中打开结果仍需人工检查。"}</p>
     <div class="case-studies-actions">
-      <a class="button button-dark" href={formatsUrl}>{en ? "Compare all targets" : "比较全部目标格式"} <span>→</span></a>
-      <a class="text-link text-link-external" href={repository} target="_blank" rel="noreferrer">{en ? "Open source evidence" : "打开源码证据"} <span>↗</span></a>
+      <a class="button button-dark" href={formatsUrl}>{en ? "Compare formats" : "比较格式"} <span>→</span></a>
+      <a class="text-link text-link-external" href={repository} target="_blank" rel="noreferrer">{en ? "View source" : "查看源码"} <span>↗</span></a>
     </div>
     <div class="evidence-summary" aria-label={en ? "Case evidence baseline" : "案例证据基线"}>
       <span><b>{latestRelease.tag}</b>{en ? " release baseline" : " 发布版本基线"}</span>
@@ -25,7 +27,7 @@ const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase).pathname;
     </div>
     <ol class="case-reading-guide" aria-label={en ? "How to read a case" : "案例阅读步骤"}>
       <li><span>01</span><div><b>{en ? "Choose a route" : "选定路径"}</b><small>{en ? "Start with the input → output pair." : "先确认输入 → 输出路径。"}</small></div></li>
-      <li><span>02</span><div><b>{en ? "Open the fixture" : "打开样本"}</b><small>{en ? "See the exact source data used by the case." : "查看案例使用的真实源数据。"}</small></div></li>
+      <li><span>02</span><div><b>{en ? "Inspect the input" : "核对输入依据"}</b><small>{en ? "Open the fixture or see how test data is generated." : "打开实际使用的样本，或查看测试数据的生成方式。"}</small></div></li>
       <li><span>03</span><div><b>{en ? "Review the test" : "复核测试"}</b><small>{en ? "Check the automated evidence before production use." : "用于生产前复核自动化证据。"}</small></div></li>
     </ol>
   </div>
@@ -41,10 +43,43 @@ const formatsUrl = new URL(en ? "en/formats/" : "formats/", siteBase).pathname;
       </div>
       <p>{en ? item.summaryEn : item.summaryZh}</p>
       <dl>
-        <div><dt>{en ? "Fixture" : "测试样本"}</dt><dd><a class="case-evidence-link" href={`${repository}/blob/master/${item.fixture}`} target="_blank" rel="noreferrer" aria-label={en ? `Open fixture ${item.fixture}` : `打开测试样本 ${item.fixture}`}><span class="case-evidence-action">{en ? "Open fixture" : "打开测试样本"} <span aria-hidden="true">↗</span></span><code><span class="case-evidence-name">{item.fixture.split("/").pop()}</span><small class="case-evidence-directory">{item.fixture.slice(0, item.fixture.lastIndexOf("/"))}/</small></code></a></dd></div>
-        <div><dt>{en ? "Test evidence" : "测试证据"}</dt><dd><a class="case-evidence-link" href={`${repository}/blob/master/${item.test}`} target="_blank" rel="noreferrer" aria-label={en ? `Open test evidence ${item.test}` : `打开测试证据 ${item.test}`}><span class="case-evidence-action">{en ? "Open test evidence" : "打开测试证据"} <span aria-hidden="true">↗</span></span><code><span class="case-evidence-name">{item.test.split("/").pop()}</span><small class="case-evidence-directory">{item.test.slice(0, item.test.lastIndexOf("/"))}/</small></code></a></dd></div>
+        <div>
+          <dt>{en ? "Input evidence" : "输入依据"}</dt>
+          <dd>
+            {item.fixtures.length > 0 ? (
+              <div class="case-input-fixtures">
+                {item.fixtures.map((fixture) => (
+                  <a class="case-evidence-link" href={`${repository}/blob/master/${fixture}`} target="_blank" rel="noreferrer" aria-label={en ? `Open fixture ${fixture}` : `打开测试样本 ${fixture}`}>
+                    <span class="case-evidence-action">{en ? "Open fixture" : "打开测试样本"} <span aria-hidden="true">↗</span></span>
+                    <code><span class="case-evidence-name">{fileName(fixture)}</span><small class="case-evidence-directory">{directoryName(fixture)}</small></code>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <p class="case-input-note">{en ? item.inputEvidenceEn : item.inputEvidenceZh}</p>
+            )}
+            {item.fixtures.length > 0 && <p class="case-input-note">{en ? item.inputEvidenceEn : item.inputEvidenceZh}</p>}
+          </dd>
+        </div>
+        <div>
+          <dt>{en ? "Test evidence" : "测试证据"}</dt>
+          <dd><a class="case-evidence-link" href={`${repository}/blob/master/${item.test}`} target="_blank" rel="noreferrer" aria-label={en ? `Open test evidence ${item.test}` : `打开测试证据 ${item.test}`}><span class="case-evidence-action">{en ? "Open integration test" : "打开集成测试"} <span aria-hidden="true">↗</span></span><code><span class="case-evidence-name">{fileName(item.test)}</span><small class="case-evidence-directory">{directoryName(item.test)}</small></code></a></dd>
+        </div>
       </dl>
     </article>)}
   </div>
-  <p class="case-disclaimer">{en ? "Evidence scope: repository fixtures and automated integration tests. Manual validation in KiCad, Altium or another EDA is a separate release gate." : "证据范围：仓库测试样本与自动化集成测试。在 KiCad、Altium 或其他 EDA 中的人工验证属于独立的版本门禁。"}</p>
+  <p class="case-disclaimer">{en ? "Evidence scope: the linked fixtures and integration assertions only. Passing automated tests does not replace opening and checking exported files in KiCad, Altium, or another target EDA." : "证据范围仅限页面链接的测试样本与集成断言。自动化测试通过不等同于已在 KiCad、Altium 或其他目标 EDA 中打开并检查导出文件。"}</p>
 </section>
+
+<style>
+  @media (max-width: 480px) {
+    .case-studies-actions {
+      flex-wrap: nowrap;
+      gap: clamp(12px, 4vw, 16px);
+    }
+
+    .case-studies-actions > * {
+      white-space: nowrap;
+    }
+  }
+</style>

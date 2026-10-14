@@ -27,6 +27,20 @@
   white-space: nowrap;
 }
 
+.download-platform-notice {
+  max-width: 620px;
+  margin: 18px 0 0;
+  color: #d8d2c8;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.download-platform-notice a {
+  color: var(--lilac);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .platform-architectures {
   display: flex;
   flex-wrap: wrap;
@@ -573,14 +587,14 @@
 
   .hero-float-input {
     top: 2%;
-    left: -2%;
+    left: 4%;
     min-width: 145px;
     padding: 10px 12px;
     transform: translateZ(90px) rotate(-6deg);
   }
 
   .hero-float-output {
-    right: -2%;
+    right: 6%;
     bottom: 13%;
     min-width: 146px;
     padding: 10px 12px;
@@ -644,6 +658,47 @@
 }
 
 @media (max-width: 520px) {
+  .hero {
+    padding-top: 42px;
+  }
+
+  .hero h1 {
+    font-size: clamp(48px, 12.6vw, 58px);
+    margin: 16px 0 20px;
+  }
+
+  .hero-lede {
+    margin-bottom: 24px;
+  }
+
+  .hero-actions {
+    gap: 14px 22px;
+  }
+
+  .hero-facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .hero-facts span + span {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .hero-facts span:last-child {
+    grid-column: auto;
+  }
+
+  .hero-title-conversion {
+    white-space: nowrap;
+  }
+
+  .hero-stage {
+    margin-top: 20px;
+  }
+
   .hero-product-window img {
     height: 226px;
     object-fit: cover;

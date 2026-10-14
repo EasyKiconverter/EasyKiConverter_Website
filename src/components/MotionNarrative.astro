@@ -20,11 +20,11 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
       <div class="swarm-lineage-readout" data-swarm-lineage-readout aria-live="polite">{en ? 'LINEAGE ∞ 0' : '谱系 ∞ 0'}</div>
       <div class="swarm-lineage-picker" data-swarm-lineage-picker role="group" aria-label={en ? 'Recall an archived topology genome' : '回溯已归档的拓扑基因'}></div>
       <canvas id="model-canvas" tabindex="0" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Escape" aria-label={en ? 'Interactive GLB delivery model generated from STEP geometry. Click a part or focus this canvas and use the arrow keys to explore neighboring components in screen space. Escape restores the full material view.' : '由 STEP 几何生成的交互式 GLB 交付模型。点击零件，或聚焦此画布后用方向键按屏幕空间探索相邻零件。按 Esc 恢复完整材质视图。'}></canvas>
-      <canvas class="mesh-atlas" data-mesh-atlas tabindex="0" aria-label={en ? 'Spatial atlas of the real STEP meshes. Use arrow keys to move focus, Enter to inspect a part, and Escape to clear focus.' : '真实 STEP 网格的空间星图。使用方向键移动焦点，按 Enter 检查零件，按 Esc 清除焦点。'}></canvas>
-      <canvas class="model-tomogram" data-model-tomogram role="img" aria-label={en ? 'Live tomogram accumulated from cross-sections of the real STEP geometry. Start a CT scan to reveal its internal profile.' : '由真实 STEP 几何剖面累积生成的实时断层图。启动 CT 扫描以显现内部轮廓。'}></canvas>
-      <canvas class="model-oracle" data-model-oracle tabindex="0" role="img" aria-label={en ? 'Topology DNA oracle generated from recorded real STEP section frames. Drag horizontally to scrub frames and vertically to mutate the helix.' : '由真实 STEP 截面帧生成的拓扑 DNA 预言图。横向拖动浏览帧，纵向拖动改变螺旋突变强度。'}></canvas>
-      <canvas class="model-trinity" data-model-trinity tabindex="0" role="img" aria-label={en ? 'Three-track comparison of topology parent A, parent B, and the recombined timeline. Click a position to jump to that real section.' : '拓扑父时间线 A、父时间线 B 与重组时间线的三轨对照图。点击位置可跳转到真实截面。'}></canvas>
-      <canvas class="model-morph" data-model-morph tabindex="0" role="img" aria-label={en ? 'Interactive topology morph field. Drag across the field to scrub real STEP section history.' : '交互式拓扑形变场。拖动形变场以浏览真实 STEP 截面历史。'}></canvas>
+      <canvas class="mesh-atlas" data-mesh-atlas tabindex="0" inert aria-hidden="true" aria-label={en ? 'Spatial atlas of the real STEP meshes. Use arrow keys to move focus, Enter to inspect a part, and Escape to clear focus.' : '真实 STEP 网格的空间星图。使用方向键移动焦点，按 Enter 检查零件，按 Esc 清除焦点。'}></canvas>
+      <canvas class="model-tomogram" data-model-tomogram inert aria-hidden="true" role="img" aria-label={en ? 'Live tomogram accumulated from cross-sections of the real STEP geometry. Start a CT scan to reveal its internal profile.' : '由真实 STEP 几何剖面累积生成的实时断层图。启动 CT 扫描以显现内部轮廓。'}></canvas>
+      <canvas class="model-oracle" data-model-oracle tabindex="0" inert aria-hidden="true" role="img" aria-label={en ? 'Topology DNA oracle generated from recorded real STEP section frames. Drag horizontally to scrub frames and vertically to mutate the helix.' : '由真实 STEP 截面帧生成的拓扑 DNA 预言图。横向拖动浏览帧，纵向拖动改变螺旋突变强度。'}></canvas>
+      <canvas class="model-trinity" data-model-trinity tabindex="0" inert aria-hidden="true" role="img" aria-label={en ? 'Three-track comparison of topology parent A, parent B, and the recombined timeline. Click a position to jump to that real section.' : '拓扑父时间线 A、父时间线 B 与重组时间线的三轨对照图。点击位置可跳转到真实截面。'}></canvas>
+      <canvas class="model-morph" data-model-morph tabindex="0" inert aria-hidden="true" role="img" aria-label={en ? 'Interactive topology morph field. Drag across the field to scrub real STEP section history.' : '交互式拓扑形变场。拖动形变场以浏览真实 STEP 截面历史。'}></canvas>
       <button type="button" class="morph-gravity" data-morph-gravity aria-pressed="true" aria-label={en ? 'Toggle topology gravity deformation' : '切换拓扑引力形变'}>{en ? 'GRAVITY ◉' : '引力 ◉'}</button>
       <button type="button" class="morph-fork" data-morph-fork aria-label={en ? 'Export the gravity-warped topology branch' : '导出引力扭曲后的拓扑分支'}>{en ? 'FORK ↗' : '分支 ↗'}</button>
       <button type="button" class="morph-collision" data-morph-collision aria-label={en ? 'Collide two imported topology branches' : '碰撞两条导入的拓扑分支'}>{en ? 'COLLIDE ☄' : '碰撞 ☄'}</button>
@@ -195,17 +195,17 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
       <p class="artifact-caption" aria-live="polite">{en ? 'GLB generated from STEP geometry · connected to the scroll story' : '由 STEP 几何生成的 GLB · 随滚动进入产品叙事'}</p>
       <div class="model-fallback-copy" role="status">{en ? '3D preview is unavailable. The page and download links remain usable.' : '3D 预览暂不可用，页面内容和下载入口仍可正常使用。'}</div>
       <span class="motion-model-tag">{en ? 'SCROLL TO TRANSFORM' : '向下滚动，继续转化'}</span>
-    </div>
-    <button
-      type="button"
-      class="experiment-controls-toggle"
-      data-experiment-controls
-      aria-expanded="false"
-      aria-controls="lab-experiment-controls"
-      aria-describedby="lab-experiment-controls"
-    >{en ? 'ADVANCED +' : '高级工具 +'}</button>
-    <div id="lab-experiment-controls" class="lab-experiment-controls" aria-live="polite">
-      <span>{en ? 'Open for experimental controls; some unlock after model data, scanning or imports are available.' : '打开实验控件；部分工具需先加载模型、完成扫描或导入数据后才会解锁。'}</span>
+      <button
+        type="button"
+        class="experiment-controls-toggle"
+        data-experiment-controls
+        aria-expanded="false"
+        aria-controls="lab-experiment-controls"
+        aria-describedby="lab-experiment-controls"
+      >{en ? 'ADVANCED +' : '高级工具 +'}</button>
+      <div id="lab-experiment-controls" class="lab-experiment-controls" aria-live="polite">
+        <span>{en ? 'Open for experimental controls; some unlock after model data, scanning or imports are available.' : '打开实验控件；部分工具需先加载模型、完成扫描或导入数据后才会解锁。'}</span>
+      </div>
     </div>
 
     <div class="motion-progress" aria-hidden="true"><span></span></div>

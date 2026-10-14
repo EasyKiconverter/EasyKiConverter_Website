@@ -8,6 +8,7 @@ const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
 const casesUrl = new URL(en ? "en/cases/" : "cases/", siteBase).pathname;
 const releasesUrl = latestRelease.url;
+const repository = "https://github.com/EasyKiconverter/EasyKiConverter";
 const stableCount = targetFormats.filter((format) => format.tier === "primary").length;
 const registeredCount = targetFormats.filter((format) => format.tier === "registered").length;
 ---
@@ -15,11 +16,11 @@ const registeredCount = targetFormats.filter((format) => format.tier === "regist
 <section class="format-matrix shell" aria-labelledby="format-matrix-title">
   <div class="format-matrix-heading">
     <p class="kicker">{en ? "VERSIONED CAPABILITY" : "版本化能力"}</p>
-    <h1 id="format-matrix-title">{en ? "EDA format capability matrix" : "EDA 格式能力矩阵"}</h1>
-    <p>{en ? "This page reports targets registered in the current main-project source. It does not promise that every symbol, footprint, 3D model or edge case is supported by every release." : "本页列出主项目当前源码中注册的目标格式。不把目标名称误读为每个版本都完整支持所有符号、封装、3D 模型和特殊对象。"}</p>
+    <h1 id="format-matrix-title">{en ? "EDA format matrix" : "EDA 格式矩阵"}</h1>
+    <p>{en ? "Lists registered EDA targets and test-checked outputs; this is not a guarantee of full format support or desktop-app validation." : "本页列出主项目源码中注册的目标格式，以及仓库测试实际覆盖的输出类型；这不代表每个发布版本都完整支持所有对象，也不等同于已在目标桌面软件中验收。"}</p>
     <div class="format-matrix-actions">
-      <a class="button button-dark" href={casesUrl}>{en ? "See tested cases" : "查看测试案例"} <span>→</span></a>
-      <a class="text-link text-link-external" href={releasesUrl} target="_blank" rel="noreferrer">{en ? "Read the current Release" : "阅读当前发布页"} <span>↗</span></a>
+      <a class="button button-dark" href={casesUrl}>{en ? "Test cases" : "查看测试案例"} <span>→</span></a>
+      <a class="text-link text-link-external" href={releasesUrl} target="_blank" rel="noreferrer">{en ? "Latest Release" : "当前发布"} <span>↗</span></a>
     </div>
     <div class="evidence-summary" aria-label={en ? "Format evidence baseline" : "格式证据基线"}>
       <span><b>{latestRelease.tag}</b>{en ? " release baseline" : " 发布版本基线"}</span>
@@ -33,12 +34,35 @@ const registeredCount = targetFormats.filter((format) => format.tier === "regist
   </div>
   <div class="format-table-wrap">
     <table>
-      <caption>{en ? "Registered export targets" : "已注册导出目标"}</caption>
-      <thead><tr><th>ID</th><th>{en ? "Target" : "目标"}</th><th>{en ? "Release status" : "版本状态"}</th></tr></thead>
+      <caption>{en ? "Registered targets and tested outputs" : "已注册目标与测试覆盖输出"}</caption>
+      <thead><tr><th>{en ? "Export ID" : "导出标识"}</th><th>{en ? "Target" : "目标"}</th><th>{en ? "Release status" : "版本状态"}</th><th>{en ? "Output types checked by tests" : "仓库测试覆盖的输出类型"}</th></tr></thead>
       <tbody>
-        {targetFormats.map((format) => <tr><th scope="row"><code>{format.id}</code></th><td data-label={en ? "Target" : "目标"}>{format.name}</td><td data-label={en ? "Release status" : "版本状态"}><span class:list={["format-status", `format-status-${format.tier}`]} aria-label={en ? format.en : format.zh}>{en ? format.shortEn : format.shortZh}</span></td></tr>)}
+        {targetFormats.map((format) => <tr>
+          <th scope="row" data-label={en ? "Export ID" : "导出标识"}><code>{format.id}</code></th>
+          <td data-label={en ? "Target" : "目标"}>{format.name}</td>
+          <td data-label={en ? "Release status" : "版本状态"}><span class:list={["format-status", `format-status-${format.tier}`]} aria-label={en ? format.en : format.zh}>{en ? format.shortEn : format.shortZh}</span></td>
+          <td class="format-artifacts-cell" data-label={en ? "Tested output types" : "测试覆盖输出类型"}>
+            <p>{en ? format.testedArtifactsEn : format.testedArtifactsZh}</p>
+            <a href={`${repository}/blob/master/${format.testFile}`} target="_blank" rel="noreferrer" aria-label={en ? `Open repository test for ${format.name}` : `打开 ${format.name} 的仓库测试`}>
+              {en ? "Open repository test" : "查看仓库测试"} <span aria-hidden="true">↗</span>
+            </a>
+          </td>
+        </tr>)}
       </tbody>
     </table>
   </div>
-  <p class="format-matrix-note">{en ? "For release-specific behavior, consult the main project's Release notes and tests before using a target in production." : "正式使用某个目标格式前，请以主项目对应发布说明和测试结果为准。"}</p>
+  <p class="format-matrix-note">{en ? "The output notes summarize repository-test assertions, not exhaustive format support. Check the linked test and matching Release notes, then validate files in the target EDA before production use." : "输出说明仅概括仓库测试断言，不代表格式能力穷举。正式使用前请查看对应测试和发布说明，并在目标 EDA 中实际检查文件。"}</p>
 </section>
+
+<style>
+  @media (max-width: 480px) {
+    .format-matrix-actions {
+      flex-wrap: nowrap;
+      gap: clamp(12px, 4vw, 16px);
+    }
+
+    .format-matrix-actions > * {
+      white-space: nowrap;
+    }
+  }
+</style>

@@ -61,21 +61,20 @@ const platformAvailability = getPlatformAvailability("zh");
           "Convert LCSC and EasyEDA component data into practical KiCad and Altium libraries with GUI and CLI workflows.",
       })}
     ></script>
-    <title>EasyKiConverter · 让元件库转换顺手一点</title>
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
+    <a class="skip-link" href="#top">跳转到正文</a>
     <SiteHeader lang="zh-CN" variant="home" homeHref="#top" alternateUrl={new URL(englishUrl)} />
-    <main id="top">
+    <main id="top" tabindex="-1">
       <section class="hero shell" aria-labelledby="hero-title">
         <div class="hero-copy reveal">
           <p class="kicker">开源 · Qt 6 桌面工具</p>
           <h1 id="hero-title">
-            让元件库转换，<em>顺手一点。</em>
+            让元件库<span class="hero-title-conversion">转换</span>，<em>顺手一点。</em>
           </h1>
           <p class="hero-lede">
-            从 LCSC / EasyEDA 取回元件数据，整理成 KiCad、Altium
-            等 EDA 库。少一点重复劳动，多一点真正的设计时间。
+            把 LCSC / EasyEDA 元件数据整理为 KiCad、Altium 可用的符号、封装与 3D 模型。
           </p>
           <div class="hero-actions">
             <a
@@ -219,9 +218,9 @@ const platformAvailability = getPlatformAvailability("zh");
         <div class="section-intro section-intro-wide reveal">
           <p class="kicker">真实的工作台</p>
           <h2 id="showcase-title">
-            它不是概念图。
+            这不是概念图。
             <br />
-            <em>这是实际的工作台。</em>
+            <em>这是真实界面。</em>
           </h2>
           <p>
             来自 EasyKiConverter 主项目的真实 Qt Quick 界面：添加元件、导入
@@ -361,13 +360,13 @@ const platformAvailability = getPlatformAvailability("zh");
         aria-labelledby="platforms-title"
       >
         <div class="platform-intro reveal">
-          <p class="kicker">跨平台支持</p>
+          <p class="kicker">平台状态</p>
           <h2 id="platforms-title">
-            Windows、Linux、macOS，
+            macOS 安装包，
             <br />
-            <em>都能运行。</em>
+            <em>仍属实验阶段。</em>
           </h2>
-          <p>当前稳定版提供 Windows、Linux 和 macOS 安装包；请按设备架构选择对应下载项。</p>
+          <p class="platform-summary">当前稳定版提供 Windows、Linux 和 macOS 安装包；macOS 构建尚未完成维护者验收，请按设备架构选择对应下载项。</p>
           <a class="text-link text-link-down platform-intro-link" href="#download">查看平台下载项 <span>↓</span></a>
         </div>
         <PlatformAvailability language="zh" platforms={platformAvailability} />
@@ -390,6 +389,10 @@ const platformAvailability = getPlatformAvailability("zh");
             <p>
               当前稳定版 <strong data-release-version>{latestRelease.tag}</strong> · 免费 ·
               GPL-3.0
+            </p>
+            <p class="download-platform-notice">
+              macOS 构建尚未完成维护者验收。Apple Silicon 用户曾报告 Gatekeeper 提示“应用已损坏或不完整”。
+              <a href="https://github.com/EasyKiconverter/EasyKiConverter/issues/153" target="_blank" rel="noreferrer">查看已知问题 <span aria-hidden="true">↗</span></a>。请勿根据未经核实的教程关闭系统安全防护。
             </p>
             <div class="download-actions">
               <a

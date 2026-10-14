@@ -2,6 +2,42 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-14 — Replace the homepage screenshot source with visitor-facing copy
+
+- **Finding:** The bilingual real-interface card exposed the repository path `resources/imgs/screenshot1.png`. It explained where the file lives, not how the screenshot relates to the product.
+- **Change:** Use “截取自桌面软件实际运行界面” / “Captured from the running desktop app”; update the browser regression to require both localized explanations and reject the `resources/` path. Update the bilingual optimization backlog.
+- **Validation:** Local `pnpm run build` (Astro: 0 errors/warnings/hints), `python3 tools/validate_site.py`, `pnpm run assets:check`, and `git diff --check` passed. The focused Playwright test passed in Chromium and Chromium Mobile. PR #272 required CI passed, with 188 passed / 4 skipped in the complete suite; no production deployment was run.
+
+## 2026-10-14 — Track duplicate homepage titles and the promotion boundary
+
+- **Finding:** Direct HTML checks of the production domain returned 200 for all eight public routes, but `/` and `/en/` each contain two identical `<title>` elements. Both current `origin/master` homepage sources retain an explicit title in addition to `SeoHead`; the `version/V0.0.1` build emits one each.
+- **Change:** Production is published through a controlled manual deploy script. This iteration adds a one-title regression for all eight routes and records that production remains duplicated until the version is stable and promoted; the deployment script was not run.
+- **Validation:** `pnpm run build` (Astro: 0 errors/warnings/hints), site validation, model-asset checks, and `git diff --check` passed; the full Playwright suite reported 188 passed / 4 skipped, including the unique-title assertion for all eight built routes. No remote PR/CI has been created for this local iteration. Read-only production check: all eight URLs returned HTTP 200; a green version-branch check is not presented as a production fix.
+
+## 2026-10-14 — Remove orphaned characters from Chinese mobile page titles
+
+- **Issue:** Mobile screenshot/line-box review found a lone “台。” at the end of the 390px homepage showcase title, “阵” at the end of the 360px format title, and “库” at the end of the 390px case title.
+- **Change:** Tightened three bilingual titles: the Chinese showcase emphasizes “这是真实界面。”, the format page uses “EDA 格式矩阵”, and the case heading is consistently “EasyEDA → KiCad” while details retain fixture and library types; added bilingual 390/360px line-box checks for orphaned Han characters and a single-line route title.
+- **Validation:** The regression reproduced the original homepage wrap in Chromium and Chromium Mobile; after the copy changes, focused coverage across all three page groups passed in both projects. `pnpm run build` (Astro: 0 errors/warnings/hints), site validation, and model-asset checks passed; the full browser suite reported 188 passed / 4 skipped. The local Release API TLS connection was interrupted, so the build used the checked-in fallback.
+
+## 2026-10-14 — Keep mobile Lab story chapters clear of controls
+
+- **Issue:** During actual 3D Lab scrolling, chapter copy in bilingual steps 1–3 overlapped the model switcher, exploded-view controls, or detail status. Static screenshots and isolated control-visibility checks did not cover these combined states.
+- **Changes:** Place mobile chapters above the model stage when motion is enabled, move the stage lower on short screens, and hide it in the final “real workbench” chapter so the real-app screenshot and next-step links take focus; add bilingual three-step geometry checks at 390×844 and 360×640.
+- **Validation:** `pnpm run build` passed (Astro: 0 errors/warnings/hints). CI caught residual overlap in the English second chapter at 360×640; after moving the stage lower on short screens, the focused regression passed in Chromium and Chromium Mobile, and the full Playwright suite passed on rerun (186 passed, 4 skipped). The local Release API returned 403 and the build used checked-in fallback data.
+
+## 2026-10-14 — Align case evidence promises and Lab control placement
+
+- **Issue:** The English case-page heading did not foreground evidence-first reading; the 3D Lab advanced-tools entry was detached from the model stage and unstable on narrow screens; shared text colors lacked contrast on light brand surfaces, and browser-test concurrency was high.
+- **Changes:** Align both case-page introductions around evidence-first reading; place the advanced-tools entry and note inside the model stage with a narrow-screen offset; strengthen shared text contrast and add a WCAG AA regression check; cap Playwright workers for CI and local runs.
+- **Validation:** `pnpm run build` passed with 0 Astro errors/warnings/hints; `pnpm run assets:check`, `python3 tools/validate_site.py`, and `git diff --check` passed; `pnpm run test:browser` reported 182 passed and 4 skipped. The local Release API request returned HTTP 403 and used the checked-in static fallback; PR #266's required CI Release sync, `Static site checks`, and `Dependency Review` all passed.
+
+## 2026-10-14 — Keep phone and tablet Hero overlays in frame
+
+- **Issue:** Local preview screenshots and Playwright geometry readings showed that the bilingual BOM/output cards exceeded the viewport at 390px and 768px; at 768px, about 22px and 24px were clipped. The absence of page-level horizontal overflow did not catch the clipped artwork.
+- **Changes:** Adjust the two decorative cards' narrow-screen anchors so they stay inside the viewport; add bilingual browser geometry coverage at 390/768/1440px.
+- **Validation:** `pnpm run build` (Astro: 0 errors/warnings/hints), `pnpm run assets:check`, `python3 tools/validate_site.py`, and `git diff --check` passed; the full browser suite reported 184 passed and 4 skipped. Screenshots and Playwright geometry assertions passed at all three bilingual viewport sizes. The local Release API request still returns 403 and uses the static fallback; PR #266's CI Release sync passed.
+
 ## 2026-10-12 — Localize the Chinese footer feedback entry
 
 - **Issue:** The Chinese footer had localized GitHub, docs, and contribution entries, but kept the feedback link as `Issues`, breaking the navigation language hierarchy.

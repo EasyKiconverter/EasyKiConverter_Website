@@ -2,6 +2,15 @@ import { expect, test } from '@playwright/test';
 
 const pages = ['/', '/en/'];
 
+test('bilingual homepages render one localized document title', async ({ page }) => {
+  for (const path of pages) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('head title')).toHaveCount(1);
+    const expectedTitle = path === '/' ? 'EasyKiConverter · 让元件库转换顺手一点' : 'EasyKiConverter · Make parts EDA-ready';
+    await expect(page).toHaveTitle(expectedTitle);
+  }
+});
+
 for (const path of pages) {
   test(`${path} serves the release-backed static page`, async ({ page }) => {
     const errors: string[] = [];
@@ -69,6 +78,20 @@ test('mobile navigation opens, closes, and restores focus', async ({ page }) => 
   await expect(menu).toBeFocused();
 });
 
+test('homepage skip links are localized and move keyboard focus to main content', async ({ page }) => {
+  for (const [path, label] of [['/', '跳转到正文'], ['/en/', 'Skip to content']]) {
+    await page.goto(path, { waitUntil: 'networkidle' });
+    const skipLink = page.locator('.skip-link');
+    await expect(skipLink).toHaveText(label);
+    await page.keyboard.press('Tab');
+    await expect(skipLink).toBeFocused();
+    await expect(skipLink).toBeInViewport();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('main#top')).toBeFocused();
+    await expect(page).toHaveURL(/#top$/);
+  }
+});
+
 test('mobile story cards keep decorative labels clear of their copy', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/', '/en/']) {
@@ -124,6 +147,59 @@ test('mobile homepage keeps the Hero product proof readable', async ({ page }) =
   }
 });
 
+test('Chinese mobile hero keeps the conversion phrase together', async ({ page }) => {
+  test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+  const phrase = page.locator('.hero-title-conversion');
+  const lineCount = await phrase.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    return range.getClientRects().length;
+  });
+
+  expect(lineCount).toBe(1);
+  const titleHeight = await page.locator('#hero-title').evaluate((element) => element.getBoundingClientRect().height);
+  expect(titleHeight).toBeLessThan(125);
+});
+
+test('English mobile hero keeps a compact promise and brings product proof higher', async ({ page }) => {
+  test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+
+  const title = page.locator('#hero-title');
+  await expect(title).toHaveText('Make parts EDA-ready.');
+  expect(await title.evaluate((element) => element.getBoundingClientRect().height)).toBeLessThan(110);
+  const ledeHeight = await page.locator('.hero-lede').evaluate((element) => element.getBoundingClientRect().height);
+  const productImageTop = await page
+    .locator('.hero-product-window img')
+    .evaluate((element) => element.getBoundingClientRect().top);
+  expect(ledeHeight).toBeLessThan(60);
+  expect(productImageTop).toBeLessThan(600);
+});
+
+test('bilingual mobile hero keeps its facts compact and product proof in view', async ({ page }) => {
+  test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const factTops = await page.locator('.hero-facts span').evaluateAll((facts) =>
+      facts.map((fact) => fact.getBoundingClientRect().top),
+    );
+    expect(factTops).toHaveLength(3);
+    expect(Math.max(...factTops) - Math.min(...factTops)).toBeLessThan(2);
+
+    const visibleProductHeight = await page.locator('.hero-product-window img').evaluate((image) => {
+      const bounds = image.getBoundingClientRect();
+      return Math.max(0, Math.min(bounds.bottom, window.innerHeight) - Math.max(bounds.top, 0));
+    });
+    expect(visibleProductHeight).toBeGreaterThanOrEqual(180);
+  }
+});
+
 test('bilingual secondary pages do not overflow horizontally on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
@@ -163,7 +239,7 @@ test('Chinese pages keep release guidance localized', async ({ page }) => {
     await expect(page.locator('main')).not.toContainText('Release');
   }
   await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.format-matrix-actions .text-link')).toHaveText(/阅读当前发布页/);
+  await expect(page.locator('.format-matrix-actions .text-link')).toHaveText(/当前发布/);
   await expect(page.locator('.format-legend-registered')).toHaveText(/按发布版本验证/);
 });
 
@@ -272,7 +348,7 @@ test('format matrix rows remain readable on narrow screens', async ({ page }) =>
 });
 
 test('bilingual case pages explain the evidence-reading order', async ({ page }) => {
-  for (const [path, steps] of [['/cases/', ['选定路径', '打开样本', '复核测试']], ['/en/cases/', ['Choose a route', 'Open the fixture', 'Review the test']]] as const) {
+  for (const [path, steps] of [['/cases/', ['选定路径', '核对输入依据', '复核测试']], ['/en/cases/', ['Choose a route', 'Inspect the input', 'Review the test']]] as const) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const guide = page.locator('.case-reading-guide');
     await expect(guide.locator('li')).toHaveCount(3);
@@ -447,8 +523,12 @@ test('mobile content CTAs keep the title and primary action readable', async ({ 
 test('format matrix offers evidence and release next steps in both languages', async ({ page }) => {
   for (const path of ['/formats/', '/en/formats/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.format-matrix-actions .button-dark')).toHaveAttribute('href', /cases/);
-    await expect(page.locator('.format-matrix-actions .text-link')).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
+    const casesLink = page.locator('.format-matrix-actions .button-dark');
+    const releaseLink = page.locator('.format-matrix-actions .text-link');
+    await expect(casesLink).toHaveAttribute('href', /cases/);
+    await expect(casesLink).toContainText(/查看测试案例|Test cases/);
+    await expect(releaseLink).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
+    await expect(releaseLink).toContainText(/当前发布|Latest Release/);
     const summary = page.locator('.format-matrix .evidence-summary');
     await expect(summary).toContainText('v3.1.13');
     await expect(summary).toContainText(/2/);
@@ -458,7 +538,48 @@ test('format matrix offers evidence and release next steps in both languages', a
     await expect(page.locator('.format-legend')).toBeVisible();
     await expect(page.locator('.format-status-primary')).toHaveCount(2);
     await expect(page.locator('.format-status-registered')).toHaveCount(9);
+    await expect(page.locator('.format-artifacts-cell')).toHaveCount(11);
+    await expect(page.locator('.format-artifacts-cell a')).toHaveCount(11);
   }
+});
+
+test('bilingual evidence-page actions stay on one row on mobile', async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const [path, selector] of [
+      ['/formats/', '.format-matrix-actions'],
+      ['/en/formats/', '.format-matrix-actions'],
+      ['/cases/', '.case-studies-actions'],
+      ['/en/cases/', '.case-studies-actions'],
+    ]) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const centerOffset = await page.locator(selector).evaluate((container) => {
+        const [primary, secondary] = Array.from(container.children);
+        const first = primary.getBoundingClientRect();
+        const second = secondary.getBoundingClientRect();
+        return Math.abs(first.top + first.height / 2 - second.top - second.height / 2);
+      });
+      expect(centerOffset, `${path} at ${width}px`).toBeLessThan(2);
+    }
+  }
+});
+
+test('English evidence-page introductions stay concise on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const [path, selector, maxHeight] of [
+    ['/en/formats/', '.format-matrix-heading > p:not(.kicker)', 106],
+    ['/en/cases/', '.case-studies-heading > p:not(.kicker)', 106],
+  ] as const) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const height = await page.locator(selector).evaluate((element) => element.getBoundingClientRect().height);
+    expect(height).toBeLessThanOrEqual(maxHeight);
+  }
+
+  await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#lab-title')).toHaveText('Explore real geometry.');
+  expect(await page.locator('#lab-title').evaluate((element) => element.getBoundingClientRect().height)).toBeLessThan(110);
+  expect(await page.locator('.lab-intro > p:not(.kicker)').evaluate((element) => element.getBoundingClientRect().height)).toBeLessThanOrEqual(80);
+  expect(await page.locator('.lab-warning').evaluate((element) => element.getBoundingClientRect().top)).toBeLessThan(380);
 });
 
 test('format matrix rows use concise bilingual status labels with full accessible meaning', async ({ page }) => {
@@ -475,33 +596,61 @@ test('format matrix rows use concise bilingual status labels with full accessibl
   }
 });
 
+test('format matrix explains tested output artifacts and links each row to main-project evidence', async ({ page }) => {
+  for (const [path, outputs, linkLabel] of [
+    ['/formats/', ['.kicad_sym', 'SchLib + PcbLib', 'XML 符号库', '.lplib', '.pool 符号数据'], '查看仓库测试'],
+    ['/en/formats/', ['.kicad_sym', 'SchLib + PcbLib', 'XML symbol library', '.lplib', '.pool symbol data'], 'Open repository test'],
+  ] as const) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const artifacts = page.locator('.format-artifacts-cell');
+    await expect(artifacts).toHaveCount(11);
+    for (const output of outputs) await expect(page.locator('.format-table-wrap')).toContainText(output);
+    await expect(artifacts.first().locator('a')).toContainText(linkLabel);
+    await expect(artifacts.first().locator('a')).toHaveAttribute('href', /test_parallel_export_cancellation\.cpp$/);
+    await expect(page.locator('#format-matrix-title').locator('..')).toContainText(/不等同于已在目标桌面软件中验收|desktop-app validation/);
+  }
+});
+
 test('case studies expose their evidence scope and next-step paths', async ({ page }) => {
   for (const path of ['/cases/', '/en/cases/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.case-studies-actions .button-dark')).toHaveAttribute('href', /formats/);
     await expect(page.locator('.case-studies-actions .text-link')).toHaveAttribute('href', /github\.com\/EasyKiconverter\/EasyKiConverter$/);
     await expect(page.locator('.evidence-summary')).toContainText('v3.1.13');
-    await expect(page.locator('.evidence-summary')).toContainText('3');
-    await expect(page.locator('.case-proof')).toHaveCount(3);
-    await expect(page.locator('.case-evidence-action')).toHaveCount(6);
+    await expect(page.locator('.evidence-summary')).toContainText('2');
+    await expect(page.locator('.case-proof')).toHaveCount(2);
+    await expect(page.locator('.case-evidence-action')).toHaveCount(4);
     await expect(page.locator('.case-evidence-action').first()).toContainText(/打开测试样本|Open fixture/);
+  }
+});
+
+test('case-study introductions keep the evidence-first promise aligned in both languages', async ({ page }) => {
+  for (const [path, title, evidenceCopy, manualCopy] of [
+    ['/cases/', '先核对证据，再看路径。', '关联集成测试实际验证的内容', '仍需人工检查'],
+    ['/en/cases/', 'Check the evidence, then trace each route.', 'only what linked tests verify', 'checks remain manual'],
+  ]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#case-studies-title')).toHaveText(title);
+    const summary = page.locator('.case-studies-heading > p').nth(1);
+    await expect(summary).toContainText(evidenceCopy);
+    await expect(summary).toContainText(manualCopy);
   }
 });
 
 test('case studies expose bilingual input and output routes', async ({ page }) => {
   await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
   const chineseRoutes = page.locator('.case-route');
-  await expect(chineseRoutes).toHaveCount(3);
+  await expect(chineseRoutes).toHaveCount(2);
   await expect(chineseRoutes.first()).toContainText('输入');
-  await expect(chineseRoutes.first()).toContainText('EasyEDA 元件');
-  await expect(chineseRoutes.first()).toContainText('KiCad 库');
+  await expect(chineseRoutes.first()).toContainText('符号与封装样本');
+  await expect(chineseRoutes.first()).toContainText('KiCad 符号库 + 封装');
 
   await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
   const englishRoutes = page.locator('.case-route');
-  await expect(englishRoutes).toHaveCount(3);
+  await expect(englishRoutes).toHaveCount(2);
   await expect(englishRoutes.first()).toContainText('INPUT');
-  await expect(englishRoutes.first()).toContainText('EasyEDA component');
-  await expect(englishRoutes.first()).toContainText('KiCad library');
+  await expect(englishRoutes.first()).toContainText('Symbol and footprint fixtures');
+  await expect(englishRoutes.first()).toContainText('KiCad symbol library + footprint');
 });
 
 test('Lab pages keep the experiment connected to product navigation', async ({ page }) => {
@@ -617,26 +766,48 @@ test('bilingual homepages keep the same interaction rhythm', async ({ page }) =>
   }
 });
 
-test('bilingual pages share the base brand tokens with the accessibility layer', async ({ page }) => {
+test('bilingual shared text colors meet WCAG AA on light brand surfaces', async ({ page }) => {
   for (const path of ['/', '/en/', '/formats/', '/en/formats/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect.poll(() => page.evaluate(() => ({
-      muted: getComputedStyle(document.documentElement).getPropertyValue('--muted').trim(),
-      violet: getComputedStyle(document.documentElement).getPropertyValue('--violet').trim(),
-    }))).toEqual({ muted: '#746f66', violet: '#6f61d8' });
+    const tokens = await page.evaluate(() => {
+      const style = getComputedStyle(document.documentElement);
+      return Object.fromEntries(['muted', 'violet', 'paper', 'peach', 'lilac', 'mint', 'yellow'].map((token) => [
+        token,
+        style.getPropertyValue(`--${token}`).trim(),
+      ])) as Record<string, string>;
+    });
+    expect(tokens).toMatchObject({ muted: '#5b564f', violet: '#5848b8' });
+
+    const luminance = (color: string): number => {
+      const channels = color.match(/[\da-f]{2}/gi)?.map((value) => parseInt(value, 16) / 255) ?? [];
+      const [red, green, blue] = channels.map((channel) =>
+        channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+      );
+      return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+    };
+    const contrastRatio = (foreground: string, background: string): number => {
+      const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+      return (values[0] + 0.05) / (values[1] + 0.05);
+    };
+    for (const surface of [tokens.paper, tokens.peach, tokens.lilac, tokens.mint, tokens.yellow]) {
+      expect(contrastRatio(tokens.muted, surface)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(tokens.violet, surface)).toBeGreaterThanOrEqual(4.5);
+    }
   }
 });
 
 test('bilingual workbench captions preserve the same product evidence', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM/);
-  await expect(page.locator('.app-window figcaption')).toContainText('resources/imgs/screenshot1.png');
+  await expect(page.locator('.showcase-source')).toHaveText('截取自桌面软件实际运行界面');
+  await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
   await expect(page.locator('.showcase-proof-items')).toContainText('添加元件');
   await expect(page.locator('.showcase-proof-items')).toContainText('导入 BOM');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM import and export settings/);
-  await expect(page.locator('.app-window figcaption')).toContainText('resources/imgs/screenshot1.png');
+  await expect(page.locator('.showcase-source')).toHaveText('Captured from the running desktop app');
+  await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
   await expect(page.locator('.showcase-proof-items')).toContainText('Add components');
   await expect(page.locator('.showcase-proof-items')).toContainText('Import BOM');
 });
@@ -697,46 +868,95 @@ test('homepage platform summary mirrors the available Release assets', async ({ 
 
 test('homepage platform copy speaks in user-facing download terms', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro')).toContainText('按设备架构选择对应下载项');
+  await expect(page.locator('.platform-summary')).toContainText('macOS 构建尚未完成维护者验收');
+  await expect(page.locator('.platform-summary')).toContainText('按设备架构选择对应下载项');
   await expect(page.locator('.platform-list > div').first()).toContainText('2 个下载项');
   await expect(page.locator('.download-links')).toHaveAttribute('aria-label', '平台下载入口');
   await expect(page.locator('.download-copy')).not.toContainText('GitHub API');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro')).toContainText('Choose the download that matches your architecture');
+  await expect(page.locator('.platform-summary')).toContainText('macOS builds have not completed maintainer validation');
+  await expect(page.locator('.platform-summary')).toContainText('Choose the download that matches your architecture');
   await expect(page.locator('.platform-list > div').first()).toContainText('2 downloads');
   await expect(page.locator('.download-links')).toHaveAttribute('aria-label', 'Platform download entries');
   await expect(page.locator('.download-copy')).not.toContainText('GitHub API');
 });
 
-test('bilingual platform headings identify the supported systems directly', async ({ page }) => {
+test('bilingual platform headings distinguish experimental macOS builds', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro .kicker')).toHaveText('跨平台支持');
-  await expect(page.locator('#platforms-title')).toContainText('Windows、Linux、macOS');
+  await expect(page.locator('.platform-intro .kicker')).toHaveText('平台状态');
+  await expect(page.locator('#platforms-title')).toContainText('macOS 安装包');
+  await expect(page.locator('#platforms-title')).toContainText('仍属实验阶段');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro .kicker')).toHaveText('CROSS-PLATFORM SUPPORT');
-  await expect(page.locator('#platforms-title')).toContainText('Windows, Linux and macOS');
+  await expect(page.locator('.platform-intro .kicker')).toHaveText('PLATFORM STATUS');
+  await expect(page.locator('#platforms-title')).toContainText('macOS packages');
+  await expect(page.locator('#platforms-title')).toContainText('still experimental');
+});
+
+test('macOS download caveat links to the known Gatekeeper issue in both languages', async ({ page }) => {
+  for (const [path, languageText] of [
+    ['/', 'Apple Silicon 用户曾报告 Gatekeeper 提示'],
+    ['/en/', 'An Apple Silicon user reported Gatekeeper’s'],
+  ]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const notice = page.locator('.download-platform-notice');
+    const actions = page.locator('.download-actions');
+    await expect(notice).toContainText(languageText);
+    const noticeBox = await notice.boundingBox();
+    const actionBox = await actions.boundingBox();
+    if (!noticeBox || !actionBox) throw new Error('Download notice or actions are not visible');
+    expect(noticeBox.y + noticeBox.height).toBeLessThan(actionBox.y);
+    await expect(notice.locator('a')).toHaveAttribute(
+      'href',
+      'https://github.com/EasyKiconverter/EasyKiConverter/issues/153',
+    );
+    await expect(notice.locator('a')).toHaveAttribute('target', '_blank');
+    await expect(notice.locator('a')).toHaveAttribute('rel', 'noreferrer');
+    await expect(notice).toContainText(path === '/' ? '请勿根据未经核实的教程关闭系统安全防护' : 'Do not disable macOS security protections');
+  }
 });
 
 test('platform sections offer a direct path to the matching download area', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.platform-intro-link')).toHaveAttribute('href', '#download');
   await expect(page.locator('.platform-intro-link')).toContainText('查看平台下载项');
-  await expect(page.locator('.platform-intro > p:not(.kicker)')).toHaveCSS('max-width', '400px');
+  await expect(page.locator('.platform-summary')).toHaveCSS('max-width', '400px');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.platform-intro-link')).toHaveAttribute('href', '#download');
   await expect(page.locator('.platform-intro-link')).toContainText('See platform downloads');
-  await expect(page.locator('.platform-intro > p:not(.kicker)')).toHaveCSS('max-width', '400px');
+  await expect(page.locator('.platform-summary')).toHaveCSS('max-width', '400px');
 });
 
-test('bilingual hero copy identifies the primary EDA destinations', async ({ page }) => {
+test('bilingual hero copy names target EDAs and generated library content', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.hero-lede')).toContainText('KiCad、Altium');
+  await expect(page.locator('.hero-lede')).toContainText('符号、封装与 3D 模型');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.hero-lede')).toContainText('KiCad, Altium');
+  await expect(page.locator('.hero-lede')).toContainText('KiCad / Altium');
+  await expect(page.locator('.hero-lede')).toContainText('symbols, footprints & 3D models');
+});
+
+test('bilingual hero artwork stays fully visible from phone through desktop widths', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of pages) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const artwork = await page.locator('.hero-product-stage').evaluate((stage) => {
+        const selectors = ['.hero-float-input', '.hero-float-output', '.hero-stage-tag'];
+        return Object.fromEntries(selectors.map((selector) => {
+          const rect = stage.querySelector(selector)!.getBoundingClientRect();
+          return [selector, { left: rect.left, right: rect.right }];
+        }));
+      });
+      for (const [selector, bounds] of Object.entries(artwork)) {
+        expect(bounds.left, `${path} ${viewport.width}px ${selector} left edge`).toBeGreaterThanOrEqual(0);
+        expect(bounds.right, `${path} ${viewport.width}px ${selector} right edge`).toBeLessThanOrEqual(viewport.width);
+      }
+    }
+  }
 });
 
 test('English homepage keeps product section labels concrete', async ({ page }) => {
@@ -757,6 +977,58 @@ test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
   await expect(homepage).not.toContainText('READY WHEN YOU ARE');
   await expect(homepage.locator('.kicker').filter({ hasText: '开源' })).toHaveCount(1);
   await expect(homepage.locator('.kicker').filter({ hasText: '随时可以开始' })).toHaveCount(1);
+});
+
+test('Chinese homepage and inner-page titles avoid orphaned characters on mobile', async ({ page }) => {
+  for (const width of [390, 360]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const language of [
+      { path: '/', english: false },
+      { path: '/en/', english: true },
+    ]) {
+      await page.goto(language.path, { waitUntil: 'domcontentloaded' });
+      const textLines = async (selector: string) => page.locator(selector).first().evaluate((element) => {
+        const lines = new Map<number, string>();
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let node: Node | null;
+        while ((node = walker.nextNode())) {
+          const value = node.nodeValue || '';
+          let offset = 0;
+          for (const character of value) {
+            const end = offset + character.length;
+            if (!/\s/.test(character)) {
+              const range = document.createRange();
+              range.setStart(node, offset);
+              range.setEnd(node, end);
+              const top = Math.round(range.getBoundingClientRect().top);
+              lines.set(top, (lines.get(top) || '') + character);
+            }
+            offset = end;
+          }
+        }
+        return [...lines.values()];
+      });
+      const assertNoOrphanedHan = (lines: string[], label: string) => {
+        if (!language.english) {
+          expect(lines.some((line) => /^[\p{Script=Han}。！？、，；：]$/u.test(line)), label).toBe(false);
+        }
+      };
+      const workbenchHeadline = await textLines('.product-showcase #showcase-title em');
+      assertNoOrphanedHan(workbenchHeadline, `${language.path} ${width}px workbench headline has an orphaned character`);
+      if (language.english) expect(workbenchHeadline.length).toBeLessThanOrEqual(2);
+
+      const languagePath = language.english ? '/en' : '';
+      await page.goto(`${languagePath}/formats/`, { waitUntil: 'domcontentloaded' });
+      const formatHeadline = await textLines('#format-matrix-title');
+      assertNoOrphanedHan(formatHeadline, `${language.path} ${width}px format title has an orphaned character`);
+      if (language.english) expect(formatHeadline.length).toBeLessThanOrEqual(2);
+
+      await page.goto(`${languagePath}/cases/`, { waitUntil: 'domcontentloaded' });
+      const caseHeadline = await textLines('.case-card h2');
+      assertNoOrphanedHan(caseHeadline, `${language.path} ${width}px first case title has an orphaned character`);
+      expect(caseHeadline.length, `${language.path} ${width}px first case route title lines`).toBe(1);
+    }
+  }
 });
 
 test('Chinese homepage keeps visual microcopy localized', async ({ page }) => {
@@ -814,23 +1086,32 @@ test('Chinese Lab keeps its entry label localized', async ({ page }) => {
   await expect(page.locator('.morph-orbit-import')).toHaveText('ORBIT ↥');
 });
 
-test('Chinese case summaries keep evidence terms localized', async ({ page }) => {
+test('case studies describe only conversion routes supported by linked integration tests', async ({ page }) => {
   await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.case-card').nth(0)).toContainText('CAD 测试样本');
-  await expect(page.locator('.case-card').nth(2)).toContainText('BOM 测试样本');
-  const chineseSummaries = await page.locator('.case-card > p').allTextContents();
-  expect(chineseSummaries.join(' ')).not.toContain('fixture');
+  await expect(page.locator('.case-card')).toHaveCount(2);
+  await expect(page.locator('#easyeda-kicad')).toContainText('符号与封装样本');
+  await expect(page.locator('#easyeda-kicad .case-evidence-link')).toHaveCount(3);
+  await expect(page.locator('#easyeda-kicad .case-evidence-link').nth(1)).toHaveAttribute('href', /footprint_basic\.json$/);
+  await expect(page.locator('#altium-pipeline')).toContainText('本地构造确定性元件数据');
+  await expect(page.locator('#altium-pipeline')).toContainText('不代表 EasyEDA 在线导入');
+  await expect(page.locator('#altium-pipeline .case-evidence-link')).toHaveAttribute('href', /test_parallel_export_cancellation\.cpp$/);
+  await expect(page.locator('#bom-batch')).toHaveCount(0);
   await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.case-card').nth(0)).toContainText('CAD fixtures');
+  await expect(page.locator('.case-card')).toHaveCount(2);
+  await expect(page.locator('#easyeda-kicad')).toContainText('Both EasyEDA JSON fixtures are read directly by this test.');
+  await expect(page.locator('#altium-pipeline')).toContainText('does not represent an EasyEDA online import');
+  await expect(page.locator('#bom-batch')).toHaveCount(0);
 });
 
-test('bilingual case copy keeps each output path singular and actionable', async ({ page }) => {
+test('bilingual case copy keeps inputs, target files, and manual validation scope explicit', async ({ page }) => {
   await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.case-card').nth(1)).toHaveText(/EasyEDA 元件 → Altium 库/);
-  await expect(page.locator('.case-card').nth(2)).toContainText('GUI 和 CLI 流程中重复检查');
+  await expect(page.locator('#easyeda-kicad')).toContainText('KiCad 符号库 + 封装');
+  await expect(page.locator('#altium-pipeline')).toContainText('SchLib + PcbLib + STEP');
+  await expect(page.locator('.case-disclaimer')).toContainText('自动化测试通过不等同于已在');
   await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.case-card').nth(1)).toHaveText(/EasyEDA component → Altium library/);
-  await expect(page.locator('.case-card').nth(2)).toContainText('checked repeatedly through GUI and CLI workflows');
+  await expect(page.locator('#easyeda-kicad')).toContainText('KiCad symbol library + footprint');
+  await expect(page.locator('#altium-pipeline')).toContainText('SchLib + PcbLib + STEP');
+  await expect(page.locator('.case-disclaimer')).toContainText('does not replace opening and checking exported files');
 });
 
 test('case evidence paths foreground filenames while retaining directories', async ({ page }) => {
@@ -920,46 +1201,287 @@ test('Lab asset guidance matches the generated delivery path', async ({ page }) 
 });
 
 test('Lab artifact switcher updates the active view and delivery copy', async ({ page }) => {
+  test.setTimeout(60_000);
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const stage = page.locator('[data-model-stage]');
     await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+    await expect(stage).toHaveAttribute('data-artifact-controls-ready', 'true', { timeout: 30000 });
     await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-label', /GLB delivery model|GLB 交付模型/);
     const atlas = stage.locator('[data-artifact-view="atlas"]');
     await atlas.dispatchEvent('click');
     await expect(stage).toHaveAttribute('data-artifact-view', 'atlas');
     await expect(atlas).toHaveAttribute('aria-pressed', 'true');
+    await expect(stage.locator('.mesh-atlas')).not.toHaveAttribute('inert', '');
+    await expect(stage.locator('.mesh-atlas')).not.toHaveAttribute('aria-hidden', 'true');
+    await expect(stage.locator('#model-canvas')).toHaveAttribute('inert', '');
+    await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-hidden', 'true');
     await expect(stage.locator('.artifact-caption')).toContainText(/mesh|网格/i);
     const model = stage.locator('[data-artifact-view="model"]');
     await model.dispatchEvent('click');
     await expect(stage).toHaveAttribute('data-artifact-view', 'model');
     await expect(model).toHaveAttribute('aria-pressed', 'true');
+    await expect(stage.locator('#model-canvas')).not.toHaveAttribute('inert', '');
+    await expect(stage.locator('#model-canvas')).not.toHaveAttribute('aria-hidden', 'true');
+    await expect(stage.locator('.mesh-atlas')).toHaveAttribute('inert', '');
     await expect(stage.locator('[data-artifact-label]')).toContainText(/GLB DELIVERY MODEL|GLB 交付模型/);
   }
 });
 
-test('mobile Lab keeps the model view switcher above the geometry', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
-  const stage = page.locator('[data-model-stage]');
-  await expect(stage).toHaveClass(/model-loaded/, { timeout: 15000 });
-  const stageBox = await stage.boundingBox();
-  const switcherBox = await stage.locator('.artifact-switcher').boundingBox();
-  expect(stageBox).not.toBeNull();
-  expect(switcherBox).not.toBeNull();
-  expect((switcherBox?.y ?? 0) - (stageBox?.y ?? 0)).toBeLessThan((stageBox?.height ?? 0) * 0.25);
-  await expect(stage.locator('#model-canvas')).toBeVisible();
+test('Lab keeps the model view switcher above the geometry on desktop and mobile', async ({ page }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+      await page.setViewportSize(viewport);
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const switcher = page.locator('.artifact-switcher');
+      await expect(switcher).toBeVisible();
+      const geometry = await page.evaluate(() => {
+        const stageElement = document.querySelector<HTMLElement>('[data-model-stage]');
+        const switcherElement = document.querySelector<HTMLElement>('.artifact-switcher');
+        if (!stageElement || !switcherElement) return null;
+        const stageRect = stageElement.getBoundingClientRect();
+        const switcherRect = switcherElement.getBoundingClientRect();
+        return { stageHeight: stageRect.height, stageTop: stageRect.top, switcherTop: switcherRect.top };
+      });
+      expect(geometry).not.toBeNull();
+      expect(geometry!.switcherTop - geometry!.stageTop).toBeLessThan(geometry!.stageHeight * 0.25);
+    }
+  }
 });
 
-test('Lab loading strategy stays scannable in both languages', async ({ page }) => {
+test('Lab mobile scroll chapters stay clear of model controls in both languages', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.addInitScript(() => {
+        const originalGetContext = HTMLCanvasElement.prototype.getContext;
+        Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+          configurable: true,
+          value(contextId: string, ...options: unknown[]) {
+            if (contextId.startsWith('webgl')) return null;
+            return Reflect.apply(originalGetContext, this, [contextId, ...options]);
+          },
+        });
+      });
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => {
+        const story = document.querySelector<HTMLElement>('.motion-narrative');
+        if (story) window.scrollTo(0, story.offsetTop + 120);
+      });
+
+      for (const [step, chapter] of [
+        ['1', 'input'],
+        ['2', 'library'],
+        ['3', 'product'],
+      ]) {
+        await page.locator('[data-motion-timeline]').evaluate((timeline, activeStep) => {
+          timeline.setAttribute('data-story-step', activeStep);
+        }, step);
+        if (step === '3') {
+          const appImage = page.locator('.motion-app-window img');
+          await expect(appImage).toHaveJSProperty('complete', true);
+          await expect.poll(() => appImage.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+        }
+        await page.waitForTimeout(450);
+
+        const layout = await page.evaluate((chapterName) => {
+          const chapterElement = document.querySelector<HTMLElement>(`[data-motion-chapter="${chapterName}"]`);
+          const stageElement = document.querySelector<HTMLElement>('[data-model-stage]');
+          if (!chapterElement || !stageElement) return null;
+          const chapter = chapterElement.getBoundingClientRect();
+          const stage = stageElement.getBoundingClientRect();
+          const controls = Array.from(stageElement.querySelectorAll<HTMLElement>(
+            '.artifact-switcher, .model-explode, .artifact-caption, .model-detail-status, .experiment-controls-toggle',
+          )).map((element) => {
+            const rect = element.getBoundingClientRect();
+            return { name: element.className, top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right };
+          }).filter((rect) => rect.bottom > rect.top && rect.right > rect.left);
+          return {
+            chapter: { top: chapter.top, bottom: chapter.bottom, left: chapter.left, right: chapter.right },
+            stage: { top: stage.top, bottom: stage.bottom, visibility: getComputedStyle(stageElement).visibility },
+            destinations: (() => {
+              const element = document.querySelector<HTMLElement>('.motion-destinations');
+              const rect = element?.getBoundingClientRect();
+              return rect && { top: rect.top, bottom: rect.bottom };
+            })(),
+            controls,
+          };
+        }, chapter);
+
+        expect(layout, `${path} ${viewport.width}px story step ${step}`).not.toBeNull();
+        if (step === '3') {
+          expect(layout!.stage.visibility, `${path} ${viewport.width}px final product chapter should hand off the model`).toBe('hidden');
+          expect(layout!.chapter.bottom, `${path} ${viewport.width}px final chapter should stay clear of destination links`).toBeLessThan(layout!.destinations!.top);
+        } else {
+          expect(layout!.chapter.bottom, `${path} ${viewport.width}px story step ${step} should keep copy above the model`).toBeLessThan(layout!.stage.top);
+          for (const control of layout!.controls) {
+            const overlaps = layout!.chapter.top < control.bottom
+              && layout!.chapter.bottom > control.top
+              && layout!.chapter.left < control.right
+              && layout!.chapter.right > control.left;
+            expect(overlaps, `${path} ${viewport.width}px story step ${step} overlaps ${control.name}`).toBe(false);
+          }
+        }
+      }
+    }
+  }
+});
+
+test('Lab tablet layout keeps the narrative heading clear of the model in both languages', async ({ page }) => {
+  await page.setViewportSize({ width: 768, height: 1024 });
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const facts = page.locator('.lab-facts');
-    await expect(facts).toHaveCount(1);
-    await expect(facts.locator('li')).toHaveCount(3);
-    await expect(facts).toContainText(/GLB 优先|GLB first/);
-    await expect(facts).toContainText(/STEP \/ WASM/);
-    await expect(facts).toContainText(/保持隔离|Isolated/);
+    const layout = await page.evaluate(() => {
+      const heading = document.querySelector<HTMLElement>('.motion-heading');
+      const model = document.querySelector<HTMLElement>('[data-model-stage]');
+      if (!heading || !model) return null;
+      const headingRect = heading.getBoundingClientRect();
+      const modelRect = model.getBoundingClientRect();
+      return { headingBottom: headingRect.bottom, modelTop: modelRect.top, scrollWidth: document.documentElement.scrollWidth };
+    });
+    expect(layout).not.toBeNull();
+    expect(layout!.headingBottom).toBeLessThan(layout!.modelTop);
+    expect(layout!.scrollWidth).toBeLessThanOrEqual(768);
+  }
+});
+
+test('Lab desktop model stage stays clear of the narrative heading', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const layout = await page.evaluate(() => {
+      const heading = document.querySelector<HTMLElement>('.motion-heading');
+      const model = document.querySelector<HTMLElement>('[data-model-stage]');
+      if (!heading || !model) return null;
+      const headingRect = heading.getBoundingClientRect();
+      const modelRect = model.getBoundingClientRect();
+      return { headingRight: headingRect.right, modelLeft: modelRect.left, scrollWidth: document.documentElement.scrollWidth };
+    });
+    expect(layout).not.toBeNull();
+    expect(layout!.headingRight).toBeLessThan(layout!.modelLeft);
+    expect(layout!.scrollWidth).toBeLessThanOrEqual(1440);
+  }
+});
+
+test('Lab model controls stay inside the visible stage at phone, tablet, and desktop widths', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const bounds = await page.evaluate(() => {
+        const stage = document.querySelector<HTMLElement>('[data-model-stage]');
+        const controls = stage?.querySelector<HTMLElement>('.model-explode');
+        if (!stage || !controls) return null;
+        const stageRect = stage.getBoundingClientRect();
+        const controlsRect = controls.getBoundingClientRect();
+        return {
+          stage: { top: stageRect.top, right: stageRect.right, bottom: stageRect.bottom, left: stageRect.left },
+          controls: { top: controlsRect.top, right: controlsRect.right, bottom: controlsRect.bottom, left: controlsRect.left },
+        };
+      });
+      expect(bounds).not.toBeNull();
+      expect(bounds!.controls.top).toBeGreaterThanOrEqual(bounds!.stage.top);
+      expect(bounds!.controls.right).toBeLessThanOrEqual(bounds!.stage.right);
+      expect(bounds!.controls.bottom).toBeLessThanOrEqual(bounds!.stage.bottom);
+      expect(bounds!.controls.left).toBeGreaterThanOrEqual(bounds!.stage.left);
+    }
+  }
+});
+
+test('Lab advanced-tools entry stays with the model and clear of the view switcher', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const bounds = await page.evaluate(() => {
+        const stage = document.querySelector<HTMLElement>('[data-model-stage]');
+        const toggle = stage?.querySelector<HTMLElement>('[data-experiment-controls]');
+        const switcher = stage?.querySelector<HTMLElement>('.artifact-switcher');
+        if (!stage || !toggle || !switcher) return null;
+        const rect = (element: HTMLElement) => {
+          const { top, right, bottom, left } = element.getBoundingClientRect();
+          return { top, right, bottom, left };
+        };
+        return { stage: rect(stage), toggle: rect(toggle), switcher: rect(switcher) };
+      });
+      expect(bounds).not.toBeNull();
+      expect(bounds!.toggle.top).toBeGreaterThanOrEqual(bounds!.stage.top);
+      expect(bounds!.toggle.right).toBeLessThanOrEqual(bounds!.stage.right);
+      expect(bounds!.toggle.bottom).toBeLessThanOrEqual(bounds!.stage.bottom);
+      expect(bounds!.toggle.left).toBeGreaterThanOrEqual(bounds!.stage.left);
+      const overlaps = bounds!.toggle.left < bounds!.switcher.right &&
+        bounds!.toggle.right > bounds!.switcher.left &&
+        bounds!.toggle.top < bounds!.switcher.bottom &&
+        bounds!.toggle.bottom > bounds!.switcher.top;
+      expect(overlaps).toBe(false);
+    }
+  }
+});
+
+test('Lab story keeps a concise scroll runway across desktop and mobile', async ({ page }) => {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    const maxViewports = viewport.width <= 760 ? 2.9 : 3.3;
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const storyHeight = await page.locator('.motion-narrative').evaluate((element) =>
+        element.getBoundingClientRect().height,
+      );
+      expect(storyHeight / viewport.height).toBeLessThanOrEqual(maxViewports);
+    }
+  }
+});
+
+test('mobile Lab controls keep the model open and reveal slice controls on demand', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const controls = await page.locator('.artifact-switcher').evaluate((switcher) => {
+      const stage = switcher.closest('[data-model-stage]');
+      const panel = stage?.querySelector('.model-explode');
+      return {
+        flexWrap: getComputedStyle(switcher).flexWrap,
+        overflowX: getComputedStyle(switcher).overflowX,
+        clientWidth: switcher.clientWidth,
+        scrollWidth: switcher.scrollWidth,
+        switcherHeight: switcher.getBoundingClientRect().height,
+        sliceAxesDisplay: getComputedStyle(panel?.querySelector('.model-slice-axes') as Element).display,
+        sliceRangeDisplay: getComputedStyle(panel?.querySelector('.model-slice-range') as Element).display,
+      };
+    });
+
+    expect(controls.flexWrap).toBe('nowrap');
+    expect(controls.overflowX).toBe('auto');
+    expect(controls.scrollWidth).toBeGreaterThan(controls.clientWidth);
+    expect(controls.switcherHeight).toBeLessThan(48);
+    expect(controls.sliceAxesDisplay).toBe('none');
+    expect(controls.sliceRangeDisplay).toBe('none');
+
+    const stage = page.locator('[data-model-stage]');
+    const sliceToggle = page.locator('.model-slice-toggle');
+    await expect(stage).toHaveAttribute('data-controls-ready', 'true');
+    await sliceToggle.evaluate((toggle: HTMLButtonElement) => { toggle.disabled = false; });
+    await sliceToggle.click();
+    await expect(sliceToggle).toHaveAttribute('aria-pressed', 'true');
+    const expandedControls = await sliceToggle.evaluate((toggle) => {
+      const panel = toggle.closest('.model-explode');
+      return {
+        sliceAxesDisplay: getComputedStyle(panel?.querySelector('.model-slice-axes') as Element).display,
+        sliceRangeDisplay: getComputedStyle(panel?.querySelector('.model-slice-range') as Element).display,
+      };
+    });
+    expect(expandedControls.sliceAxesDisplay).not.toBe('none');
+    expect(expandedControls.sliceRangeDisplay).not.toBe('none');
+  }
+});
+
+test('Lab loading guidance avoids repeating the same delivery facts', async ({ page }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.lab-facts')).toHaveCount(0);
+    await expect(page.locator('.lab-intro')).toContainText(/首页不加载 CAD\/WASM|CAD\/WASM stays off the homepage/);
+    await expect(page.locator('.lab-warning')).toContainText(/GLB 优先|GLB first/);
+    await expect(page.locator('.lab-warning')).toContainText(/STEP\/WASM/);
   }
 });
 
@@ -983,11 +1505,9 @@ test('Lab introductions explain the real geometry story in both languages', asyn
   await expect(page.locator('.lab-intro')).toContainText('拓扑视图');
 
   await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-intro')).toContainText('GLB delivery model');
+  await expect(page.locator('.lab-intro')).toContainText('GLB');
   await expect(page.locator('.lab-intro')).toContainText('real STEP geometry');
-  await expect(page.locator('.lab-intro')).toContainText('mesh atlas');
-  await expect(page.locator('.lab-intro')).toContainText('section tomogram');
-  await expect(page.locator('.lab-intro')).toContainText('topology views');
+  await expect(page.locator('.lab-intro')).toContainText('mesh, section, and topology views');
 });
 
 test('Lab pages expose a direct bilingual stable-download path', async ({ page }) => {
@@ -1046,6 +1566,8 @@ test('all public routes expose complete social metadata', async ({ request }) =>
     const response = await request.get(path);
     expect(response.ok()).toBeTruthy();
     const html = await response.text();
+    const titles = html.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+    expect(titles, `${path} should expose exactly one document title`).toHaveLength(1);
     expect(html).toContain('property="og:image"');
     expect(html).toContain('name="twitter:image"');
     expect(html).toContain('rel="icon"');
