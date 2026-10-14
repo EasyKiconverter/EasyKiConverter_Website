@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-15 — Match format-matrix evidence links to each target
+
+- **Finding:** Ten format rows linked to the same parallel-export cancellation test. As a result, targets such as Altium had no relevant linked evidence, and the page described a manual procedure generically as a repository test.
+- **Change:** Link KiCad and each registered target to its exporter-specific test; point Altium to the repository's manual validation procedure. Use “repository evidence” consistently and clarify that test/procedure scope does not equal validation in the target EDA.
+- **Validation:** Added bilingual regression coverage for all 11 target-to-evidence paths. `pnpm run build` (Astro: 0 errors/warnings/hints), `python3 tools/validate_site.py`, and `pnpm run assets:check` passed; the full `pnpm run test:browser` reported 192 passed and 4 skipped. Paths were checked read-only through the main repository's GitHub API; that repository was not modified.
+
 ## 2026-10-14 — Replace the homepage screenshot source with visitor-facing copy
 
 - **Finding:** The bilingual real-interface card exposed the repository path `resources/imgs/screenshot1.png`. It explained where the file lives, not how the screenshot relates to the product.
