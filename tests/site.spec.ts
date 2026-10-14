@@ -799,13 +799,15 @@ test('bilingual shared text colors meet WCAG AA on light brand surfaces', async 
 test('bilingual workbench captions preserve the same product evidence', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM/);
-  await expect(page.locator('.app-window figcaption')).toContainText('resources/imgs/screenshot1.png');
+  await expect(page.locator('.showcase-source')).toHaveText('截取自桌面软件实际运行界面');
+  await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
   await expect(page.locator('.showcase-proof-items')).toContainText('添加元件');
   await expect(page.locator('.showcase-proof-items')).toContainText('导入 BOM');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM import and export settings/);
-  await expect(page.locator('.app-window figcaption')).toContainText('resources/imgs/screenshot1.png');
+  await expect(page.locator('.showcase-source')).toHaveText('Captured from the running desktop app');
+  await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
   await expect(page.locator('.showcase-proof-items')).toContainText('Add components');
   await expect(page.locator('.showcase-proof-items')).toContainText('Import BOM');
 });

@@ -35,6 +35,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 | P2 | Consolidate brand tokens and accessibility-layer responsibilities | 3×4×3 / (1×2) = 18 | Complete; homepage, content pages, and Lab share the base brand tokens without accessibility-layer color overrides |
 | P2 | Reorder the Lab loading guidance for scanning | 4×4×3 / (2×2) = 12 | Complete; bilingual mobile layouts separate GLB sizes, delivery priority, and the STEP/WASM fallback boundary |
 | P2 | Unify the bilingual workbench next-step CTA | 3×5×3 / (2×2) = 11.25 | Complete; the shared CTA makes the real interface → conversion evidence → 3D delivery path explicit |
+| P2 | Replace the homepage screenshot source path with visitor-facing provenance copy | 3×4×3 / (1×1) = 36 | In progress; remove the internal asset path, describe the real running app in both languages, and add regression coverage |
 
 The resolved Dependency Review workflow issue is documented in the [optimization log](OPTIMIZATION_LOG_en.md) and is not repeated here.
 
