@@ -1,5 +1,7 @@
 # 部署与预览一致性
 
+[English](DEPLOYMENT_en.md)
+
 本项目是由 Astro 生成的静态网站。发布前运行 `pnpm run build`，服务器只需发布生成的 `dist/` 目录，不能只上传源码页面或图片目录。
 
 ## 本地预览
