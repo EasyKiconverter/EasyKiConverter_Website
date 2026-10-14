@@ -1494,6 +1494,7 @@ test('Lab story keeps a concise scroll runway across desktop and mobile', async 
 });
 
 test('mobile Lab controls keep the model open and reveal slice controls on demand', async ({ page }) => {
+  test.setTimeout(60_000);
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -1521,7 +1522,8 @@ test('mobile Lab controls keep the model open and reveal slice controls on deman
     const stage = page.locator('[data-model-stage]');
     const sliceToggle = page.locator('.model-slice-toggle');
     await expect(stage).toHaveAttribute('data-controls-ready', 'true');
-    await sliceToggle.evaluate((toggle: HTMLButtonElement) => { toggle.disabled = false; });
+    await expect(stage).toHaveClass(/model-loaded/, { timeout: 20_000 });
+    await expect(sliceToggle).toBeEnabled();
     await sliceToggle.click();
     await expect(sliceToggle).toHaveAttribute('aria-pressed', 'true');
     const expandedControls = await sliceToggle.evaluate((toggle) => {
