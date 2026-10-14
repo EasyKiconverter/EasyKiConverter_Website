@@ -376,8 +376,8 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
   }
 
   .motion-model {
-    top: 72%;
-    height: 36svh;
+    top: 64%;
+    height: 42svh;
     min-height: 210px;
   }
 
@@ -394,8 +394,13 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
 }
 
 @media (max-width: 760px) and (max-height: 700px) and (prefers-reduced-motion: no-preference) {
+  .motion-chapter {
+    top: 2%;
+  }
+
   .motion-model {
     top: 82%;
+    height: 38svh;
   }
 }
 

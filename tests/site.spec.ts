@@ -1249,6 +1249,24 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
   }
 });
 
+test('Lab gives the mobile model stage enough room in both languages', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const stage = page.locator('[data-model-stage]');
+      await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+      const bounds = await stage.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      });
+      const minimumHeight = viewport.height <= 700 ? viewport.height * 0.32 : viewport.height * 0.4;
+      expect(bounds.width).toBeLessThanOrEqual(viewport.width);
+      expect(bounds.height).toBeGreaterThanOrEqual(minimumHeight);
+    }
+  }
+});
+
 test('Lab mobile scroll chapters stay clear of model controls in both languages', async ({ page }) => {
   for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
     await page.setViewportSize(viewport);
