@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-14 — Align case evidence promises and Lab control placement
+
+- **Issue:** The English case-page heading did not foreground evidence-first reading; the 3D Lab advanced-tools entry was detached from the model stage and unstable on narrow screens; shared text colors lacked contrast on light brand surfaces, and browser-test concurrency was high.
+- **Changes:** Align both case-page introductions around evidence-first reading; place the advanced-tools entry and note inside the model stage with a narrow-screen offset; strengthen shared text contrast and add a WCAG AA regression check; cap Playwright workers for CI and local runs.
+- **Validation:** `pnpm run build` passed with 0 Astro errors/warnings/hints; `pnpm run assets:check`, `python3 tools/validate_site.py`, and `git diff --check` passed; `pnpm run test:browser` reported 182 passed and 4 skipped. The Release API returned HTTP 403, so the local build used the checked-in static fallback; the required CI Release-sync path still needs remote confirmation.
+
 ## 2026-10-12 — Localize the Chinese footer feedback entry
 
 - **Issue:** The Chinese footer had localized GitHub, docs, and contribution entries, but kept the feedback link as `Issues`, breaking the navigation language hierarchy.
