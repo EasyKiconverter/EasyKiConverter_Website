@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-14 — Remove orphaned characters from Chinese mobile page titles
+
+- **Issue:** Mobile screenshot/line-box review found a lone “台。” at the end of the 390px homepage showcase title, “阵” at the end of the 360px format title, and “库” at the end of the 390px case title.
+- **Change:** Tightened three bilingual titles: the Chinese showcase emphasizes “这是真实界面。”, the format page uses “EDA 格式矩阵”, and the case heading is consistently “EasyEDA → KiCad” while details retain fixture and library types; added bilingual 390/360px line-box checks for orphaned Han characters and a single-line route title.
+- **Validation:** The regression reproduced the original homepage wrap in Chromium and Chromium Mobile; after the copy changes, focused coverage across all three page groups passed in both projects. `pnpm run build` (Astro: 0 errors/warnings/hints), site validation, and model-asset checks passed; the full browser suite reported 188 passed / 4 skipped. The local Release API TLS connection was interrupted, so the build used the checked-in fallback.
+
 ## 2026-10-14 — Keep mobile Lab story chapters clear of controls
 
 - **Issue:** During actual 3D Lab scrolling, chapter copy in bilingual steps 1–3 overlapped the model switcher, exploded-view controls, or detail status. Static screenshots and isolated control-visibility checks did not cover these combined states.

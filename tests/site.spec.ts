@@ -977,6 +977,58 @@ test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
   await expect(homepage.locator('.kicker').filter({ hasText: '随时可以开始' })).toHaveCount(1);
 });
 
+test('Chinese homepage and inner-page titles avoid orphaned characters on mobile', async ({ page }) => {
+  for (const width of [390, 360]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const language of [
+      { path: '/', english: false },
+      { path: '/en/', english: true },
+    ]) {
+      await page.goto(language.path, { waitUntil: 'domcontentloaded' });
+      const textLines = async (selector: string) => page.locator(selector).first().evaluate((element) => {
+        const lines = new Map<number, string>();
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let node: Node | null;
+        while ((node = walker.nextNode())) {
+          const value = node.nodeValue || '';
+          let offset = 0;
+          for (const character of value) {
+            const end = offset + character.length;
+            if (!/\s/.test(character)) {
+              const range = document.createRange();
+              range.setStart(node, offset);
+              range.setEnd(node, end);
+              const top = Math.round(range.getBoundingClientRect().top);
+              lines.set(top, (lines.get(top) || '') + character);
+            }
+            offset = end;
+          }
+        }
+        return [...lines.values()];
+      });
+      const assertNoOrphanedHan = (lines: string[], label: string) => {
+        if (!language.english) {
+          expect(lines.some((line) => /^[\p{Script=Han}。！？、，；：]$/u.test(line)), label).toBe(false);
+        }
+      };
+      const workbenchHeadline = await textLines('.product-showcase #showcase-title em');
+      assertNoOrphanedHan(workbenchHeadline, `${language.path} ${width}px workbench headline has an orphaned character`);
+      if (language.english) expect(workbenchHeadline.length).toBeLessThanOrEqual(2);
+
+      const languagePath = language.english ? '/en' : '';
+      await page.goto(`${languagePath}/formats/`, { waitUntil: 'domcontentloaded' });
+      const formatHeadline = await textLines('#format-matrix-title');
+      assertNoOrphanedHan(formatHeadline, `${language.path} ${width}px format title has an orphaned character`);
+      if (language.english) expect(formatHeadline.length).toBeLessThanOrEqual(2);
+
+      await page.goto(`${languagePath}/cases/`, { waitUntil: 'domcontentloaded' });
+      const caseHeadline = await textLines('.case-card h2');
+      assertNoOrphanedHan(caseHeadline, `${language.path} ${width}px first case title has an orphaned character`);
+      expect(caseHeadline.length, `${language.path} ${width}px first case route title lines`).toBe(1);
+    }
+  }
+});
+
 test('Chinese homepage keeps visual microcopy localized', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const homepage = page.locator('main');
