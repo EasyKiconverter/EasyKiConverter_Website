@@ -2,7 +2,7 @@
 
 [中文](PROJECT_STATUS.md)
 
-Last checked: 2026-10-15. This is an evidence-linked snapshot; branches, CI, Releases, and production can change and must be rechecked against the cited source, commits, checks, and live site.
+Last checked: 2026-10-15 (before WEB-01). This is an evidence-linked snapshot; branches, CI, Releases, and production can change and must be rechecked against the cited source, commits, checks, and live site.
 
 ## Project Goal
 
@@ -10,9 +10,9 @@ Explain EasyKiConverter’s real workflow through a bilingual website, show the 
 
 ## Current Stage
 
-The project is in V0.0.1 stability maintenance and iterative improvement. `master` is at `a7b0dbf`; `version/V0.0.1` is at `8211c71`. Promotion PR #283 passed Dependency Review and both static-site checks. The repository has no open pull requests or issues. The main project’s latest Release was verified through the GitHub API as `v3.1.13`.
+The project is in V0.0.1 stability maintenance and iterative improvement. Before WEB-01, `master` was at `a7b0dbf` and `version/V0.0.1` at `194768f`; promotion PR #283 passed Dependency Review and both static-site checks, and PR #284 passed Site Quality and Dependency Review before merging to the version branch. At the start of this snapshot there were no open pull requests or issues. The main project’s latest Release was verified through the GitHub API as `v3.1.13`.
 
-The current source generates eight public routes. Playwright covers desktop/mobile Chromium, both languages, navigation, reduced motion, Release data, and Lab behavior. The browser suite rerun on this work branch reported 190 passed and 4 skipped; build, site validation, and model-asset checks passed. The GitHub API rate limit returned 403 for local Release sync, so the checked-in fallback was used; PR #283's required CI Release sync and checks passed. These facts do not prove real-device testing or production deployment.
+The current source generates eight public routes. Playwright covers desktop/mobile Chromium, both languages, navigation, reduced motion, Release data, and Lab behavior. WEB-01 regression reports 192 passed and 4 skipped; build, site validation, and model-asset checks passed. The GitHub API rate limit returned 403 for local Release sync, so the checked-in fallback was used; PR #283's required CI Release sync and PR #284's checks passed. These facts do not prove real-device testing or production deployment.
 
 ## Milestones and Work
 
@@ -27,7 +27,7 @@ The current source generates eight public routes. Playwright covers desktop/mobi
 
 | ID / Priority | Objective, scope, and deliverable | Dependency and verification | Status |
 | --- | --- | --- | --- |
-| WEB-01 / P1 | Review bilingual visitor paths on all eight public routes for claims, terminology, hierarchy, calls to action, and visual consistency; deliver evidence-backed copy/style fixes with desktop/mobile screenshots. | No external dependency; verify both languages, `pnpm run build`, site validation, and Playwright regression. | Ready; next active development task |
+| WEB-01 / P1 | Review bilingual visitor copy for brand casing, format-support guidance, and download direction; this cycle delivers corrected hero/showcase labels, conversion-support copy, and download wording. | No external dependency; bilingual text/style regression, build, site validation, and full Playwright suite. | Implemented and locally verified; see the optimization log |
 | WEB-02 / P1 | Deploy the unique-title fix already on `master`, then verify all eight routes and homepage titles. | Requires explicit owner approval for this production deployment; use the existing backup/rollback procedure. | Approval-gated; do not execute without authorization |
 | WEB-03 / P2 | Measure loading, caching, and interaction on real phones and varied network conditions; record reproducible results. | Requires physical devices and controllable network conditions. | External prerequisite unmet; remains unverified |
 

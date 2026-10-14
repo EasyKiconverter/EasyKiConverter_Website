@@ -225,7 +225,7 @@ test('homepage format summary matches the capability matrix data', async ({ page
 
 test('homepage format summary explains version-scoped support', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#formats')).toContainText('其他目标格式的可用范围');
+  await expect(page.locator('#formats')).toContainText('其他目标格式的具体支持范围');
   await expect(page.locator('#formats')).not.toContainText('主项目还注册了');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
@@ -977,6 +977,25 @@ test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
   await expect(homepage).not.toContainText('READY WHEN YOU ARE');
   await expect(homepage.locator('.kicker').filter({ hasText: '开源' })).toHaveCount(1);
   await expect(homepage.locator('.kicker').filter({ hasText: '随时可以开始' })).toHaveCount(1);
+});
+
+test('homepage preserves Qt brand casing and concise release guidance in both languages', async ({ page }) => {
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const brand = page.locator('.hero-copy .kicker-brand-case');
+    await expect(brand).toHaveText('Qt');
+    expect(await brand.evaluate((element) => getComputedStyle(element).textTransform)).toBe('none');
+    expect(await brand.evaluate((element) => getComputedStyle(element).letterSpacing)).toBe('normal');
+  }
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.showcase-proof-label')).toHaveText('真实 Qt Quick 界面');
+  await expect(page.locator('#formats p')).toContainText('其他目标格式的具体支持范围，请查看对应版本的发布说明和格式矩阵。');
+  await expect(page.locator('#download small')).toContainText('查看对应版本发布说明并核对 SHA256');
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.showcase-proof-label')).toHaveText('REAL Qt Quick UI');
+  await expect(page.locator('#formats p')).toContainText('For other targets, use the matching Release and format matrix');
 });
 
 test('Chinese homepage and inner-page titles avoid orphaned characters on mobile', async ({ page }) => {
