@@ -4444,9 +4444,9 @@ export const setupModel = async (): Promise<void> => {
           continue;
         }
         const edgeMaterial = new THREE.LineBasicMaterial({
-          color: 0x4a4358,
+          color: 0x3d354a,
           transparent: true,
-          opacity: 0.24,
+          opacity: 0.36,
           depthWrite: false,
         });
         const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
