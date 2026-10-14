@@ -4430,7 +4430,7 @@ export const setupModel = async (): Promise<void> => {
     const edgeParts = explodedMeshes
       .filter(({ mesh }) => (mesh.geometry.index?.count ?? 0) <= 6_000)
       .sort((left, right) => (left.mesh.geometry.index?.count ?? 0) - (right.mesh.geometry.index?.count ?? 0))
-      .slice(0, 160);
+      .slice(0, 96);
     stage.dataset.modelEdgeMeshes = String(edgeParts.length);
     let edgePartIndex = 0;
     const addEdgeChunk = (): void => {
