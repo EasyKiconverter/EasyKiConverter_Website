@@ -58,7 +58,7 @@ GLB、WASM 和带内容哈希的 `_astro` 资源应返回明确的长期缓存�
 
 ## 生产部署脚本
 
-使用 [`tools/deploy_production.py`](../tools/deploy_production.py) 发布时，必须显式提供服务器地址；Python 脚本会构建 `dist/`、创建带时间戳的备份、精确替换站点目录、检查 Nginx 配置并重新加载服务。Nginx 检查失败会恢复上一份站点目录。Shell 入口 [`tools/deploy-production.sh`](../tools/deploy-production.sh) 仅作为兼容包装。
+使用 [`tools/deploy_production.py`](../tools/deploy_production.py) 发布时，必须显式提供服务器地址；Python 脚本先构建并校验 `dist/`，再创建带时间戳的备份、替换站点目录并检查/重新加载 Nginx。切换后会检查正式域名的 8 个路由均返回 HTTP 200，且每页恰有一个 `<title>`、正确的 canonical 与中英文 hreflang。检查失败时脚本会恢复上一份站点目录、重新加载 Nginx，并保留失败版本供排查。正式域名默认为 `https://easykiconverter.org.cn`，特殊目标可通过 `DEPLOY_BASE_URL` 设置 HTTPS 根域名。Shell 入口 [`tools/deploy-production.sh`](../tools/deploy-production.sh) 仅作为兼容包装。
 
 ```bash
 DEPLOY_HOST=8.137.164.32 \
@@ -92,8 +92,9 @@ DEPLOY_HOST=example.org python3 tools/deploy_production.py --dry-run
 
 ```bash
 python3 tools/validate_site.py
-python3 tools/check_production_assets.py
+python3 tools/check_model_assets.py
+python3 -m unittest discover --start-directory tests --pattern 'test_*.py'
 git diff --check
 ```
 
-在实际域名上检查八个构建路由：中文首页、`/en/`、`/lab/`、`/en/lab/`、`/formats/`、`/en/formats/`、`/cases/`、`/en/cases/`，并检查导航锚点、下载链接、移动宽度、减少动态效果设置，以及浏览器控制台没有错误。首页和 Lab 的资源边界应分别核对；发布服务器上的浏览器访问应使用 `http://` 或 `https://`，不能用 `file://`。
+部署脚本会自动检查正式域名的 HTTP 状态、单一标题和语言/SEO 链接；发布后仍需人工检查导航锚点、下载链接、移动宽度、减少动态效果设置，以及浏览器控制台没有错误。首页和 Lab 的资源边界应分别核对；发布服务器上的浏览器访问应使用 `http://` 或 `https://`，不能用 `file://`。

@@ -6,11 +6,11 @@
 
 ## 已验证
 
-- 2026-10-15 状态快照：`master`=`f698440`，`version/V0.0.1`=`ee2bfb9`，二者与远端一致。PR #291–#295 的下载与 CTA 批次由 PR #296 晋级 `master`；PR #296 `Static site checks` run `38620866939`（194 passed、4 skipped）和 `Dependency Review` run `38620867064` 均通过。PR #297 仅同步祖先历史，结果文件树与版本分支一致；其 `Static site checks` run `38620216526`（194 passed、4 skipped）和 `Dependency Review` run `38620216401` 通过。Astro 构建、8 页站点校验和模型资产检查通过。发布 API 本地 403、使用回退数据；CI Release 同步通过。未部署生产。
+- 2026-10-15 状态快照：`master`=`67c45bd`，`version/V0.0.1`=`9b10f58`，二者与远端一致。PR #291–#295 的下载与 CTA 批次由 PR #296 晋级 `master`；PR #298/#299 更新并晋级双语状态文档。PR #299 的必需 checks 和 master push run `38624194781` 均通过，后者 194 passed、4 skipped。PR #297/#300 仅同步祖先历史，未改网站内容。生产未部署。
 - 2026-10-15，双语 390px 下载卡截图显示，首页和 Lab 的“下载”主 CTA 打开的是 GitHub 版本发布页，而非直接文件；PR #292 将文案改为“查看下载项 / View downloads”和“查看稳定版下载 / View stable downloads”，并合入 `version/V0.0.1`。目标 Release URL 和直达安装包入口保持不变。工作树构建、完整 Playwright（192 passed、4 skipped）、CI、站点校验、模型资产检查及 `git diff --check` 通过。未验证真机体验，也未部署生产。
 - 2026-10-15，Formats 与 Cases 共用页尾 CTA 也被确认会打开版本发布页。PR #294 对齐四个内容路由的中英文按钮和说明，390px 完整页截图显示无横向溢出；四路由 CTA 回归通过。最终版本分支 CI run `38617247841` 为 194 passed、4 skipped；构建、站点校验及模型资产检查通过。CTA 改动在 `version/V0.0.1` 验证；生产未部署。
 - 2026-10-15，本轮 390px 双语截图覆盖首页、格式矩阵、案例和 3D Lab；另按实际滚动检查 Lab 三个章节及产品交接状态，未发现新布局缺陷。Chromium Mobile 不代表实机验证。
-- 2026-10-15，正式域名本轮只读复查请求返回 HTTP 403，线上当前状态无法确认。上一轮成功检查记录首页 `/` 与 `/en/` 各有两个 `<title>`；源码修复已在 `master`，没有运行部署脚本。
+- 2026-10-15，正式域名只读复核中 8 路由均返回 HTTP 200，canonical 与 hreflang 对应正确；`/` 与 `/en/` 各有两个 `<title>`，其余 6 页各 1 个。首页响应 `Last-Modified` 为 2026-10-13 00:20 UTC；当前 master 首页仅通过共享 `SeoHead` 输出标题，说明生产内容尚未包含该源码修复。没有运行部署脚本。
 - Astro 静态构建生成 `/`、`/en/`、`/lab/`、`/en/lab/`、`/formats/`、`/en/formats/`、`/cases/`、`/en/cases/` 八个页面。
 - `python3 tools/validate_site.py` 检查最终 `dist/` 的重复 ID、片段链接、语义地标、本地资源和未发布 PNG。
 - `pnpm run test:browser` 覆盖中英文首页、桌面/移动 Chromium、移动菜单、reduced-motion、Release 版本、格式矩阵、Lab 路由隔离和控制台错误。

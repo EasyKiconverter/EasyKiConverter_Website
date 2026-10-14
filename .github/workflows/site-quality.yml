@@ -27,6 +27,8 @@ jobs:
         run: corepack enable && corepack install --global pnpm@10.34.5
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Test deployment safeguards
+        run: python3 -m unittest discover --start-directory tests --pattern 'test_*.py'
       - name: Validate pages and build
         env:
           RELEASE_SYNC_REQUIRED: '1'
