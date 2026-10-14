@@ -1196,6 +1196,84 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
   }
 });
 
+test('Lab mobile scroll chapters stay clear of model controls in both languages', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.addInitScript(() => {
+        const originalGetContext = HTMLCanvasElement.prototype.getContext;
+        Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+          configurable: true,
+          value(contextId: string, ...options: unknown[]) {
+            if (contextId.startsWith('webgl')) return null;
+            return Reflect.apply(originalGetContext, this, [contextId, ...options]);
+          },
+        });
+      });
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => {
+        const story = document.querySelector<HTMLElement>('.motion-narrative');
+        if (story) window.scrollTo(0, story.offsetTop + 120);
+      });
+
+      for (const [step, chapter] of [
+        ['1', 'input'],
+        ['2', 'library'],
+        ['3', 'product'],
+      ]) {
+        await page.locator('[data-motion-timeline]').evaluate((timeline, activeStep) => {
+          timeline.setAttribute('data-story-step', activeStep);
+        }, step);
+        if (step === '3') {
+          const appImage = page.locator('.motion-app-window img');
+          await expect(appImage).toHaveJSProperty('complete', true);
+          await expect.poll(() => appImage.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+        }
+        await page.waitForTimeout(450);
+
+        const layout = await page.evaluate((chapterName) => {
+          const chapterElement = document.querySelector<HTMLElement>(`[data-motion-chapter="${chapterName}"]`);
+          const stageElement = document.querySelector<HTMLElement>('[data-model-stage]');
+          if (!chapterElement || !stageElement) return null;
+          const chapter = chapterElement.getBoundingClientRect();
+          const stage = stageElement.getBoundingClientRect();
+          const controls = Array.from(stageElement.querySelectorAll<HTMLElement>(
+            '.artifact-switcher, .model-explode, .artifact-caption, .model-detail-status, .experiment-controls-toggle',
+          )).map((element) => {
+            const rect = element.getBoundingClientRect();
+            return { name: element.className, top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right };
+          }).filter((rect) => rect.bottom > rect.top && rect.right > rect.left);
+          return {
+            chapter: { top: chapter.top, bottom: chapter.bottom, left: chapter.left, right: chapter.right },
+            stage: { top: stage.top, bottom: stage.bottom, visibility: getComputedStyle(stageElement).visibility },
+            destinations: (() => {
+              const element = document.querySelector<HTMLElement>('.motion-destinations');
+              const rect = element?.getBoundingClientRect();
+              return rect && { top: rect.top, bottom: rect.bottom };
+            })(),
+            controls,
+          };
+        }, chapter);
+
+        expect(layout, `${path} ${viewport.width}px story step ${step}`).not.toBeNull();
+        if (step === '3') {
+          expect(layout!.stage.visibility, `${path} ${viewport.width}px final product chapter should hand off the model`).toBe('hidden');
+          expect(layout!.chapter.bottom, `${path} ${viewport.width}px final chapter should stay clear of destination links`).toBeLessThan(layout!.destinations!.top);
+        } else {
+          expect(layout!.chapter.bottom, `${path} ${viewport.width}px story step ${step} should keep copy above the model`).toBeLessThan(layout!.stage.top);
+          for (const control of layout!.controls) {
+            const overlaps = layout!.chapter.top < control.bottom
+              && layout!.chapter.bottom > control.top
+              && layout!.chapter.left < control.right
+              && layout!.chapter.right > control.left;
+            expect(overlaps, `${path} ${viewport.width}px story step ${step} overlaps ${control.name}`).toBe(false);
+          }
+        }
+      }
+    }
+  }
+});
+
 test('Lab tablet layout keeps the narrative heading clear of the model in both languages', async ({ page }) => {
   await page.setViewportSize({ width: 768, height: 1024 });
   for (const path of ['/lab/', '/en/lab/']) {

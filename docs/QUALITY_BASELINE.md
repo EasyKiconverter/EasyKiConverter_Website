@@ -13,6 +13,8 @@
 - `master` 与 `version/V0.0.1` 已启用 PR、至少一名审批、强制通过 `Static site checks` 与 `Dependency Review`、禁止强推和会话解决门禁。
 - 2026-10-14，PR #266（版本分支）已通过 `Static site checks`、`Dependency Review` 和审批并合并；本地构建、资产校验、最终站点校验通过，浏览器套件为 184 passed、4 skipped。
 - 2026-10-14，首页浮卡已在中英文 390/768/1440px 视口验证完整留在屏幕内；CI 的必需 Release 同步成功，本地 Release API 请求曾返回 403并使用静态回退数据。
+- 2026-10-14，3D Lab 手机滚动故事在中英文 390×844 与 360×640 视口的三个章节状态均验证章节内容不遮挡模型控件；最终章节隐藏模型舞台，完整交接至真实软件截图和下一步入口。Chromium/Chromium Mobile 回归通过，真实滚动截图已复核。
+- 2026-10-14，CI 首轮发现英文 360×640 第二步仍与模型舞台重叠；下移短屏模型舞台后，聚焦回归与完整浏览器套件均通过（186 passed、4 skipped）。
 - 2026-10-11 已在 `https://easykiconverter.org.cn/` 验证八个生产路由返回 HTTP 200；首页不加载 3D 运行时，`/lab/` 与 `/en/lab/` 的同源模型资源可访问，旧版根路径 `.msix` 下载链接仍可用。
 - 2026-10-11 使用 Chromium SwiftShader 访问生产 `/lab/`，由 STEP 几何生成的 GLB 模型成功加载（`278,784` 个三角面、无 fallback、无控制台错误），工具入口初始化完成且默认收起。
 - 2026-10-11 生产桌面 GLB 与移动 GLB 均返回 `model/gltf-binary`，分别约 9.6 MB 与 8.1 MB，并带有 `max-age=2592000`；WASM 返回 `application/wasm` 并带有同等长期缓存策略。
