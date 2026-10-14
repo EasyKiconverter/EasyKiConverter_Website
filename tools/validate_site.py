@@ -93,12 +93,15 @@ class PageParser(HTMLParser):
         self.ids: set[str] = set()
         self.duplicate_ids: set[str] = set()
         self.tags: set[str] = set()
+        self.title_count = 0
         self.fragments: list[str] = []
         self.resources: list[tuple[str, str]] = []
         self.aria_labels: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         self.tags.add(tag)
+        if tag.lower() == "title":
+            self.title_count += 1
         values = dict(attrs)
         element_id = values.get("id")
         if element_id:
@@ -126,6 +129,8 @@ else:
         parser.feed(page_text)
         if parser.duplicate_ids:
             errors.append(f"{page}: duplicate HTML id(s): {', '.join(sorted(parser.duplicate_ids))}")
+        if parser.title_count != 1:
+            errors.append(f"{page}: expected exactly one HTML title, found {parser.title_count}")
         if "main" not in parser.tags or "footer" not in parser.tags or not parser.aria_labels:
             errors.append(f"{page}: missing semantic landmarks or labelled sections")
         for marker in (

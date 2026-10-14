@@ -58,7 +58,7 @@ The production domain is `https://easykiconverter.org.cn/`. `astro.config.ts` us
 
 ## Production deployment script
 
-Use [`tools/deploy-production.sh`](../tools/deploy-production.sh) with an explicit server address. The script builds `dist/`, creates a timestamped backup, replaces the site directory exactly, validates Nginx, and reloads the service. If the Nginx check fails, it restores the previous site directory.
+Use [`tools/deploy_production.py`](../tools/deploy_production.py) with an explicit server address. The Python script builds and validates `dist/`, creates a timestamped backup, replaces the site directory, validates Nginx, and reloads the service. It then checks that all eight public routes return HTTP 200 and each has exactly one `<title>`, the expected canonical URL, and correct Chinese/English hreflang links. If these checks fail, it restores the previous site directory, reloads Nginx, and preserves the failed release for diagnosis. The production URL defaults to `https://easykiconverter.org.cn`; set `DEPLOY_BASE_URL` to another HTTPS origin when needed. The shell entry point [`tools/deploy-production.sh`](../tools/deploy-production.sh) is a compatibility wrapper.
 
 ```bash
 DEPLOY_HOST=8.137.164.32 \
@@ -74,8 +74,9 @@ The script does not touch `/var/www/downloads/`; legacy release files remain ava
 
 ```bash
 python3 tools/validate_site.py
-python3 tools/check_production_assets.py
+python3 tools/check_model_assets.py
+python3 -m unittest discover --start-directory tests --pattern 'test_*.py'
 git diff --check
 ```
 
-On the actual domain, check all eight built routes: the Chinese homepage, `/en/`, `/lab/`, `/en/lab/`, `/formats/`, `/en/formats/`, `/cases/`, and `/en/cases/`. Also check navigation anchors, download links, narrow mobile layout, reduced-motion behavior, and a clean browser console. Verify homepage and Lab resource boundaries separately. Production browser access must use `http://` or `https://`, never `file://`.
+The deploy script automatically checks HTTP status, single titles, and language/SEO links for all eight routes. After release, manually check navigation anchors, download links, narrow mobile layout, reduced-motion behavior, and a clean browser console. Verify homepage and Lab resource boundaries separately. Production browser access must use `http://` or `https://`, never `file://`.

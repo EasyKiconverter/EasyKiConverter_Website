@@ -18,9 +18,120 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
+from html.parser import HTMLParser
+from urllib.parse import urlsplit
+from urllib.request import urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
+LANGUAGE_ROUTE_PAIRS = (
+    ("/", "/en/"),
+    ("/lab/", "/en/lab/"),
+    ("/formats/", "/en/formats/"),
+    ("/cases/", "/en/cases/"),
+)
+PUBLIC_ROUTES = tuple(route for pair in LANGUAGE_ROUTE_PAIRS for route in pair)
+
+
+class PageMetadataParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.title_count = 0
+        self.title_parts: list[str] = []
+        self.in_title = False
+        self.canonicals: list[str] = []
+        self.alternates: dict[str, str] = {}
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() == "title":
+            self.title_count += 1
+            self.in_title = True
+        if tag.lower() != "link":
+            return
+        values = dict(attrs)
+        relations = (values.get("rel") or "").lower().split()
+        href = values.get("href")
+        if not href:
+            return
+        if "canonical" in relations:
+            self.canonicals.append(href)
+        if "alternate" in relations and values.get("hreflang"):
+            self.alternates[values["hreflang"]] = href
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() == "title":
+            self.in_title = False
+
+    def handle_data(self, data: str) -> None:
+        if self.in_title:
+            self.title_parts.append(data)
+
+
+def expected_language_urls(base_url: str, route: str) -> dict[str, str]:
+    base = base_url.rstrip("/")
+    for chinese_route, english_route in LANGUAGE_ROUTE_PAIRS:
+        if route in (chinese_route, english_route):
+            return {
+                "zh-CN": f"{base}{chinese_route}",
+                "en": f"{base}{english_route}",
+                "x-default": f"{base}{chinese_route}",
+            }
+    raise ValueError(f"unregistered public route: {route}")
+
+
+def validate_public_route(base_url: str, route: str, *, timeout: float) -> None:
+    url = f"{base_url.rstrip('/')}{route}"
+    with urlopen(url, timeout=timeout) as response:
+        status = response.getcode()
+        page = response.read().decode("utf-8", errors="replace")
+    if status != 200:
+        raise RuntimeError(f"{route}: expected HTTP 200, got {status}")
+
+    parser = PageMetadataParser()
+    parser.feed(page)
+    if parser.title_count != 1:
+        raise RuntimeError(f"{route}: expected exactly one <title>, found {parser.title_count}")
+    if not "".join(parser.title_parts).strip():
+        raise RuntimeError(f"{route}: <title> is empty")
+    expected_canonical = url
+    if parser.canonicals != [expected_canonical]:
+        raise RuntimeError(
+            f"{route}: expected one canonical URL {expected_canonical!r}, found {parser.canonicals!r}"
+        )
+    for language, expected_url in expected_language_urls(base_url, route).items():
+        if parser.alternates.get(language) != expected_url:
+            raise RuntimeError(
+                f"{route}: hreflang {language!r} should point to {expected_url!r}, "
+                f"found {parser.alternates.get(language)!r}"
+            )
+
+
+def verify_public_site(
+    base_url: str,
+    *,
+    timeout: float = 10,
+    attempts: int = 5,
+    retry_interval: float = 2,
+) -> None:
+    """Check all deployed routes and SEO metadata, retrying transient failures."""
+    if attempts < 1:
+        raise ValueError("attempts must be at least one")
+    if timeout <= 0 or retry_interval < 0:
+        raise ValueError("timeout must be positive and retry_interval cannot be negative")
+    last_error: Exception | None = None
+    for attempt in range(attempts):
+        try:
+            for route in PUBLIC_ROUTES:
+                validate_public_route(base_url, route, timeout=timeout)
+            print(f"Verified {len(PUBLIC_ROUTES)} public routes, titles, canonicals, and hreflang links")
+            return
+        except Exception as error:
+            last_error = error
+            if attempt + 1 < attempts:
+                print(f"Public site check attempt {attempt + 1}/{attempts} failed: {error}; retrying")
+                time.sleep(retry_interval)
+    raise RuntimeError(f"Public site check failed after {attempts} attempts: {last_error}") from last_error
 
 
 def setting(name: str, default: str) -> str:
@@ -55,6 +166,7 @@ def configuration() -> dict[str, str]:
         "key": key,
         "root": setting("DEPLOY_ROOT", "/var/www/easykiconverter-website"),
         "backup_root": setting("REMOTE_BACKUP_ROOT", "/var/www/backups"),
+        "base_url": setting("DEPLOY_BASE_URL", "https://easykiconverter.org.cn"),
     }
 
 
@@ -67,6 +179,17 @@ def validate_configuration(config: dict[str, str], *, dry_run: bool) -> None:
     for executable in ("pnpm", "scp", "ssh"):
         if shutil.which(executable) is None:
             raise SystemExit(f"Error: required executable not found: {executable}")
+    public_url = urlsplit(config["base_url"])
+    if (
+        public_url.scheme != "https"
+        or not public_url.netloc
+        or public_url.path not in ("", "/")
+        or public_url.query
+        or public_url.fragment
+        or public_url.username is not None
+        or public_url.password is not None
+    ):
+        raise SystemExit("Error: DEPLOY_BASE_URL must be an HTTPS origin without a path, query, or fragment")
     if not dry_run and not (ROOT / "dist").is_dir():
         raise SystemExit("Error: dist/ is missing; the build must complete before upload")
 
@@ -149,6 +272,23 @@ def upload_dist(config: dict[str, str], stage: str) -> None:
             print(f"Warning: could not clean remote upload directory: {remote_upload_dir}", file=sys.stderr)
 
 
+def rollback_script(config: dict[str, str], previous: str, failed: str) -> str:
+    root = shlex.quote(config["root"])
+    previous_path = shlex.quote(previous)
+    failed_path = shlex.quote(failed)
+    return " ".join(
+        [
+            "set -eu;",
+            f"if [ ! -e {previous_path} ]; then echo 'Previous site directory is unavailable; automatic rollback cannot continue' >&2; exit 1; fi;",
+            f"if [ -e {root} ]; then sudo mv {root} {failed_path}; fi;",
+            f"sudo mv {previous_path} {root};",
+            "sudo nginx -t;",
+            "sudo systemctl reload nginx;",
+            f"printf 'Previous site restored. Failed release preserved at: %s\\n' {failed_path}",
+        ]
+    )
+
+
 def deploy(config: dict[str, str], deploy_id: str) -> str:
     stage = f"/var/www/.easyki-website-stage-{deploy_id}"
     backup = f"{config['backup_root']}/easykiconverter-website-{deploy_id}"
@@ -166,19 +306,35 @@ def deploy(config: dict[str, str], deploy_id: str) -> str:
     upload_dist(config, stage)
 
     previous = f"{config['root']}.previous-{deploy_id}"
+    failed = f"{config['root']}.failed-{deploy_id}"
     swap = " ".join(
         [
             "set -eu;",
             f"previous={shlex.quote(previous)};",
             f"if [ -e {shlex.quote(config['root'])} ]; then sudo mv {shlex.quote(config['root'])} \"$previous\"; fi;",
             f"sudo mv {shlex.quote(stage)} {shlex.quote(config['root'])};",
-            f"if ! sudo nginx -t; then sudo rm -rf {shlex.quote(config['root'])}; "
+            f"if ! sudo nginx -t; then sudo mv {shlex.quote(config['root'])} {shlex.quote(failed)}; "
             f"if [ -e \"$previous\" ]; then sudo mv \"$previous\" {shlex.quote(config['root'])}; fi; exit 1; fi;",
-            "sudo systemctl reload nginx;",
+            f"if ! sudo systemctl reload nginx; then sudo mv {shlex.quote(config['root'])} {shlex.quote(failed)}; "
+            f"if [ -e \"$previous\" ]; then sudo mv \"$previous\" {shlex.quote(config['root'])}; "
+            "sudo nginx -t && sudo systemctl reload nginx; fi; exit 1; fi;",
             f"printf 'Deployed. Backup: %s\\n' {shlex.quote(backup)}",
         ]
     )
     remote(config, swap)
+    try:
+        verify_public_site(config["base_url"])
+    except Exception as smoke_error:
+        try:
+            remote(config, rollback_script(config, previous, failed))
+        except Exception as rollback_error:
+            raise RuntimeError(
+                f"Post-deploy verification failed ({smoke_error}); automatic rollback also failed "
+                f"({rollback_error}). Inspect the production host immediately."
+            ) from rollback_error
+        raise RuntimeError(
+            f"Post-deploy verification failed; the previous site was restored: {smoke_error}"
+        ) from smoke_error
     return backup
 
 
@@ -197,6 +353,7 @@ def main() -> int:
     run(["pnpm", "run", "build"], cwd=ROOT)
     if not (ROOT / "dist").is_dir():
         raise SystemExit("Error: build completed without producing dist/")
+    run([sys.executable, "tools/validate_site.py"], cwd=ROOT)
     deploy(config, deploy_id)
     return 0
 
@@ -204,6 +361,6 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except (OSError, subprocess.CalledProcessError, tarfile.TarError) as error:
+    except (OSError, RuntimeError, subprocess.CalledProcessError, tarfile.TarError) as error:
         print(f"Deployment failed: {error}", file=sys.stderr)
         raise SystemExit(1) from error
