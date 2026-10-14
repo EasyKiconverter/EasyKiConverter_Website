@@ -562,7 +562,7 @@ test('bilingual evidence-page actions stay compact and wrap only when needed', a
         const second = secondary.getBoundingClientRect();
         return Math.abs(first.top + first.height / 2 - second.top - second.height / 2);
       });
-      const needsWrap = path === '/en/cases/' && width === 320;
+      const needsWrap = (path === '/en/cases/' || path === '/en/formats/') && width === 320;
       if (needsWrap) {
         expect(centerOffset, `${path} at ${width}px should wrap the secondary action`).toBeGreaterThan(2);
       } else {
@@ -1636,6 +1636,54 @@ test('320px Cases actions stay inside the viewport in both languages', async ({ 
     for (const link of layout!.links) {
       expect(link.left, `${path} action should stay inside the left viewport edge`).toBeGreaterThanOrEqual(0);
       expect(link.right, `${path} action should stay inside the right viewport edge`).toBeLessThanOrEqual(320);
+    }
+  }
+});
+
+test('Format actions stay inside their content column at narrow mobile widths', async ({ page }) => {
+  for (const width of [320, 360]) {
+    await page.setViewportSize({ width, height: 740 });
+    for (const path of ['/formats/', '/en/formats/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const layout = await page.evaluate(() => {
+        const actions = document.querySelector<HTMLElement>('.format-matrix-actions');
+        if (!actions) return null;
+        const { left, right } = actions.getBoundingClientRect();
+        const links = Array.from(actions.children, (element) => {
+          const rect = element.getBoundingClientRect();
+          return {
+            left: rect.left,
+            right: rect.right,
+            top: rect.top,
+            bottom: rect.bottom,
+            clientWidth: (element as HTMLElement).clientWidth,
+            scrollWidth: (element as HTMLElement).scrollWidth,
+          };
+        });
+        return {
+          viewport: innerWidth,
+          document: document.documentElement.scrollWidth,
+          container: { left, right, clientWidth: actions.clientWidth, scrollWidth: actions.scrollWidth },
+          links,
+        };
+      });
+
+      expect(layout, `${path} should render format actions at ${width}px`).not.toBeNull();
+      expect(layout!.document, `${path} should not create page-level overflow at ${width}px`).toBeLessThanOrEqual(width);
+      expect(layout!.container.scrollWidth, `${path} action row should fit its content column at ${width}px`).toBeLessThanOrEqual(layout!.container.clientWidth);
+      expect(layout!.links).toHaveLength(2);
+      for (const link of layout!.links) {
+        expect(link.left, `${path} action should remain inside its content column at ${width}px`).toBeGreaterThanOrEqual(layout!.container.left - 1);
+        expect(link.right, `${path} action should remain inside its content column at ${width}px`).toBeLessThanOrEqual(layout!.container.right + 1);
+        expect(link.scrollWidth, `${path} action text should not be clipped at ${width}px`).toBeLessThanOrEqual(link.clientWidth);
+      }
+
+      if (width === 320 && path === '/en/formats/') {
+        expect(layout!.links[1].top, 'the English release link should wrap below the primary CTA when needed').toBeGreaterThanOrEqual(layout!.links[0].bottom - 1);
+      }
+      if (width === 360) {
+        expect(layout!.links[1].top, `${path} actions should remain on one row when they fit`).toBeLessThan(layout!.links[0].bottom);
+      }
     }
   }
 });

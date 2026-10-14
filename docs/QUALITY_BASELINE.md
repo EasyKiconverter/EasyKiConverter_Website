@@ -6,6 +6,7 @@
 
 ## 已验证
 
+- 2026-10-15，320px CTA 专项巡检发现英文 Formats 页的 “Latest Release” 链接超出动作内容列 12px，虽然根文档宽度仍为 320px；仅检查页面 scrollWidth 会漏报。`FormatMatrix` 在不大于 360px 时允许动作换行，空间足够时仍保持单行。中英文 320/360px 边界回归在 Chromium 与 Chromium Mobile 通过；截图确认 320px 换行、360px 单行。完整 Playwright 为 200 passed、4 skipped；`pnpm build` 的 Astro 检查 0 errors/warnings/hints，站点校验与资产检查通过。本地 Release API 返回 403，使用仓库 `v3.1.13` 回退数据；未部署生产。
 - 2026-10-15，PR #315 将 320px 双语 Cases CTA 修复晋级至 `master`；版本分支独立审批及必需检查均通过，版本分支 Site Quality run `38647646532` 为 198 passed、4 skipped。PR #316 仅同步 master ancestry，不改变文件树；合并后版本分支为 `4b2b84d`。master 合并提交为 `b7a59c7`，其合并后 Site Quality run `38648150676` 通过（198 passed、4 skipped）。生产未部署。
 - 2026-10-15，检查 320px 双语视口发现 `/en/cases/` 的 “View source” CTA 溢出，页面宽度为 353px；在特性分支 `fix/cases-actions-320px` 为不大于 360px 的布局启用换行。中英文 320px 回归在 Chromium 与 Chromium Mobile 共通过 2 项，英文链接完整显示且文档宽度为 320px。`pnpm build`、`pnpm run check`（0 errors/warnings/hints）、`python3 tools/validate_site.py`、`pnpm run assets:check` 通过；Playwright 为 198 passed、4 skipped。Release API 返回 403，本地构建使用已提交的 `v3.1.13` 快照。PR #313 已合入 `version/V0.0.1`（merge `2e23100`），合并后 CI run `38644979827` 通过；之后由 PR #315 晋级 `master`（见首条记录）。生产未部署。
 - 2026-10-15 状态复核：`master`=`8f447e7`，`version/V0.0.1`=`eb25b34`；PR #311/#312 已合并，master Site Quality run `38640180490` 成功（196 passed、4 skipped），当前无开放 PR。主项目最新 Release 为 `v3.1.13`。正式站八个路由 HTTP 200、canonical 正确；首页两路由各有两个 `<title>`，其余六路由各一个，Last-Modified 为 2026-10-13 00:20 UTC。未运行生产部署。
