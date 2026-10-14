@@ -6,6 +6,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 
 | Priority | Opportunity | Estimate (impact × confidence × urgency / cost × risk) | Status |
 | --- | --- | --- | --- |
+| P1 | Keep bilingual homepage Hero overlays fully visible at phone, tablet, and desktop widths | 4×5×3 / (2×2) = 15 | Complete; input/output cards are covered by browser geometry checks at 390/768/1440px |
 | P1 | Add browser regression tests for Chinese/English pages, mobile navigation, reduced motion, and release links | 4×5×3 / (3×2) = 10 | Complete; `pnpm run test:browser` and CI Site Quality pass |
 | P2 | Add an offline STEP-source-to-optimized-GLB pipeline to reduce browser download and parsing costs | 5×4×3 / (5×3) = 4 | Core loop complete; generator, GLB assets, and `pnpm run assets:check` are gated; visual decimation remains a separate assessment |
 | P2 | Remove legacy page sections hidden by the new narrative and their related styles | 3×4×2 / (2×3) = 4 | Isolated at `/lab/` and `/en/lab/`; asset migration remains a follow-up |

@@ -6,7 +6,13 @@
 
 - **问题：** 英文案例页标题没有突出先核验证据；3D Lab 高级工具入口与模型舞台脱离，移动端位置也不稳定；浅色品牌表面上的正文色对比度不足，浏览器测试并发偏高。
 - **处理：** 双语案例页统一为证据优先的阅读顺序；将高级工具入口及说明收进模型舞台，并调整窄屏位置；提升共享正文色对比度并增加 WCAG AA 对比度回归测试；按 CI/本地环境限制 Playwright worker 数量。
-- **验证：** `pnpm run build` 成功，Astro 检查为 0 errors/warnings/hints；`pnpm run assets:check`、`python3 tools/validate_site.py`、`git diff --check` 均通过；`pnpm run test:browser` 为 182 passed、4 skipped。Release API 返回 HTTP 403，本地构建使用仓库静态回退数据；CI 的必需 Release 同步路径尚待远程检查确认。
+- **验证：** `pnpm run build` 成功，Astro 检查为 0 errors/warnings/hints；`pnpm run assets:check`、`python3 tools/validate_site.py`、`git diff --check` 均通过；`pnpm run test:browser` 为 182 passed、4 skipped。Release API 在本地返回 HTTP 403并使用仓库静态回退数据；PR #266 的必需 CI Release 同步、`Static site checks` 与 `Dependency Review` 均成功。
+
+## 2026-10-14 — 修正手机与平板 Hero 浮卡裁切
+
+- **问题：** 本地预览截图和 Playwright 几何读数发现中英文首页的 BOM/输出浮卡在 390px 与 768px 超出视口；768px 时分别约裁切 22px 和 24px，页面没有横向滚动并不能发现该问题。
+- **处理：** 在窄屏断点内调整两张装饰浮卡的左右锚点，使其在手机、平板视口完整显示；新增中英文 390/768/1440px 视口边界回归测试。
+- **验证：** `pnpm run build`（Astro 0 errors/warnings/hints）、`pnpm run assets:check`、`python3 tools/validate_site.py`、`git diff --check` 均通过；完整浏览器套件为 184 passed、4 skipped。三档中英文截图复核及 Playwright 几何断言均通过。Release API 本地请求仍返回 403并使用静态回退；PR #266 的 CI Release 同步已成功。
 
 ## 2026-10-12 — 本地化中文 footer 的反馈入口
 

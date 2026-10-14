@@ -937,6 +937,26 @@ test('bilingual hero copy names target EDAs and generated library content', asyn
   await expect(page.locator('.hero-lede')).toContainText('symbols, footprints & 3D models');
 });
 
+test('bilingual hero artwork stays fully visible from phone through desktop widths', async ({ page }) => {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of pages) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const artwork = await page.locator('.hero-product-stage').evaluate((stage) => {
+        const selectors = ['.hero-float-input', '.hero-float-output', '.hero-stage-tag'];
+        return Object.fromEntries(selectors.map((selector) => {
+          const rect = stage.querySelector(selector)!.getBoundingClientRect();
+          return [selector, { left: rect.left, right: rect.right }];
+        }));
+      });
+      for (const [selector, bounds] of Object.entries(artwork)) {
+        expect(bounds.left, `${path} ${viewport.width}px ${selector} left edge`).toBeGreaterThanOrEqual(0);
+        expect(bounds.right, `${path} ${viewport.width}px ${selector} right edge`).toBeLessThanOrEqual(viewport.width);
+      }
+    }
+  }
+});
+
 test('English homepage keeps product section labels concrete', async ({ page }) => {
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.product-showcase .kicker')).toHaveText('THE REAL WORKBENCH');

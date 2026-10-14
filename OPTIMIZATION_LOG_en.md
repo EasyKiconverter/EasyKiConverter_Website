@@ -6,7 +6,13 @@
 
 - **Issue:** The English case-page heading did not foreground evidence-first reading; the 3D Lab advanced-tools entry was detached from the model stage and unstable on narrow screens; shared text colors lacked contrast on light brand surfaces, and browser-test concurrency was high.
 - **Changes:** Align both case-page introductions around evidence-first reading; place the advanced-tools entry and note inside the model stage with a narrow-screen offset; strengthen shared text contrast and add a WCAG AA regression check; cap Playwright workers for CI and local runs.
-- **Validation:** `pnpm run build` passed with 0 Astro errors/warnings/hints; `pnpm run assets:check`, `python3 tools/validate_site.py`, and `git diff --check` passed; `pnpm run test:browser` reported 182 passed and 4 skipped. The Release API returned HTTP 403, so the local build used the checked-in static fallback; the required CI Release-sync path still needs remote confirmation.
+- **Validation:** `pnpm run build` passed with 0 Astro errors/warnings/hints; `pnpm run assets:check`, `python3 tools/validate_site.py`, and `git diff --check` passed; `pnpm run test:browser` reported 182 passed and 4 skipped. The local Release API request returned HTTP 403 and used the checked-in static fallback; PR #266's required CI Release sync, `Static site checks`, and `Dependency Review` all passed.
+
+## 2026-10-14 — Keep phone and tablet Hero overlays in frame
+
+- **Issue:** Local preview screenshots and Playwright geometry readings showed that the bilingual BOM/output cards exceeded the viewport at 390px and 768px; at 768px, about 22px and 24px were clipped. The absence of page-level horizontal overflow did not catch the clipped artwork.
+- **Changes:** Adjust the two decorative cards' narrow-screen anchors so they stay inside the viewport; add bilingual browser geometry coverage at 390/768/1440px.
+- **Validation:** `pnpm run build` (Astro: 0 errors/warnings/hints), `pnpm run assets:check`, `python3 tools/validate_site.py`, and `git diff --check` passed; the full browser suite reported 184 passed and 4 skipped. Screenshots and Playwright geometry assertions passed at all three bilingual viewport sizes. The local Release API request still returns 403 and uses the static fallback; PR #266's CI Release sync passed.
 
 ## 2026-10-12 — Localize the Chinese footer feedback entry
 
