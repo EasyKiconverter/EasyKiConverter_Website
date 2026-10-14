@@ -1565,6 +1565,8 @@ test('all public routes expose complete social metadata', async ({ request }) =>
     const response = await request.get(path);
     expect(response.ok()).toBeTruthy();
     const html = await response.text();
+    const titles = html.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
+    expect(titles, `${path} should expose exactly one document title`).toHaveLength(1);
     expect(html).toContain('property="og:image"');
     expect(html).toContain('name="twitter:image"');
     expect(html).toContain('rel="icon"');

@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-14 — Track duplicate homepage titles and the promotion boundary
+
+- **Finding:** Direct HTML checks of the production domain returned 200 for all eight public routes, but `/` and `/en/` each contain two identical `<title>` elements. Both current `origin/master` homepage sources retain an explicit title in addition to `SeoHead`; the `version/V0.0.1` build emits one each.
+- **Change:** Production is published through a controlled manual deploy script. This iteration adds a one-title regression for all eight routes and records that production remains duplicated until the version is stable and promoted; the deployment script was not run.
+- **Validation:** `pnpm run build` (Astro: 0 errors/warnings/hints), site validation, model-asset checks, and `git diff --check` passed; the full Playwright suite reported 188 passed / 4 skipped, including the unique-title assertion for all eight built routes. No remote PR/CI has been created for this local iteration. Read-only production check: all eight URLs returned HTTP 200; a green version-branch check is not presented as a production fix.
+
 ## 2026-10-14 — Remove orphaned characters from Chinese mobile page titles
 
 - **Issue:** Mobile screenshot/line-box review found a lone “台。” at the end of the 390px homepage showcase title, “阵” at the end of the 360px format title, and “库” at the end of the 390px case title.
