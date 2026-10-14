@@ -985,6 +985,18 @@ test('English homepage keeps product section labels concrete', async ({ page }) 
   await expect(page.locator('#workflow .kicker')).toHaveText('A SMALL WORKFLOW');
 });
 
+test('bilingual workflow copy explains the same four concrete steps', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#workflow .workflow-copy > p').nth(1)).toHaveText(
+    '粘贴 LCSC 编号或导入 BOM，选择目标 EDA 格式和 3D 模型选项，运行转换，再把生成的库带回 EDA 工具。',
+  );
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#workflow .workflow-copy > p').nth(1)).toHaveText(
+    'Paste an LCSC number or import a BOM. Choose target EDA formats and 3D model options, run the conversion, then bring the generated libraries back into your EDA.',
+  );
+});
+
 test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const homepage = page.locator('main');
