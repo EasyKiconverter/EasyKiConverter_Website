@@ -1168,6 +1168,8 @@ test('download cards show the actual Release asset architectures', async ({ page
   await expect(chineseLinks.nth(0)).toContainText('x86_64 安装包');
   await expect(chineseLinks.nth(1)).toContainText('arm64 安装包');
   expect((await chineseLinks.locator('span').allTextContents()).join(' ')).not.toContain('installer');
+  await expect(page.locator('.download-copy small')).toContainText('便携版、MSIX、RPM、Arch Linux 包及逐项校验文件');
+  await expect(page.getByRole('link', { name: /查看全部发布版本/ })).toHaveAttribute('href', 'https://github.com/EasyKiconverter/EasyKiConverter/releases');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   const englishLinks = page.locator('.download-links > a');
@@ -1176,6 +1178,8 @@ test('download cards show the actual Release asset architectures', async ({ page
   for (const label of ['arm64 installer', 'x86_64 AppImage', 'amd64 DEB', 'aarch64 AppImage', 'Apple Silicon DMG', 'Intel DMG']) {
     await expect(englishLinks.filter({ hasText: label })).toHaveCount(1);
   }
+  await expect(page.locator('.download-copy small')).toContainText('portable builds, MSIX, RPM, Arch Linux packages, and per-file checksums');
+  await expect(page.getByRole('link', { name: 'All releases ↗' })).toHaveAttribute('href', 'https://github.com/EasyKiconverter/EasyKiConverter/releases');
   for (const links of [chineseLinks, englishLinks]) {
     for (let index = 0; index < 8; index += 1) {
       await expect(links.nth(index)).toHaveAttribute('href', /v3\.1\.13/);
