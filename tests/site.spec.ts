@@ -1036,7 +1036,7 @@ test('homepage preserves Qt brand casing and concise release guidance in both la
 });
 
 test('Chinese homepage and inner-page titles avoid orphaned characters on mobile', async ({ page }) => {
-  for (const width of [390, 360]) {
+  for (const width of [390, 360, 320]) {
     await page.setViewportSize({ width, height: 844 });
     for (const language of [
       { path: '/', english: false },
@@ -1083,6 +1083,11 @@ test('Chinese homepage and inner-page titles avoid orphaned characters on mobile
       const caseHeadline = await textLines('.case-card h2');
       assertNoOrphanedHan(caseHeadline, `${language.path} ${width}px first case title has an orphaned character`);
       expect(caseHeadline.length, `${language.path} ${width}px first case route title lines`).toBe(1);
+
+      await page.goto(`${languagePath}/lab/`, { waitUntil: 'domcontentloaded' });
+      const labHeadline = await textLines('#lab-title');
+      assertNoOrphanedHan(labHeadline, `${language.path} ${width}px lab title has an orphaned character`);
+      if (language.english) expect(labHeadline.length).toBeLessThanOrEqual(2);
     }
   }
 });
