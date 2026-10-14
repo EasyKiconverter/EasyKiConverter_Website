@@ -27,7 +27,7 @@ Roughly rank opportunities by impact × confidence × urgency / (cost × risk). 
 | P2 | Complete homepage-specific in-site arrow motion | 2×4×3 / (2×2) = 6 | Complete; workbench and format-card entries use horizontal hover feedback |
 | P2 | Complete the download-section external-release cue | 2×4×3 / (2×2) = 6 | Complete; the bilingual all-releases entry shows the external arrow and matching hover motion |
 | P2 | Align the bilingual Hero downward cue | 2×4×3 / (2×2) = 6 | Complete; the bilingual “See how it works” entry uses a separate arrow and matching hover motion |
-| P1 | Improve visible 3D model surface detail | 4×4×3 / (3×2) = 8 | Complete; the edge pass prioritizes up to 160 detail meshes while retaining asynchronous budget control |
+| P1 | Improve visible 3D model surface detail | 4×4×3 / (3×2) = 8 | Complete; the edge pass prioritizes up to 160 detail meshes with clearer but restrained strokes and retains asynchronous budget control; browser regression verifies generated edge geometry |
 | P2 | Add 3D detail-generation feedback | 3×4×3 / (1×2) = 18 | Complete; the bilingual Lab distinguishes a usable model from detail still being generated |
 | P2 | Unify external-navigation cues across the site | 3×4×3 / (2×2) = 9 | Complete; the header docs and footer external entries now show `↗` with matching hover motion and bilingual regression coverage |
 | P2 | Compact repeated format-matrix status copy | 3×4×3 / (1×2) = 18 | Complete; use short mobile row labels while retaining full meaning in the legend, guidance, and accessible name |
