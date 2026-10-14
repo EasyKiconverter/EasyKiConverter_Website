@@ -19,12 +19,14 @@ for (const path of pages) {
       if (message.type() === 'error') errors.push(message.text());
     });
 
-    await page.goto(path, { waitUntil: 'networkidle' });
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('main')).toBeVisible();
     await expect(page.locator('[data-release-version]').first()).toHaveText('v3.1.13');
     await expect(page.locator('[data-release-link]').first()).toHaveAttribute('href', /v3\.1\.13/);
     await expect(page.locator('.hero-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
     await expect(page.locator('.download-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
+    await expect(page.locator('.hero-actions [data-release-link]')).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
+    await expect(page.locator('.download-actions [data-release-link]')).toContainText(/查看 v3\.1\.13 下载项|View downloads for v3\.1\.13/);
     await expect(page.locator('h1')).toBeVisible();
 
     const duplicateIds = await page.locator('[id]').evaluateAll((elements) => {
@@ -166,6 +168,7 @@ test('Chinese mobile hero keeps the conversion phrase together', async ({ page }
 
 test('English mobile hero keeps a compact promise and brings product proof higher', async ({ page }) => {
   test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
 
@@ -1168,6 +1171,8 @@ test('download cards show the actual Release asset architectures', async ({ page
   await expect(chineseLinks.nth(0)).toContainText('x86_64 安装包');
   await expect(chineseLinks.nth(1)).toContainText('arm64 安装包');
   expect((await chineseLinks.locator('span').allTextContents()).join(' ')).not.toContain('installer');
+  await expect(page.locator('.download-copy small')).toContainText('便携版、MSIX、RPM、Arch Linux 包及逐项校验文件');
+  await expect(page.getByRole('link', { name: /查看全部发布版本/ })).toHaveAttribute('href', 'https://github.com/EasyKiconverter/EasyKiConverter/releases');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   const englishLinks = page.locator('.download-links > a');
@@ -1176,6 +1181,8 @@ test('download cards show the actual Release asset architectures', async ({ page
   for (const label of ['arm64 installer', 'x86_64 AppImage', 'amd64 DEB', 'aarch64 AppImage', 'Apple Silicon DMG', 'Intel DMG']) {
     await expect(englishLinks.filter({ hasText: label })).toHaveCount(1);
   }
+  await expect(page.locator('.download-copy small')).toContainText('portable builds, MSIX, RPM, Arch Linux packages, and per-file checksums');
+  await expect(page.getByRole('link', { name: 'All releases ↗' })).toHaveAttribute('href', 'https://github.com/EasyKiconverter/EasyKiConverter/releases');
   for (const links of [chineseLinks, englishLinks]) {
     for (let index = 0; index < 8; index += 1) {
       await expect(links.nth(index)).toHaveAttribute('href', /v3\.1\.13/);
@@ -1564,7 +1571,7 @@ test('Lab introductions explain the real geometry story in both languages', asyn
   await expect(page.locator('.lab-intro')).toContainText('mesh, section, and topology views');
 });
 
-test('Lab pages expose a direct bilingual stable-download path', async ({ page }) => {
+test('Lab pages clearly label the stable-release downloads page', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const link = page.locator('[data-release-link]');
@@ -1572,7 +1579,21 @@ test('Lab pages expose a direct bilingual stable-download path', async ({ page }
     await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noreferrer');
-    await expect(link).toContainText(/下载稳定版 v3\.1\.13|Download stable v3\.1\.13/);
+    await expect(link).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
+  }
+});
+
+test('Formats and Cases CTAs clearly direct visitors to Release download options', async ({ page }) => {
+  for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const link = page.locator('.content-page-cta [data-release-link]');
+    await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', 'noreferrer');
+    await expect(link).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
+
+    const copy = page.locator('.content-page-cta > div').first();
+    await expect(copy).toContainText(/版本发布页选择安装包|release page/);
   }
 });
 

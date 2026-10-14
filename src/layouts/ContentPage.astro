@@ -45,13 +45,13 @@ const isCasesPage = pageUrl.pathname.includes("/cases/");
         </h2>
         <p>
           {en
-            ? (isCasesPage ? <>Download the current stable release <strong>{latestRelease.tag}</strong> after checking the fixture and test evidence.</> : <>Download the current stable release <strong>{latestRelease.tag}</strong> after choosing a target, or return home for the full workflow.</>)
-            : (isCasesPage ? <>复核测试样本与测试证据后，下载当前稳定版 <strong>{latestRelease.tag}</strong>。</> : <>选定目标后下载当前稳定版 <strong>{latestRelease.tag}</strong>，或回到首页了解完整工作流。</>)}
+            ? (isCasesPage ? <>Review the fixture and test evidence, then choose a package from the <strong>{latestRelease.tag}</strong> release page.</> : <>Choose a target, then pick a package from the <strong>{latestRelease.tag}</strong> release page, or return home for the full workflow.</>)
+            : (isCasesPage ? <>复核测试样本与测试证据后，前往 <strong>{latestRelease.tag}</strong> 版本发布页选择安装包。</> : <>选定目标后，前往 <strong>{latestRelease.tag}</strong> 版本发布页选择安装包，或回到首页了解完整工作流。</>)}
         </p>
       </div>
       <div class="content-page-cta-actions">
         <a class="button button-light" data-release-link href={latestRelease.url} target="_blank" rel="noreferrer">
-          {en ? "Download stable" : "下载稳定版"} <span>↗</span>
+          {en ? `View stable downloads for ${latestRelease.tag}` : `查看 ${latestRelease.tag} 稳定版下载`} <span>↗</span>
         </a>
         <a class="text-link text-link-internal" href={homeUrl}>{en ? "Back to the homepage" : "回到首页"} <span>→</span></a>
       </div>
