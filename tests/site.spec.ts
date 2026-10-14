@@ -546,7 +546,7 @@ test('format matrix offers evidence and release next steps in both languages', a
   }
 });
 
-test('bilingual evidence-page actions stay on one row on mobile', async ({ page }) => {
+test('bilingual evidence-page actions stay compact and wrap only when needed', async ({ page }) => {
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 });
     for (const [path, selector] of [
@@ -562,7 +562,12 @@ test('bilingual evidence-page actions stay on one row on mobile', async ({ page 
         const second = secondary.getBoundingClientRect();
         return Math.abs(first.top + first.height / 2 - second.top - second.height / 2);
       });
-      expect(centerOffset, `${path} at ${width}px`).toBeLessThan(2);
+      const needsWrap = path === '/en/cases/' && width === 320;
+      if (needsWrap) {
+        expect(centerOffset, `${path} at ${width}px should wrap the secondary action`).toBeGreaterThan(2);
+      } else {
+        expect(centerOffset, `${path} at ${width}px should keep both actions on one row`).toBeLessThan(2);
+      }
     }
   }
 });
@@ -1608,6 +1613,30 @@ test('Formats and Cases CTAs clearly direct visitors to Release download options
 
     const copy = page.locator('.content-page-cta > div').first();
     await expect(copy).toContainText(/版本发布页选择安装包|release page/);
+  }
+});
+
+test('320px Cases actions stay inside the viewport in both languages', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  for (const path of ['/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const layout = await page.evaluate(() => {
+      const actions = document.querySelector<HTMLElement>('.case-studies-actions');
+      if (!actions) return null;
+      const links = Array.from(actions.children, (element) => {
+        const { left, right, top, bottom } = element.getBoundingClientRect();
+        return { left, right, top, bottom };
+      });
+      return { viewport: innerWidth, document: document.documentElement.scrollWidth, links };
+    });
+
+    expect(layout, `${path} should render its case actions`).not.toBeNull();
+    expect(layout!.document, `${path} should not create page-level horizontal overflow`).toBeLessThanOrEqual(320);
+    expect(layout!.links).toHaveLength(2);
+    for (const link of layout!.links) {
+      expect(link.left, `${path} action should stay inside the left viewport edge`).toBeGreaterThanOrEqual(0);
+      expect(link.right, `${path} action should stay inside the right viewport edge`).toBeLessThanOrEqual(320);
+    }
   }
 });
 
