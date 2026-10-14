@@ -16,7 +16,7 @@ const registeredCount = targetFormats.filter((format) => format.tier === "regist
 <section class="format-matrix shell" aria-labelledby="format-matrix-title">
   <div class="format-matrix-heading">
     <p class="kicker">{en ? "VERSIONED CAPABILITY" : "版本化能力"}</p>
-    <h1 id="format-matrix-title">{en ? "EDA format capability matrix" : "EDA 格式能力矩阵"}</h1>
+    <h1 id="format-matrix-title">{en ? "EDA format matrix" : "EDA 格式矩阵"}</h1>
     <p>{en ? "Lists registered EDA targets and test-checked outputs; this is not a guarantee of full format support or desktop-app validation." : "本页列出主项目源码中注册的目标格式，以及仓库测试实际覆盖的输出类型；这不代表每个发布版本都完整支持所有对象，也不等同于已在目标桌面软件中验收。"}</p>
     <div class="format-matrix-actions">
       <a class="button button-dark" href={casesUrl}>{en ? "Test cases" : "查看测试案例"} <span>→</span></a>

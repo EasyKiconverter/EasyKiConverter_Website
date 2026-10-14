@@ -18,8 +18,8 @@ export type CaseStudy = {
 export const caseStudies: CaseStudy[] = [
   {
     id: "easyeda-kicad",
-    titleZh: "EasyEDA 样本 → KiCad 库",
-    titleEn: "EasyEDA fixtures → KiCad libraries",
+    titleZh: "EasyEDA → KiCad",
+    titleEn: "EasyEDA → KiCad",
     summaryZh: "集成测试直接读取符号与封装样本，并验证 KiCad 符号库和封装文件均已生成。",
     summaryEn: "The integration test reads symbol and footprint fixtures, then verifies that both the KiCad symbol library and footprint file are generated.",
     inputZh: "符号与封装样本",
