@@ -20,10 +20,11 @@ const applyRelease = (tag: string, url: string, assetUrls: Record<string, string
     link.href = url;
     if (link.firstChild) {
       const isStableLabel = /stable|稳定版/i.test(link.firstChild.textContent || '');
+      const isEnglish = document.documentElement.lang === 'en';
       const label = isStableLabel
-        ? (document.documentElement.lang === 'en' ? 'Download stable' : '下载稳定版')
-        : (document.documentElement.lang === 'en' ? 'Download' : '下载');
-      link.firstChild.textContent = `${label} ${tag}${link.querySelector('span') ? ' ' : ' ↗'}`;
+        ? (isEnglish ? `View stable downloads for ${tag}` : `查看 ${tag} 稳定版下载`)
+        : (isEnglish ? `View downloads for ${tag}` : `查看 ${tag} 下载项`);
+      link.firstChild.textContent = `${label}${link.querySelector('span') ? ' ' : ' ↗'}`;
     }
   });
   document.querySelectorAll<HTMLAnchorElement>('[data-release-asset]').forEach((link) => { const assetUrl = assetUrls[link.dataset.releaseAsset || '']; if (assetUrl) link.href = assetUrl; });
