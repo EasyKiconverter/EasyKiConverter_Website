@@ -309,9 +309,10 @@
 .motion-model.model-loaded[data-artifact-view="model"] #model-canvas{cursor:crosshair}
 .motion-model.model-loaded[data-artifact-view="model"] #model-canvas:focus-visible{outline:3px solid var(--violet,#6254c8);outline-offset:-8px;border-radius:inherit}
 .motion-model[data-artifact-view="symbol"] [data-visual="symbol"],.motion-model[data-artifact-view="footprint"] [data-visual="footprint"]{opacity:1;transform:scale(1) rotate(0);filter:none}
-.artifact-switcher{position:absolute;z-index:4;left:50%;bottom:36%;display:flex;gap:4px;padding:5px;border:1px solid #2928241c;border-radius:999px;background:#fffdf8cc;box-shadow:0 10px 35px #29282412;backdrop-filter:blur(12px);transform:translateX(-50%)}
+.artifact-switcher{position:absolute;z-index:4;left:50%;bottom:36%;display:flex;gap:4px;width:max-content;max-width:calc(100% - 28px);overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none;padding:5px;border:1px solid #2928241c;border-radius:999px;background:#fffdf8cc;box-shadow:0 10px 35px #29282412;backdrop-filter:blur(12px);transform:translateX(-50%)}
+.artifact-switcher::-webkit-scrollbar{display:none}
 @media(min-width:761px) and (prefers-reduced-motion:no-preference){.motion-model[data-artifact-view="model"] .artifact-switcher{top:12%;bottom:auto}}
-.artifact-switcher button{border:0;border-radius:999px;padding:10px 14px;background:transparent;color:var(--muted,#746f66);font:inherit;font-size:11px;font-weight:600;line-height:1;cursor:pointer;transition:background .25s,color .25s,transform .25s}
+.artifact-switcher button{flex:0 0 auto;white-space:nowrap;border:0;border-radius:999px;padding:10px 14px;background:transparent;color:var(--muted,#746f66);font:inherit;font-size:11px;font-weight:600;line-height:1;cursor:pointer;transition:background .25s,color .25s,transform .25s}
 .artifact-switcher button:hover{transform:translateY(-2px)}
 .artifact-switcher button[aria-pressed="true"]{background:var(--ink,#292824);color:#fffdf8}
 .artifact-switcher .model-scan-toggle{background:#e9e5ff;color:#5145a8}
