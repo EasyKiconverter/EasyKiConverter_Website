@@ -10,6 +10,7 @@ from tools import deploy_production
 
 class SmokeTestHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
+        self.server.request_user_agents.append(self.headers.get("User-Agent"))  # type: ignore[attr-defined]
         path = self.path
         known_routes = set(deploy_production.PUBLIC_ROUTES)
         if path not in known_routes:
@@ -58,6 +59,7 @@ class PublicSiteVerificationTests(unittest.TestCase):
         cls.server.duplicate_title_routes = set()  # type: ignore[attr-defined]
         cls.server.bad_canonical_routes = set()  # type: ignore[attr-defined]
         cls.server.temporary_failures = {}  # type: ignore[attr-defined]
+        cls.server.request_user_agents = []  # type: ignore[attr-defined]
         cls.thread = Thread(target=cls.server.serve_forever, daemon=True)
         cls.thread.start()
         cls.base_url = f"http://127.0.0.1:{cls.server.server_port}"
@@ -72,6 +74,7 @@ class PublicSiteVerificationTests(unittest.TestCase):
         self.server.duplicate_title_routes = set()  # type: ignore[attr-defined]
         self.server.bad_canonical_routes = set()  # type: ignore[attr-defined]
         self.server.temporary_failures = {}  # type: ignore[attr-defined]
+        self.server.request_user_agents = []  # type: ignore[attr-defined]
 
     def test_accepts_all_routes_with_one_title_and_valid_language_metadata(self) -> None:
         deploy_production.verify_public_site(
@@ -79,6 +82,10 @@ class PublicSiteVerificationTests(unittest.TestCase):
             timeout=2,
             attempts=1,
             retry_interval=0,
+        )
+        self.assertEqual(
+            self.server.request_user_agents,
+            [deploy_production.SITE_CHECK_USER_AGENT] * len(deploy_production.PUBLIC_ROUTES),
         )
 
     def test_rejects_duplicate_homepage_title(self) -> None:
