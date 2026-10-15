@@ -1262,6 +1262,38 @@ test('Lab explains that surface detail continues after the GLB is ready', async 
   }
 });
 
+test('Lab keeps model metadata, view controls, caption, and slice panel from overlapping', async ({ page }) => {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 360, height: 640 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const stage = page.locator('[data-model-stage]');
+      await expect(stage).toBeVisible();
+      const overlaps = await stage.evaluate((element) => {
+        const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
+        const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        const caption = rect('.artifact-caption');
+        const captionStyle = getComputedStyle(element.querySelector<HTMLElement>('.artifact-caption')!);
+        const switcher = rect('.artifact-switcher');
+        return {
+          noteWithSwitcher: intersects(rect('.motion-model-note'), switcher),
+          detailWithSwitcher: intersects(rect('.model-detail-status'), switcher),
+          advancedWithSwitcher: intersects(rect('.experiment-controls-toggle'), rect('.artifact-switcher')),
+          sliceDockWithSwitcher: intersects(rect('.model-controls-dock'), switcher),
+          captionIsVisuallyHidden: caption.width <= 1 && caption.height <= 1 && captionStyle.clipPath !== 'none',
+        };
+      });
+      expect(overlaps).toEqual({
+        noteWithSwitcher: false,
+        detailWithSwitcher: false,
+        advancedWithSwitcher: false,
+        sliceDockWithSwitcher: false,
+        captionIsVisuallyHidden: true,
+      });
+    }
+  }
+});
+
 test('Lab asset guidance matches the generated delivery path', async ({ page }) => {
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.lab-warning')).toContainText('10.0 MB');
