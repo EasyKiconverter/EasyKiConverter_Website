@@ -34,6 +34,8 @@
 
 ## 里程碑与任务
 
+状态更新（2026-10-16）：PR #355 已合入 `version/V0.0.1`（merge `48251d3`），PR Site Quality run `38807819176`、Dependency Review `38807819227` 和合并后 Site Quality run `38808569106` 均成功；合并后浏览器测试 224 passed、4 skipped。随后首页双语 CTA 复核发现英文下载按钮在 320px 下折为两行，而中文为一行。PR #356 首轮 Site Quality run `38811418997` 证实 GitHub Runner 字体下英文标签仍折行；进一步精简文案后，本机聚焦与完整 Playwright（226 passed、4 skipped）均通过。首页、Lab、Formats、Cases 的版本下载入口统一为紧凑的双语文案，并添加 320px 单行回归。构建、Astro 检查、8 路由校验、模型资源检查、6 项 Python 单测通过；英文前后图见 `.github/pr-evidence/home-cta-{before,after}-en-320.png`。首次本地 Release 同步遇到 403 并回退到已检查的 `v3.1.13`；后续构建同步成功。改动面向 `version/V0.0.1`，未更改 `master` 或生产站；真机和网络性能仍未验证。
+
 PR #347 将 3D Lab 的环境光、补光和正面光强度调低，以改善板体及浅色元件的层次；未改模型资产或几何。经 Feng083 审批后合入 `version/V0.0.1`（merge `b737278`），PR 与合并后 Site Quality run `38766117318`、`38766745155` 均通过（208 passed、4 skipped）；`pnpm build`、8 路由校验、模型资产检查亦通过。Release API 本机返回 403 并按规则使用回退数据。截图仍有明显亮线，来源当时尚未确认；继续列为部分完成。未部署生产或验证真机。
 
 继续排查确认，亮线来自默认“过去”时间轨迹所复制的 18 个 GLB 网格线框，而非 STEP 源模型。PR #349 将过去副本放到当前模型之后、未来副本放到前方；PR #351 再将过去/现在/未来轨迹透明度上限从 0.26/0.055/0.30 调低至 0.06/0.012/0.07，并改用普通混合；新增纯函数回归约束峰值与进度边界。PR #351 经 Feng083 独立审批后合入 `version/V0.0.1`（merge `09dea67`）；PR 检查与合并后 Site Quality run `38791228566` 均通过（216 passed、4 skipped）。未部署生产或验证真机。

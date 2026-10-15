@@ -2,9 +2,11 @@
 
 [English](QUALITY_BASELINE_en.md)
 
-记录日期：2026-10-15。本文只记录可由当前仓库、CI 或明确的线上检查复现的事实，不把域名部署或真机性能推测为已完成。
+记录日期：2026-10-16。本文只记录可由当前仓库、CI 或明确的线上检查复现的事实，不把域名部署或真机性能推测为已完成。
 
 ## 已验证
+
+- 2026-10-16，PR #355 合入 `version/V0.0.1`（merge `48251d3`）；PR Site Quality `38807819176`、Dependency Review `38807819227` 和合并后 Site Quality `38808569106` 成功（224 passed、4 skipped）。随后双语首页视觉审查发现英文版主下载 CTA 在 320px 折为两行。PR #356 首轮 Site Quality run `38811418997` 在 Runner 字体下复现折行；进一步精简标签后，聚焦浏览器测试（18 passed）及完整 Playwright（226 passed、4 skipped）均通过。首页、Lab、Formats、Cases 的 Release CTA 文案和运行时版本刷新现统一为 `v3.1.13 下载项 / v3.1.13 downloads`，并新增 320px 双语单行回归。英文版 320px 前后截图见 `.github/pr-evidence/home-cta-{before,after}-en-320.png`。`pnpm run build`（8 页面，Astro 诊断为零）、`pnpm run check`、8 路由校验、模型资产检查和 6 项 Python 单测通过。首次本地 Release 同步遇到 403 并使用已检查的 `v3.1.13` 回退；后续构建同步成功。该批次面向 `version/V0.0.1`，未更改 `master` 或生产站；未验证真机和网络性能。
 
 - 2026-10-16，PR #351 将 Lab 时间回声改为更低透明度和普通混合，经独立审评合入 `version/V0.0.1`（merge `09dea67`）；PR 检查及合并后 Site Quality run `38791228566` 均通过（216 passed、4 skipped）。随后案例页截图发现桌面卡片等高拉伸使 Altium 卡片摘要与证据间留白过大。本轮改为卡片自然高度并缩短证据区间距；中英文桌面/移动截图复核通过。`pnpm run check`、`pnpm run build`（8 页面，Astro 诊断为零）、8 路由站点校验、模型资产校验、6 项 Python 单测、Playwright（218 passed、4 skipped）及 `git diff --check` 通过。前后截图见 `.github/pr-evidence/cases-{before,after}-*`。构建时 Release API 返回 403，使用 `v3.1.13` 回退；PR #352 经独立审批、必需检查及合并后 CI 通过，合并提交 `6949e4b`、Site Quality run `38795306114`（218 passed、4 skipped）。生产未部署、真机未验证。
 

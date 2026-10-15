@@ -25,8 +25,8 @@ for (const path of pages) {
     await expect(page.locator('[data-release-link]').first()).toHaveAttribute('href', /v3\.1\.13/);
     await expect(page.locator('.hero-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
     await expect(page.locator('.download-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
-    await expect(page.locator('.hero-actions [data-release-link]')).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
-    await expect(page.locator('.download-actions [data-release-link]')).toContainText(/查看 v3\.1\.13 下载项|View downloads for v3\.1\.13/);
+    await expect(page.locator('.hero-actions [data-release-link]')).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
+    await expect(page.locator('.download-actions [data-release-link]')).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
     await expect(page.locator('h1')).toBeVisible();
 
     const duplicateIds = await page.locator('[id]').evaluateAll((elements) => {
@@ -51,6 +51,20 @@ test('release refresh stays same-origin and keeps the static fallback path', asy
   expect(new URL(releaseRequests[0]).origin).toBe(new URL(page.url()).origin);
   expect(releaseRequests[0]).toContain('/data/latest-release.json');
   await expect(page.locator('[data-release-version]').first()).toHaveText('v3.1.13');
+});
+
+test('homepage release CTA stays on one line at 320px in both languages', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  for (const path of pages) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const link = page.locator('.hero-actions [data-release-link]');
+    const labelLines = await link.evaluate((element) => {
+      const range = document.createRange();
+      range.selectNode(element.firstChild!);
+      return range.getClientRects().length;
+    });
+    expect(labelLines, `${path} release CTA line count`).toBe(1);
+  }
 });
 
 test('bilingual product screenshots use one public asset and disclose the hidden local path', async ({ page }) => {
@@ -1786,7 +1800,7 @@ test('Lab introductions explain the real geometry story in both languages', asyn
   await expect(page.locator('.lab-intro')).toContainText('mesh, section, and topology views');
 });
 
-test('Lab pages clearly label the stable-release downloads page', async ({ page }) => {
+test('Lab pages clearly label the versioned release downloads page', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const link = page.locator('[data-release-link]');
@@ -1794,7 +1808,7 @@ test('Lab pages clearly label the stable-release downloads page', async ({ page 
     await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noreferrer');
-    await expect(link).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
+    await expect(link).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
   }
 });
 
@@ -1805,7 +1819,7 @@ test('Formats and Cases CTAs clearly direct visitors to Release download options
     await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noreferrer');
-    await expect(link).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
+    await expect(link).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
 
     const copy = page.locator('.content-page-cta > div').first();
     await expect(copy).toContainText(/版本发布页选择安装包|release page/);

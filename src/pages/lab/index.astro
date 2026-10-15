@@ -46,7 +46,7 @@ const englishUrl = new URL("en/lab/", siteBase);
           <p>只有模型加载失败时才回退到 STEP/WASM。适合桌面浏览器与技术验证；下载软件请使用下方稳定版入口，产品信息请返回首页。</p>
         </div>
         <div class="lab-intro-actions">
-          <a class="button button-dark" data-release-link href={latestRelease.url} target="_blank" rel="noreferrer">查看 {latestRelease.tag} 稳定版下载 <span>↗</span></a>
+          <a class="button button-dark" data-release-link href={latestRelease.url} target="_blank" rel="noreferrer">{latestRelease.tag} 下载项 <span>↗</span></a>
           <a class="text-link text-link-internal" href={siteBase.href}>返回产品首页 <span>→</span></a>
           <a class="text-link text-link-internal" href={new URL("formats/", siteBase).pathname}>查看格式矩阵 <span>→</span></a>
         </div>

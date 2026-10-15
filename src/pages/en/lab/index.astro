@@ -46,7 +46,7 @@ const chineseUrl = new URL("lab/", siteBase);
           <p>STEP/WASM is used only if the model fails to load. Use a desktop browser for technical validation; use the stable-release link below for downloads, or return home for product information.</p>
         </div>
         <div class="lab-intro-actions">
-          <a class="button button-dark" data-release-link href={latestRelease.url} target="_blank" rel="noreferrer">View stable downloads for {latestRelease.tag} <span>↗</span></a>
+          <a class="button button-dark" data-release-link href={latestRelease.url} target="_blank" rel="noreferrer">{latestRelease.tag} downloads <span>↗</span></a>
           <a class="text-link text-link-internal" href={siteBase.href}>Back to product <span>→</span></a>
           <a class="text-link text-link-internal" href={new URL("en/formats/", siteBase).pathname}>View format matrix <span>→</span></a>
         </div>

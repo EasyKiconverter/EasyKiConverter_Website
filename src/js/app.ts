@@ -19,11 +19,8 @@ const applyRelease = (tag: string, url: string, assetUrls: Record<string, string
     if (!url) return;
     link.href = url;
     if (link.firstChild) {
-      const isStableLabel = /stable|稳定版/i.test(link.firstChild.textContent || '');
       const isEnglish = document.documentElement.lang === 'en';
-      const label = isStableLabel
-        ? (isEnglish ? `View stable downloads for ${tag}` : `查看 ${tag} 稳定版下载`)
-        : (isEnglish ? `View downloads for ${tag}` : `查看 ${tag} 下载项`);
+      const label = isEnglish ? `${tag} downloads` : `${tag} 下载项`;
       link.firstChild.textContent = `${label}${link.querySelector('span') ? ' ' : ' ↗'}`;
     }
   });
