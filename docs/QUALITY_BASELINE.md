@@ -35,6 +35,8 @@
 - 2026-10-11 使用 Chromium SwiftShader 访问生产 `/lab/`，由 STEP 几何生成的 GLB 模型成功加载（`278,784` 个三角面、无 fallback、无控制台错误），工具入口初始化完成且默认收起。
 - 2026-10-11 生产桌面 GLB 与移动 GLB 均返回 `model/gltf-binary`，分别约 9.6 MB 与 8.1 MB，并带有 `max-age=2592000`；WASM 返回 `application/wasm` 并带有同等长期缓存策略。
 
+- 2026-10-15，本地 3D Lab 桌面截图发现视图切换器中文标签逐字折行；CSS 改为保持单行并在窄舞台内横向滚动，扩展双语桌面/平板/移动回归。构建、Astro 检查、8 路由校验、模型资产检查通过；Playwright 200 passed、4 skipped。PR #328 经独立审批后合入 `version/V0.0.1`，merge `8e0d78b`；PR 与合并后 Site Quality run `38663549115`、`38664077716` 均通过（各 200 passed、4 skipped）。Release API 返回 HTTP 403 rate limit，构建使用仓库 `v3.1.13` 回退数据；未部署或实机验证。
+
 ## 资源边界
 
 首页不加载 STEP、WASM 或 Three.js 模型运行时；这些资源只由独立 3D Lab 按需使用。原始 Qt 截图在 `src/assets/source/`，WebP 派生文件在 `public/assets/showcase/`。

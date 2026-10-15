@@ -1299,7 +1299,7 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
 
 test('Lab keeps the model view switcher above the geometry on desktop and mobile', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
-    for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
       await page.setViewportSize(viewport);
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const switcher = page.locator('.artifact-switcher');
@@ -1310,10 +1310,17 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
         if (!stageElement || !switcherElement) return null;
         const stageRect = stageElement.getBoundingClientRect();
         const switcherRect = switcherElement.getBoundingClientRect();
-        return { stageHeight: stageRect.height, stageTop: stageRect.top, switcherTop: switcherRect.top };
+        return {
+          stage: { left: stageRect.left, right: stageRect.right, top: stageRect.top, height: stageRect.height },
+          switcher: { left: switcherRect.left, right: switcherRect.right, top: switcherRect.top },
+          buttonHeights: [...switcherElement.querySelectorAll('button')].map((button) => button.getBoundingClientRect().height),
+        };
       });
       expect(geometry).not.toBeNull();
-      expect(geometry!.switcherTop - geometry!.stageTop).toBeLessThan(geometry!.stageHeight * 0.25);
+      expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(geometry!.stage.height * 0.25);
+      expect(geometry!.switcher.left).toBeGreaterThanOrEqual(geometry!.stage.left);
+      expect(geometry!.switcher.right).toBeLessThanOrEqual(geometry!.stage.right);
+      geometry!.buttonHeights.forEach((height) => expect(height).toBeLessThanOrEqual(34));
     }
   }
 });
