@@ -33,6 +33,8 @@ A read-only production check this cycle found all eight targets returning HTTP 2
 
 ## Milestones and Tasks
 
+The local feature branch `fix/lab-model-surface-clarity` adjusts ambient, fill, and front lighting for the user-visible 3D Lab material presentation; no model asset or geometry changed. `pnpm build`, Astro checks, eight-route validation, model-asset checks, and the full Playwright suite (208 passed, 4 skipped) passed. The local Release API returned 403 and the checked-in fallback was used as documented. Screenshots show improved depth, but prominent white structural lines remain in the source model, so this remains partially complete. Not yet committed or pushed; no production deployment or real-device test was performed.
+
 | ID / Priority | Objective, scope, and deliverable | Dependencies, steps, and acceptance | Status |
 | --- | --- | --- | --- |
 | WEB-01 / P1 | Correct bilingual brand casing, format-support guidance, and download direction on the homepage. | Bilingual copy/style regression; build, site validation, full Playwright suite; PRs #285/#286. | Complete and promoted to `master`; not deployed |
