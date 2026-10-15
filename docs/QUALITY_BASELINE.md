@@ -7,6 +7,7 @@
 ## 已验证
 
 - 2026-10-15，线上只读请求确认：`tools/check_production_assets.py` 对 8 个页面/资源均取得 HTTP 200；部署验收器原先使用默认 Python 请求头时首页 GET 收到 Cloudflare 403。同一 GET 使用已有资产检查标识 `EasyKiConverter-production-check` 后为 HTTP 200，并按预期报告首页存在两个 `<title>`。部署验收器现发送该标识，回归测试断言所有 8 路由均携带该请求头；`python3 -B -m unittest tests.test_deploy_production -v` 的 6 项测试及 `git diff --check` 通过。PR #337 经独立审查合入 `version/V0.0.1`（merge `6f87852`），合并后 Site Quality run `38739192646` 通过（202 passed、4 skipped）。修复尚未晋级 `master`，线上问题未修复/未部署。
+
 - 2026-10-15，PR #332 同步记录 3D Lab 控件重叠修复的验证结果；PR #333 经独立审查将其从 `version/V0.0.1` 晋级 `master`，merge commit `614485c`。master 合并后 Site Quality run `38673808283` 通过（202 passed、4 skipped）。本地 build、8 路由校验和模型资产检查通过；未部署生产，未做真机测试。
 
 - 2026-10-15，3D Lab 后续舞台检查发现中英文模型元信息、视图工具栏、高级入口及底部切片面板/字幕在部分尺寸有碰撞，字幕会遮挡模型。PR #331 分离顶部控制并归组底部面板；动态字幕保留为屏幕阅读器可访问的实时文本，同时从视觉布局裁切。重叠回归首轮 CI `38670306796` 因反复等待重型 3D 网格而在 120 秒超时；缩小到布局 DOM/CSS 后，PR CI `38671723118` 与版本合并后 CI `38672074526` 均通过（各 202 passed、4 skipped）。PR #331 经独立审批合入版本分支，merge `c9e7238`。本地完整套件、构建、8 路由校验、模型资产检查及 `git diff --check` 通过；Release API 本地请求 403，使用已检查的 `v3.1.13` 回退。未部署生产，未做真机测试。
