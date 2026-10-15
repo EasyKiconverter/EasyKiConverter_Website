@@ -666,6 +666,22 @@ test('format matrix rows use concise bilingual status labels with full accessibl
   }
 });
 
+test('format summary counts distinguish the additional tier from all configured targets', async ({ page }) => {
+  for (const [path, additionalLabel, totalLabel] of [
+    ['/formats/', '其他目标', '全部 11 个已配置目标与对应验证依据'],
+    ['/en/formats/', 'additional targets', 'All 11 configured targets and linked evidence'],
+  ] as const) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const counts = page.locator('.evidence-summary > span');
+    await expect(counts).toHaveCount(3);
+    await expect(counts.nth(1).locator('b')).toHaveText('2');
+    await expect(counts.nth(2).locator('b')).toHaveText('9');
+    await expect(counts.nth(2)).toContainText(additionalLabel);
+    await expect(page.locator('tbody tr')).toHaveCount(11);
+    await expect(page.locator('caption')).toHaveText(totalLabel);
+  }
+});
+
 test('format matrix describes evidence scope and links each target to relevant repository evidence', async ({ page }) => {
   const evidencePaths = [
     'tests/unit/test_kicad_exporter_golden.cpp',
