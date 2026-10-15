@@ -21,7 +21,7 @@ import tempfile
 import time
 from html.parser import HTMLParser
 from urllib.parse import urlsplit
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +32,7 @@ LANGUAGE_ROUTE_PAIRS = (
     ("/cases/", "/en/cases/"),
 )
 PUBLIC_ROUTES = tuple(route for pair in LANGUAGE_ROUTE_PAIRS for route in pair)
+SITE_CHECK_USER_AGENT = "EasyKiConverter-production-check"
 
 
 class PageMetadataParser(HTMLParser):
@@ -82,7 +83,8 @@ def expected_language_urls(base_url: str, route: str) -> dict[str, str]:
 
 def validate_public_route(base_url: str, route: str, *, timeout: float) -> None:
     url = f"{base_url.rstrip('/')}{route}"
-    with urlopen(url, timeout=timeout) as response:
+    request = Request(url, headers={"Accept": "text/html", "User-Agent": SITE_CHECK_USER_AGENT})
+    with urlopen(request, timeout=timeout) as response:
         status = response.getcode()
         page = response.read().decode("utf-8", errors="replace")
     if status != 200:

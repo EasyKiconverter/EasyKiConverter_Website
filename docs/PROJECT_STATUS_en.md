@@ -21,6 +21,8 @@ A follow-up review of the same Lab stage found collisions among bilingual model 
 
 PR #332 recorded these validation results in the bilingual status and quality-baseline documents. PR #333 then promoted the validated version to `master` after independent review; the current merge commit is `614485c`. The post-merge master Site Quality run `38673808283` passed (202 passed / 4 skipped). Local build, eight-route validation, and model-asset checks passed. Production remains undeployed and real-device testing remains pending.
 
+A read-only production check this cycle found all eight targets returning HTTP 200 through the asset checker, while the deployment verifier received Cloudflare HTTP 403 with Python's default request headers. The same GET with the asset checker's existing `EasyKiConverter-production-check` identifier returned HTTP 200 and proceeded to detect the known duplicate homepage titles. The verifier now sends that explicit identifier, with a new local regression assertion; all six deployment-tool unit tests pass. The fix is pending PR/CI; production was not deployed.
+
 ## Milestones and Tasks
 
 | ID / Priority | Objective, scope, and deliverable | Dependencies, steps, and acceptance | Status |
