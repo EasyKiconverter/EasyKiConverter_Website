@@ -177,22 +177,24 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
         <button type="button" data-artifact-view="footprint" data-label-zh="PCB 封装示意" data-label-en="PCB FOOTPRINT STUDY" data-caption-zh="PCB 封装 · 视觉示意，并非导出的 CAD 数据" data-caption-en="PCB footprint · visual study, not exported CAD data" aria-pressed="false">{en ? 'Footprint' : '封装'}</button>
         <button type="button" class="model-scan-toggle" data-model-scan aria-label={en ? 'Play a CT scan through the STEP model' : '播放穿过 STEP 模型的 CT 扫描'} aria-pressed="false" disabled>{en ? 'CT Scan' : 'CT 扫描'}</button>
       </div>
-      <label class="model-explode" data-model-explode-control>
-        <span class="model-explode-heading">{en ? 'EXPLODE · X-RAY FOCUS' : '爆炸视图 · X 光聚焦'}</span>
-        <input type="range" min="0" max="100" value="0" step="1" data-model-explode aria-label={en ? 'Explode the STEP mesh parts' : '拆解 STEP 网格零件'} disabled />
-        <output data-model-explode-value>0%</output>
-        <small data-model-explode-stats>{en ? 'Waiting for STEP mesh…' : '等待 STEP 网格…'}</small>
-        <span class="model-slice-heading">{en ? 'LIVE SECTION PLANE' : '实时剖切平面'}</span>
-        <button class="model-slice-toggle" type="button" data-model-slice-toggle aria-pressed="false" disabled>{en ? 'CUT' : '剖切'}</button>
-        <div class="model-slice-axes" role="group" aria-label={en ? 'CT scan axis' : 'CT 扫描方向'}>
-          <button type="button" data-slice-axis="x" aria-pressed="true" disabled>X</button>
-          <button type="button" data-slice-axis="y" aria-pressed="false" disabled>Y</button>
-          <button type="button" data-slice-axis="z" aria-pressed="false" disabled>Z</button>
-        </div>
-        <input class="model-slice-range" type="range" min="0" max="100" value="50" step="1" data-model-slice aria-label={en ? 'Move the live section plane through the model' : '移动剖切平面穿过模型'} disabled />
-        <output class="model-slice-value" data-model-slice-value>50%</output>
-      </label>
-      <p class="artifact-caption" aria-live="polite">{en ? 'GLB generated from STEP geometry · connected to the scroll story' : '由 STEP 几何生成的 GLB · 随滚动进入产品叙事'}</p>
+      <div class="model-controls-dock">
+        <p class="artifact-caption" aria-live="polite">{en ? 'GLB generated from STEP geometry · connected to the scroll story' : '由 STEP 几何生成的 GLB · 随滚动进入产品叙事'}</p>
+        <label class="model-explode" data-model-explode-control>
+          <span class="model-explode-heading">{en ? 'EXPLODE · X-RAY FOCUS' : '爆炸视图 · X 光聚焦'}</span>
+          <input type="range" min="0" max="100" value="0" step="1" data-model-explode aria-label={en ? 'Explode the STEP mesh parts' : '拆解 STEP 网格零件'} disabled />
+          <output data-model-explode-value>0%</output>
+          <small data-model-explode-stats>{en ? 'Waiting for STEP mesh…' : '等待 STEP 网格…'}</small>
+          <span class="model-slice-heading">{en ? 'LIVE SECTION PLANE' : '实时剖切平面'}</span>
+          <button class="model-slice-toggle" type="button" data-model-slice-toggle aria-pressed="false" disabled>{en ? 'CUT' : '剖切'}</button>
+          <div class="model-slice-axes" role="group" aria-label={en ? 'CT scan axis' : 'CT 扫描方向'}>
+            <button type="button" data-slice-axis="x" aria-pressed="true" disabled>X</button>
+            <button type="button" data-slice-axis="y" aria-pressed="false" disabled>Y</button>
+            <button type="button" data-slice-axis="z" aria-pressed="false" disabled>Z</button>
+          </div>
+          <input class="model-slice-range" type="range" min="0" max="100" value="50" step="1" data-model-slice aria-label={en ? 'Move the live section plane through the model' : '移动剖切平面穿过模型'} disabled />
+          <output class="model-slice-value" data-model-slice-value>50%</output>
+        </label>
+      </div>
       <div class="model-fallback-copy" role="status">{en ? '3D preview is unavailable. The page and download links remain usable.' : '3D 预览暂不可用，页面内容和下载入口仍可正常使用。'}</div>
       <span class="motion-model-tag">{en ? 'SCROLL TO TRANSFORM' : '向下滚动，继续转化'}</span>
       <button

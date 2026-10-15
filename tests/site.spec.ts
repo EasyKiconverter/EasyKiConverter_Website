@@ -1262,6 +1262,40 @@ test('Lab explains that surface detail continues after the GLB is ready', async 
   }
 });
 
+test('Lab keeps model metadata, view controls, caption, and slice panel from overlapping', async ({ page }) => {
+  test.setTimeout(120_000);
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 360, height: 640 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const stage = page.locator('[data-model-stage]');
+      await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+      await stage.scrollIntoViewIfNeeded();
+      const sliceToggle = stage.locator('.model-slice-toggle');
+      await expect(sliceToggle).toBeEnabled({ timeout: 30000 });
+      if (await sliceToggle.getAttribute('aria-pressed') !== 'true') await sliceToggle.click();
+      const overlaps = await stage.evaluate((element) => {
+        const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
+        const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        const caption = rect('.artifact-caption');
+        const captionStyle = getComputedStyle(element.querySelector<HTMLElement>('.artifact-caption')!);
+        return {
+          noteWithSwitcher: intersects(rect('.motion-model-note'), rect('.artifact-switcher')),
+          detailWithSwitcher: intersects(rect('.model-detail-status'), rect('.artifact-switcher')),
+          advancedWithSwitcher: intersects(rect('.experiment-controls-toggle'), rect('.artifact-switcher')),
+          captionIsVisuallyHidden: caption.width <= 1 && caption.height <= 1 && captionStyle.clipPath !== 'none',
+        };
+      });
+      expect(overlaps).toEqual({
+        noteWithSwitcher: false,
+        detailWithSwitcher: false,
+        advancedWithSwitcher: false,
+        captionIsVisuallyHidden: true,
+      });
+    }
+  }
+});
+
 test('Lab asset guidance matches the generated delivery path', async ({ page }) => {
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.lab-warning')).toContainText('10.0 MB');

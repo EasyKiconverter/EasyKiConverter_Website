@@ -6,6 +6,8 @@
 
 ## 已验证
 
+- 2026-10-15，3D Lab 后续舞台检查发现中英文模型元信息、视图工具栏、高级入口及底部切片面板/字幕在部分尺寸有碰撞，字幕会遮挡模型。分离顶部控制并归组底部面板；将动态字幕保留为屏幕阅读器可访问的实时文本，同时从视觉布局裁切。新增双语 1440/768/390/360px 重叠回归。完整 Playwright：202 passed、4 skipped；构建、8 路由校验、模型资产检查和 `git diff --check` 通过。Release API 本地请求 403，使用已检查的 `v3.1.13` 回退。修复尚未创建 PR/合入；未部署生产，未做真机测试。
+
 - 2026-10-15，320px 标题行框审查发现中文 3D Lab 标题末行仅剩“验。”。为移动端单独调整 Lab 标题字号，并把双语首页、Formats、Cases、Lab 标题回归扩展到 320/360/390px。前两次 CI 表明字体度量差异使案例标题自然换为两行、英文首页/格式标题最多三行；仅放宽 320px 行数断言，并保留中文孤字检测及较宽视口约束。聚焦 Chromium 与 Chromium Mobile、完整本地 Playwright（200 passed、4 skipped）、`pnpm run check`、`pnpm build`、`python3 tools/validate_site.py`（8 页面）、`pnpm run assets:check` 和 `git diff --check` 通过。PR #323 经独立审查及必需 CI 合入版本分支（merge `4901a8b`），版本 CI `38656977540` 通过；随后 PR #325 晋级 `master`（merge `b4cba0e`），master push CI `38658741923` 通过；两次均为 200 passed、4 skipped。本地 Release API 返回 403，构建使用仓库 `v3.1.13` 数据；未部署生产。
 - 2026-10-15，320px CTA 专项巡检发现英文 Formats 页的 “Latest Release” 链接超出动作内容列 12px，虽然根文档宽度仍为 320px；仅检查页面 scrollWidth 会漏报。`FormatMatrix` 在不大于 360px 时允许动作换行，空间足够时仍保持单行。中英文 320/360px 边界回归在 Chromium 与 Chromium Mobile 通过；截图确认 320px 换行、360px 单行。完整本地 Playwright 为 200 passed、4 skipped；版本分支合并后 CI run `38652951622` 也通过（200 passed、4 skipped）。`pnpm build` 的 Astro 检查 0 errors/warnings/hints，站点校验与资产检查通过。本地 Release API 返回 403，使用仓库 `v3.1.13` 回退数据；未部署生产。
 - 2026-10-15，PR #315 将 320px 双语 Cases CTA 修复晋级至 `master`；版本分支独立审批及必需检查均通过，版本分支 Site Quality run `38647646532` 为 198 passed、4 skipped。PR #316 仅同步 master ancestry，不改变文件树；合并后版本分支为 `4b2b84d`。master 合并提交为 `b7a59c7`，其合并后 Site Quality run `38648150676` 通过（198 passed、4 skipped）。生产未部署。
