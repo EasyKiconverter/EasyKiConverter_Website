@@ -1310,10 +1310,18 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
         if (!stageElement || !switcherElement) return null;
         const stageRect = stageElement.getBoundingClientRect();
         const switcherRect = switcherElement.getBoundingClientRect();
-        return { stageHeight: stageRect.height, stageTop: stageRect.top, switcherTop: switcherRect.top };
+        return {
+          stage: { left: stageRect.left, right: stageRect.right, height: stageRect.height },
+          switcher: { left: switcherRect.left, right: switcherRect.right, top: switcherRect.top },
+          buttonHeights: [...switcherElement.querySelectorAll('button')].map((button) => button.getBoundingClientRect().height),
+        };
       });
       expect(geometry).not.toBeNull();
-      expect(geometry!.switcherTop - geometry!.stageTop).toBeLessThan(geometry!.stageHeight * 0.25);
+      expect(geometry!.switcher.top - (await page.locator('[data-model-stage]').evaluate((stage) => stage.getBoundingClientRect().top)))
+        .toBeLessThan(geometry!.stage.height * 0.25);
+      expect(geometry!.switcher.left).toBeGreaterThanOrEqual(geometry!.stage.left);
+      expect(geometry!.switcher.right).toBeLessThanOrEqual(geometry!.stage.right);
+      geometry!.buttonHeights.forEach((height) => expect(height).toBeLessThanOrEqual(34));
     }
   }
 });

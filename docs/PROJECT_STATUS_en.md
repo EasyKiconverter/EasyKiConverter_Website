@@ -15,6 +15,8 @@ The project is in V0.0.1 stability maintenance and ongoing visitor-experience im
 
 This cycle continued WEB-04 and extended title audits to 320px. The Chinese 3D Lab heading wrapped as “真实几何，独立实 / 验。” at 320px. Slightly reducing this page’s heading size at the mobile breakpoint fixed it; bilingual Home, Formats, Cases, and Lab title regressions check for orphaned Han characters at 320/360/390px. PR #323 merged into `version/V0.0.1` at `4901a8b`; post-merge Site Quality run `38656977540` passed (200 passed / 4 skipped). PR #325 promoted the change to `master` at `b4cba0e`, whose post-merge Site Quality run `38658741923` also passed (200 passed / 4 skipped). Runner font metrics can wrap the case title onto two lines and English Home/Formats titles onto up to three lines at 320px, so only the 320px line limits allow these natural wraps; the Han orphan check and tighter 360/390px limits remain. This is browser viewport evidence, not a real-device test.
 
+This WEB-04 visual review found that the bilingual 3D Lab view-switcher labels wrapped inside the desktop stage, with Chinese labels stacking vertically. The controls now keep labels on one line and scroll horizontally when space is constrained; bilingual desktop/mobile Playwright coverage was expanded. Local checks on the feature branch: build, Astro diagnostics, all eight route validations, and model-asset checks passed; browser tests reported 200 passed / 4 skipped. The Release API rate-limited with HTTP 403, so the checked-in `v3.1.13` fallback was used. No PR has been created yet; production and physical devices were not tested.
+
 ## Milestones and Tasks
 
 | ID / Priority | Objective, scope, and deliverable | Dependencies, steps, and acceptance | Status |
