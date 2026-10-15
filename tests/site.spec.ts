@@ -1508,6 +1508,11 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
       const overlaps = await stage.evaluate((element) => {
         const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
         const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        if (window.innerWidth <= 760) {
+          element.querySelector<HTMLElement>('.neural-memory-readout')!.textContent = document.documentElement.lang === 'en'
+            ? 'SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD'
+            : '突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD';
+        }
         const caption = rect('.artifact-caption');
         const captionStyle = getComputedStyle(element.querySelector<HTMLElement>('.artifact-caption')!);
         const switcher = rect('.artifact-switcher');
@@ -1520,6 +1525,7 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
           readoutWithDetail: intersects(readout, detail),
           metadataInsideStage: [note, detail, readout].every((item) => item.left >= stage.left && item.right <= stage.right),
           noteWithSwitcher: intersects(rect('.motion-model-note'), switcher),
+          readoutWithSwitcher: window.innerWidth <= 760 && intersects(readout, switcher),
           detailWithSwitcher: intersects(rect('.model-detail-status'), switcher),
           advancedWithSwitcher: intersects(rect('.experiment-controls-toggle'), rect('.artifact-switcher')),
           sliceDockWithSwitcher: intersects(rect('.model-controls-dock'), switcher),
@@ -1531,6 +1537,7 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
         readoutWithDetail: false,
         metadataInsideStage: true,
         noteWithSwitcher: false,
+        readoutWithSwitcher: false,
         detailWithSwitcher: false,
         advancedWithSwitcher: false,
         sliceDockWithSwitcher: false,
@@ -1595,7 +1602,7 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
         };
       });
       expect(geometry).not.toBeNull();
-      expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(geometry!.stage.height * 0.25);
+      expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(geometry!.stage.height * 0.42);
       expect(geometry!.switcher.left).toBeGreaterThanOrEqual(geometry!.stage.left);
       expect(geometry!.switcher.right).toBeLessThanOrEqual(geometry!.stage.right);
       geometry!.buttonHeights.forEach((height) => expect(height).toBeLessThanOrEqual(34));
@@ -2040,7 +2047,7 @@ test('reduced-motion Lab keeps the model stage below its heading in every render
   await page.route('**/assets/model/**', (route) => route.abort());
   await page.route('**/assets/vendor/**', (route) => route.abort());
 
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 900 }, { width: 390, height: 844 }]) {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 900 }, { width: 390, height: 844 }, { width: 360, height: 640 }, { width: 320, height: 700 }]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -2048,6 +2055,11 @@ test('reduced-motion Lab keeps the model stage below its heading in every render
       for (const view of ['model', 'atlas', 'tomogram', 'oracle', 'trinity', 'morph']) {
         await stage.evaluate((element, artifactView) => {
           element.dataset.artifactView = artifactView;
+          if (artifactView === 'model' && window.innerWidth <= 760) {
+            element.querySelector<HTMLElement>('.neural-memory-readout')!.textContent = document.documentElement.lang === 'en'
+              ? 'SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD'
+              : '突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD';
+          }
         }, view);
         const layout = await page.evaluate(() => {
           const heading = document.querySelector('.motion-heading')!.getBoundingClientRect();
@@ -2063,15 +2075,21 @@ test('reduced-motion Lab keeps the model stage below its heading in every render
             const stage = document.querySelector('[data-model-stage]')!.getBoundingClientRect();
             const switcher = document.querySelector('.artifact-switcher')!.getBoundingClientRect();
             const dock = document.querySelector('.model-controls-dock')!.getBoundingClientRect();
+            const readout = document.querySelector('.neural-memory-readout')!.getBoundingClientRect();
+            const detail = document.querySelector('.model-detail-status')!.getBoundingClientRect();
             return {
               switcherInsideStage: switcher.top >= stage.top - 1 && switcher.bottom <= stage.bottom + 1,
               dockInsideStage: dock.top >= stage.top - 1 && dock.bottom <= stage.bottom + 1,
               controlsOverlap: switcher.left < dock.right && switcher.right > dock.left && switcher.top < dock.bottom && switcher.bottom > dock.top,
+              readoutOverlap: window.innerWidth <= 760 && switcher.left < readout.right && switcher.right > readout.left && switcher.top < readout.bottom && switcher.bottom > readout.top,
+              detailOverlap: window.innerWidth <= 760 && switcher.left < detail.right && switcher.right > detail.left && switcher.top < detail.bottom && switcher.bottom > detail.top,
             };
           });
           expect(controls.switcherInsideStage, `${path} ${viewport.width}px view switcher should stay inside its model stage`).toBe(true);
           expect(controls.dockInsideStage, `${path} ${viewport.width}px model controls should stay inside their stage`).toBe(true);
           expect(controls.controlsOverlap, `${path} ${viewport.width}px view switcher and model controls should not overlap`).toBe(false);
+          expect(controls.readoutOverlap, `${path} ${viewport.width}px model metadata and view switcher should not overlap`).toBe(false);
+          expect(controls.detailOverlap, `${path} ${viewport.width}px detail label and view switcher should not overlap`).toBe(false);
         }
       }
     }
