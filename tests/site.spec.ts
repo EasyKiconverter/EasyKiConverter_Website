@@ -130,12 +130,12 @@ test('mobile navigation opens, closes, and restores focus', async ({ page }) => 
 });
 
 test('bilingual homepage header stays within the layout through the tablet breakpoint', async ({ page }) => {
-  for (const width of [850, 851, 900, 920, 921, 1024, 1440]) {
+  for (const width of [850, 851, 900, 920, 921, 980, 981, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     for (const path of ['/', '/en/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const header = page.locator('.site-header');
-      const collapsed = width <= 920;
+      const collapsed = width <= 980;
       if (collapsed) {
         await expect(header.locator('.nav-links')).toBeHidden();
         await expect(header.locator('.menu-button')).toBeVisible();
@@ -166,7 +166,7 @@ test('bilingual homepage header stays within the layout through the tablet break
         }
       });
 
-      if (width >= 851 && width <= 920) {
+      if (width >= 851 && width <= 980) {
         await expect(page.locator('.hero')).toHaveCSS('display', 'grid');
         const menu = header.locator('.menu-button');
         await menu.click();
@@ -186,7 +186,7 @@ test('homepage navigation stays available without JavaScript at the tablet heade
   });
   const page = await context.newPage();
 
-  for (const width of [390, 851, 920]) {
+  for (const width of [390, 851, 920, 980]) {
     await page.setViewportSize({ width, height: 900 });
     for (const path of ['/', '/en/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });

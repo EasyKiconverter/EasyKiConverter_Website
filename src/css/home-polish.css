@@ -785,7 +785,7 @@
   }
 }
 
-@media (min-width: 851px) and (max-width: 920px) {
+@media (min-width: 851px) and (max-width: 980px) {
   .site-header {
     height: 74px;
   }
