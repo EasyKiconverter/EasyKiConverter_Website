@@ -4,6 +4,7 @@
 .motion-heading h1,.motion-chapter h2{font-size:clamp(48px,6.8vw,94px);line-height:.96;letter-spacing:-.075em;margin:18px 0}
 .motion-heading h1 em,.motion-chapter h2 em{font-style:normal;color:var(--violet,#6f61d8)}
 .motion-heading>p:last-child,.motion-chapter p{max-width:370px;color:var(--muted,#746f66);line-height:1.7}
+@media(min-width:901px){.motion-heading{width:min(520px,36vw)}.motion-heading h1{font-size:clamp(48px,4.5vw,64px)}}
 .motion-model{position:absolute;z-index:1;left:50%;top:51%;width:min(62vw,780px);height:min(72vh,700px);min-height:380px;transform:translate(-50%,-50%);border-radius:48% 52% 57% 43% / 46% 43% 57% 54%;background:radial-gradient(ellipse at 42% 44%,#fffdf8 0%,#ece6fa 49%,#d8d0ed 100%);overflow:hidden;transition:width .5s ease,height .5s ease,border-radius .5s ease}
 .motion-model[data-artifact-view="model"]{border-radius:32px}
 @media(min-width:901px){.motion-model[data-artifact-view="model"]{left:auto;right:max(3vw,calc((100vw - 1240px)/2));width:min(52vw,700px);transform:translateY(-50%)}}
