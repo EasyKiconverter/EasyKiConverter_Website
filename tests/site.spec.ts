@@ -143,6 +143,20 @@ test('content-page skip links move keyboard focus into the main content', async 
   }
 });
 
+test('Lab skip links are localized and move keyboard focus to the main content', async ({ page }) => {
+  for (const [path, label] of [['/lab/', '跳转到实验室正文'], ['/en/lab/', 'Skip to lab content']]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const skipLink = page.locator('.content-page-skip');
+    const main = page.locator('main#lab-main');
+    await expect(skipLink).toHaveText(label);
+    await page.keyboard.press('Tab');
+    await expect(skipLink).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(main).toBeFocused();
+    await expect(page).toHaveURL(/#lab-main$/);
+  }
+});
+
 test('mobile story cards keep decorative labels clear of their copy', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/', '/en/']) {
