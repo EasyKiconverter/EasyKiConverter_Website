@@ -429,3 +429,40 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
 @media(max-width:760px){.experiment-controls-toggle{top:calc(13% + 66px);right:12px;padding:6px 8px;font-size:8px}.lab-experiment-controls{top:calc(13% + 101px);right:12px;max-width:180px}}
 /* Keep changing view narration available to assistive technology without covering CAD geometry. */
 .motion-model .artifact-caption{position:absolute;left:0;top:0;bottom:auto;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;border:0}
+
+@media (prefers-reduced-motion: reduce) {
+  /* View-specific desktop rules must not pull the static stage out of document flow. */
+  .motion-model[data-artifact-view] {
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    transform: none;
+    width: min(100%, 680px);
+    height: min(65vh, 560px);
+    min-height: 300px;
+  }
+
+  .motion-model[data-artifact-view] .artifact-switcher {
+    position: absolute;
+    top: 56px;
+    right: 14px;
+    bottom: auto;
+    left: 14px;
+    width: auto;
+    max-width: 360px;
+    margin: 0 auto;
+    transform: none;
+  }
+
+  .motion-model[data-artifact-view] .model-controls-dock {
+    position: absolute;
+    top: auto;
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    width: min(360px, calc(100% - 28px));
+    margin: 0 auto;
+    transform: none;
+  }
+}

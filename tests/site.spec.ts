@@ -1758,6 +1758,52 @@ test('reduced motion renders the Lab without a continuous animation loop', async
   await context.close();
 });
 
+test('reduced-motion Lab keeps the model stage below its heading in every render view', async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  await page.route('**/assets/model/**', (route) => route.abort());
+  await page.route('**/assets/vendor/**', (route) => route.abort());
+
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const stage = page.locator('[data-model-stage]');
+      for (const view of ['model', 'atlas', 'tomogram', 'oracle', 'trinity', 'morph']) {
+        await stage.evaluate((element, artifactView) => {
+          element.dataset.artifactView = artifactView;
+        }, view);
+        const layout = await page.evaluate(() => {
+          const heading = document.querySelector('.motion-heading')!.getBoundingClientRect();
+          const model = document.querySelector('[data-model-stage]')!.getBoundingClientRect();
+          return { headingBottom: heading.bottom, modelTop: model.top, modelLeft: model.left, modelRight: model.right };
+        });
+        expect(layout.modelTop, `${path} ${viewport.width}px ${view} should follow its heading`).toBeGreaterThanOrEqual(layout.headingBottom - 1);
+        expect(layout.modelLeft, `${path} ${viewport.width}px ${view} should remain in the viewport`).toBeGreaterThanOrEqual(-1);
+        expect(layout.modelRight, `${path} ${viewport.width}px ${view} should remain in the viewport`).toBeLessThanOrEqual(viewport.width + 1);
+
+        if (view === 'model') {
+          const controls = await page.evaluate(() => {
+            const stage = document.querySelector('[data-model-stage]')!.getBoundingClientRect();
+            const switcher = document.querySelector('.artifact-switcher')!.getBoundingClientRect();
+            const dock = document.querySelector('.model-controls-dock')!.getBoundingClientRect();
+            return {
+              switcherInsideStage: switcher.top >= stage.top - 1 && switcher.bottom <= stage.bottom + 1,
+              dockInsideStage: dock.top >= stage.top - 1 && dock.bottom <= stage.bottom + 1,
+              controlsOverlap: switcher.left < dock.right && switcher.right > dock.left && switcher.top < dock.bottom && switcher.bottom > dock.top,
+            };
+          });
+          expect(controls.switcherInsideStage, `${path} ${viewport.width}px view switcher should stay inside its model stage`).toBe(true);
+          expect(controls.dockInsideStage, `${path} ${viewport.width}px model controls should stay inside their stage`).toBe(true);
+          expect(controls.controlsOverlap, `${path} ${viewport.width}px view switcher and model controls should not overlap`).toBe(false);
+        }
+      }
+    }
+  }
+
+  await context.close();
+});
+
 test('sitemap lists every public bilingual route', async ({ request }) => {
   const response = await request.get('/sitemap.xml');
   expect(response.ok()).toBeTruthy();
