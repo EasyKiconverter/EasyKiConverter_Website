@@ -25,8 +25,8 @@ for (const path of pages) {
     await expect(page.locator('[data-release-link]').first()).toHaveAttribute('href', /v3\.1\.13/);
     await expect(page.locator('.hero-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
     await expect(page.locator('.download-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
-    await expect(page.locator('.hero-actions [data-release-link]')).toContainText(/查看 v3\.1\.13 下载项|View v3\.1\.13 downloads/);
-    await expect(page.locator('.download-actions [data-release-link]')).toContainText(/查看 v3\.1\.13 下载项|View v3\.1\.13 downloads/);
+    await expect(page.locator('.hero-actions [data-release-link]')).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
+    await expect(page.locator('.download-actions [data-release-link]')).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
     await expect(page.locator('h1')).toBeVisible();
 
     const duplicateIds = await page.locator('[id]').evaluateAll((elements) => {
@@ -1808,7 +1808,7 @@ test('Lab pages clearly label the versioned release downloads page', async ({ pa
     await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noreferrer');
-    await expect(link).toContainText(/查看 v3\.1\.13 下载项|View v3\.1\.13 downloads/);
+    await expect(link).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
   }
 });
 
@@ -1819,7 +1819,7 @@ test('Formats and Cases CTAs clearly direct visitors to Release download options
     await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noreferrer');
-    await expect(link).toContainText(/查看 v3\.1\.13 下载项|View v3\.1\.13 downloads/);
+    await expect(link).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
 
     const copy = page.locator('.content-page-cta > div').first();
     await expect(copy).toContainText(/版本发布页选择安装包|release page/);

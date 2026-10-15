@@ -20,7 +20,7 @@ const applyRelease = (tag: string, url: string, assetUrls: Record<string, string
     link.href = url;
     if (link.firstChild) {
       const isEnglish = document.documentElement.lang === 'en';
-      const label = isEnglish ? `View ${tag} downloads` : `查看 ${tag} 下载项`;
+      const label = isEnglish ? `${tag} downloads` : `${tag} 下载项`;
       link.firstChild.textContent = `${label}${link.querySelector('span') ? ' ' : ' ↗'}`;
     }
   });
