@@ -1263,6 +1263,8 @@ test('Lab explains that surface detail continues after the GLB is ready', async 
 });
 
 test('Lab keeps model metadata, view controls, caption, and slice panel from overlapping', async ({ page }) => {
+  await page.route('**/assets/model/**', (route) => route.abort());
+  await page.route('**/assets/vendor/**', (route) => route.abort());
   for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 360, height: 640 }]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
