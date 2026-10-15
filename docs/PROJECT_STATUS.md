@@ -38,7 +38,7 @@ PR #347 将 3D Lab 的环境光、补光和正面光强度调低，以改善板�
 
 继续排查确认，亮线来自默认“过去”时间轨迹所复制的 18 个 GLB 网格线框，而非 STEP 源模型。PR #349 将过去副本放到当前模型之后、未来副本放到前方；PR #351 再将过去/现在/未来轨迹透明度上限从 0.26/0.055/0.30 调低至 0.06/0.012/0.07，并改用普通混合；新增纯函数回归约束峰值与进度边界。PR #351 经 Feng083 独立审批后合入 `version/V0.0.1`（merge `09dea67`）；PR 检查与合并后 Site Quality run `38791228566` 均通过（216 passed、4 skipped）。未部署生产或验证真机。
 
-随后案例页截图发现桌面卡片等高拉伸，导致较短的 Altium 卡片在摘要与证据之间出现大块空白。本轮改为卡片自然高度，并让证据区紧跟摘要；中英文桌面/移动专项回归和截图复核通过。`pnpm run check`、`pnpm run build`（8 页面，Astro 诊断为零）、`python3 tools/validate_site.py`（8 页面）、`pnpm run assets:check`、Python 单测（6 项）、完整 Playwright（218 passed、4 skipped）及 `git diff --check` 均通过。前后截图位于 `.github/pr-evidence/cases-{before,after}-*`。构建时 Release API 返回 403，使用已检查的 `v3.1.13` 回退。PR 尚未提交；生产未部署，真机未验证。
+随后案例页截图发现桌面卡片等高拉伸，导致较短的 Altium 卡片在摘要与证据之间出现大块空白。本轮改为卡片自然高度，并让证据区紧跟摘要；中英文桌面/移动专项回归和截图复核通过。`pnpm run check`、`pnpm run build`（8 页面，Astro 诊断为零）、`python3 tools/validate_site.py`（8 页面）、`pnpm run assets:check`、Python 单测（6 项）、完整 Playwright（218 passed、4 skipped）及 `git diff --check` 均通过。前后截图位于 `.github/pr-evidence/cases-{before,after}-*`。构建时 Release API 返回 403，使用已检查的 `v3.1.13` 回退。PR #352 已建立，独立审评及 CI 待完成；生产未部署，真机未验证。
 
 首页与真实工作台复用的截图曾暴露本机输出路径。PR #350 已生成单独的去路径截图资产，只清空路径输入框；中英文 Hero/工作台统一引用，替代文本和图注均向访客说明路径已隐藏。其余 UI 保持来源截图原样；PR 检查及合并后 Site Quality 均通过（214 passed、4 skipped）。未部署生产。
 
