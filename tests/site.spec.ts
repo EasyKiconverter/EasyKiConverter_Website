@@ -488,19 +488,20 @@ test('content and Lab headers keep the shared brand treatment', async ({ page })
 
 test('inner pages share the same localized header navigation', async ({ page }) => {
   const pages = [
-    { path: '/formats/', current: '格式矩阵', lab: false },
-    { path: '/cases/', current: '转换案例', lab: false },
-    { path: '/lab/', current: '3D 实验室', lab: true },
-    { path: '/en/formats/', current: 'Formats', lab: false },
-    { path: '/en/cases/', current: 'Cases', lab: false },
-    { path: '/en/lab/', current: '3D Lab', lab: true },
+    { path: '/formats/', current: '格式矩阵', alternate: '/en/formats/', lab: false },
+    { path: '/cases/', current: '转换案例', alternate: '/en/cases/', lab: false },
+    { path: '/lab/', current: '3D 实验室', alternate: '/en/lab/', lab: true },
+    { path: '/en/formats/', current: 'Formats', alternate: '/formats/', lab: false },
+    { path: '/en/cases/', current: 'Cases', alternate: '/cases/', lab: false },
+    { path: '/en/lab/', current: '3D Lab', alternate: '/lab/', lab: true },
   ];
-  for (const { path, current, lab } of pages) {
+  for (const { path, current, alternate, lab } of pages) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const header = page.locator('.content-page-header');
     await expect(header.locator('.nav-links a')).toHaveCount(4);
     await expect(header.locator('.nav-links a[aria-current="page"]')).toHaveText(current);
     await expect(page.locator('.header-actions .lang-link')).toHaveText(path.startsWith('/en/') ? '中文' : 'EN');
+    await expect(page.locator('.header-actions .lang-link')).toHaveAttribute('href', alternate);
     await expect(page.locator('.mobile-nav a')).toHaveCount(5);
     if (lab) await expect(header.locator('.brand')).toContainText(path.startsWith('/en/') ? '/ Lab' : '/ 实验室');
     else await expect(header.locator('.brand')).not.toContainText('/ Lab');
@@ -568,6 +569,7 @@ test('language switch stays visible and points to the matching page on mobile', 
       const languageSwitch = page.locator('.header-actions .lang-link');
       await expect(languageSwitch).toBeVisible();
       await expect(languageSwitch).toHaveAttribute('href', alternate);
+      await expect(page.locator(`.mobile-nav a[href="${alternate}"]`)).toHaveCount(0);
       const bounds = await page.locator('.site-header').evaluate((header) => {
         const brand = header.querySelector('.brand')!.getBoundingClientRect();
         const language = header.querySelector('.lang-link')!.getBoundingClientRect();
