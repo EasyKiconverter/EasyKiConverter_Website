@@ -408,10 +408,10 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
   }
 }
 
-@media(max-width:760px){.motion-model[data-artifact-view="model"] .artifact-switcher{top:calc(13% + 20px);bottom:auto}}
-@media(max-width:760px){.motion-model-note{left:4%;font-size:9px;letter-spacing:.04em}.motion-model-note small{margin-left:8px}.model-detail-status{top:calc(13% + 64px)}.neural-memory-readout{right:4%;padding:5px 6px;font-size:8px;letter-spacing:.04em}}
+@media(max-width:760px){.motion-model[data-artifact-view="model"] .artifact-switcher{top:calc(13% + 48px);bottom:auto}}
+@media(max-width:760px){.motion-model-note{left:4%;font-size:9px;letter-spacing:.04em}.motion-model-note small{margin-left:8px}.model-detail-status{top:calc(13% + 92px)}.neural-memory-readout{right:4%;padding:5px 6px;font-size:8px;letter-spacing:.04em}}
 @media(max-width:760px) and (prefers-reduced-motion:no-preference){
-  .artifact-switcher{left:14px;right:14px;top:calc(13% + 20px);bottom:auto;width:auto;max-width:none;justify-content:flex-start;flex-wrap:nowrap;gap:4px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none;transform:none}
+  .artifact-switcher{left:14px;right:14px;top:calc(13% + 48px);bottom:auto;width:auto;max-width:none;justify-content:flex-start;flex-wrap:nowrap;gap:4px;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none;transform:none}
   .artifact-switcher::-webkit-scrollbar{display:none}
   .artifact-switcher button{flex:0 0 auto;white-space:nowrap}
   .model-explode{gap:4px 8px;padding:7px 10px}
@@ -428,7 +428,7 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
 .motion-model[data-controls-open="true"] .lab-experiment-controls{opacity:1;transform:none}
 .motion-model button:disabled,.motion-model input:disabled{cursor:not-allowed}
 .motion-model:not([data-controls-open="true"]) [class^="morph-"],.motion-model:not([data-controls-open="true"]) [class*=" morph-"]{display:none!important}
-@media(max-width:760px){.experiment-controls-toggle{top:calc(13% + 66px);right:12px;padding:6px 8px;font-size:8px}.lab-experiment-controls{top:calc(13% + 101px);right:12px;max-width:180px}}
+@media(max-width:760px){.experiment-controls-toggle{top:calc(13% + 92px);right:12px;padding:6px 8px;font-size:8px}.lab-experiment-controls{top:calc(13% + 127px);right:12px;max-width:180px}}
 /* Keep changing view narration available to assistive technology without covering CAD geometry. */
 .motion-model .artifact-caption{position:absolute;left:0;top:0;bottom:auto;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;border:0}
 
@@ -466,5 +466,35 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
     width: min(360px, calc(100% - 28px));
     margin: 0 auto;
     transform: none;
+  }
+}
+
+/* A one-row, user-scrollable switcher keeps narrow reduced-motion metadata clear. */
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .motion-model[data-artifact-view] .model-detail-status {
+    top: calc(13% + 107px);
+  }
+
+  .motion-model[data-artifact-view] .artifact-switcher {
+    top: calc(13% + 55px);
+    right: 14px;
+    left: 14px;
+    width: auto;
+    max-width: none;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 4px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+
+  .motion-model[data-artifact-view] .artifact-switcher::-webkit-scrollbar {
+    display: none;
+  }
+
+  .motion-model[data-artifact-view] .artifact-switcher button {
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
 }
