@@ -15,13 +15,13 @@ const homeUrl = homeHref ?? internalPath("");
 const formatsUrl = internalPath(en ? "en/formats/" : "formats/");
 const casesUrl = internalPath(en ? "en/cases/" : "cases/");
 const labUrl = internalPath(en ? "en/lab/" : "lab/");
-const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase);
+const iconUrl = `${import.meta.env.BASE_URL}assets/icons/easyki-icon.svg`;
 ---
 
 <footer class="site-footer shell">
   <div>
     <a class="brand" href={homeUrl}>
-      <img src={iconUrl.href} alt="" width="28" height="28" />
+      <img src={iconUrl} alt="" width="28" height="28" />
       <span>EasyKiConverter</span>
     </a>
     <p>{en ? "Component conversion, made easier." : "让元件库转换，顺手一点。"}</p>

@@ -2,7 +2,7 @@
 interface Props { lang: 'zh' | 'en'; }
 const { lang } = Astro.props;
 const en = lang === 'en';
-const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main.webp`, Astro.site).href;
+const appImage = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main.webp`;
 ---
 
 <section class="motion-narrative" id="story" data-motion-timeline aria-label={en ? 'From component data to design' : '从元件数据到电路设计'}>

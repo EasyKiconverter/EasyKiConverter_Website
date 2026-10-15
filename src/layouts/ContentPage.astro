@@ -32,7 +32,7 @@ const isCasesPage = pageUrl.pathname.includes("/cases/");
     <div class="grain" aria-hidden="true"></div>
     <a class="content-page-skip" href="#content-page-main">{en ? "Skip to content" : "跳转到正文"}</a>
     <InnerPageHeader lang={lang} pageUrl={pageUrl} alternateUrl={alternateUrl} />
-    <main id="content-page-main">
+    <main id="content-page-main" tabindex="-1">
       <slot />
     </main>
     <section class="content-page-cta shell" aria-labelledby="content-page-cta-title">

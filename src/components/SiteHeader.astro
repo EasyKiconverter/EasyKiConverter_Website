@@ -22,7 +22,7 @@ const homeCasesHref = "cases/";
 const homeLabHref = "lab/";
 const docsUrl = "https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs";
 const repositoryUrl = "https://github.com/EasyKiconverter/EasyKiConverter";
-const iconUrl = new URL("assets/icons/easyki-icon.svg", siteBase);
+const iconUrl = `${import.meta.env.BASE_URL}assets/icons/easyki-icon.svg`;
 const isLab = pageUrl?.pathname.includes("/lab/") ?? false;
 const isCurrent = (href: string) => pageUrl?.pathname === new URL(href, siteRoot).pathname;
 const headerClass = {
@@ -33,7 +33,7 @@ const headerClass = {
 
 <header class:list={["site-header", "shell", headerClass]}>
   <a class="brand" href={homeHref} aria-label={en ? "EasyKiConverter home" : "EasyKiConverter 首页"}>
-    <img src={iconUrl.href} alt="" width="36" height="36" />
+    <img src={iconUrl} alt="" width="36" height="36" />
     <span>EasyKiConverter{!isHome && isLab && <small>{en ? " / Lab" : " / 实验室"}</small>}</span>
   </a>
   <nav class="nav-links" aria-label={isHome ? (en ? "Main navigation" : "主导航") : (en ? "Page navigation" : "页面导航")}>
