@@ -1605,6 +1605,38 @@ test('Lab desktop model stage stays clear of the narrative heading', async ({ pa
   }
 });
 
+test('Lab narrative headlines keep the Chinese lead together on desktop', async ({ page }) => {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const lines = await page.locator('.motion-heading h1').evaluate((element) => {
+        const grouped = new Map<number, string>();
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let node: Node | null;
+        while ((node = walker.nextNode())) {
+          let offset = 0;
+          for (const character of node.nodeValue || '') {
+            const range = document.createRange();
+            range.setStart(node, offset);
+            range.setEnd(node, offset + character.length);
+            const top = Math.round(range.getBoundingClientRect().top);
+            if (!/\s/.test(character)) grouped.set(top, (grouped.get(top) || '') + character);
+            offset += character.length;
+          }
+        }
+        return [...grouped.values()];
+      });
+
+      if (path === '/lab/') {
+        expect(lines, `${path} ${viewport.width}px headline lines`).toEqual(['让元件库转换，', '顺手一点。']);
+      } else {
+        expect(lines.length, `${path} ${viewport.width}px headline line count`).toBeLessThanOrEqual(3);
+      }
+    }
+  }
+});
+
 test('Lab model controls stay inside the visible stage at phone, tablet, and desktop widths', async ({ page }) => {
   for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
     await page.setViewportSize(viewport);

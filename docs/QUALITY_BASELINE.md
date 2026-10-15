@@ -10,7 +10,9 @@
 
 - 2026-10-16，Formats 页 11 行由 2 个 primary 稳定目标和 9 个 registered 目标组成；原徽标/表题对“registered”的不同范围用法容易造成计数不一致的印象。徽标现在标明 9 项为“其他目标”，表题明确总数 11；双语测试检查徽标分类计数和表格行数。`pnpm run build`（8 页面、Astro 无诊断）、`pnpm run check`、8 路由校验、模型资产检查、6 项 Python 单测、完整 Playwright（220 passed、4 skipped）、聚焦 Chromium/Chromium Mobile 回归及 `git diff --check` 均通过；前后截图见 `.github/pr-evidence/formats-{before,after}-*`。构建时 Release API 返回 403，使用已检查的 `v3.1.13` 回退；未部署生产或验证真机。
 
-- 2026-10-16，键盘实测发现中英文 3D Lab 跳转链接改变 URL 片段并滚动到 `main#lab-main`，但焦点返回 `body`。两个 Lab 主内容区增加 `tabindex="-1"`；双语键盘回归验证按 Enter 后焦点进入 main。聚焦 Chromium/Chromium Mobile（2 项）和完整 Playwright（222 passed、4 skipped）、`pnpm run build`（8 页面，Astro 无诊断）、`pnpm run check`、8 路由校验、模型资源检查、6 项 Python 单测及 `git diff --check` 均通过。未部署生产或验证真机。
+- 2026-10-16，键盘实测发现中英文 3D Lab 跳转链接改变 URL 片段并滚动到 `main#lab-main`，但焦点返回 `body`。两个 Lab 主内容区增加 `tabindex="-1"`；双语键盘回归验证按 Enter 后焦点进入 main。聚焦 Chromium/Chromium Mobile（2 项）和完整 Playwright（222 passed、4 skipped）、`pnpm run build`（8 页面，Astro 无诊断）、`pnpm run check`、8 路由校验、模型资源检查、6 项 Python 单测及 `git diff --check` 均通过。PR #354 经 Feng083 独立审批后合入 `version/V0.0.1`（merge `ad2f255`）；PR 检查与合并后 Site Quality run `38801904869` 均通过（222 passed、4 skipped）。未部署生产或验证真机。
+
+- 2026-10-16，1440px 3D Lab 截图发现中文叙事主标题出现单字“换，”孤行。桌面断点将标题字级限制为 72px 并将文字栏拓宽至 520px；中英文 1440/1024px 回归验证标题行数及中文短语完整呈现，未改平板/手机断点。前后及英文截图见 `.github/pr-evidence/lab-headline-{before,after}-*`。`pnpm run build`（8 页面、Astro 无诊断）、`pnpm run check`、8 路由校验、模型资产检查、6 项 Python 单测、完整 Playwright（224 passed、4 skipped）和 `git diff --check` 均通过。构建时 Release API 返回 403，使用已检查的 `v3.1.13` 回退；未部署生产或验证真机。
 
 - 2026-10-15，本地预览审查发现 SiteHeader、SiteFooter、favicon 和 Lab 产品截图将站内静态资源生成为正式域名绝对 URL；受限网络下远程请求会挂起并导致 `networkidle` 等待超时。改用带 `BASE_URL` 的路径后，资源随当前预览/部署来源加载；新增回归检查 8 个中英文页面的所有 `<img>` 与 favicon 均为同源。首页现在在 823ms 内达到 network idle，未发现外部请求；完整 Playwright 为 208 passed、4 skipped。首次整套运行在 Chromium 中有 1 项旧卡片布局用例因等待 network idle 超时，改为等待 DOM 就绪；重跑时另有 2 项因外部资源挂起超时，资源隔离后完整套件通过。未部署生产。
 
