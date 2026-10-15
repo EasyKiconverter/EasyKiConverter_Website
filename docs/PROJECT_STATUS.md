@@ -20,7 +20,7 @@
 
 随后 PR #332 将上述验证结果补入中英文状态与质量基线；PR #333 经独立审查后将已验证版本晋级 `master`，当前 merge commit 为 `614485c`。master 合并后 Site Quality run `38673808283` 通过（202 passed、4 skipped）。本地构建、8 路由校验和模型资产检查通过；生产站仍未部署，真机仍未验证。
 
-本轮只读生产检查中，资产检查器的 8 个目标均返回 HTTP 200，但部署验收器使用 Python 默认请求头时收到 Cloudflare HTTP 403；同一 GET 改用资产检查器已有的 `EasyKiConverter-production-check` 标识后返回 HTTP 200，并继续检测出线上首页仍有两个 `<title>`。部署验收器现使用该显式标识，新增本地回归断言；6 项部署工具单元测试通过。该修复尚待 PR/CI，生产未部署。
+本轮只读生产检查中，资产检查器的 8 个目标均返回 HTTP 200，但部署验收器使用 Python 默认请求头时收到 Cloudflare HTTP 403；同一 GET 改用资产检查器已有的 `EasyKiConverter-production-check` 标识后返回 HTTP 200，并继续检测出线上首页仍有两个 `<title>`。PR #337 已经独立审查并合入 `version/V0.0.1`（merge `6f87852`）；版本分支合并后 Site Quality run `38739192646` 通过（202 passed、4 skipped），6 项部署工具单元测试也通过。该修复尚未晋级 `master` 或部署生产；正式部署仍需针对本次操作明确批准。
 
 ## 里程碑与任务
 
