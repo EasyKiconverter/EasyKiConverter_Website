@@ -2,7 +2,7 @@
 
 [中文](PROJECT_STATUS.md)
 
-Last checked: 2026-10-15. This status is based on the current repository, GitHub PRs/checks, Release API, and read-only live-site checks. External state can change and must be rechecked before action.
+Last checked: 2026-10-16. This status is based on the current repository, GitHub PRs/checks, Release API, and read-only live-site checks. External state can change and must be rechecked before action.
 
 ## Project Goal
 
@@ -33,7 +33,7 @@ A read-only production check this cycle found all eight targets returning HTTP 2
 
 ## Milestones and Tasks
 
-The local feature branch `fix/lab-model-surface-clarity` adjusts ambient, fill, and front lighting for the user-visible 3D Lab material presentation; no model asset or geometry changed. `pnpm build`, Astro checks, eight-route validation, model-asset checks, and the full Playwright suite (208 passed, 4 skipped) passed. The local Release API returned 403 and the checked-in fallback was used as documented. Screenshots show improved depth, but prominent white structural lines remain in the source model, so this remains partially complete. Not yet committed or pushed; no production deployment or real-device test was performed.
+PR #347 reduces ambient, fill, and front-light intensity to improve depth across the 3D Lab board and pale components; no model asset or geometry changed. It was approved by Feng083 and merged into `version/V0.0.1` (merge `b737278`). PR and post-merge Site Quality runs `38766117318` and `38766745155` passed (208 passed, 4 skipped); `pnpm build`, eight-route validation, and model-asset checks also passed. The local Release API returned 403 and the checked-in fallback was used as documented. Screenshots show improved depth, but prominent white structural lines remain in the source model, so this remains partially complete. No production deployment or real-device test was performed.
 
 | ID / Priority | Objective, scope, and deliverable | Dependencies, steps, and acceptance | Status |
 | --- | --- | --- | --- |
