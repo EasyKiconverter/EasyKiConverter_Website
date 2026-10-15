@@ -6,7 +6,9 @@
 
 ## 已验证
 
-- 2026-10-16，PR #351 将 Lab 时间回声改为更低透明度和普通混合，经独立审评合入 `version/V0.0.1`（merge `09dea67`）；PR 检查及合并后 Site Quality run `38791228566` 均通过（216 passed、4 skipped）。随后案例页截图发现桌面卡片等高拉伸使 Altium 卡片摘要与证据间留白过大。本轮改为卡片自然高度并缩短证据区间距；中英文桌面/移动截图复核通过。`pnpm run check`、`pnpm run build`（8 页面，Astro 诊断为零）、8 路由站点校验、模型资产校验、6 项 Python 单测、Playwright（218 passed、4 skipped）及 `git diff --check` 通过。前后截图见 `.github/pr-evidence/cases-{before,after}-*`。构建时 Release API 返回 403，使用 `v3.1.13` 回退；PR #352 已建立，审评及 CI 待完成。生产未部署、真机未验证。
+- 2026-10-16，PR #351 将 Lab 时间回声改为更低透明度和普通混合，经独立审评合入 `version/V0.0.1`（merge `09dea67`）；PR 检查及合并后 Site Quality run `38791228566` 均通过（216 passed、4 skipped）。随后案例页截图发现桌面卡片等高拉伸使 Altium 卡片摘要与证据间留白过大。本轮改为卡片自然高度并缩短证据区间距；中英文桌面/移动截图复核通过。`pnpm run check`、`pnpm run build`（8 页面，Astro 诊断为零）、8 路由站点校验、模型资产校验、6 项 Python 单测、Playwright（218 passed、4 skipped）及 `git diff --check` 通过。前后截图见 `.github/pr-evidence/cases-{before,after}-*`。构建时 Release API 返回 403，使用 `v3.1.13` 回退；PR #352 经独立审批、必需检查及合并后 CI 通过，合并提交 `6949e4b`、Site Quality run `38795306114`（218 passed、4 skipped）。生产未部署、真机未验证。
+
+- 2026-10-16，Formats 页 11 行由 2 个 primary 稳定目标和 9 个 registered 目标组成；原徽标/表题对“registered”的不同范围用法容易造成计数不一致的印象。徽标现在标明 9 项为“其他目标”，表题明确总数 11；双语测试检查徽标分类计数和表格行数。`pnpm run build`（8 页面、Astro 无诊断）、`pnpm run check`、8 路由校验、模型资产检查、6 项 Python 单测、完整 Playwright（220 passed、4 skipped）、聚焦 Chromium/Chromium Mobile 回归及 `git diff --check` 均通过；前后截图见 `.github/pr-evidence/formats-{before,after}-*`。构建时 Release API 返回 403，使用已检查的 `v3.1.13` 回退；未部署生产或验证真机。
 
 - 2026-10-15，本地预览审查发现 SiteHeader、SiteFooter、favicon 和 Lab 产品截图将站内静态资源生成为正式域名绝对 URL；受限网络下远程请求会挂起并导致 `networkidle` 等待超时。改用带 `BASE_URL` 的路径后，资源随当前预览/部署来源加载；新增回归检查 8 个中英文页面的所有 `<img>` 与 favicon 均为同源。首页现在在 823ms 内达到 network idle，未发现外部请求；完整 Playwright 为 208 passed、4 skipped。首次整套运行在 Chromium 中有 1 项旧卡片布局用例因等待 network idle 超时，改为等待 DOM 就绪；重跑时另有 2 项因外部资源挂起超时，资源隔离后完整套件通过。未部署生产。
 
