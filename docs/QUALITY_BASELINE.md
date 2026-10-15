@@ -6,7 +6,7 @@
 
 ## 已验证
 
-- 2026-10-15，线上只读请求确认：`tools/check_production_assets.py` 对 8 个页面/资源均取得 HTTP 200；部署验收器原先使用默认 Python 请求头时首页 GET 收到 Cloudflare 403。同一 GET 使用已有资产检查标识 `EasyKiConverter-production-check` 后为 HTTP 200，并按预期报告首页存在两个 `<title>`。部署验收器现发送该标识，回归测试断言所有 8 路由均携带该请求头；`python3 -B -m unittest tests.test_deploy_production -v` 的 6 项测试及 `git diff --check` 通过。PR #337 经独立审查合入 `version/V0.0.1`（merge `6f87852`），合并后 Site Quality run `38739192646` 通过（202 passed、4 skipped）。修复尚未晋级 `master`，线上问题未修复/未部署。
+- 2026-10-15，线上只读请求确认：`tools/check_production_assets.py` 对 8 个页面/资源均取得 HTTP 200；部署验收器原先使用默认 Python 请求头时首页 GET 收到 Cloudflare 403。同一 GET 使用已有资产检查标识 `EasyKiConverter-production-check` 后为 HTTP 200，并按预期报告首页存在两个 `<title>`。部署验收器现发送该标识，回归测试断言所有 8 路由均携带该请求头；`python3 -B -m unittest tests.test_deploy_production -v` 的 6 项测试及 `git diff --check` 通过。PR #337 经独立审查合入 `version/V0.0.1`（merge `6f87852`），PR #341 晋级 `master`（merge `d0c4b59`）；版本 run `38739192646` 和 master run `38745725230` 均通过（各 202 passed、4 skipped）。线上未部署，重复标题问题仍存在。
 
 - 2026-10-15，PR #332 同步记录 3D Lab 控件重叠修复的验证结果；PR #333 经独立审查将其从 `version/V0.0.1` 晋级 `master`，merge commit `614485c`。master 合并后 Site Quality run `38673808283` 通过（202 passed、4 skipped）。本地 build、8 路由校验和模型资产检查通过；未部署生产，未做真机测试。
 
