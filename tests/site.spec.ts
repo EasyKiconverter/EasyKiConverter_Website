@@ -1252,6 +1252,28 @@ test('case evidence paths foreground filenames while retaining directories', asy
   }
 });
 
+test('bilingual case evidence follows each summary without stretched-card gaps', async ({ page }) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ['/cases/', '/en/cases/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const cards = page.locator('.case-card');
+      const geometry = await cards.evaluateAll((elements) => elements.map((card) => {
+        const summary = card.querySelector(':scope > p')!.getBoundingClientRect();
+        const evidence = card.querySelector('dl')!.getBoundingClientRect();
+        return {
+          gap: evidence.top - summary.bottom,
+          bottom: card.getBoundingClientRect().bottom,
+        };
+      }));
+
+      expect(geometry).toHaveLength(2);
+      expect(geometry.every(({ gap }) => gap >= 20 && gap < 48)).toBe(true);
+      if (width > 850) expect(Math.abs(geometry[0].bottom - geometry[1].bottom)).toBeGreaterThan(40);
+    }
+  }
+});
+
 test('download cards show the actual Release asset architectures', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const chineseLinks = page.locator('.download-links > a');

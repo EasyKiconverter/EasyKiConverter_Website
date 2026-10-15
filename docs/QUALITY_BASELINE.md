@@ -6,7 +6,7 @@
 
 ## 已验证
 
-- 2026-10-16，复核 PR #349 合并后的 Lab 截图，确认默认过去轨迹仍以加色混合显示 18 个网格的线框，使轮廓偏白。当前 `fix/lab-model-surface-contrast` 将过去/现在/未来回声透明度上限从 0.26/0.055/0.30 调为 0.06/0.012/0.07，并使用普通混合；轨迹函数新增峰值与进度边界测试。`pnpm run check`、`pnpm run build`（8 页面，Astro 0 errors/warnings/hints）、`python3 tools/validate_site.py`（8 页面）、`pnpm run assets:check`（桌面 303 网格/278,784 三角面，移动 303/228,004）、Python 部署工具单测（6 项）和完整 Playwright（216 passed、4 skipped）通过。中英文 1440/768/390px 截图加载正确 GLB，浏览器无 console errors；证据截图位于 `.github/pr-evidence/model-temporal-contrast-after-*.png`。Release API 返回 403，构建使用已提交的 `v3.1.13` 回退；PR/CI 待执行，未部署生产或验证真机。
+- 2026-10-16，PR #351 将 Lab 时间回声改为更低透明度和普通混合，经独立审评合入 `version/V0.0.1`（merge `09dea67`）；PR 检查及合并后 Site Quality run `38791228566` 均通过（216 passed、4 skipped）。随后案例页截图发现桌面卡片等高拉伸使 Altium 卡片摘要与证据间留白过大。本轮改为卡片自然高度并缩短证据区间距；中英文桌面/移动截图复核通过。`pnpm run check`、`pnpm run build`（8 页面，Astro 诊断为零）、8 路由站点校验、模型资产校验、6 项 Python 单测、Playwright（218 passed、4 skipped）及 `git diff --check` 通过。前后截图见 `.github/pr-evidence/cases-{before,after}-*`。构建时 Release API 返回 403，使用 `v3.1.13` 回退；PR #352 已建立，审评及 CI 待完成。生产未部署、真机未验证。
 
 - 2026-10-15，本地预览审查发现 SiteHeader、SiteFooter、favicon 和 Lab 产品截图将站内静态资源生成为正式域名绝对 URL；受限网络下远程请求会挂起并导致 `networkidle` 等待超时。改用带 `BASE_URL` 的路径后，资源随当前预览/部署来源加载；新增回归检查 8 个中英文页面的所有 `<img>` 与 favicon 均为同源。首页现在在 823ms 内达到 network idle，未发现外部请求；完整 Playwright 为 208 passed、4 skipped。首次整套运行在 Chromium 中有 1 项旧卡片布局用例因等待 network idle 超时，改为等待 DOM 就绪；重跑时另有 2 项因外部资源挂起超时，资源隔离后完整套件通过。未部署生产。
 
