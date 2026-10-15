@@ -6,6 +6,8 @@
 
 ## 已验证
 
+- 2026-10-15，PR #332 同步记录 3D Lab 控件重叠修复的验证结果；PR #333 经独立审查将其从 `version/V0.0.1` 晋级 `master`，merge commit `614485c`。master 合并后 Site Quality run `38673808283` 通过（202 passed、4 skipped）。本地 build、8 路由校验和模型资产检查通过；未部署生产，未做真机测试。
+
 - 2026-10-15，3D Lab 后续舞台检查发现中英文模型元信息、视图工具栏、高级入口及底部切片面板/字幕在部分尺寸有碰撞，字幕会遮挡模型。PR #331 分离顶部控制并归组底部面板；动态字幕保留为屏幕阅读器可访问的实时文本，同时从视觉布局裁切。重叠回归首轮 CI `38670306796` 因反复等待重型 3D 网格而在 120 秒超时；缩小到布局 DOM/CSS 后，PR CI `38671723118` 与版本合并后 CI `38672074526` 均通过（各 202 passed、4 skipped）。PR #331 经独立审批合入版本分支，merge `c9e7238`。本地完整套件、构建、8 路由校验、模型资产检查及 `git diff --check` 通过；Release API 本地请求 403，使用已检查的 `v3.1.13` 回退。未部署生产，未做真机测试。
 
 - 2026-10-15，320px 标题行框审查发现中文 3D Lab 标题末行仅剩“验。”。为移动端单独调整 Lab 标题字号，并把双语首页、Formats、Cases、Lab 标题回归扩展到 320/360/390px。前两次 CI 表明字体度量差异使案例标题自然换为两行、英文首页/格式标题最多三行；仅放宽 320px 行数断言，并保留中文孤字检测及较宽视口约束。聚焦 Chromium 与 Chromium Mobile、完整本地 Playwright（200 passed、4 skipped）、`pnpm run check`、`pnpm build`、`python3 tools/validate_site.py`（8 页面）、`pnpm run assets:check` 和 `git diff --check` 通过。PR #323 经独立审查及必需 CI 合入版本分支（merge `4901a8b`），版本 CI `38656977540` 通过；随后 PR #325 晋级 `master`（merge `b4cba0e`），master push CI `38658741923` 通过；两次均为 200 passed、4 skipped。本地 Release API 返回 403，构建使用仓库 `v3.1.13` 数据；未部署生产。
