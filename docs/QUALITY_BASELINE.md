@@ -6,6 +6,10 @@
 
 ## 已验证
 
+- 2026-10-15，本地预览审查发现 SiteHeader、SiteFooter、favicon 和 Lab 产品截图将站内静态资源生成为正式域名绝对 URL；受限网络下远程请求会挂起并导致 `networkidle` 等待超时。改用带 `BASE_URL` 的路径后，资源随当前预览/部署来源加载；新增回归检查 8 个中英文页面的所有 `<img>` 与 favicon 均为同源。首页现在在 823ms 内达到 network idle，未发现外部请求；完整 Playwright 为 208 passed、4 skipped。首次整套运行在 Chromium 中有 1 项旧卡片布局用例因等待 network idle 超时，改为等待 DOM 就绪；重跑时另有 2 项因外部资源挂起超时，资源隔离后完整套件通过。未部署生产。
+
+- 2026-10-15，键盘审查发现 Formats/Cases 页面“跳转到正文”链接激活后只滚动页面，焦点落回 `body`，无法从正文继续顺序导航。共享布局的 `<main id="content-page-main">` 增加 `tabindex="-1"`，并添加四条中英文路由回归：首次 Tab 聚焦跳转链接，Enter 后正文 main 获得焦点。聚焦 Playwright 在 Chromium 与 Chromium Mobile 通过（2 项）；`pnpm run check` 与 `pnpm build` 通过，构建 8 个页面、Astro 0 errors/warnings/hints。Release API 返回 403，使用已检查的 `v3.1.13` 回退。未部署生产。
+
 - 2026-10-15，reduced-motion 下的桌面模型视图规则覆盖了静态布局，模型舞台上移并与标题重叠约 252px，视图切换栏/控制栏也偏离舞台。新增更高特异性覆盖，重置所有模型视图定位，并将切换栏与控制栏分别锚定在舞台顶部和底部。回归覆盖中英文 Lab、1440/768/390px 及 model/atlas/tomogram/oracle/trinity/morph 六种视图，同时检查标题与舞台、控件与舞台边界及控件互相不重叠。聚焦 Chromium/Chromium Mobile 2 项通过；完整 Playwright 为 204 passed、4 skipped。`pnpm run check`、`pnpm build`（Astro 0 errors/warnings/hints）、`python3 tools/validate_site.py`（8 页面）、`python3 tools/check_model_assets.py`（桌面 303 meshes / 278,784 triangles，移动 303 / 228,004）及 `git diff --check` 通过。Release API 返回 403，使用已检查的 `v3.1.13` 回退。未部署生产或验证真机。
 
 - 2026-10-15，Lab 控件重叠布局回归在 CI 多次因视口切换或舞台 DOM 查询超时；该用例循环访问两种语言和四种视口，原先每次都会启动 3D 资源请求。现仅在此布局测试中拦截 `/assets/model/` 与 `/assets/vendor/` 请求，布局几何与全部碰撞断言保持不变。聚焦测试在 Chromium/Chromium Mobile 连续 10 轮共 20 项通过；完整 Playwright 为 202 passed、4 skipped。`pnpm build` 的 Astro 检查 0 errors/warnings/hints，`python3 tools/validate_site.py` 验证 8 页面，`python3 tools/check_model_assets.py` 通过（桌面 303 meshes / 278,784 triangles，移动 303 / 228,004），`git diff --check` 通过。Release API 返回 403，构建使用已检查的 `v3.1.13` 回退。PR #343 经独立审批合入 `version/V0.0.1`（`28247b2`），合并后 run `38748776076` 通过（202 passed、4 skipped）。未部署生产或验证真机。

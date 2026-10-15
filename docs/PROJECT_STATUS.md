@@ -12,7 +12,13 @@
 
 项目处于 V0.0.1 稳定维护与用户体验持续改进阶段。2026-10-15，PR #343 将 Lab 布局回归测试与大型模型资源请求隔离；独立审批及 PR 检查通过后合入 `version/V0.0.1`（`28247b2`），合并后 Site Quality run `38748776076` 成功（202 passed、4 skipped）。当前 `master` 为 `d0c4b59`，其合并后 Site Quality run `38745725230` 成功（202 passed、4 skipped）。首页唯一标题修复已在源码及 `master`，但线上首页仍有重复标题；生产未部署。真实手机与网络性能仍未验证。
 
+随后 PR #345 经 Feng083 独立审评并合入 `version/V0.0.1`（merge `74f8437`），修复 reduced-motion 下 Lab 标题/模型舞台重叠及控件定位；PR Site Quality、Dependency Review 和合并后 Site Quality run `38756881636` 均通过。生产未部署。
+
 本轮 WEB-04 的 reduced-motion 审查发现，桌面模型视图的高特异性定位覆盖静态布局，标题与模型舞台重叠约 252px，视图切换栏/控制栏也未留在舞台内。已为所有模型视图统一重置定位，并将控件锚定在舞台上下方；双语 1440/768/390px、六种模型视图的几何回归通过。`pnpm run check`、`pnpm build`（Astro 0 errors/warnings/hints）、完整 Playwright（204 passed、4 skipped）、8 页面校验、模型资产检查及 `git diff --check` 均通过。Release API 返回 403，构建使用已检查的 `v3.1.13` 回退。未部署生产或验证真机。
+
+本轮键盘审查发现 Formats/Cases 共用布局中的跳转链接可以滚动到 `<main>`，但目标未获焦点，键盘导航会回到 `body`。给共享 main 增加 `tabindex="-1"` 后，中英文 Formats/Cases 四条路由均能将焦点交给正文；回归测试在 Chromium 与 Chromium Mobile 均通过。`pnpm run check`、`pnpm build` 及聚焦浏览器回归通过；未部署生产。
+
+同轮检查本地预览请求时发现，共享导航/页脚图标、favicon 与 Lab 产品截图通过生产域名加载；Chromium 会挂起这些远程请求并使 `networkidle` 测试超时。站内静态资源现改用 `BASE_URL` 路径，并新增 8 路由同源回归；首页网络空闲在 823ms 内完成且无外部请求。全套 Playwright 为 208 passed、4 skipped；卡片布局用例也改为等待 DOM 就绪。未部署生产。
 
 本轮继续 WEB-04 并扩展标题巡检至 320px：中文 3D Lab 标题在 320px 被拆成“真实几何，独立实 / 验。”；移动断点下略微缩小该页标题字号后，中英文首页、格式、案例和 Lab 标题在 320/360/390px 的孤字回归通过。PR #323（merge `4901a8b`）合入 `version/V0.0.1` 后，Site Quality run `38656977540` 为 200 passed、4 skipped；随后 PR #325 将其晋级 `master`（merge `b4cba0e`），master push CI `38658741923` 也通过（200 passed、4 skipped）。不同字体度量会令案例标题排成两行、英文首页/格式标题最多三行；仅放宽 320px 行数上限，保留中文孤字检测及 360/390px 紧凑度约束。此次仅属浏览器视口验证，不代表真机测试。
 
@@ -31,7 +37,7 @@
 | WEB-01 / P1 | 修正首页双语品牌大小写、格式支持说明和下载引导。 | 双语文案/样式回归；构建、站点校验、完整 Playwright；PR #285/#286。 | 已完成并晋级 `master`；未部署生产 |
 | WEB-02 / P1 | 将已在 `master` 的首页唯一标题修复同步至正式站，并验证 8 路由及首页标题。 | 先核对远端备份/回滚与当前版本；仅在项目所有者明确批准此次生产部署后执行；逐路由检查 HTTP、标题数、语言互链、资源和浏览器冒烟。 | 源码已修复；部署脚本会校验构建产物、发布后的 8 路由和 SEO 元数据，并在验证失败时回滚。2026-10-15 只读复查：8 路由均 HTTP 200、canonical 正确，但 `/` 与 `/en/` 各有两个 `<title>`；生产部署仍需针对本次操作明确批准 |
 | WEB-03 / P2 | 测量真实手机和不同网络环境下的加载、缓存与交互性能，形成可复现记录。 | 收集设备/网络型号、浏览器、缓存状态和测试步骤；测首屏/模型加载、下载与交互，记录原始数据。 | 等待真实设备及可控网络；未验证 |
-| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | PR #291 补充其他包型入口；PR #292/#294 将首页、Lab、Formats、Cases 的 CTA 明确为打开版本发布页选择安装包；PR #311/#312 对齐首页实际四步工作流；PR #313/#315 修复并晋级 Cases 窄屏溢出；PR #320 修复 Formats 320px CTA 列溢出；PR #323/#325 修正并晋级窄屏标题；PR #331/#333 修复并晋级 Lab 控件重叠；PR #343 稳定布局回归；本轮修正 reduced-motion 下 Lab 标题/模型重叠及控件定位。 | 持续进行；PR #343 已合入 `version/V0.0.1`，合并后 Site Quality run `38748776076` 通过（202 passed、4 skipped）。本轮修复在双语 1440/768/390px 与六视图下通过本地回归，完整 Playwright 为 204 passed、4 skipped；生产未部署，真机未验证 |
+| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | PR #291 补充其他包型入口；PR #292/#294 将首页、Lab、Formats、Cases 的 CTA 明确为打开版本发布页选择安装包；PR #311/#312 对齐首页实际四步工作流；PR #313/#315 修复并晋级 Cases 窄屏溢出；PR #320 修复 Formats 320px CTA 列溢出；PR #323/#325 修正并晋级窄屏标题；PR #331/#333 修复并晋级 Lab 控件重叠；PR #343 稳定布局回归；PR #345 修复 reduced-motion 下 Lab 标题/模型重叠；本轮修复内容页跳转焦点并隔离预览资源。 | 持续进行；PR #345 已合入 `version/V0.0.1`，合并后 Site Quality run `38756881636` 通过。本轮内容焦点、8 路由同源资源回归及完整 Playwright（208 passed、4 skipped）通过；生产未部署，真机未验证 |
 | WEB-05 / P1 | 让格式矩阵每个目标链接到准确的专属验证依据，并准确描述自动测试和人工规程的覆盖边界。 | 11 行双语链接回归；构建、站点校验、资产检查、完整 Playwright；PR #287/#288 CI 和独立审查。 | 已完成并晋级 `master` |
 
 ## 关键风险与控制

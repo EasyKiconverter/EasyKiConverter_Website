@@ -94,10 +94,24 @@ test('homepage skip links are localized and move keyboard focus to main content'
   }
 });
 
+test('content-page skip links move keyboard focus into the main content', async ({ page }) => {
+  for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const skipLink = page.locator('.content-page-skip');
+    const main = page.locator('main#content-page-main');
+    await page.keyboard.press('Tab');
+    await expect(skipLink).toBeFocused();
+    await expect(skipLink).toBeInViewport();
+    await page.keyboard.press('Enter');
+    await expect(main).toBeFocused();
+    await expect(page).toHaveURL(/#content-page-main$/);
+  }
+});
+
 test('mobile story cards keep decorative labels clear of their copy', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'networkidle' });
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
     const storyCards = page.locator('.story-card');
     await storyCards.first().scrollIntoViewIfNeeded();
     const bounds = await storyCards.evaluateAll((cards) => cards.map((card) => {
@@ -437,6 +451,19 @@ test('internal navigation stays on the current preview origin', async ({ page })
     );
     expect(links.every((link) => link.origin === new URL(page.url()).origin)).toBe(true);
     expect(links.map((link) => link.pathname)).toContain(path);
+  }
+});
+
+test('site chrome and product images load assets from the current preview origin', async ({ page }) => {
+  for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const externalAssets = await page.locator('img[src], link[rel="icon"]').evaluateAll((elements) =>
+      elements.map((element) => {
+        const asset = element.getAttribute('src') || element.getAttribute('href');
+        return asset ? new URL(asset, location.href).href : '';
+      }).filter((url) => url && new URL(url).origin !== location.origin),
+    );
+    expect(externalAssets, `${path} should not fetch local site assets from the production domain`).toEqual([]);
   }
 });
 
