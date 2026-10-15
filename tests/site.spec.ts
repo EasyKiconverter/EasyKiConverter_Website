@@ -1499,7 +1499,7 @@ test('Lab explains that surface detail continues after the GLB is ready', async 
 test('Lab keeps model metadata, view controls, caption, and slice panel from overlapping', async ({ page }) => {
   await page.route('**/assets/model/**', (route) => route.abort());
   await page.route('**/assets/vendor/**', (route) => route.abort());
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 360, height: 640 }]) {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 428, height: 844 }, { width: 390, height: 844 }, { width: 360, height: 640 }, { width: 320, height: 700 }]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -1511,7 +1511,14 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
         const caption = rect('.artifact-caption');
         const captionStyle = getComputedStyle(element.querySelector<HTMLElement>('.artifact-caption')!);
         const switcher = rect('.artifact-switcher');
+        const note = rect('.motion-model-note');
+        const detail = rect('.model-detail-status');
+        const readout = rect('.neural-memory-readout');
+        const stage = element.getBoundingClientRect();
         return {
+          noteWithReadout: intersects(note, readout),
+          readoutWithDetail: intersects(readout, detail),
+          metadataInsideStage: [note, detail, readout].every((item) => item.left >= stage.left && item.right <= stage.right),
           noteWithSwitcher: intersects(rect('.motion-model-note'), switcher),
           detailWithSwitcher: intersects(rect('.model-detail-status'), switcher),
           advancedWithSwitcher: intersects(rect('.experiment-controls-toggle'), rect('.artifact-switcher')),
@@ -1520,6 +1527,9 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
         };
       });
       expect(overlaps).toEqual({
+        noteWithReadout: false,
+        readoutWithDetail: false,
+        metadataInsideStage: true,
         noteWithSwitcher: false,
         detailWithSwitcher: false,
         advancedWithSwitcher: false,
