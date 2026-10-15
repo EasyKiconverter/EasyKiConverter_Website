@@ -1,5 +1,5 @@
 import type * as THREE from "three";
-import { temporalGhostDepth, type NarrativeTrack } from "./model-narrative";
+import { temporalGhostDepth, temporalGhostOpacity, type NarrativeTrack } from "./model-narrative";
 
 type MeshMessage = {
   type: "mesh" | "error";
@@ -2677,7 +2677,7 @@ export const setupModel = async (): Promise<void> => {
           transparent: true,
           opacity: 0,
           depthWrite: false,
-          blending: THREE.AdditiveBlending,
+          blending: THREE.NormalBlending,
         });
         const ghost = new THREE.Mesh(mesh.geometry.clone(), material);
         ghost.position.copy(mesh.position);
@@ -4232,11 +4232,7 @@ export const setupModel = async (): Promise<void> => {
     }
     narrativeTimeGhosts.forEach(({ track, group: timeGroup, materials }) => {
       const phase = track === "past" ? -1 : track === "future" ? 1 : 0;
-      const timeOpacity = track === "past"
-        ? narrativePast * 0.26
-        : track === "future"
-          ? narrativeFuture * 0.3
-          : narrativePresent * 0.055;
+      const timeOpacity = temporalGhostOpacity(track, progress);
       const active = !state.reducedMotion && timeOpacity > 0.001;
       const drift = phase * (0.13 + narrativeFuture * 0.045);
       timeGroup.position.set(

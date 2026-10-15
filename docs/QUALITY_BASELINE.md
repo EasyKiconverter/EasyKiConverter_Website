@@ -6,6 +6,8 @@
 
 ## 已验证
 
+- 2026-10-16，复核 PR #349 合并后的 Lab 截图，确认默认过去轨迹仍以加色混合显示 18 个网格的线框，使轮廓偏白。当前 `fix/lab-model-surface-contrast` 将过去/现在/未来回声透明度上限从 0.26/0.055/0.30 调为 0.06/0.012/0.07，并使用普通混合；轨迹函数新增峰值与进度边界测试。`pnpm run check`、`pnpm run build`（8 页面，Astro 0 errors/warnings/hints）、`python3 tools/validate_site.py`（8 页面）、`pnpm run assets:check`（桌面 303 网格/278,784 三角面，移动 303/228,004）、Python 部署工具单测（6 项）和完整 Playwright（216 passed、4 skipped）通过。中英文 1440/768/390px 截图加载正确 GLB，浏览器无 console errors；证据截图位于 `.github/pr-evidence/model-temporal-contrast-after-*.png`。Release API 返回 403，构建使用已提交的 `v3.1.13` 回退；PR/CI 待执行，未部署生产或验证真机。
+
 - 2026-10-15，本地预览审查发现 SiteHeader、SiteFooter、favicon 和 Lab 产品截图将站内静态资源生成为正式域名绝对 URL；受限网络下远程请求会挂起并导致 `networkidle` 等待超时。改用带 `BASE_URL` 的路径后，资源随当前预览/部署来源加载；新增回归检查 8 个中英文页面的所有 `<img>` 与 favicon 均为同源。首页现在在 823ms 内达到 network idle，未发现外部请求；完整 Playwright 为 208 passed、4 skipped。首次整套运行在 Chromium 中有 1 项旧卡片布局用例因等待 network idle 超时，改为等待 DOM 就绪；重跑时另有 2 项因外部资源挂起超时，资源隔离后完整套件通过。未部署生产。
 
 - 2026-10-15，键盘审查发现 Formats/Cases 页面“跳转到正文”链接激活后只滚动页面，焦点落回 `body`，无法从正文继续顺序导航。共享布局的 `<main id="content-page-main">` 增加 `tabindex="-1"`，并添加四条中英文路由回归：首次 Tab 聚焦跳转链接，Enter 后正文 main 获得焦点。聚焦 Playwright 在 Chromium 与 Chromium Mobile 通过（2 项）；`pnpm run check` 与 `pnpm build` 通过，构建 8 个页面、Astro 0 errors/warnings/hints。Release API 返回 403，使用已检查的 `v3.1.13` 回退。未部署生产。
