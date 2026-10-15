@@ -40,7 +40,9 @@ PR #347 将 3D Lab 的环境光、补光和正面光强度调低，以改善板�
 
 随后案例页截图发现桌面卡片等高拉伸，导致较短的 Altium 卡片在摘要与证据之间出现大块空白。本轮改为卡片自然高度，并让证据区紧跟摘要；中英文桌面/移动专项回归和截图复核通过。`pnpm run check`、`pnpm run build`（8 页面，Astro 诊断为零）、`python3 tools/validate_site.py`（8 页面）、`pnpm run assets:check`、Python 单测（6 项）、完整 Playwright（218 passed、4 skipped）及 `git diff --check` 均通过。前后截图位于 `.github/pr-evidence/cases-{before,after}-*`。构建时 Release API 返回 403，使用已检查的 `v3.1.13` 回退。PR #352 经 Feng083 独立审批、必需检查通过后合入 `version/V0.0.1`（merge `6949e4b`）；合并后 Site Quality run `38795306114` 通过（218 passed、4 skipped）。生产未部署，真机未验证。
 
-继续核对 Formats 内容时发现计数语义容易混淆：11 个表格目标实际由 2 个稳定版主要目标与 9 个其他登记目标组成，原来的 “9 registered targets” 徽标与“已注册目标”表题容易使人误以为少了两行。本轮将徽标改为“其他目标”，表题明确总计 11 个，并新增中英文回归验证分类数和表格行数一致。`pnpm run build`（8 页面、Astro 无诊断）、`pnpm run check`、8 路由校验、模型资产校验、6 项 Python 单测、完整 Playwright（220 passed、4 skipped）及 `git diff --check` 均通过；聚焦回归在 Chromium 和 Chromium Mobile 通过。中英文前后截图见 `.github/pr-evidence/formats-{before,after}-*`。构建时 Release API 返回 403，使用已检查的 `v3.1.13` 回退。未部署生产或验证真机。
+继续核对 Formats 内容时发现计数语义容易混淆：11 个表格目标实际由 2 个稳定版主要目标与 9 个其他登记目标组成，原来的 “9 registered targets” 徽标与“已注册目标”表题容易使人误以为少了两行。PR #353 将徽标改为“其他目标”，表题明确总计 11 个，并新增中英文回归验证分类数和表格行数一致；经 Feng083 独立审批及必需检查通过后，合入 `version/V0.0.1`（merge `b2f1160`），合并后 Site Quality run `38798839827` 通过（220 passed、4 skipped）。构建时 Release API 返回 403，使用已检查的 `v3.1.13` 回退。未部署生产。
+
+随后键盘可访问性复核发现 Lab 独立布局的跳转链接只滚动到正文，焦点落回 `body`。中英文 `<main id="lab-main">` 增加 `tabindex="-1"` 并补回归；聚焦 Chromium/Chromium Mobile 两项及完整本地 Playwright（222 passed、4 skipped）、构建、Astro 检查、8 路由校验、模型资源校验、6 项 Python 单测和 `git diff --check` 均通过。未部署生产或验证真机。
 
 首页与真实工作台复用的截图曾暴露本机输出路径。PR #350 已生成单独的去路径截图资产，只清空路径输入框；中英文 Hero/工作台统一引用，替代文本和图注均向访客说明路径已隐藏。其余 UI 保持来源截图原样；PR 检查及合并后 Site Quality 均通过（214 passed、4 skipped）。未部署生产。
 
@@ -49,7 +51,7 @@ PR #347 将 3D Lab 的环境光、补光和正面光强度调低，以改善板�
 | WEB-01 / P1 | 修正首页双语品牌大小写、格式支持说明和下载引导。 | 双语文案/样式回归；构建、站点校验、完整 Playwright；PR #285/#286。 | 已完成并晋级 `master`；未部署生产 |
 | WEB-02 / P1 | 将已在 `master` 的首页唯一标题修复同步至正式站，并验证 8 路由及首页标题。 | 先核对远端备份/回滚与当前版本；仅在项目所有者明确批准此次生产部署后执行；逐路由检查 HTTP、标题数、语言互链、资源和浏览器冒烟。 | 源码已修复；部署脚本会校验构建产物、发布后的 8 路由和 SEO 元数据，并在验证失败时回滚。2026-10-15 只读复查：8 路由均 HTTP 200、canonical 正确，但 `/` 与 `/en/` 各有两个 `<title>`；生产部署仍需针对本次操作明确批准 |
 | WEB-03 / P2 | 测量真实手机和不同网络环境下的加载、缓存与交互性能，形成可复现记录。 | 收集设备/网络型号、浏览器、缓存状态和测试步骤；测首屏/模型加载、下载与交互，记录原始数据。 | 等待真实设备及可控网络；未验证 |
-| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | PR #291 补充其他包型入口；PR #292/#294 将首页、Lab、Formats、Cases 的 CTA 明确为打开版本发布页选择安装包；PR #311/#312 对齐首页实际四步工作流；PR #313/#315 修复并晋级 Cases 窄屏溢出；PR #320 修复 Formats 320px CTA 列溢出；PR #323/#325 修正并晋级窄屏标题；PR #331/#333 修复并晋级 Lab 控件重叠；PR #343 稳定布局回归；PR #345 修复 reduced-motion 下 Lab 标题/模型重叠；PR #349 调整时间回声深度；PR #350 清理公开截图中的本机路径；当前分支降低默认线框回声的视觉干扰。 | 持续进行；PR #349/#350 均已合入 `version/V0.0.1` 且合并后 CI 通过。当前模型回声调整已通过本地构建、资产/路由检查、部署工具测试、双语 1440/768/390px 截图及完整 Playwright（216 passed、4 skipped），待 PR 审查与 CI；生产未部署，真机未验证 |
+| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | PR #291 补充其他包型入口；PR #292/#294 将首页、Lab、Formats、Cases 的 CTA 明确为打开版本发布页选择安装包；PR #311/#312 对齐首页实际四步工作流；PR #313/#315 修复并晋级 Cases 窄屏溢出；PR #320 修复 Formats 320px CTA 列溢出；PR #323/#325 修正并晋级窄屏标题；PR #331/#333 修复并晋级 Lab 控件重叠；PR #343 稳定布局回归；PR #345 修复 reduced-motion 下 Lab 标题/模型重叠；PR #349/#351 调整时间回声；PR #350 清理公开截图中的本机路径；PR #352 收紧案例卡片证据间距；PR #353 澄清格式矩阵计数。 | 持续进行；PR #351/#352/#353 均经独立审查合入 `version/V0.0.1`，对应合并后 Site Quality 均通过（最新 run `38798839827`：220 passed、4 skipped）。当前 Lab 键盘跳转修复已通过本地构建、8 路由与模型资源校验、6 项 Python 测试及完整 Playwright（222 passed、4 skipped）；生产未部署，真机未验证 |
 | WEB-05 / P1 | 让格式矩阵每个目标链接到准确的专属验证依据，并准确描述自动测试和人工规程的覆盖边界。 | 11 行双语链接回归；构建、站点校验、资产检查、完整 Playwright；PR #287/#288 CI 和独立审查。 | 已完成并晋级 `master` |
 
 ## 关键风险与控制
