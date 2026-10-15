@@ -6,7 +6,7 @@
 
 ## 已验证
 
-- 2026-10-15，Lab 控件重叠布局回归在 CI 多次因视口切换或舞台 DOM 查询超时；该用例循环访问两种语言和四种视口，原先每次都会启动 3D 资源请求。现仅在此布局测试中拦截 `/assets/model/` 与 `/assets/vendor/` 请求，布局几何与全部碰撞断言保持不变。聚焦测试在 Chromium/Chromium Mobile 连续 10 轮共 20 项通过；完整 Playwright 为 202 passed、4 skipped。`pnpm build` 的 Astro 检查 0 errors/warnings/hints，`python3 tools/validate_site.py` 验证 8 页面，`python3 tools/check_model_assets.py` 通过（桌面 303 meshes / 278,784 triangles，移动 303 / 228,004），`git diff --check` 通过。Release API 返回 403，构建使用已检查的 `v3.1.13` 回退。未部署生产或验证真机。
+- 2026-10-15，Lab 控件重叠布局回归在 CI 多次因视口切换或舞台 DOM 查询超时；该用例循环访问两种语言和四种视口，原先每次都会启动 3D 资源请求。现仅在此布局测试中拦截 `/assets/model/` 与 `/assets/vendor/` 请求，布局几何与全部碰撞断言保持不变。聚焦测试在 Chromium/Chromium Mobile 连续 10 轮共 20 项通过；完整 Playwright 为 202 passed、4 skipped。`pnpm build` 的 Astro 检查 0 errors/warnings/hints，`python3 tools/validate_site.py` 验证 8 页面，`python3 tools/check_model_assets.py` 通过（桌面 303 meshes / 278,784 triangles，移动 303 / 228,004），`git diff --check` 通过。Release API 返回 403，构建使用已检查的 `v3.1.13` 回退。PR #343 经独立审批合入 `version/V0.0.1`（`28247b2`），合并后 run `38748776076` 通过（202 passed、4 skipped）。未部署生产或验证真机。
 
 - 2026-10-15，线上只读请求确认：`tools/check_production_assets.py` 对 8 个页面/资源均取得 HTTP 200；部署验收器原先使用默认 Python 请求头时首页 GET 收到 Cloudflare 403。同一 GET 使用已有资产检查标识 `EasyKiConverter-production-check` 后为 HTTP 200，并按预期报告首页存在两个 `<title>`。部署验收器现发送该标识，回归测试断言所有 8 路由均携带该请求头；`python3 -B -m unittest tests.test_deploy_production -v` 的 6 项测试及 `git diff --check` 通过。PR #337 经独立审查合入 `version/V0.0.1`（merge `6f87852`），PR #341 晋级 `master`（merge `d0c4b59`）；版本 run `38739192646` 和 master run `38745725230` 均通过（各 202 passed、4 skipped）。线上未部署，重复标题问题仍存在。
 
