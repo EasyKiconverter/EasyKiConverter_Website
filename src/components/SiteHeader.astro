@@ -51,11 +51,10 @@ const headerClass = {
       <a href={formatsHref} aria-current={isCurrent(formatsHref) ? "page" : undefined}>{en ? "Formats" : "格式矩阵"}</a>
       <a href={casesHref} aria-current={isCurrent(casesHref) ? "page" : undefined}>{en ? "Cases" : "转换案例"}</a>
       <a href={labHref} aria-current={isCurrent(labHref) ? "page" : undefined}>{en ? "3D Lab" : "3D 实验室"}</a>
-      <a href={alternateHref}>{en ? "中文" : "English"}</a>
     </>}
   </nav>
   <div class="header-actions">
-    {isHome && <a class="lang-link" href={alternateHref}>{en ? "中文" : "EN"}</a>}
+    <a class="lang-link" href={alternateHref} aria-label={en ? "Switch language to Chinese" : "切换到英文"}>{en ? "中文" : "EN"}</a>
     <a class="github-link" href={repositoryUrl} target="_blank" rel="noreferrer">GitHub <span>↗</span></a>
     <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-nav">{en ? "Menu" : "菜单"}</button>
   </div>
@@ -70,13 +69,11 @@ const headerClass = {
     <a href={homeLabHref}>{en ? "3D Lab" : "3D 实验室"}</a>
     <a href={homeCasesHref}>{en ? "Cases" : "转换案例"}</a>
     <a class="nav-link-external" href={docsUrl} target="_blank" rel="noreferrer">{en ? "Docs" : "文档"} <span aria-hidden="true">↗</span></a>
-      <a href={alternateHref}>{en ? "中文" : "English"}</a>
   </> : <>
     <a href={homeHref}>{en ? "Home" : "首页"}</a>
     <a href={formatsHref} aria-current={isCurrent(formatsHref) ? "page" : undefined}>{en ? "Formats" : "格式矩阵"}</a>
     <a href={casesHref} aria-current={isCurrent(casesHref) ? "page" : undefined}>{en ? "Cases" : "转换案例"}</a>
     <a href={labHref} aria-current={isCurrent(labHref) ? "page" : undefined}>{en ? "3D Lab" : "3D 实验室"}</a>
-    <a href={alternateHref}>{en ? "中文" : "English"}</a>
   </>}
   <a href={repositoryUrl} target="_blank" rel="noreferrer">GitHub ↗</a>
 </nav>
