@@ -1,4 +1,5 @@
 import type * as THREE from "three";
+import { temporalGhostDepth, type NarrativeTrack } from "./model-narrative";
 
 type MeshMessage = {
   type: "mesh" | "error";
@@ -2497,7 +2498,7 @@ export const setupModel = async (): Promise<void> => {
     triangles: number;
   }[] = [];
   const forecastBranchGhosts: { branch: number; group: THREE.Group; materials: THREE.MeshBasicMaterial[] }[] = [];
-  const narrativeTimeGhosts: { track: "past" | "present" | "future"; group: THREE.Group; materials: THREE.MeshBasicMaterial[] }[] = [];
+  const narrativeTimeGhosts: { track: NarrativeTrack; group: THREE.Group; materials: THREE.MeshBasicMaterial[] }[] = [];
   const forecastBranchBeams: { branch: number; line: THREE.Line<THREE.BufferGeometry, THREE.LineBasicMaterial> }[] = [];
   const forecastClaimFields: { branch: number; points: THREE.Points; material: THREE.PointsMaterial; phase: number }[] = [];
   let refreshForecastBranches = (): void => {};
@@ -4241,7 +4242,7 @@ export const setupModel = async (): Promise<void> => {
       timeGroup.position.set(
         drift,
         active ? Math.sin(now * 0.001 + phase * 1.7) * 0.015 * (1 - narrativePresent) : 0,
-        phase * -0.022,
+        temporalGhostDepth(track),
       );
       timeGroup.rotation.z = phase * (0.035 + narrativeFuture * 0.045);
       timeGroup.scale.setScalar(1 + phase * 0.025 + narrativeFuture * 0.025);
