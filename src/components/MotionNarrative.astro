@@ -2,7 +2,7 @@
 interface Props { lang: 'zh' | 'en'; }
 const { lang } = Astro.props;
 const en = lang === 'en';
-const appImage = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main.webp`;
+const appImage = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
 ---
 
 <section class="motion-narrative" id="story" data-motion-timeline aria-label={en ? 'From component data to design' : '从元件数据到电路设计'}>
@@ -222,7 +222,7 @@ const appImage = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-mai
     </article>
     <article class="motion-chapter motion-chapter-product" data-motion-chapter="product">
       <span>{en ? '03 — THE REAL WORKBENCH' : '03 — 真实工作台'}</span><h2>{en ? <>Then, back<br /><em>to your work.</em></> : <>最后回到<br /><em>真实工作台。</em></>}</h2>
-      <figure class="motion-app-window"><img src={appImage} alt={en ? 'The real EasyKiConverter Qt Quick desktop interface' : 'EasyKiConverter 真实 Qt Quick 桌面工作界面'} loading="lazy" /><figcaption>{en ? 'THE REAL QT QUICK APP' : '真实 Qt Quick 应用界面'}</figcaption></figure>
+      <figure class="motion-app-window"><img src={appImage} alt={en ? 'The real EasyKiConverter Qt Quick desktop interface; Local output path hidden' : 'EasyKiConverter 真实 Qt Quick 桌面工作界面；本机输出路径已隐藏'} loading="lazy" /><figcaption>{en ? 'THE REAL QT QUICK APP · LOCAL PATH HIDDEN' : '真实 Qt Quick 应用界面 · 本机路径已隐藏'}</figcaption></figure>
     </article>
     <div class="motion-destinations" aria-label={en ? 'Supported EDA destinations' : '支持的 EDA 目标'}><span>KiCad</span><i>↗</i><span>Altium</span><small>{en ? '04 — CONTINUE DESIGNING' : '04 — 继续你的设计'}</small></div>
   </div>
