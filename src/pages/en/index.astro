@@ -18,10 +18,10 @@ const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
 const chineseUrl = siteBase.href;
 const englishUrl = new URL("en/", siteBase).href;
 const socialImageUrl = new URL(
-  "assets/showcase/easykiconverter-main.webp",
+  "assets/showcase/easykiconverter-main-public.webp",
   siteBase,
 ).href;
-const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main.webp`;
+const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
 const registeredFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
 const platformAvailability = getPlatformAvailability("en");
@@ -108,7 +108,7 @@ const platformAvailability = getPlatformAvailability("en");
             <figcaption><span>EasyKiConverter</span><span>COMPONENT LIBRARY</span></figcaption>
             <img
               src={appImageUrl}
-              alt="EasyKiConverter desktop app organizing and converting an electronic component library"
+              alt="The real EasyKiConverter Qt Quick interface showing component entry, BOM import and export settings; Local output path hidden"
               fetchpriority="high"
             />
           </figure>
@@ -244,8 +244,8 @@ const platformAvailability = getPlatformAvailability("en");
             <i></i>
           </div>
           <img
-            src="../assets/showcase/easykiconverter-main.webp"
-              alt="The actual EasyKiConverter Qt Quick main window with component entry, BOM import and export settings"
+            src={appImageUrl}
+            alt="The actual EasyKiConverter Qt Quick main window with component entry, BOM import and export settings; Local output path hidden"
             loading="lazy"
           />
           <ShowcaseCaption lang="en" />

@@ -18,10 +18,10 @@ const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
 const chineseUrl = siteBase.href;
 const englishUrl = new URL("en/", siteBase).href;
 const socialImageUrl = new URL(
-  "assets/showcase/easykiconverter-main.webp",
+  "assets/showcase/easykiconverter-main-public.webp",
   siteBase,
 ).href;
-const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main.webp`;
+const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
 const registeredFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
 const localizeAssetLabel = (label: string) => label
@@ -109,7 +109,7 @@ const platformAvailability = getPlatformAvailability("zh");
             <figcaption><span>EasyKiConverter</span><span>元件库</span></figcaption>
             <img
               src={appImageUrl}
-              alt="EasyKiConverter 桌面应用正在整理并转换电子元件库"
+              alt="EasyKiConverter 实际 Qt Quick 界面，显示元件输入、BOM 导入与导出设置；本机输出路径已隐藏"
               fetchpriority="high"
             />
           </figure>
@@ -239,8 +239,8 @@ const platformAvailability = getPlatformAvailability("zh");
             <i></i>
           </div>
           <img
-            src="assets/showcase/easykiconverter-main.webp"
-            alt="EasyKiConverter 实际 Qt Quick 主界面，包含添加元件、BOM 和导出设置"
+            src={appImageUrl}
+            alt="EasyKiConverter 实际 Qt Quick 主界面，包含添加元件、BOM 和导出设置；本机输出路径已隐藏"
             loading="lazy"
           />
           <ShowcaseCaption lang="zh" />

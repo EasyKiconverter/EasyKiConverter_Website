@@ -53,6 +53,41 @@ test('release refresh stays same-origin and keeps the static fallback path', asy
   await expect(page.locator('[data-release-version]').first()).toHaveText('v3.1.13');
 });
 
+test('bilingual product screenshots use one public asset and disclose the hidden local path', async ({ page }) => {
+  for (const [path, disclosure] of [
+    ['/', '本机输出路径已隐藏'],
+    ['/en/', 'Local output path hidden'],
+  ]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const heroImage = page.locator('.hero-product-window img');
+    const showcaseImage = page.locator('.app-window > img');
+    const source = await heroImage.getAttribute('src');
+    expect(source).toContain('easykiconverter-main-public.webp');
+    await expect(showcaseImage).toHaveAttribute('src', source ?? '');
+    await expect(heroImage).toHaveAttribute('alt', new RegExp(disclosure));
+    await expect(page.locator('.app-window .showcase-source')).toContainText(disclosure);
+    for (const image of [heroImage, showcaseImage]) {
+      const dimensions = await image.evaluate((element) => {
+        const image = element as HTMLImageElement;
+        return { width: image.naturalWidth, height: image.naturalHeight };
+      });
+      expect(dimensions.width).toBeGreaterThan(0);
+      expect(dimensions.height).toBeGreaterThan(0);
+    }
+  }
+});
+
+test('all social previews use the sanitized product screenshot', async ({ page }) => {
+  for (const path of ['/', '/en/', '/lab/', '/en/lab/', '/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /easykiconverter-main-public\.webp/);
+    if (path.includes('/lab/')) {
+      await expect(page.locator('.motion-app-window img')).toHaveAttribute('src', /easykiconverter-main-public\.webp/);
+      await expect(page.locator('.motion-app-window figcaption')).toContainText(/LOCAL PATH HIDDEN|本机路径已隐藏/);
+    }
+  }
+});
+
 test('bilingual footers keep each navigation entry readable on one line', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
@@ -851,14 +886,14 @@ test('bilingual shared text colors meet WCAG AA on light brand surfaces', async 
 test('bilingual workbench captions preserve the same product evidence', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM/);
-  await expect(page.locator('.showcase-source')).toHaveText('截取自桌面软件实际运行界面');
+  await expect(page.locator('.showcase-source')).toHaveText('截取自桌面软件实际运行界面 · 本机输出路径已隐藏');
   await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
   await expect(page.locator('.showcase-proof-items')).toContainText('添加元件');
   await expect(page.locator('.showcase-proof-items')).toContainText('导入 BOM');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM import and export settings/);
-  await expect(page.locator('.showcase-source')).toHaveText('Captured from the running desktop app');
+  await expect(page.locator('.showcase-source')).toHaveText('Captured from the running desktop app · Local output path hidden');
   await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
   await expect(page.locator('.showcase-proof-items')).toContainText('Add components');
   await expect(page.locator('.showcase-proof-items')).toContainText('Import BOM');

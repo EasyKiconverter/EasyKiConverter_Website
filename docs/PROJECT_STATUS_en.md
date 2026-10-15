@@ -37,6 +37,8 @@ PR #347 reduces ambient, fill, and front-light intensity to improve depth across
 
 Further investigation found that the default past-time track clones 18 GLB meshes as wireframes in front of the current model, causing the white lines in prior screenshots to obscure board detail. The temporal depth now places past echoes behind the current model and future echoes in front, preserving wireframe intensity and animation; a depth-direction regression was added. Local desktop, mobile, and reduced-motion browser runs show the full 303-mesh GLB without console errors or horizontal overflow. Build, eight-route validation, asset checks, and Playwright (210 passed, 4 skipped) passed. This P1 remains partially complete pending further material-presentation review; no production deployment or real-device test was performed.
 
+The screenshot shared by the homepage Hero and real-workbench showcase exposed a local output path. A separate public asset now clears only that field; both language pages use it, and localized alt text/captions disclose that the path is hidden. Other UI remains from the source screenshot. PR/CI validation is pending; no production deployment.
+
 | ID / Priority | Objective, scope, and deliverable | Dependencies, steps, and acceptance | Status |
 | --- | --- | --- | --- |
 | WEB-01 / P1 | Correct bilingual brand casing, format-support guidance, and download direction on the homepage. | Bilingual copy/style regression; build, site validation, full Playwright suite; PRs #285/#286. | Complete and promoted to `master`; not deployed |
