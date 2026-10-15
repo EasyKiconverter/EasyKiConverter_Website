@@ -129,6 +129,77 @@ test('mobile navigation opens, closes, and restores focus', async ({ page }) => 
   await expect(menu).toBeFocused();
 });
 
+test('bilingual homepage header stays within the layout through the tablet breakpoint', async ({ page }) => {
+  for (const width of [850, 851, 900, 920, 921, 980, 981, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ['/', '/en/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const header = page.locator('.site-header');
+      const collapsed = width <= 980;
+      if (collapsed) {
+        await expect(header.locator('.nav-links')).toBeHidden();
+        await expect(header.locator('.menu-button')).toBeVisible();
+      } else {
+        await expect(header.locator('.nav-links')).toBeVisible();
+        await expect(header.locator('.menu-button')).toBeHidden();
+      }
+
+      const layout = await header.evaluate((element) => {
+        const headerBounds = element.getBoundingClientRect();
+        const styles = getComputedStyle(element);
+        const leftLimit = headerBounds.left + Number.parseFloat(styles.paddingLeft);
+        const rightLimit = headerBounds.right - Number.parseFloat(styles.paddingRight);
+        const items = [...element.querySelectorAll('.brand, .nav-links, .lang-link, .github-link, .menu-button')]
+          .map((item) => {
+            const bounds = item.getBoundingClientRect();
+            return { left: bounds.left, right: bounds.right, width: bounds.width, display: getComputedStyle(item).display };
+          })
+          .filter((item) => item.display !== 'none' && item.width > 0)
+          .sort((first, second) => first.left - second.left);
+        return { leftLimit, rightLimit, items };
+      });
+      layout.items.forEach((item, index) => {
+        expect(item.left, `${path} at ${width}px: header item starts outside the shell`).toBeGreaterThanOrEqual(layout.leftLimit - 1);
+        expect(item.right, `${path} at ${width}px: header item ends outside the shell`).toBeLessThanOrEqual(layout.rightLimit + 1);
+        if (index > 0) {
+          expect(item.left, `${path} at ${width}px: header items overlap`).toBeGreaterThanOrEqual(layout.items[index - 1].right - 1);
+        }
+      });
+
+      if (width >= 851 && width <= 980) {
+        await expect(page.locator('.hero')).toHaveCSS('display', 'grid');
+        const menu = header.locator('.menu-button');
+        await menu.click();
+        await expect(page.locator('.mobile-nav')).toHaveClass(/is-open/);
+        await expect(page.locator('.mobile-nav')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(menu).toBeFocused();
+      }
+    }
+  }
+});
+
+test('homepage navigation stays available without JavaScript at the tablet header breakpoint', async ({ browser }) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: { width: 390, height: 900 },
+  });
+  const page = await context.newPage();
+
+  for (const width of [390, 851, 920, 980]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ['/', '/en/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const mobileNav = page.locator('.mobile-nav');
+      await expect(mobileNav).toBeVisible();
+      await expect(mobileNav.locator('a').first()).toHaveAttribute('href', '#story');
+      await expect(page.locator('.header-actions .lang-link')).toBeVisible();
+    }
+  }
+
+  await context.close();
+});
+
 test('homepage skip links are localized and move keyboard focus to main content', async ({ page }) => {
   for (const [path, label] of [['/', '跳转到正文'], ['/en/', 'Skip to content']]) {
     await page.goto(path, { waitUntil: 'networkidle' });
