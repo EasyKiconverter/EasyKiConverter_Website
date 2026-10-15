@@ -1064,17 +1064,17 @@ export const setupModel = async (): Promise<void> => {
   const synapticMemoryGroup = new THREE.Group();
   synapticMemoryGroup.renderOrder = 7.5;
   scene.add(synapticMemoryGroup);
-  scene.add(new THREE.HemisphereLight(0xfff7ed, 0x53655e, 0.92));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 1.55);
+  scene.add(new THREE.HemisphereLight(0xfff7ed, 0x53655e, 0.62));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1.35);
   keyLight.position.set(-2, 3, 4);
   scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0xcbd9ff, 0.56);
+  const fillLight = new THREE.DirectionalLight(0xcbd9ff, 0.34);
   fillLight.position.set(3, 0.5, -2);
   scene.add(fillLight);
-  const frontLight = new THREE.DirectionalLight(0xfff7ed, 0.46);
+  const frontLight = new THREE.DirectionalLight(0xfff7ed, 0.28);
   frontLight.position.set(0, 1.5, 5);
   scene.add(frontLight);
-  const rimLight = new THREE.DirectionalLight(0x9fe0cb, 0.58);
+  const rimLight = new THREE.DirectionalLight(0x9fe0cb, 0.42);
   rimLight.position.set(-3, -1, -4);
   scene.add(rimLight);
 
