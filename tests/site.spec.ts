@@ -1500,6 +1500,30 @@ test('Lab explains that surface detail continues after the GLB is ready', async 
   }
 });
 
+test('Lab loading state is bilingual, respects reduced motion, and ends when ready', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const path of ['/lab/', '/en/lab/']) {
+    let continueAsset!: () => void;
+    const assetGate = new Promise<void>((resolve) => { continueAsset = resolve; });
+    await page.route('**/assets/model/*.glb', async (route) => {
+      await assetGate;
+      await route.continue();
+    });
+
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const stage = page.locator('[data-model-stage]');
+    const loading = stage.locator('.model-loading-state');
+    await expect(loading).toBeVisible();
+    await expect(loading).toContainText(path.startsWith('/en/') ? 'Preparing the real 3D model' : '正在准备真实 3D 模型');
+    await expect(loading.locator('.model-loading-orbit')).toHaveCSS('animation-name', 'none');
+    continueAsset();
+    await expect(stage).toHaveClass(/model-loaded/, { timeout: 20_000 });
+    await expect(loading).toBeHidden();
+    await page.unroute('**/assets/model/*.glb');
+  }
+});
+
 test('Lab keeps model metadata, view controls, caption, and slice panel from overlapping', async ({ page }) => {
   await page.route('**/assets/model/**', (route) => route.abort());
   await page.route('**/assets/vendor/**', (route) => route.abort());
