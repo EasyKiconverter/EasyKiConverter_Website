@@ -1206,6 +1206,23 @@ test('English homepage keeps product section labels concrete', async ({ page }) 
   await expect(page.locator('#workflow .kicker')).toHaveText('A SMALL WORKFLOW');
 });
 
+test('English pages preserve copy across visual line breaks', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const path of ['/en/', '/en/formats/', '/en/cases/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const mismatches = await page.locator('main h1, main h2, main h3, main h4').evaluateAll((headings) => headings
+      .map((heading) => ({
+        content: heading.textContent?.replace(/\s+/g, ' ').trim(),
+        visual: heading.innerText?.replace(/\s+/g, ' ').trim(),
+      }))
+      .filter(({ content, visual }) => content !== visual));
+    expect(mismatches, `${path} heading text`).toEqual([]);
+  }
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#features-title')).toHaveText('Make the tedious parts a little easier.');
+});
+
 test('bilingual workflow copy explains the same four concrete steps', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('#workflow .workflow-copy > p').nth(1)).toHaveText(

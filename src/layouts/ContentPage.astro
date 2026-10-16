@@ -40,7 +40,7 @@ const isCasesPage = pageUrl.pathname.includes("/cases/");
         <p class="kicker">{en ? (isCasesPage ? "NEXT, VERIFY" : "CHOOSE A TARGET") : (isCasesPage ? "下一步，验证" : "选定一个目标")}</p>
         <h2 id="content-page-cta-title">
           {en
-            ? (isCasesPage ? <>Found a path?<br /><em>Make it part of your work.</em></> : <>Choose a target.<br /><em>Keep the evidence close.</em></>)
+            ? (isCasesPage ? <>Found a path?{" "}<br /><em>Make it part of your work.</em></> : <>Choose a target.{" "}<br /><em>Keep the evidence close.</em></>)
             : (isCasesPage ? <>找到一条路径？<br /><em>带回你的工作流。</em></> : <>选定一个目标。<br /><em>把证据留在手边。</em></>)}
         </h2>
         <p>
