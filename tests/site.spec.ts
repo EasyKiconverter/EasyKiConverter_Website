@@ -1571,6 +1571,9 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
     await expect(stage.locator('#model-canvas')).toHaveAttribute('inert', '');
     await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-hidden', 'true');
     await expect(stage.locator('.artifact-caption')).toContainText(/mesh|网格/i);
+    await expect(stage.locator('.motion-model-note')).toBeHidden();
+    await expect(stage.locator('.model-detail-status')).toBeHidden();
+    await expect(stage.locator('.neural-memory-readout')).toBeHidden();
     const model = stage.locator('[data-artifact-view="model"]');
     await model.dispatchEvent('click');
     await expect(stage).toHaveAttribute('data-artifact-view', 'model');
