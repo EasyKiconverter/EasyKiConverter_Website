@@ -1987,7 +1987,7 @@ test('Lab loading guidance avoids repeating the same delivery facts', async ({ p
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.lab-facts')).toHaveCount(0);
-    await expect(page.locator('.lab-intro')).toContainText(/首页不加载 CAD\/WASM|CAD\/WASM stays off the homepage/);
+    await expect(page.locator('.lab-warning')).toContainText(/首页不加载 CAD\/WASM|The homepage skips CAD\/WASM/);
     await expect(page.locator('.lab-warning')).toContainText(/GLB 优先|GLB first/);
     await expect(page.locator('.lab-warning')).toContainText(/STEP\/WASM/);
   }
@@ -2007,15 +2007,49 @@ test('Lab loading guidance separates delivery sizes from fallback copy', async (
 test('Lab introductions explain the real geometry story in both languages', async ({ page }) => {
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.lab-intro')).toContainText('真实 STEP 几何');
-  await expect(page.locator('.lab-intro')).toContainText('GLB 交付模型');
+  await expect(page.locator('.lab-intro')).toContainText('真实 STEP 几何生成的 GLB');
   await expect(page.locator('.lab-intro')).toContainText('网格星图');
-  await expect(page.locator('.lab-intro')).toContainText('剖面断层');
+  await expect(page.locator('.lab-intro')).toContainText('剖面');
   await expect(page.locator('.lab-intro')).toContainText('拓扑视图');
+  await expect(page.locator('.lab-warning')).toContainText('模型就绪后开放实验控件');
+  await expect(page.locator('.lab-warning')).toContainText('首页不加载 CAD/WASM');
 
   await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-intro')).toContainText('GLB');
-  await expect(page.locator('.lab-intro')).toContainText('real STEP geometry');
-  await expect(page.locator('.lab-intro')).toContainText('mesh, section, and topology views');
+  await expect(page.locator('.lab-intro')).toContainText('STEP-derived GLB through mesh atlas, section, and topology views');
+  await expect(page.locator('.lab-warning')).toContainText('controls unlock when the model is ready');
+  await expect(page.locator('.lab-warning')).toContainText('The homepage skips CAD/WASM');
+
+  for (const [path, english] of [['/lab/', false], ['/en/lab/', true]] as const) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    for (const width of [390, 360, 320]) {
+      await page.setViewportSize({ width, height: 844 });
+      const lines = await page.locator('.lab-intro > p:not(.kicker)').evaluate((element) => {
+        const lines = new Map<number, string>();
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let node: Node | null;
+        while ((node = walker.nextNode())) {
+          const value = node.nodeValue || '';
+          let offset = 0;
+          for (const character of value) {
+            if (!/\s/.test(character)) {
+              const range = document.createRange();
+              range.setStart(node, offset);
+              range.setEnd(node, offset + character.length);
+              const top = Math.round(range.getBoundingClientRect().top);
+              lines.set(top, (lines.get(top) || '') + character);
+            }
+            offset += character.length;
+          }
+        }
+        return [...lines.values()];
+      });
+      const introHeight = await page.locator('.lab-intro > p:not(.kicker)').evaluate((element) => element.getBoundingClientRect().height);
+      expect(introHeight, `${path} ${width}px introduction should stay compact`).toBeLessThanOrEqual(80);
+      if (!english) {
+        expect(lines.some((line) => /^[\p{Script=Han}。！？、，；：]$/u.test(line)), `${path} ${width}px intro should not strand a Han character`).toBe(false);
+      }
+    }
+  }
 });
 
 test('Lab pages clearly label the versioned release downloads page', async ({ page }) => {
