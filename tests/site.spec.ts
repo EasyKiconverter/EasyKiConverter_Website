@@ -1204,6 +1204,14 @@ test('English homepage keeps product section labels concrete', async ({ page }) 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.product-showcase .kicker')).toHaveText('THE REAL WORKBENCH');
   await expect(page.locator('#workflow .kicker')).toHaveText('A SMALL WORKFLOW');
+  await expect(page.locator('.feature-card-mint p')).toHaveText(
+    'BOM import, multi-threading and remembered settings keep large jobs calm.',
+  );
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.feature-card-mint p')).toHaveText(
+    'BOM 导入、多线程处理与自动记住设置，让大批量任务更从容。',
+  );
 });
 
 test('English pages preserve copy across visual line breaks', async ({ page }) => {

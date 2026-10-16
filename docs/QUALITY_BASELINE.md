@@ -6,6 +6,7 @@
 
 ## 已验证
 
+- 2026-10-17：PR #376 修复英文首页、Formats/Cases CTA 与 Lab 叙事标题的视觉换行文本边界；Feng083 独立审评后合入 `version/V0.0.1`（merge `104192a`）。PR Site Quality `38950942250`（238 passed、4 skipped）、Dependency Review `38950942248` 与合并后 Site Quality `38951646288`（238 passed、4 skipped）均通过。线上只读 GET 确认首页重复 `<title>` 的问题仍存在；未晋级 `master` 或部署生产。
 - 2026-10-17：PR #375 为 3D Lab 增加双语模型加载状态；模型就绪或进入备用状态后隐藏，且 reduced-motion 下不播放动画。Feng083 独立审评后合入 `version/V0.0.1`（merge `3e25314`）；PR Site Quality `38946567289` 与合并后 run `38947425669` 均通过（236 passed、4 skipped）。线上只读 GET 于 2026-10-17 确认中英文首页 HTTP 200，但各有两个 `<title>`，`Last-Modified` 为 2026-10-13 00:20 UTC；未部署生产、未晋级 `master`、未验证真机。
 - 2026-10-17：PR #373 将首页“9 个已注册目标”修正为“9 个其他目标”，英文同步改为“9 additional targets”，与格式矩阵将 9 个非主要目标称为“其他目标”的术语一致；重命名展示计数变量并增加精确双语浏览器断言。Feng083 独立审评后合入 `version/V0.0.1`（merge `8312b40`）。PR Site Quality `38940084218`（234 passed、4 skipped）、Dependency Review `38940084553` 和合并后 Site Quality `38940776739`（234 passed、4 skipped）均通过。本地 `pnpm run check`、`python3 tools/validate_site.py`、`pnpm run assets:check`、完整 `pnpm run test:browser`（234 passed、4 skipped）和 `git diff --check` 通过；`pnpm run build` 通过，Release API 403 限流时使用仓库内回退数据。未晋级 `master`、未部署生产或验证真机。
 - 2026-10-17：PR #371 将 `version/V0.0.1` 晋级到 `master`（merge `e976a69`）；PR Site Quality、Dependency Review、Feng083 独立审批均通过。master 合并后 Site Quality `38933742489` 全绿，浏览器测试 234 passed、4 skipped；构建、页面校验、烟测和 CSS/空白检查亦通过。`version/V0.0.1`=`da2e25b`，`master`=`e976a69`。本次仅晋级源码，未运行生产部署；真机与网络性能仍未验证。
