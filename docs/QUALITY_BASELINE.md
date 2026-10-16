@@ -6,6 +6,7 @@
 
 ## 已验证
 
+- 2026-10-16：PR #367 修复 Lab Tomogram、Oracle、Trinity 与 Morph 画布上的通用标签遮挡，并把 Tomogram 手机操作整理为可换行工具栏；缩略预览和视图切换器重新排布，未移除控件。Feng083 独立审评后合入 `version/V0.0.1`（merge `a2b6c61`）；Dependency Review、PR Site Quality 和合并后 Site Quality `38924049172` 均通过（234 passed、4 skipped）。调整测试隔离后的四项相关桌面/手机用例通过；构建、8 页校验、模型资产检查及 `git diff --check` 通过。双语 390px 截图：`.github/pr-evidence/lab-{tomogram,morph}-layout-after-{en,zh}-390.png`。未晋级 `master`、未部署生产或验证真机。
 - 2026-10-16：PR #364 同步 Lab 移动端模型留白修复（#363）的状态/质量记录，合入 `version/V0.0.1`（merge `846ade5`）；PR 与合并后 Site Quality、Dependency Review 均通过。
 - 2026-10-16：交互视图截图复核发现 Lab Atlas 的画布标题/统计与通用状态标签碰撞。PR #365 隐藏 Atlas 下重复状态并将轴向标注下移；增加中英文浏览器回归及 390px 中英文、1440px 英文截图。Feng083 独立审评后合入 `version/V0.0.1`（merge `7cc83d3`）；PR Site Quality `38915586537`、Dependency Review `38915586789`、合并后 Site Quality `38916312579` 均通过（232 passed、4 skipped）。本地 Astro 检查、构建、完整 Playwright（232 passed、4 skipped）、8 页面校验、模型资产检查、6 项 Python 单测与 `git diff --check` 均通过。截图：`.github/pr-evidence/lab-atlas-metadata-after-*`。未晋级 `master`、未部署生产或验证真机。
 - 2026-10-16：PR #361 修复 Lab 320px 窄屏下长模型状态读数与视图切换器碰撞，并使 reduced-motion 切换器保持单行横向滚动；双语 320/360px 长文本回归覆盖普通/减少动效布局。Feng083 独立审评后合入 `version/V0.0.1`（merge `c131e1b`）。PR Site Quality `38826221413`、Dependency Review `38826221350`、合并后 Site Quality `38826667752` 均通过；本地完整 Playwright 232 passed、4 skipped，构建、Astro 检查、8 页面校验、模型资产检查与 `git diff --check` 通过。截图：`.github/pr-evidence/lab-readout-clearance-after-{zh,en}-320.png`。未晋级 `master`、未部署生产或验证真机。
