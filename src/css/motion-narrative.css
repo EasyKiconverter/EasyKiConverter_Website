@@ -498,3 +498,58 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
     white-space: nowrap;
   }
 }
+
+/* Keep mobile Lab controls above, not on top of, the fitted model geometry. */
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .motion-model[data-artifact-view="model"] .neural-memory-readout {
+    top: 0;
+  }
+
+  .motion-model[data-artifact-view="model"] .artifact-switcher {
+    top: calc(13% + 18px);
+  }
+}
+
+@media (max-width: 360px) and (prefers-reduced-motion: no-preference) {
+  .motion-model[data-artifact-view="model"] .neural-memory-readout {
+    max-width: 34%;
+    padding: 3px 4px;
+    font-size: 7px;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* Short phones need a taller stage so geometry has room between controls. */
+@media (max-width: 760px) and (max-height: 700px) and (prefers-reduced-motion: no-preference) {
+  .motion-chapter {
+    bottom: auto;
+  }
+
+  .motion-chapter h2 {
+    margin: 10px 0;
+    font-size: clamp(32px, 9vw, 36px);
+  }
+
+  .motion-chapter p {
+    margin: 8px auto 0;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .motion-artifacts {
+    gap: 4px;
+    margin-top: 10px;
+  }
+
+  .motion-artifacts b {
+    padding: 6px 8px;
+    font-size: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .motion-model {
+    top: 75%;
+    height: 50svh;
+    min-height: 320px;
+  }
+}
