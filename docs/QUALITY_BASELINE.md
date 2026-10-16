@@ -2,10 +2,12 @@
 
 [English](QUALITY_BASELINE_en.md)
 
-记录日期：2026-10-16。本文只记录可由当前仓库、CI 或明确的线上检查复现的事实，不把域名部署或真机性能推测为已完成。
+记录日期：2026-10-17。本文只记录可由当前仓库、CI 或明确的线上检查复现的事实，不把域名部署或真机性能推测为已完成。
 
 ## 已验证
 
+- 2026-10-17：PR #369 将首页“真实工作台”截图从重复的主界面改为导出设置/进度/结果，更新双语叙述和替代文本；公开派生图遮蔽本机输出路径并裁去水印统计区，资产再生成说明同步双语。Feng083 独立审评后合入 `version/V0.0.1`（merge `634034a`）；PR Site Quality `38929242710`、Dependency Review `38929242474` 与合并后 Site Quality `38930057204` 均通过（234 passed、4 skipped）。本地 `pnpm run build`、完整 Playwright（234 passed、4 skipped）、8 页校验、模型资产检查、6 项 Python 单测及 `git diff --check` 通过；Release API 限流，构建使用已检查的 `v3.1.13` 回退。双语桌面 1440px/手机 390px 截图：`.github/pr-evidence/homepage-workflow-showcase-after-{zh,en}-{1440,390}.png`。未晋级 `master`、未部署生产或验证真机。
+- 2026-10-16：PR #368 更新 PR #367 的双语项目状态与质量基线记录，合入 `version/V0.0.1`（merge `f1b7803`）；独立审评、Dependency Review、PR Site Quality 与合并后 Site Quality 均通过。
 - 2026-10-16：PR #367 修复 Lab Tomogram、Oracle、Trinity 与 Morph 画布上的通用标签遮挡，并把 Tomogram 手机操作整理为可换行工具栏；缩略预览和视图切换器重新排布，未移除控件。Feng083 独立审评后合入 `version/V0.0.1`（merge `a2b6c61`）；Dependency Review、PR Site Quality 和合并后 Site Quality `38924049172` 均通过（234 passed、4 skipped）。调整测试隔离后的四项相关桌面/手机用例通过；构建、8 页校验、模型资产检查及 `git diff --check` 通过。双语 390px 截图：`.github/pr-evidence/lab-{tomogram,morph}-layout-after-{en,zh}-390.png`。未晋级 `master`、未部署生产或验证真机。
 - 2026-10-16：PR #364 同步 Lab 移动端模型留白修复（#363）的状态/质量记录，合入 `version/V0.0.1`（merge `846ade5`）；PR 与合并后 Site Quality、Dependency Review 均通过。
 - 2026-10-16：交互视图截图复核发现 Lab Atlas 的画布标题/统计与通用状态标签碰撞。PR #365 隐藏 Atlas 下重复状态并将轴向标注下移；增加中英文浏览器回归及 390px 中英文、1440px 英文截图。Feng083 独立审评后合入 `version/V0.0.1`（merge `7cc83d3`）；PR Site Quality `38915586537`、Dependency Review `38915586789`、合并后 Site Quality `38916312579` 均通过（232 passed、4 skipped）。本地 Astro 检查、构建、完整 Playwright（232 passed、4 skipped）、8 页面校验、模型资产检查、6 项 Python 单测与 `git diff --check` 均通过。截图：`.github/pr-evidence/lab-atlas-metadata-after-*`。未晋级 `master`、未部署生产或验证真机。
