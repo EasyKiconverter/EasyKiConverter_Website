@@ -57,13 +57,24 @@ test('homepage release CTA stays on one line at 320px in both languages', async 
   await page.setViewportSize({ width: 320, height: 844 });
   for (const path of pages) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const link = page.locator('.hero-actions [data-release-link]');
-    const labelLines = await link.evaluate((element) => {
+    for (const selector of ['.hero-actions [data-release-link]', '.download-actions [data-release-link]']) {
+      const link = page.locator(selector);
+      const labelLines = await link.evaluate((element) => {
+        const range = document.createRange();
+        range.selectNode(element.firstChild!);
+        return range.getClientRects().length;
+      });
+      expect(labelLines, `${path} ${selector} label line count`).toBe(1);
+    }
+
+    const titleLines = await page.locator('#download-title').evaluate((element) => {
       const range = document.createRange();
-      range.selectNode(element.firstChild!);
-      return range.getClientRects().length;
+      range.selectNodeContents(element);
+      return new Set([...range.getClientRects()]
+        .filter((rect) => rect.width > 0)
+        .map((rect) => Math.round(rect.top))).size;
     });
-    expect(labelLines, `${path} release CTA line count`).toBe(1);
+    expect(titleLines, `${path} download heading line count`).toBeLessThanOrEqual(3);
   }
 });
 
@@ -1269,11 +1280,12 @@ test('homepage preserves Qt brand casing and concise release guidance in both la
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.showcase-proof-label')).toHaveText('真实 Qt Quick 界面');
   await expect(page.locator('#formats p')).toContainText('其他目标格式的具体支持范围，请查看对应版本的发布说明和格式矩阵。');
-  await expect(page.locator('#download small')).toContainText('查看对应版本发布说明并核对 SHA256');
+  await expect(page.locator('#download small')).toContainText('安装前请阅读发布说明并核对 SHA256');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.showcase-proof-label')).toHaveText('REAL Qt Quick UI');
   await expect(page.locator('#formats p')).toContainText('For other targets, use the matching Release and format matrix');
+  await expect(page.locator('#download small')).toContainText('Review its notes and verify SHA256 before installing');
 });
 
 test('Chinese homepage and inner-page titles avoid orphaned characters on mobile', async ({ page }) => {
