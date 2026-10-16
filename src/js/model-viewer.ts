@@ -1,4 +1,5 @@
 import type * as THREE from "three";
+import { temporalGhostDepth, temporalGhostOpacity, type NarrativeTrack } from "./model-narrative";
 
 type MeshMessage = {
   type: "mesh" | "error";
@@ -1064,17 +1065,17 @@ export const setupModel = async (): Promise<void> => {
   const synapticMemoryGroup = new THREE.Group();
   synapticMemoryGroup.renderOrder = 7.5;
   scene.add(synapticMemoryGroup);
-  scene.add(new THREE.HemisphereLight(0xfff7ed, 0x53655e, 0.92));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 1.55);
+  scene.add(new THREE.HemisphereLight(0xfff7ed, 0x53655e, 0.62));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1.35);
   keyLight.position.set(-2, 3, 4);
   scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0xcbd9ff, 0.56);
+  const fillLight = new THREE.DirectionalLight(0xcbd9ff, 0.34);
   fillLight.position.set(3, 0.5, -2);
   scene.add(fillLight);
-  const frontLight = new THREE.DirectionalLight(0xfff7ed, 0.46);
+  const frontLight = new THREE.DirectionalLight(0xfff7ed, 0.28);
   frontLight.position.set(0, 1.5, 5);
   scene.add(frontLight);
-  const rimLight = new THREE.DirectionalLight(0x9fe0cb, 0.58);
+  const rimLight = new THREE.DirectionalLight(0x9fe0cb, 0.42);
   rimLight.position.set(-3, -1, -4);
   scene.add(rimLight);
 
@@ -2497,7 +2498,7 @@ export const setupModel = async (): Promise<void> => {
     triangles: number;
   }[] = [];
   const forecastBranchGhosts: { branch: number; group: THREE.Group; materials: THREE.MeshBasicMaterial[] }[] = [];
-  const narrativeTimeGhosts: { track: "past" | "present" | "future"; group: THREE.Group; materials: THREE.MeshBasicMaterial[] }[] = [];
+  const narrativeTimeGhosts: { track: NarrativeTrack; group: THREE.Group; materials: THREE.MeshBasicMaterial[] }[] = [];
   const forecastBranchBeams: { branch: number; line: THREE.Line<THREE.BufferGeometry, THREE.LineBasicMaterial> }[] = [];
   const forecastClaimFields: { branch: number; points: THREE.Points; material: THREE.PointsMaterial; phase: number }[] = [];
   let refreshForecastBranches = (): void => {};
@@ -2676,7 +2677,7 @@ export const setupModel = async (): Promise<void> => {
           transparent: true,
           opacity: 0,
           depthWrite: false,
-          blending: THREE.AdditiveBlending,
+          blending: THREE.NormalBlending,
         });
         const ghost = new THREE.Mesh(mesh.geometry.clone(), material);
         ghost.position.copy(mesh.position);
@@ -4231,17 +4232,13 @@ export const setupModel = async (): Promise<void> => {
     }
     narrativeTimeGhosts.forEach(({ track, group: timeGroup, materials }) => {
       const phase = track === "past" ? -1 : track === "future" ? 1 : 0;
-      const timeOpacity = track === "past"
-        ? narrativePast * 0.26
-        : track === "future"
-          ? narrativeFuture * 0.3
-          : narrativePresent * 0.055;
+      const timeOpacity = temporalGhostOpacity(track, progress);
       const active = !state.reducedMotion && timeOpacity > 0.001;
       const drift = phase * (0.13 + narrativeFuture * 0.045);
       timeGroup.position.set(
         drift,
         active ? Math.sin(now * 0.001 + phase * 1.7) * 0.015 * (1 - narrativePresent) : 0,
-        phase * -0.022,
+        temporalGhostDepth(track),
       );
       timeGroup.rotation.z = phase * (0.035 + narrativeFuture * 0.045);
       timeGroup.scale.setScalar(1 + phase * 0.025 + narrativeFuture * 0.025);
@@ -6848,7 +6845,7 @@ export const setupModel = async (): Promise<void> => {
           ? `${axisNames[projectionHorizontal]} / ${axisNames[projectionVertical]} · CUT ${state.sliceAxis.toUpperCase()}`
           : `${axisNames[horizontalAxis]} / ${axisNames[verticalAxis]}`,
         rect.width - 28,
-        25,
+        56,
       );
       context.textAlign = "left";
       context.fillStyle = "#c8bfdc";

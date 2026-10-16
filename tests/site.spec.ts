@@ -25,8 +25,8 @@ for (const path of pages) {
     await expect(page.locator('[data-release-link]').first()).toHaveAttribute('href', /v3\.1\.13/);
     await expect(page.locator('.hero-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
     await expect(page.locator('.download-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
-    await expect(page.locator('.hero-actions [data-release-link]')).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
-    await expect(page.locator('.download-actions [data-release-link]')).toContainText(/查看 v3\.1\.13 下载项|View downloads for v3\.1\.13/);
+    await expect(page.locator('.hero-actions [data-release-link]')).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
+    await expect(page.locator('.download-actions [data-release-link]')).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
     await expect(page.locator('h1')).toBeVisible();
 
     const duplicateIds = await page.locator('[id]').evaluateAll((elements) => {
@@ -51,6 +51,59 @@ test('release refresh stays same-origin and keeps the static fallback path', asy
   expect(new URL(releaseRequests[0]).origin).toBe(new URL(page.url()).origin);
   expect(releaseRequests[0]).toContain('/data/latest-release.json');
   await expect(page.locator('[data-release-version]').first()).toHaveText('v3.1.13');
+});
+
+test('homepage release CTA stays on one line at 320px in both languages', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  for (const path of pages) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const link = page.locator('.hero-actions [data-release-link]');
+    const labelLines = await link.evaluate((element) => {
+      const range = document.createRange();
+      range.selectNode(element.firstChild!);
+      return range.getClientRects().length;
+    });
+    expect(labelLines, `${path} release CTA line count`).toBe(1);
+  }
+});
+
+test('bilingual homepage shows distinct sanitized input and export screenshots', async ({ page }) => {
+  for (const [path, disclosure] of [
+    ['/', '本机输出路径已隐藏'],
+    ['/en/', 'Local output path hidden'],
+  ]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const heroImage = page.locator('.hero-product-window img');
+    const showcaseImage = page.locator('.app-window > img');
+    const heroSource = await heroImage.getAttribute('src');
+    const showcaseSource = await showcaseImage.getAttribute('src');
+    expect(heroSource).toContain('easykiconverter-main-public.webp');
+    expect(showcaseSource).toContain('easykiconverter-export.webp');
+    expect(showcaseSource).not.toBe(heroSource);
+    await expect(heroImage).toHaveAttribute('alt', new RegExp(disclosure, 'i'));
+    await expect(showcaseImage).toHaveAttribute('alt', new RegExp(disclosure, 'i'));
+    await expect(page.locator('.app-window .showcase-source')).toContainText(disclosure);
+    await expect(page.locator('.app-window .showcase-proof-items')).toContainText(/progress|进度/i);
+    for (const image of [heroImage, showcaseImage]) {
+      const dimensions = await image.evaluate((element) => {
+        const image = element as HTMLImageElement;
+        return { width: image.naturalWidth, height: image.naturalHeight };
+      });
+      expect(dimensions.width).toBeGreaterThan(0);
+      expect(dimensions.height).toBeGreaterThan(0);
+    }
+  }
+});
+
+test('all social previews use the sanitized product screenshot', async ({ page }) => {
+  for (const path of ['/', '/en/', '/lab/', '/en/lab/', '/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /easykiconverter-main-public\.webp/);
+    if (path.includes('/lab/')) {
+      await expect(page.locator('.motion-app-window img')).toHaveAttribute('src', /easykiconverter-main-public\.webp/);
+      await expect(page.locator('.motion-app-window figcaption')).toContainText(/LOCAL PATH HIDDEN|本机路径已隐藏/);
+    }
+  }
 });
 
 test('bilingual footers keep each navigation entry readable on one line', async ({ page }) => {
@@ -80,6 +133,77 @@ test('mobile navigation opens, closes, and restores focus', async ({ page }) => 
   await expect(menu).toBeFocused();
 });
 
+test('bilingual homepage header stays within the layout through the tablet breakpoint', async ({ page }) => {
+  for (const width of [850, 851, 900, 920, 921, 980, 981, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ['/', '/en/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const header = page.locator('.site-header');
+      const collapsed = width <= 980;
+      if (collapsed) {
+        await expect(header.locator('.nav-links')).toBeHidden();
+        await expect(header.locator('.menu-button')).toBeVisible();
+      } else {
+        await expect(header.locator('.nav-links')).toBeVisible();
+        await expect(header.locator('.menu-button')).toBeHidden();
+      }
+
+      const layout = await header.evaluate((element) => {
+        const headerBounds = element.getBoundingClientRect();
+        const styles = getComputedStyle(element);
+        const leftLimit = headerBounds.left + Number.parseFloat(styles.paddingLeft);
+        const rightLimit = headerBounds.right - Number.parseFloat(styles.paddingRight);
+        const items = [...element.querySelectorAll('.brand, .nav-links, .lang-link, .github-link, .menu-button')]
+          .map((item) => {
+            const bounds = item.getBoundingClientRect();
+            return { left: bounds.left, right: bounds.right, width: bounds.width, display: getComputedStyle(item).display };
+          })
+          .filter((item) => item.display !== 'none' && item.width > 0)
+          .sort((first, second) => first.left - second.left);
+        return { leftLimit, rightLimit, items };
+      });
+      layout.items.forEach((item, index) => {
+        expect(item.left, `${path} at ${width}px: header item starts outside the shell`).toBeGreaterThanOrEqual(layout.leftLimit - 1);
+        expect(item.right, `${path} at ${width}px: header item ends outside the shell`).toBeLessThanOrEqual(layout.rightLimit + 1);
+        if (index > 0) {
+          expect(item.left, `${path} at ${width}px: header items overlap`).toBeGreaterThanOrEqual(layout.items[index - 1].right - 1);
+        }
+      });
+
+      if (width >= 851 && width <= 980) {
+        await expect(page.locator('.hero')).toHaveCSS('display', 'grid');
+        const menu = header.locator('.menu-button');
+        await menu.click();
+        await expect(page.locator('.mobile-nav')).toHaveClass(/is-open/);
+        await expect(page.locator('.mobile-nav')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(menu).toBeFocused();
+      }
+    }
+  }
+});
+
+test('homepage navigation stays available without JavaScript at the tablet header breakpoint', async ({ browser }) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: { width: 390, height: 900 },
+  });
+  const page = await context.newPage();
+
+  for (const width of [390, 851, 920, 980]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ['/', '/en/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const mobileNav = page.locator('.mobile-nav');
+      await expect(mobileNav).toBeVisible();
+      await expect(mobileNav.locator('a').first()).toHaveAttribute('href', '#story');
+      await expect(page.locator('.header-actions .lang-link')).toBeVisible();
+    }
+  }
+
+  await context.close();
+});
+
 test('homepage skip links are localized and move keyboard focus to main content', async ({ page }) => {
   for (const [path, label] of [['/', '跳转到正文'], ['/en/', 'Skip to content']]) {
     await page.goto(path, { waitUntil: 'networkidle' });
@@ -94,10 +218,38 @@ test('homepage skip links are localized and move keyboard focus to main content'
   }
 });
 
+test('content-page skip links move keyboard focus into the main content', async ({ page }) => {
+  for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const skipLink = page.locator('.content-page-skip');
+    const main = page.locator('main#content-page-main');
+    await page.keyboard.press('Tab');
+    await expect(skipLink).toBeFocused();
+    await expect(skipLink).toBeInViewport();
+    await page.keyboard.press('Enter');
+    await expect(main).toBeFocused();
+    await expect(page).toHaveURL(/#content-page-main$/);
+  }
+});
+
+test('Lab skip links are localized and move keyboard focus to the main content', async ({ page }) => {
+  for (const [path, label] of [['/lab/', '跳转到实验室正文'], ['/en/lab/', 'Skip to lab content']]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const skipLink = page.locator('.content-page-skip');
+    const main = page.locator('main#lab-main');
+    await expect(skipLink).toHaveText(label);
+    await page.keyboard.press('Tab');
+    await expect(skipLink).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(main).toBeFocused();
+    await expect(page).toHaveURL(/#lab-main$/);
+  }
+});
+
 test('mobile story cards keep decorative labels clear of their copy', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'networkidle' });
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
     const storyCards = page.locator('.story-card');
     await storyCards.first().scrollIntoViewIfNeeded();
     const bounds = await storyCards.evaluateAll((cards) => cards.map((card) => {
@@ -411,19 +563,21 @@ test('content and Lab headers keep the shared brand treatment', async ({ page })
 
 test('inner pages share the same localized header navigation', async ({ page }) => {
   const pages = [
-    { path: '/formats/', current: '格式矩阵', lab: false },
-    { path: '/cases/', current: '转换案例', lab: false },
-    { path: '/lab/', current: '3D 实验室', lab: true },
-    { path: '/en/formats/', current: 'Formats', lab: false },
-    { path: '/en/cases/', current: 'Cases', lab: false },
-    { path: '/en/lab/', current: '3D Lab', lab: true },
+    { path: '/formats/', current: '格式矩阵', alternate: '/en/formats/', lab: false },
+    { path: '/cases/', current: '转换案例', alternate: '/en/cases/', lab: false },
+    { path: '/lab/', current: '3D 实验室', alternate: '/en/lab/', lab: true },
+    { path: '/en/formats/', current: 'Formats', alternate: '/formats/', lab: false },
+    { path: '/en/cases/', current: 'Cases', alternate: '/cases/', lab: false },
+    { path: '/en/lab/', current: '3D Lab', alternate: '/lab/', lab: true },
   ];
-  for (const { path, current, lab } of pages) {
+  for (const { path, current, alternate, lab } of pages) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const header = page.locator('.content-page-header');
-    await expect(header.locator('.nav-links a')).toHaveCount(5);
+    await expect(header.locator('.nav-links a')).toHaveCount(4);
     await expect(header.locator('.nav-links a[aria-current="page"]')).toHaveText(current);
-    await expect(page.locator('.mobile-nav a')).toHaveCount(6);
+    await expect(page.locator('.header-actions .lang-link')).toHaveText(path.startsWith('/en/') ? '中文' : 'EN');
+    await expect(page.locator('.header-actions .lang-link')).toHaveAttribute('href', alternate);
+    await expect(page.locator('.mobile-nav a')).toHaveCount(5);
     if (lab) await expect(header.locator('.brand')).toContainText(path.startsWith('/en/') ? '/ Lab' : '/ 实验室');
     else await expect(header.locator('.brand')).not.toContainText('/ Lab');
   }
@@ -437,6 +591,19 @@ test('internal navigation stays on the current preview origin', async ({ page })
     );
     expect(links.every((link) => link.origin === new URL(page.url()).origin)).toBe(true);
     expect(links.map((link) => link.pathname)).toContain(path);
+  }
+});
+
+test('site chrome and product images load assets from the current preview origin', async ({ page }) => {
+  for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const externalAssets = await page.locator('img[src], link[rel="icon"]').evaluateAll((elements) =>
+      elements.map((element) => {
+        const asset = element.getAttribute('src') || element.getAttribute('href');
+        return asset ? new URL(asset, location.href).href : '';
+      }).filter((url) => url && new URL(url).origin !== location.origin),
+    );
+    expect(externalAssets, `${path} should not fetch local site assets from the production domain`).toEqual([]);
   }
 });
 
@@ -455,6 +622,39 @@ test('inner mobile navigation marks the current page in both languages', async (
     await expect(currentLink).toHaveText(current);
     await expect(currentLink).toHaveCSS('font-weight', '800');
     await expect(currentLink).toHaveCSS('background-color', 'rgb(217, 210, 255)');
+  }
+});
+
+test('language switch stays visible and points to the matching page on mobile', async ({ page }) => {
+  const pages = [
+    { path: '/', alternate: '/en/' },
+    { path: '/en/', alternate: '/' },
+    { path: '/formats/', alternate: '/en/formats/' },
+    { path: '/en/formats/', alternate: '/formats/' },
+    { path: '/cases/', alternate: '/en/cases/' },
+    { path: '/en/cases/', alternate: '/cases/' },
+    { path: '/lab/', alternate: '/en/lab/' },
+    { path: '/en/lab/', alternate: '/lab/' },
+  ];
+
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const { path, alternate } of pages) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const languageSwitch = page.locator('.header-actions .lang-link');
+      await expect(languageSwitch).toBeVisible();
+      await expect(languageSwitch).toHaveAttribute('href', alternate);
+      await expect(page.locator(`.mobile-nav a[href="${alternate}"]`)).toHaveCount(0);
+      const bounds = await page.locator('.site-header').evaluate((header) => {
+        const brand = header.querySelector('.brand')!.getBoundingClientRect();
+        const language = header.querySelector('.lang-link')!.getBoundingClientRect();
+        const menu = header.querySelector('.menu-button')!.getBoundingClientRect();
+        return { brandRight: brand.right, languageLeft: language.left, languageRight: language.right, menuLeft: menu.left, menuRight: menu.right };
+      });
+      expect(bounds.languageLeft, `${path} at ${width}px: language switch overlaps brand`).toBeGreaterThanOrEqual(bounds.brandRight);
+      expect(bounds.menuLeft, `${path} at ${width}px: language switch overlaps menu`).toBeGreaterThanOrEqual(bounds.languageRight);
+      expect(bounds.menuRight, `${path} at ${width}px: menu exceeds viewport`).toBeLessThanOrEqual(width);
+    }
   }
 });
 
@@ -601,6 +801,22 @@ test('format matrix rows use concise bilingual status labels with full accessibl
     await expect(statuses.filter({ hasText: shortLabels[0] })).toHaveCount(2);
     await expect(statuses.filter({ hasText: shortLabels[1] })).toHaveCount(9);
     await expect(statuses.nth(2)).toHaveAttribute('aria-label', fullLabel);
+  }
+});
+
+test('format summary counts distinguish the additional tier from all configured targets', async ({ page }) => {
+  for (const [path, additionalLabel, totalLabel] of [
+    ['/formats/', '其他目标', '全部 11 个已配置目标与对应验证依据'],
+    ['/en/formats/', 'additional targets', 'All 11 configured targets and linked evidence'],
+  ] as const) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const counts = page.locator('.evidence-summary > span');
+    await expect(counts).toHaveCount(3);
+    await expect(counts.nth(1).locator('b')).toHaveText('2');
+    await expect(counts.nth(2).locator('b')).toHaveText('9');
+    await expect(counts.nth(2)).toContainText(additionalLabel);
+    await expect(page.locator('tbody tr')).toHaveCount(11);
+    await expect(page.locator('caption')).toHaveText(totalLabel);
   }
 });
 
@@ -821,20 +1037,20 @@ test('bilingual shared text colors meet WCAG AA on light brand surfaces', async 
   }
 });
 
-test('bilingual workbench captions preserve the same product evidence', async ({ page }) => {
+test('bilingual workbench captions describe export-stage product evidence', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM/);
-  await expect(page.locator('.showcase-source')).toHaveText('截取自桌面软件实际运行界面');
+  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /导出设置、处理进度和元件结果/);
+  await expect(page.locator('.showcase-source')).toHaveText('截取自桌面软件实际运行界面 · 本机输出路径已隐藏');
   await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
-  await expect(page.locator('.showcase-proof-items')).toContainText('添加元件');
-  await expect(page.locator('.showcase-proof-items')).toContainText('导入 BOM');
+  await expect(page.locator('.showcase-proof-items')).toContainText('设置导出选项');
+  await expect(page.locator('.showcase-proof-items')).toContainText('核对导出结果');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM import and export settings/);
-  await expect(page.locator('.showcase-source')).toHaveText('Captured from the running desktop app');
+  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /export settings, processing progress and component results/);
+  await expect(page.locator('.showcase-source')).toHaveText('Captured from the running desktop app · Local output path hidden');
   await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
-  await expect(page.locator('.showcase-proof-items')).toContainText('Add components');
-  await expect(page.locator('.showcase-proof-items')).toContainText('Import BOM');
+  await expect(page.locator('.showcase-proof-items')).toContainText('Set export options');
+  await expect(page.locator('.showcase-proof-items')).toContainText('Review results');
 });
 
 test('bilingual homepages expose localized navigation destinations', async ({ page }) => {
@@ -1190,6 +1406,28 @@ test('case evidence paths foreground filenames while retaining directories', asy
   }
 });
 
+test('bilingual case evidence follows each summary without stretched-card gaps', async ({ page }) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ['/cases/', '/en/cases/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const cards = page.locator('.case-card');
+      const geometry = await cards.evaluateAll((elements) => elements.map((card) => {
+        const summary = card.querySelector(':scope > p')!.getBoundingClientRect();
+        const evidence = card.querySelector('dl')!.getBoundingClientRect();
+        return {
+          gap: evidence.top - summary.bottom,
+          bottom: card.getBoundingClientRect().bottom,
+        };
+      }));
+
+      expect(geometry).toHaveLength(2);
+      expect(geometry.every(({ gap }) => gap >= 20 && gap < 48)).toBe(true);
+      if (width > 850) expect(Math.abs(geometry[0].bottom - geometry[1].bottom)).toBeGreaterThan(40);
+    }
+  }
+});
+
 test('download cards show the actual Release asset architectures', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const chineseLinks = page.locator('.download-links > a');
@@ -1263,7 +1501,9 @@ test('Lab explains that surface detail continues after the GLB is ready', async 
 });
 
 test('Lab keeps model metadata, view controls, caption, and slice panel from overlapping', async ({ page }) => {
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 360, height: 640 }]) {
+  await page.route('**/assets/model/**', (route) => route.abort());
+  await page.route('**/assets/vendor/**', (route) => route.abort());
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 428, height: 844 }, { width: 390, height: 844 }, { width: 360, height: 640 }, { width: 320, height: 700 }, { width: 320, height: 640 }]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -1272,11 +1512,24 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
       const overlaps = await stage.evaluate((element) => {
         const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
         const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        if (window.innerWidth <= 760) {
+          element.querySelector<HTMLElement>('.neural-memory-readout')!.textContent = document.documentElement.lang === 'en'
+            ? 'SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD'
+            : '突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD';
+        }
         const caption = rect('.artifact-caption');
         const captionStyle = getComputedStyle(element.querySelector<HTMLElement>('.artifact-caption')!);
         const switcher = rect('.artifact-switcher');
+        const note = rect('.motion-model-note');
+        const detail = rect('.model-detail-status');
+        const readout = rect('.neural-memory-readout');
+        const stage = element.getBoundingClientRect();
         return {
+          noteWithReadout: intersects(note, readout),
+          readoutWithDetail: intersects(readout, detail),
+          metadataInsideStage: [note, detail, readout].every((item) => item.left >= stage.left && item.right <= stage.right),
           noteWithSwitcher: intersects(rect('.motion-model-note'), switcher),
+          readoutWithSwitcher: window.innerWidth <= 760 && intersects(readout, switcher),
           detailWithSwitcher: intersects(rect('.model-detail-status'), switcher),
           advancedWithSwitcher: intersects(rect('.experiment-controls-toggle'), rect('.artifact-switcher')),
           sliceDockWithSwitcher: intersects(rect('.model-controls-dock'), switcher),
@@ -1284,7 +1537,11 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
         };
       });
       expect(overlaps).toEqual({
+        noteWithReadout: false,
+        readoutWithDetail: false,
+        metadataInsideStage: true,
         noteWithSwitcher: false,
+        readoutWithSwitcher: false,
         detailWithSwitcher: false,
         advancedWithSwitcher: false,
         sliceDockWithSwitcher: false,
@@ -1318,6 +1575,9 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
     await expect(stage.locator('#model-canvas')).toHaveAttribute('inert', '');
     await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-hidden', 'true');
     await expect(stage.locator('.artifact-caption')).toContainText(/mesh|网格/i);
+    await expect(stage.locator('.motion-model-note')).toBeHidden();
+    await expect(stage.locator('.model-detail-status')).toBeHidden();
+    await expect(stage.locator('.neural-memory-readout')).toBeHidden();
     const model = stage.locator('[data-artifact-view="model"]');
     await model.dispatchEvent('click');
     await expect(stage).toHaveAttribute('data-artifact-view', 'model');
@@ -1329,9 +1589,45 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
   }
 });
 
-test('Lab keeps the model view switcher above the geometry on desktop and mobile', async ({ page }) => {
+test('Lab analysis views keep canvas metadata and mobile Tomogram tools clear', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route('**/assets/model/**', (route) => route.abort());
+  await page.route('**/assets/vendor/**', (route) => route.abort());
+
   for (const path of ['/lab/', '/en/lab/']) {
-    for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const stage = page.locator('[data-model-stage]');
+
+    for (const view of ['tomogram', 'oracle', 'trinity', 'morph']) {
+      await stage.evaluate((element, artifactView) => { element.dataset.artifactView = artifactView; }, view);
+      await expect(stage.locator('.motion-model-note')).toBeHidden();
+      await expect(stage.locator('.model-detail-status')).toBeHidden();
+      await expect(stage.locator('.neural-memory-readout')).toBeHidden();
+    }
+
+    await stage.evaluate((element) => { element.dataset.artifactView = 'tomogram'; });
+    const tomogramLayout = await stage.evaluate((element) => {
+      const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
+      const switcher = rect('.artifact-switcher');
+      const toolbarButtons = [...element.querySelectorAll<HTMLElement>('.tomogram-toolbar > button')]
+        .filter((button) => getComputedStyle(button).display !== 'none')
+        .map((button) => button.getBoundingClientRect());
+      const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      return {
+        switcherAboveStageBottom: switcher.bottom <= element.getBoundingClientRect().bottom,
+        switcherOverToolbar: intersects(switcher, rect('.tomogram-toolbar')),
+        toolbarOverSpecimenLabel: intersects(rect('.tomogram-toolbar'), rect('.tomogram-specimen-label')),
+        specimenPreviewOverSwitcher: intersects(rect('#model-canvas'), switcher),
+        toolbarButtonsOverlap: toolbarButtons.some((button, index) => toolbarButtons.slice(index + 1).some((other) => intersects(button, other))),
+      };
+    });
+    expect(tomogramLayout).toEqual({ switcherAboveStageBottom: true, switcherOverToolbar: false, toolbarOverSpecimenLabel: false, specimenPreviewOverSwitcher: false, toolbarButtonsOverlap: false });
+  }
+});
+
+test('Lab keeps the model view switcher in the upper stage on desktop and mobile', async ({ page }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 320, height: 640 }]) {
       await page.setViewportSize(viewport);
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const switcher = page.locator('.artifact-switcher');
@@ -1349,7 +1645,10 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
         };
       });
       expect(geometry).not.toBeNull();
-      expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(geometry!.stage.height * 0.25);
+      expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(geometry!.stage.height * 0.42);
+      if (viewport.width <= 760) {
+        expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(geometry!.stage.height * 0.2);
+      }
       expect(geometry!.switcher.left).toBeGreaterThanOrEqual(geometry!.stage.left);
       expect(geometry!.switcher.right).toBeLessThanOrEqual(geometry!.stage.right);
       geometry!.buttonHeights.forEach((height) => expect(height).toBeLessThanOrEqual(34));
@@ -1358,7 +1657,7 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
 });
 
 test('Lab gives the mobile model stage enough room in both languages', async ({ page }) => {
-  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }, { width: 320, height: 640 }]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -1368,7 +1667,7 @@ test('Lab gives the mobile model stage enough room in both languages', async ({ 
         const rect = element.getBoundingClientRect();
         return { width: rect.width, height: rect.height };
       });
-      const minimumHeight = viewport.height <= 700 ? viewport.height * 0.32 : viewport.height * 0.4;
+      const minimumHeight = viewport.height <= 700 ? Math.max(viewport.height * 0.5, 320) : viewport.height * 0.4;
       expect(bounds.width).toBeLessThanOrEqual(viewport.width);
       expect(bounds.height).toBeGreaterThanOrEqual(minimumHeight);
     }
@@ -1486,6 +1785,38 @@ test('Lab desktop model stage stays clear of the narrative heading', async ({ pa
     expect(layout).not.toBeNull();
     expect(layout!.headingRight).toBeLessThan(layout!.modelLeft);
     expect(layout!.scrollWidth).toBeLessThanOrEqual(1440);
+  }
+});
+
+test('Lab narrative headlines keep the Chinese lead together on desktop', async ({ page }) => {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const lines = await page.locator('.motion-heading h1').evaluate((element) => {
+        const grouped = new Map<number, string>();
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let node: Node | null;
+        while ((node = walker.nextNode())) {
+          let offset = 0;
+          for (const character of node.nodeValue || '') {
+            const range = document.createRange();
+            range.setStart(node, offset);
+            range.setEnd(node, offset + character.length);
+            const top = Math.round(range.getBoundingClientRect().top);
+            if (!/\s/.test(character)) grouped.set(top, (grouped.get(top) || '') + character);
+            offset += character.length;
+          }
+        }
+        return [...grouped.values()];
+      });
+
+      if (path === '/lab/') {
+        expect(lines, `${path} ${viewport.width}px headline lines`).toEqual(['让元件库转换，', '顺手一点。']);
+      } else {
+        expect(lines.length, `${path} ${viewport.width}px headline line count`).toBeLessThanOrEqual(3);
+      }
+    }
   }
 });
 
@@ -1638,7 +1969,7 @@ test('Lab introductions explain the real geometry story in both languages', asyn
   await expect(page.locator('.lab-intro')).toContainText('mesh, section, and topology views');
 });
 
-test('Lab pages clearly label the stable-release downloads page', async ({ page }) => {
+test('Lab pages clearly label the versioned release downloads page', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const link = page.locator('[data-release-link]');
@@ -1646,7 +1977,7 @@ test('Lab pages clearly label the stable-release downloads page', async ({ page 
     await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noreferrer');
-    await expect(link).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
+    await expect(link).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
   }
 });
 
@@ -1657,7 +1988,7 @@ test('Formats and Cases CTAs clearly direct visitors to Release download options
     await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noreferrer');
-    await expect(link).toContainText(/查看 v3\.1\.13 稳定版下载|View stable downloads for v3\.1\.13/);
+    await expect(link).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
 
     const copy = page.locator('.content-page-cta > div').first();
     await expect(copy).toContainText(/版本发布页选择安装包|release page/);
@@ -1753,6 +2084,63 @@ test('reduced motion renders the Lab without a continuous animation loop', async
   await page.waitForTimeout(1000);
   const frames = await page.evaluate(() => (window as typeof window & { __modelFrames?: () => number }).__modelFrames?.() ?? 0);
   expect(frames).toBeLessThan(12);
+  await context.close();
+});
+
+test('reduced-motion Lab keeps the model stage below its heading in every render view', async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  await page.route('**/assets/model/**', (route) => route.abort());
+  await page.route('**/assets/vendor/**', (route) => route.abort());
+
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 900 }, { width: 390, height: 844 }, { width: 360, height: 640 }, { width: 320, height: 700 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ['/lab/', '/en/lab/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const stage = page.locator('[data-model-stage]');
+      for (const view of ['model', 'atlas', 'tomogram', 'oracle', 'trinity', 'morph']) {
+        await stage.evaluate((element, artifactView) => {
+          element.dataset.artifactView = artifactView;
+          if (artifactView === 'model' && window.innerWidth <= 760) {
+            element.querySelector<HTMLElement>('.neural-memory-readout')!.textContent = document.documentElement.lang === 'en'
+              ? 'SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD'
+              : '突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD';
+          }
+        }, view);
+        const layout = await page.evaluate(() => {
+          const heading = document.querySelector('.motion-heading')!.getBoundingClientRect();
+          const model = document.querySelector('[data-model-stage]')!.getBoundingClientRect();
+          return { headingBottom: heading.bottom, modelTop: model.top, modelLeft: model.left, modelRight: model.right };
+        });
+        expect(layout.modelTop, `${path} ${viewport.width}px ${view} should follow its heading`).toBeGreaterThanOrEqual(layout.headingBottom - 1);
+        expect(layout.modelLeft, `${path} ${viewport.width}px ${view} should remain in the viewport`).toBeGreaterThanOrEqual(-1);
+        expect(layout.modelRight, `${path} ${viewport.width}px ${view} should remain in the viewport`).toBeLessThanOrEqual(viewport.width + 1);
+
+        if (view === 'model') {
+          const controls = await page.evaluate(() => {
+            const stage = document.querySelector('[data-model-stage]')!.getBoundingClientRect();
+            const switcher = document.querySelector('.artifact-switcher')!.getBoundingClientRect();
+            const dock = document.querySelector('.model-controls-dock')!.getBoundingClientRect();
+            const readout = document.querySelector('.neural-memory-readout')!.getBoundingClientRect();
+            const detail = document.querySelector('.model-detail-status')!.getBoundingClientRect();
+            return {
+              switcherInsideStage: switcher.top >= stage.top - 1 && switcher.bottom <= stage.bottom + 1,
+              dockInsideStage: dock.top >= stage.top - 1 && dock.bottom <= stage.bottom + 1,
+              controlsOverlap: switcher.left < dock.right && switcher.right > dock.left && switcher.top < dock.bottom && switcher.bottom > dock.top,
+              readoutOverlap: window.innerWidth <= 760 && switcher.left < readout.right && switcher.right > readout.left && switcher.top < readout.bottom && switcher.bottom > readout.top,
+              detailOverlap: window.innerWidth <= 760 && switcher.left < detail.right && switcher.right > detail.left && switcher.top < detail.bottom && switcher.bottom > detail.top,
+            };
+          });
+          expect(controls.switcherInsideStage, `${path} ${viewport.width}px view switcher should stay inside its model stage`).toBe(true);
+          expect(controls.dockInsideStage, `${path} ${viewport.width}px model controls should stay inside their stage`).toBe(true);
+          expect(controls.controlsOverlap, `${path} ${viewport.width}px view switcher and model controls should not overlap`).toBe(false);
+          expect(controls.readoutOverlap, `${path} ${viewport.width}px model metadata and view switcher should not overlap`).toBe(false);
+          expect(controls.detailOverlap, `${path} ${viewport.width}px detail label and view switcher should not overlap`).toBe(false);
+        }
+      }
+    }
+  }
+
   await context.close();
 });
 

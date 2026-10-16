@@ -25,7 +25,7 @@ const registeredCount = targetFormats.filter((format) => format.tier === "regist
     <div class="evidence-summary" aria-label={en ? "Format evidence baseline" : "格式证据基线"}>
       <span><b>{latestRelease.tag}</b>{en ? " release baseline" : " 发布版本基线"}</span>
       <span><b>{stableCount}</b>{en ? " stable targets" : " 个稳定版目标"}</span>
-      <span><b>{registeredCount}</b>{en ? " registered targets" : " 个已注册目标"}</span>
+      <span><b>{registeredCount}</b>{en ? " additional targets" : " 个其他目标"}</span>
     </div>
   </div>
   <div class="format-legend" aria-label={en ? "Format status legend" : "格式状态图例"}>
@@ -34,7 +34,7 @@ const registeredCount = targetFormats.filter((format) => format.tier === "regist
   </div>
   <div class="format-table-wrap">
     <table>
-      <caption>{en ? "Registered targets and linked evidence" : "已注册目标与对应验证依据"}</caption>
+      <caption>{en ? `All ${targetFormats.length} configured targets and linked evidence` : `全部 ${targetFormats.length} 个已配置目标与对应验证依据`}</caption>
       <thead><tr><th>{en ? "Export ID" : "导出标识"}</th><th>{en ? "Target" : "目标"}</th><th>{en ? "Release status" : "版本状态"}</th><th>{en ? "Evidence scope" : "验证依据涉及的产物"}</th></tr></thead>
       <tbody>
         {targetFormats.map((format) => <tr>

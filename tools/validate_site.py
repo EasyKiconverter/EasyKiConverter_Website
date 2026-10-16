@@ -163,6 +163,11 @@ else:
 for required in ("assets/model/README.md", "assets/model/README_zh.md", "assets/model/Easykiconverter_展示模型.step", "assets/model/Easykiconverter_展示模型.glb", "assets/model/Easykiconverter_展示模型-mobile.glb", "assets/vendor/occt-import-js.js", "assets/vendor/occt-import-js.wasm"):
     if not (ROOT / "public" / required).exists():
         errors.append(f"missing required file: {required}")
+for required in ("assets/showcase/easykiconverter-main-public.webp", "assets/showcase/easykiconverter-export.webp"):
+    if not (ROOT / "public" / required).is_file():
+        errors.append(f"missing required public screenshot: {required}")
+if (ROOT / "dist" / "assets/showcase/easykiconverter-main.webp").exists():
+    errors.append("dist: unsanitized local-path screenshot must not be published")
 for required in ("src/pages/robots.txt.ts", "src/pages/sitemap.xml.ts"):
     if not (ROOT / required).exists():
         errors.append(f"missing generated SEO endpoint: {required}")

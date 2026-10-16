@@ -623,6 +623,7 @@
 
   html:not(.js-ready) .mobile-nav {
     opacity: 1;
+    visibility: visible;
     transform: none;
     pointer-events: auto;
   }
@@ -781,5 +782,61 @@
   .footer-links {
     flex-wrap: wrap;
     gap: 10px 16px;
+  }
+}
+
+@media (min-width: 851px) and (max-width: 980px) {
+  .site-header {
+    height: 74px;
+  }
+
+  .site-header .nav-links,
+  .site-header .github-link {
+    display: none;
+  }
+
+  .site-header .menu-button {
+    display: block;
+  }
+
+  .mobile-nav {
+    position: fixed;
+    z-index: 9;
+    top: 74px;
+    right: 16px;
+    left: 16px;
+    display: grid;
+    gap: 3px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #fffdf8f2;
+    box-shadow: 0 18px 35px #2928241c;
+    transform: translateY(-20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s, transform 0.5s var(--spring);
+  }
+
+  .mobile-nav.is-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-nav a {
+    padding: 10px 13px;
+    border-radius: 10px;
+  }
+
+  .mobile-nav a:hover {
+    background: var(--lilac);
+  }
+
+  html:not(.js-ready) .mobile-nav {
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 }

@@ -11,10 +11,12 @@ const en = lang === "en";
   <div class="showcase-proof">
     <span class="showcase-proof-label">{en ? "REAL Qt Quick UI" : "真实 Qt Quick 界面"}</span>
     <span class="showcase-proof-items">
-      {en ? "Add components · Import BOM · Set export" : "添加元件 · 导入 BOM · 设置导出"}
+      {en ? "Set export options · Track progress · Review results" : "设置导出选项 · 查看处理进度 · 核对导出结果"}
     </span>
   </div>
   <small class="showcase-source">
-    {en ? "Captured from the running desktop app" : "截取自桌面软件实际运行界面"}
+    {en
+      ? "Captured from the running desktop app · Local output path hidden"
+      : "截取自桌面软件实际运行界面 · 本机输出路径已隐藏"}
   </small>
 </figcaption>

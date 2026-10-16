@@ -32,7 +32,7 @@ const isCasesPage = pageUrl.pathname.includes("/cases/");
     <div class="grain" aria-hidden="true"></div>
     <a class="content-page-skip" href="#content-page-main">{en ? "Skip to content" : "跳转到正文"}</a>
     <InnerPageHeader lang={lang} pageUrl={pageUrl} alternateUrl={alternateUrl} />
-    <main id="content-page-main">
+    <main id="content-page-main" tabindex="-1">
       <slot />
     </main>
     <section class="content-page-cta shell" aria-labelledby="content-page-cta-title">
@@ -51,7 +51,7 @@ const isCasesPage = pageUrl.pathname.includes("/cases/");
       </div>
       <div class="content-page-cta-actions">
         <a class="button button-light" data-release-link href={latestRelease.url} target="_blank" rel="noreferrer">
-          {en ? `View stable downloads for ${latestRelease.tag}` : `查看 ${latestRelease.tag} 稳定版下载`} <span>↗</span>
+          {en ? `${latestRelease.tag} downloads` : `${latestRelease.tag} 下载项`} <span>↗</span>
         </a>
         <a class="text-link text-link-internal" href={homeUrl}>{en ? "Back to the homepage" : "回到首页"} <span>→</span></a>
       </div>

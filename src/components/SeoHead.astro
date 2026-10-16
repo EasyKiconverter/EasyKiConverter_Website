@@ -17,14 +17,13 @@ const {
   title,
   description,
   socialImageUrl = new URL(
-    "assets/showcase/easykiconverter-main.webp",
+    "assets/showcase/easykiconverter-main-public.webp",
     new URL(import.meta.env.BASE_URL, new URL(import.meta.env.SITE)),
   ),
   type = "website",
   twitterCard = "summary_large_image",
 } = Astro.props;
 const isEnglish = lang === "en";
-const siteBase = new URL(import.meta.env.BASE_URL, new URL(import.meta.env.SITE));
 ---
 
 <meta name="description" content={description} />
@@ -44,5 +43,5 @@ const siteBase = new URL(import.meta.env.BASE_URL, new URL(import.meta.env.SITE)
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={socialImageUrl} />
-<link rel="icon" href={new URL("assets/icons/easyki-icon.svg", siteBase)} type="image/svg+xml" />
+<link rel="icon" href={`${import.meta.env.BASE_URL}assets/icons/easyki-icon.svg`} type="image/svg+xml" />
 <title>{title}</title>

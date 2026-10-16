@@ -2,7 +2,7 @@
 interface Props { lang: 'zh' | 'en'; }
 const { lang } = Astro.props;
 const en = lang === 'en';
-const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main.webp`, Astro.site).href;
+const appImage = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
 ---
 
 <section class="motion-narrative" id="story" data-motion-timeline aria-label={en ? 'From component data to design' : '从元件数据到电路设计'}>
@@ -75,8 +75,25 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
           <small>{en ? 'MESHES ↗' : '网格 ↗'}</small><b data-tomogram-meshes>—</b><i></i>
         </button>
       </div>
-      <button type="button" class="tomogram-pin" data-tomogram-pin disabled aria-pressed="false" aria-label={en ? 'Pin the current section, then move the slice to compare geometry' : '固定当前截面，然后移动切片比较几何变化'} title={en ? 'Pin a section for difference comparison' : '固定截面用于差分比较'}>PIN Δ</button>
-      <button type="button" class="tomogram-export" data-tomogram-export disabled aria-label={en ? 'Export the current closed section contours as an SVG file' : '将当前闭合截面轮廓导出为 SVG 文件'} title={en ? 'Export vector section profile' : '导出矢量截面轮廓'}>SVG ↓</button>
+      <div class="tomogram-toolbar" role="group" aria-label={en ? 'Tomogram tools' : '断层视图工具'}>
+        <button type="button" class="tomogram-pin" data-tomogram-pin disabled aria-pressed="false" aria-label={en ? 'Pin the current section, then move the slice to compare geometry' : '固定当前截面，然后移动切片比较几何变化'} title={en ? 'Pin a section for difference comparison' : '固定截面用于差分比较'}>PIN Δ</button>
+        <button type="button" class="tomogram-export" data-tomogram-export disabled aria-label={en ? 'Export the current closed section contours as an SVG file' : '将当前闭合截面轮廓导出为 SVG 文件'} title={en ? 'Export vector section profile' : '导出矢量截面轮廓'}>SVG ↓</button>
+        <button type="button" class="tomogram-movie" data-tomogram-movie disabled aria-label={en ? 'Export recorded section frames as an animated SVG' : '将已录制截面帧导出为 SVG 动画'} title={en ? 'Export geometry movie' : '导出几何电影'}>{en ? 'MOVIE ↓' : '动画 ↓'}</button>
+        <button type="button" class="tomogram-forecast" data-tomogram-forecast disabled aria-pressed="false" aria-label={en ? 'Project the next section from recent real STEP frames' : '根据最近真实 STEP 帧预测下一个截面'} title={en ? 'Project the next real section' : '预测下一个真实截面'}>{en ? 'FUTURE ◌' : '未来 ◌'}</button>
+        <button type="button" class="tomogram-branches" data-tomogram-branches disabled aria-pressed="false" aria-label={en ? 'Cycle through three possible future section branches' : '循环查看三个可能的未来截面分支'} title={en ? 'Cycle future branches' : '循环未来分支'}>{en ? 'BRANCH ∞' : '分支 ∞'}</button>
+        <button type="button" class="tomogram-events" data-tomogram-events disabled aria-label={en ? 'Export topology events as a diagnostic narrative' : '导出拓扑事件诊断叙事'} title={en ? 'Export topology event narrative' : '导出拓扑事件叙事'}>{en ? 'EVENTS ↓' : '事件 ↓'}</button>
+        <button type="button" class="tomogram-import" data-tomogram-import aria-label={en ? 'Import an EasyKiConverter section time capsule' : '导入 EasyKiConverter 截面时间胶囊'} title={en ? 'Import section history JSON' : '导入截面历史 JSON'}>{en ? 'IMPORT ↥' : '导入 ↥'}</button>
+        <button type="button" class="tomogram-play" data-tomogram-play disabled aria-pressed="false" aria-label={en ? 'Play recorded section frames' : '播放已录制截面帧'}>{en ? 'PLAY ▶' : '播放 ▶'}</button>
+        <button type="button" class="tomogram-hop" data-tomogram-hop disabled aria-label={en ? 'Jump to the next topology event' : '跳转到下一个拓扑事件'} title={en ? 'Jump between topology events' : '在拓扑事件之间跳转'}>{en ? 'HOP ↠' : '跳转 ↠'}</button>
+        <button type="button" class="tomogram-arc" data-tomogram-arc disabled aria-label={en ? 'Play the topology event arc' : '播放拓扑事件弧线'} title={en ? 'Play event arc' : '播放事件弧'}>{en ? 'ARC ▶' : '事件弧 ▶'}</button>
+        <button type="button" class="tomogram-reel" data-tomogram-reel disabled aria-pressed="false" aria-label={en ? 'Record the topology event arc as WebM' : '将拓扑事件弧线录制为 WebM'} title={en ? 'Record event reel' : '录制事件短片'}>{en ? 'REEL ●' : '短片 ●'}</button>
+        <button type="button" class="tomogram-multiverse" data-tomogram-multiverse disabled aria-pressed="false" aria-label={en ? 'Blend imported topology histories as a multiverse interference field' : '将导入的拓扑历史混合为多宇宙干涉场'} title={en ? 'Blend imported histories' : '混合导入的历史'}>{en ? 'MIX ∞' : '混合 ∞'}</button>
+        <button type="button" class="tomogram-splice" data-tomogram-splice disabled aria-pressed="false" aria-label={en ? 'Recombine two imported topology histories into a hybrid timeline' : '将两条导入的拓扑历史重组为混合时间线'} title={en ? 'Recombine histories' : '重组历史'}>{en ? 'SPLICE 🧬' : '拼接 🧬'}</button>
+        <button type="button" class="tomogram-audio" data-tomogram-audio disabled aria-pressed="false" aria-label={en ? 'Sonify topology events' : '将拓扑事件转化为声音'} title={en ? 'Turn topology into sound' : '让拓扑发声'}>{en ? 'SOUND ♫' : '声音 ♫'}</button>
+        <button type="button" class="tomogram-cinema" data-tomogram-cinema disabled aria-pressed="false" aria-label={en ? 'Replay the locked topology event across all views' : '在所有视图中回放锁定的拓扑事件'} title={en ? 'Replay event capsule' : '回放事件胶囊'}>{en ? 'CINEMA ◉' : '影院 ◉'}</button>
+        <button type="button" class="tomogram-share" data-tomogram-share disabled aria-label={en ? 'Copy a link to the selected topology event' : '复制当前拓扑事件链接'} title={en ? 'Copy event deep link' : '复制事件深链接'}>{en ? 'SHARE ↗' : '分享 ↗'}</button>
+        <button type="button" class="tomogram-record" data-tomogram-record disabled aria-pressed="false" aria-label={en ? 'Record section frames while scanning' : '扫描时录制截面帧'}>{en ? 'REC ●' : '录制 ●'}</button>
+      </div>
       <label class="tomogram-scrubber" data-tomogram-scrubber>
         <span class="tomogram-scrubber-title">{en ? 'SLICE' : '切片'}</span>
         <input type="range" min="0" max="100" value="50" step="1" data-tomogram-scrubber-range aria-label={en ? 'Scrub the CT section position' : '拖动以检查 CT 切片位置'} disabled />
@@ -128,22 +145,7 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
         <output data-tomogram-lineage-value aria-hidden="true">—</output>
       </div>
       <span class="tomogram-record-status" data-tomogram-record-status aria-live="polite">{en ? 'NO FRAMES' : '暂无帧'}</span>
-      <button type="button" class="tomogram-movie" data-tomogram-movie disabled aria-label={en ? 'Export recorded section frames as an animated SVG' : '将已录制截面帧导出为 SVG 动画'} title={en ? 'Export geometry movie' : '导出几何电影'}>{en ? 'MOVIE ↓' : '动画 ↓'}</button>
-      <button type="button" class="tomogram-forecast" data-tomogram-forecast disabled aria-pressed="false" aria-label={en ? 'Project the next section from recent real STEP frames' : '根据最近真实 STEP 帧预测下一个截面'} title={en ? 'Project the next real section' : '预测下一个真实截面'}>{en ? 'FUTURE ◌' : '未来 ◌'}</button>
-      <button type="button" class="tomogram-branches" data-tomogram-branches disabled aria-pressed="false" aria-label={en ? 'Cycle through three possible future section branches' : '循环查看三个可能的未来截面分支'} title={en ? 'Cycle future branches' : '循环未来分支'}>{en ? 'BRANCH ∞' : '分支 ∞'}</button>
-      <button type="button" class="tomogram-events" data-tomogram-events disabled aria-label={en ? 'Export topology events as a diagnostic narrative' : '导出拓扑事件诊断叙事'} title={en ? 'Export topology event narrative' : '导出拓扑事件叙事'}>{en ? 'EVENTS ↓' : '事件 ↓'}</button>
-      <button type="button" class="tomogram-import" data-tomogram-import aria-label={en ? 'Import an EasyKiConverter section time capsule' : '导入 EasyKiConverter 截面时间胶囊'} title={en ? 'Import section history JSON' : '导入截面历史 JSON'}>{en ? 'IMPORT ↥' : '导入 ↥'}</button>
       <input type="file" accept="application/json,.json" multiple data-tomogram-import-input hidden />
-      <button type="button" class="tomogram-play" data-tomogram-play disabled aria-pressed="false" aria-label={en ? 'Play recorded section frames' : '播放已录制截面帧'}>{en ? 'PLAY ▶' : '播放 ▶'}</button>
-      <button type="button" class="tomogram-hop" data-tomogram-hop disabled aria-label={en ? 'Jump to the next topology event' : '跳转到下一个拓扑事件'} title={en ? 'Jump between topology events' : '在拓扑事件之间跳转'}>{en ? 'HOP ↠' : '跳转 ↠'}</button>
-      <button type="button" class="tomogram-arc" data-tomogram-arc disabled aria-label={en ? 'Play the topology event arc' : '播放拓扑事件弧线'} title={en ? 'Play event arc' : '播放事件弧线'}>{en ? 'ARC ▶' : '事件弧 ▶'}</button>
-      <button type="button" class="tomogram-reel" data-tomogram-reel disabled aria-pressed="false" aria-label={en ? 'Record the topology event arc as WebM' : '将拓扑事件弧线录制为 WebM'} title={en ? 'Record event reel' : '录制事件短片'}>{en ? 'REEL ●' : '短片 ●'}</button>
-      <button type="button" class="tomogram-multiverse" data-tomogram-multiverse disabled aria-pressed="false" aria-label={en ? 'Blend imported topology histories as a multiverse interference field' : '将导入的拓扑历史混合为多宇宙干涉场'} title={en ? 'Blend imported histories' : '混合导入的历史'}>{en ? 'MIX ∞' : '混合 ∞'}</button>
-      <button type="button" class="tomogram-splice" data-tomogram-splice disabled aria-pressed="false" aria-label={en ? 'Recombine two imported topology histories into a hybrid timeline' : '将两条导入的拓扑历史重组为混合时间线'} title={en ? 'Recombine histories' : '重组历史'}>{en ? 'SPLICE 🧬' : '拼接 🧬'}</button>
-      <button type="button" class="tomogram-audio" data-tomogram-audio disabled aria-pressed="false" aria-label={en ? 'Sonify topology events' : '将拓扑事件转化为声音'} title={en ? 'Turn topology into sound' : '让拓扑发声'}>{en ? 'SOUND ♫' : '声音 ♫'}</button>
-      <button type="button" class="tomogram-cinema" data-tomogram-cinema disabled aria-pressed="false" aria-label={en ? 'Replay the locked topology event across all views' : '在所有视图中回放锁定的拓扑事件'} title={en ? 'Replay event capsule' : '回放事件胶囊'}>{en ? 'CINEMA ◉' : '影院 ◉'}</button>
-      <button type="button" class="tomogram-share" data-tomogram-share disabled aria-label={en ? 'Copy a link to the selected topology event' : '复制当前拓扑事件链接'} title={en ? 'Copy event deep link' : '复制事件深链接'}>{en ? 'SHARE ↗' : '分享 ↗'}</button>
-      <button type="button" class="tomogram-record" data-tomogram-record disabled aria-pressed="false" aria-label={en ? 'Record section frames while scanning' : '扫描时录制截面帧'}>{en ? 'REC ●' : '录制 ●'}</button>
       <div class="artifact-visual" data-visual="symbol" aria-hidden="true">
         <svg viewBox="0 0 460 320" role="presentation">
           <g class="artifact-grid"><path d="M20 40H440M20 80H440M20 120H440M20 160H440M20 200H440M20 240H440M20 280H440M60 20V300M100 20V300M140 20V300M180 20V300M220 20V300M260 20V300M300 20V300M340 20V300M380 20V300M420 20V300" /></g>
@@ -222,7 +224,7 @@ const appImage = new URL(`${import.meta.env.BASE_URL}assets/showcase/easykiconve
     </article>
     <article class="motion-chapter motion-chapter-product" data-motion-chapter="product">
       <span>{en ? '03 — THE REAL WORKBENCH' : '03 — 真实工作台'}</span><h2>{en ? <>Then, back<br /><em>to your work.</em></> : <>最后回到<br /><em>真实工作台。</em></>}</h2>
-      <figure class="motion-app-window"><img src={appImage} alt={en ? 'The real EasyKiConverter Qt Quick desktop interface' : 'EasyKiConverter 真实 Qt Quick 桌面工作界面'} loading="lazy" /><figcaption>{en ? 'THE REAL QT QUICK APP' : '真实 Qt Quick 应用界面'}</figcaption></figure>
+      <figure class="motion-app-window"><img src={appImage} alt={en ? 'The real EasyKiConverter Qt Quick desktop interface; Local output path hidden' : 'EasyKiConverter 真实 Qt Quick 桌面工作界面；本机输出路径已隐藏'} loading="lazy" /><figcaption>{en ? 'THE REAL QT QUICK APP · LOCAL PATH HIDDEN' : '真实 Qt Quick 应用界面 · 本机路径已隐藏'}</figcaption></figure>
     </article>
     <div class="motion-destinations" aria-label={en ? 'Supported EDA destinations' : '支持的 EDA 目标'}><span>KiCad</span><i>↗</i><span>Altium</span><small>{en ? '04 — CONTINUE DESIGNING' : '04 — 继续你的设计'}</small></div>
   </div>
