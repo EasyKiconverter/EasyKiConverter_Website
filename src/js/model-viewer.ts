@@ -6845,7 +6845,7 @@ export const setupModel = async (): Promise<void> => {
           ? `${axisNames[projectionHorizontal]} / ${axisNames[projectionVertical]} · CUT ${state.sliceAxis.toUpperCase()}`
           : `${axisNames[horizontalAxis]} / ${axisNames[verticalAxis]}`,
         rect.width - 28,
-        25,
+        56,
       );
       context.textAlign = "left";
       context.fillStyle = "#c8bfdc";
