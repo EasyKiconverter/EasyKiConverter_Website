@@ -67,7 +67,7 @@ test('homepage release CTA stays on one line at 320px in both languages', async 
   }
 });
 
-test('bilingual product screenshots use one public asset and disclose the hidden local path', async ({ page }) => {
+test('bilingual homepage shows distinct sanitized input and export screenshots', async ({ page }) => {
   for (const [path, disclosure] of [
     ['/', '本机输出路径已隐藏'],
     ['/en/', 'Local output path hidden'],
@@ -75,11 +75,15 @@ test('bilingual product screenshots use one public asset and disclose the hidden
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const heroImage = page.locator('.hero-product-window img');
     const showcaseImage = page.locator('.app-window > img');
-    const source = await heroImage.getAttribute('src');
-    expect(source).toContain('easykiconverter-main-public.webp');
-    await expect(showcaseImage).toHaveAttribute('src', source ?? '');
-    await expect(heroImage).toHaveAttribute('alt', new RegExp(disclosure));
+    const heroSource = await heroImage.getAttribute('src');
+    const showcaseSource = await showcaseImage.getAttribute('src');
+    expect(heroSource).toContain('easykiconverter-main-public.webp');
+    expect(showcaseSource).toContain('easykiconverter-export.webp');
+    expect(showcaseSource).not.toBe(heroSource);
+    await expect(heroImage).toHaveAttribute('alt', new RegExp(disclosure, 'i'));
+    await expect(showcaseImage).toHaveAttribute('alt', new RegExp(disclosure, 'i'));
     await expect(page.locator('.app-window .showcase-source')).toContainText(disclosure);
+    await expect(page.locator('.app-window .showcase-proof-items')).toContainText(/progress|进度/i);
     for (const image of [heroImage, showcaseImage]) {
       const dimensions = await image.evaluate((element) => {
         const image = element as HTMLImageElement;
@@ -1033,20 +1037,20 @@ test('bilingual shared text colors meet WCAG AA on light brand surfaces', async 
   }
 });
 
-test('bilingual workbench captions preserve the same product evidence', async ({ page }) => {
+test('bilingual workbench captions describe export-stage product evidence', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM/);
+  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /导出设置、处理进度和元件结果/);
   await expect(page.locator('.showcase-source')).toHaveText('截取自桌面软件实际运行界面 · 本机输出路径已隐藏');
   await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
-  await expect(page.locator('.showcase-proof-items')).toContainText('添加元件');
-  await expect(page.locator('.showcase-proof-items')).toContainText('导入 BOM');
+  await expect(page.locator('.showcase-proof-items')).toContainText('设置导出选项');
+  await expect(page.locator('.showcase-proof-items')).toContainText('核对导出结果');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /BOM import and export settings/);
+  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /export settings, processing progress and component results/);
   await expect(page.locator('.showcase-source')).toHaveText('Captured from the running desktop app · Local output path hidden');
   await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
-  await expect(page.locator('.showcase-proof-items')).toContainText('Add components');
-  await expect(page.locator('.showcase-proof-items')).toContainText('Import BOM');
+  await expect(page.locator('.showcase-proof-items')).toContainText('Set export options');
+  await expect(page.locator('.showcase-proof-items')).toContainText('Review results');
 });
 
 test('bilingual homepages expose localized navigation destinations', async ({ page }) => {
