@@ -22,6 +22,7 @@ const socialImageUrl = new URL(
   siteBase,
 ).href;
 const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
+const exportImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-export.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
 const registeredFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
 const platformAvailability = getPlatformAvailability("en");
@@ -228,8 +229,8 @@ const platformAvailability = getPlatformAvailability("en");
             <em>It is the actual workbench.</em>
           </h2>
           <p>
-            A real Qt Quick view from the EasyKiConverter project: add
-            components, import a BOM, set the output and start converting.
+            The opening view shows component entry and BOM import. Here, the real export
+            settings, processing progress and component results complete the story from setup to delivery.
           </p>
         </div>
         <figure class="app-window reveal">
@@ -244,8 +245,8 @@ const platformAvailability = getPlatformAvailability("en");
             <i></i>
           </div>
           <img
-            src={appImageUrl}
-            alt="The actual EasyKiConverter Qt Quick main window with component entry, BOM import and export settings; Local output path hidden"
+            src={exportImageUrl}
+            alt="The actual EasyKiConverter Qt Quick export view showing export settings, processing progress and component results; local output path hidden"
             loading="lazy"
           />
           <ShowcaseCaption lang="en" />

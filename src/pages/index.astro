@@ -22,6 +22,7 @@ const socialImageUrl = new URL(
   siteBase,
 ).href;
 const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
+const exportImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-export.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
 const registeredFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
 const localizeAssetLabel = (label: string) => label
@@ -223,8 +224,8 @@ const platformAvailability = getPlatformAvailability("zh");
             <em>这是真实界面。</em>
           </h2>
           <p>
-            来自 EasyKiConverter 主项目的真实 Qt Quick 界面：添加元件、导入
-            BOM、设定输出，然后开始转换。
+            首屏展示元件与 BOM 输入；这里接着呈现真实导出设置、处理进度和元件结果，
+            串起从准备到交付的工作流。
           </p>
         </div>
         <figure class="app-window reveal">
@@ -239,8 +240,8 @@ const platformAvailability = getPlatformAvailability("zh");
             <i></i>
           </div>
           <img
-            src={appImageUrl}
-            alt="EasyKiConverter 实际 Qt Quick 主界面，包含添加元件、BOM 和导出设置；本机输出路径已隐藏"
+            src={exportImageUrl}
+            alt="EasyKiConverter 实际 Qt Quick 导出界面，展示导出设置、处理进度和元件结果；本机输出路径已隐藏"
             loading="lazy"
           />
           <ShowcaseCaption lang="zh" />
