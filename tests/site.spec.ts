@@ -1499,7 +1499,7 @@ test('Lab explains that surface detail continues after the GLB is ready', async 
 test('Lab keeps model metadata, view controls, caption, and slice panel from overlapping', async ({ page }) => {
   await page.route('**/assets/model/**', (route) => route.abort());
   await page.route('**/assets/vendor/**', (route) => route.abort());
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 428, height: 844 }, { width: 390, height: 844 }, { width: 360, height: 640 }, { width: 320, height: 700 }]) {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 428, height: 844 }, { width: 390, height: 844 }, { width: 360, height: 640 }, { width: 320, height: 700 }, { width: 320, height: 640 }]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -1582,9 +1582,9 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
   }
 });
 
-test('Lab keeps the model view switcher above the geometry on desktop and mobile', async ({ page }) => {
+test('Lab keeps the model view switcher in the upper stage on desktop and mobile', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
-    for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 320, height: 640 }]) {
       await page.setViewportSize(viewport);
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const switcher = page.locator('.artifact-switcher');
@@ -1603,6 +1603,9 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
       });
       expect(geometry).not.toBeNull();
       expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(geometry!.stage.height * 0.42);
+      if (viewport.width <= 760) {
+        expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(geometry!.stage.height * 0.2);
+      }
       expect(geometry!.switcher.left).toBeGreaterThanOrEqual(geometry!.stage.left);
       expect(geometry!.switcher.right).toBeLessThanOrEqual(geometry!.stage.right);
       geometry!.buttonHeights.forEach((height) => expect(height).toBeLessThanOrEqual(34));
@@ -1611,7 +1614,7 @@ test('Lab keeps the model view switcher above the geometry on desktop and mobile
 });
 
 test('Lab gives the mobile model stage enough room in both languages', async ({ page }) => {
-  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }, { width: 320, height: 640 }]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -1621,7 +1624,7 @@ test('Lab gives the mobile model stage enough room in both languages', async ({ 
         const rect = element.getBoundingClientRect();
         return { width: rect.width, height: rect.height };
       });
-      const minimumHeight = viewport.height <= 700 ? viewport.height * 0.32 : viewport.height * 0.4;
+      const minimumHeight = viewport.height <= 700 ? Math.max(viewport.height * 0.5, 320) : viewport.height * 0.4;
       expect(bounds.width).toBeLessThanOrEqual(viewport.width);
       expect(bounds.height).toBeGreaterThanOrEqual(minimumHeight);
     }
