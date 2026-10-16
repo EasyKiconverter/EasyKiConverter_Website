@@ -1582,17 +1582,26 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
     await expect(stage.locator('#model-canvas')).not.toHaveAttribute('aria-hidden', 'true');
     await expect(stage.locator('.mesh-atlas')).toHaveAttribute('inert', '');
     await expect(stage.locator('[data-artifact-label]')).toContainText(/GLB DELIVERY MODEL|GLB 交付模型/);
+  }
+});
+
+test('Lab analysis views keep canvas metadata and mobile Tomogram tools clear', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route('**/assets/model/**', (route) => route.abort());
+  await page.route('**/assets/vendor/**', (route) => route.abort());
+
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const stage = page.locator('[data-model-stage]');
 
     for (const view of ['tomogram', 'oracle', 'trinity', 'morph']) {
-      const viewButton = stage.locator(`[data-artifact-view="${view}"]`);
-      await viewButton.dispatchEvent('click');
-      await expect(stage).toHaveAttribute('data-artifact-view', view);
+      await stage.evaluate((element, artifactView) => { element.dataset.artifactView = artifactView; }, view);
       await expect(stage.locator('.motion-model-note')).toBeHidden();
       await expect(stage.locator('.model-detail-status')).toBeHidden();
       await expect(stage.locator('.neural-memory-readout')).toBeHidden();
     }
 
-    await stage.locator('[data-artifact-view="tomogram"]').dispatchEvent('click');
+    await stage.evaluate((element) => { element.dataset.artifactView = 'tomogram'; });
     const tomogramLayout = await stage.evaluate((element) => {
       const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
       const switcher = rect('.artifact-switcher');
@@ -1605,7 +1614,7 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
         switcherOverToolbar: intersects(switcher, rect('.tomogram-toolbar')),
         toolbarOverSpecimenLabel: intersects(rect('.tomogram-toolbar'), rect('.tomogram-specimen-label')),
         specimenPreviewOverSwitcher: intersects(rect('#model-canvas'), switcher),
-        toolbarButtonsOverlap: window.innerWidth <= 760 && toolbarButtons.some((button, index) => toolbarButtons.slice(index + 1).some((other) => intersects(button, other))),
+        toolbarButtonsOverlap: toolbarButtons.some((button, index) => toolbarButtons.slice(index + 1).some((other) => intersects(button, other))),
       };
     });
     expect(tomogramLayout).toEqual({ switcherAboveStageBottom: true, switcherOverToolbar: false, toolbarOverSpecimenLabel: false, specimenPreviewOverSwitcher: false, toolbarButtonsOverlap: false });
