@@ -787,7 +787,7 @@
 
 @media (max-width: 390px) {
   .download h2 {
-    font-size: clamp(36px, 12vw, 44px);
+    font-size: clamp(32px, 10vw, 39px);
   }
 
   .download-actions .button-light {
