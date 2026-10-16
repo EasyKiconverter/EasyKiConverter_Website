@@ -512,7 +512,7 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
 
 @media (max-width: 360px) and (prefers-reduced-motion: no-preference) {
   .motion-model[data-artifact-view="model"] .neural-memory-readout {
-    max-width: 46%;
+    max-width: 34%;
     padding: 3px 4px;
     font-size: 7px;
     letter-spacing: 0.02em;
@@ -521,6 +521,10 @@ body:has(.motion-narrative) .hero,body:has(.motion-narrative) .marquee,body:has(
 
 /* Short phones need a taller stage so geometry has room between controls. */
 @media (max-width: 760px) and (max-height: 700px) and (prefers-reduced-motion: no-preference) {
+  .motion-chapter {
+    bottom: auto;
+  }
+
   .motion-model {
     top: 72%;
     height: 50svh;
