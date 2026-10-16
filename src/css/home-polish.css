@@ -785,6 +785,20 @@
   }
 }
 
+@media (max-width: 390px) {
+  .download h2 {
+    font-size: clamp(36px, 12vw, 44px);
+  }
+
+  .download-actions .button-light {
+    gap: 12px;
+    padding-right: 14px;
+    padding-left: 14px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+}
+
 @media (min-width: 851px) and (max-width: 980px) {
   .site-header {
     height: 74px;
