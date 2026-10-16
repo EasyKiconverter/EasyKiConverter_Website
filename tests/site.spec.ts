@@ -1095,6 +1095,7 @@ test('homepage story cards connect the narrative to evidence and action', async 
     await expect(links.nth(0)).toHaveAttribute('href', 'cases/');
     await expect(links.nth(1)).toHaveAttribute('href', 'lab/');
     await expect(links.nth(2)).toHaveAttribute('href', '#download');
+    await expect(links.nth(2)).toContainText(path === '/' ? '查看下载项' : 'View downloads');
   }
 });
 
