@@ -24,7 +24,7 @@ const socialImageUrl = new URL(
 const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
 const exportImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-export.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
-const registeredFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
+const additionalFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
 const platformAvailability = getPlatformAvailability("en");
 ---
 
@@ -284,7 +284,7 @@ const platformAvailability = getPlatformAvailability("en");
               </p>
               <div class="format-pills" data-format-summary>
                 {primaryFormats.map((format) => <b>{format.name}</b>)}
-                <b>+ {registeredFormatCount} registered targets</b>
+                <b>+ {additionalFormatCount} additional targets</b>
               </div>
               <div class="feature-links" aria-label="Format and case-study entries">
                 <a class="feature-link feature-link-internal feature-link-primary" href="formats/">View format matrix <span>→</span></a>
