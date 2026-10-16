@@ -10,7 +10,7 @@
 
 ## 当前阶段
 
-项目处于 V0.0.1 稳定维护与用户体验持续改进阶段。2026-10-16 核对：`version/V0.0.1` 当前为 `54b078b`，PR #359 已合入，合并后 Site Quality run `38823392621` 成功（232 passed、4 skipped）；Feng083 已独立审评。`master` 仍为 `d0c4b59`，本轮未晋级或部署生产。主项目最新 Release API 为 `v3.1.13`。本轮只读生产检查仍观察到首页重复 `<title>`；另一次资产请求遇到 TLS 握手超时，因此不据此推断全部线上资源状态。WEB-04 双语页面体验优化继续推进；真实手机与网络性能仍未验证。
+项目处于 V0.0.1 稳定维护与用户体验持续改进阶段。2026-10-16 核对：`version/V0.0.1` 当前为 `c131e1b`，PR #361 已合入，PR/合并后 Site Quality 与 Dependency Review 均成功（本地完整 Playwright 232 passed、4 skipped）；Feng083 已独立审评。`master` 仍为 `d0c4b59`，本轮未晋级或部署生产。主项目最新 Release API 为 `v3.1.13`。本轮只读生产检查仍观察到首页重复 `<title>`；另一次资产请求遇到 TLS 握手超时，因此不据此推断全部线上资源状态。WEB-04 双语页面体验优化继续推进；真实手机与网络性能仍未验证。
 
 随后 PR #345 经 Feng083 独立审评并合入 `version/V0.0.1`（merge `74f8437`），修复 reduced-motion 下 Lab 标题/模型舞台重叠及控件定位；PR Site Quality、Dependency Review 和合并后 Site Quality run `38756881636` 均通过。生产未部署。
 
@@ -33,6 +33,8 @@
 本轮只读生产检查中，资产检查器的 8 个目标均返回 HTTP 200，但部署验收器使用 Python 默认请求头时收到 Cloudflare HTTP 403；同一 GET 改用资产检查器已有的 `EasyKiConverter-production-check` 标识后返回 HTTP 200，并继续检测出线上首页仍有两个 `<title>`。PR #337 经独立审查合入 `version/V0.0.1`（merge `6f87852`），并由 PR #341 晋级至 `master`（merge `d0c4b59`）；版本分支 run `38739192646` 与 master run `38745725230` 均通过（各 202 passed、4 skipped），6 项部署工具单元测试也通过。线上未部署，首页重复标题问题仍存在；生产部署仍需针对本次操作明确批准。
 
 ## 里程碑与任务
+
+PR #361 解决了 320px 窄屏 Lab 模型状态长文本与视图切换器相撞的问题，并让 reduced-motion 下的切换器保持单行、可横向滚动；双语 320/360px 长文本回归覆盖普通/减少动效布局。Feng083 独立审评后合入 `version/V0.0.1`（merge `c131e1b`）；PR Site Quality `38826221413`、Dependency Review `38826221350` 和合并后 Site Quality `38826667752` 均成功。本地完整 Playwright 232 passed、4 skipped，构建、Astro 检查、8 页面验证和模型资产检查通过。中英文 320px 截图见 `.github/pr-evidence/lab-readout-clearance-after-{zh,en}-320.png`。未晋级 `master`、未部署生产或验证真机。
 
 状态更新（2026-10-16）：PR #355 已合入 `version/V0.0.1`（merge `48251d3`），PR Site Quality run `38807819176`、Dependency Review `38807819227` 和合并后 Site Quality run `38808569106` 均成功；合并后浏览器测试 224 passed、4 skipped。随后首页双语 CTA 复核发现英文下载按钮在 320px 下折为两行，而中文为一行。PR #356 首轮 Site Quality run `38811418997` 证实 GitHub Runner 字体下英文标签仍折行；进一步精简文案后，本机聚焦与完整 Playwright（226 passed、4 skipped）均通过。首页、Lab、Formats、Cases 的版本下载入口统一为紧凑的双语文案，并添加 320px 单行回归。构建、Astro 检查、8 路由校验、模型资源检查、6 项 Python 单测通过；英文前后图见 `.github/pr-evidence/home-cta-{before,after}-en-320.png`。首次本地 Release 同步遇到 403 并回退到已检查的 `v3.1.13`；后续构建同步成功。改动面向 `version/V0.0.1`，未更改 `master` 或生产站；真机和网络性能仍未验证。
 
