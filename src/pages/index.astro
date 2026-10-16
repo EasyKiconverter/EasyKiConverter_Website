@@ -24,7 +24,7 @@ const socialImageUrl = new URL(
 const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
 const exportImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-export.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
-const registeredFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
+const additionalFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
 const localizeAssetLabel = (label: string) => label
   .replace(" installer", " 安装包")
   .replace("Apple Silicon", "Apple 芯片");
@@ -276,7 +276,7 @@ const platformAvailability = getPlatformAvailability("zh");
               </p>
               <div class="format-pills" data-format-summary>
                 {primaryFormats.map((format) => <b>{format.name}</b>)}
-                <b>+ {registeredFormatCount} 个已注册目标</b>
+                <b>+ {additionalFormatCount} 个其他目标</b>
               </div>
               <div class="feature-links" aria-label="格式与案例入口">
                 <a class="feature-link feature-link-internal feature-link-primary" href="formats/">查看格式矩阵 <span>→</span></a>
@@ -287,7 +287,7 @@ const platformAvailability = getPlatformAvailability("zh");
           <article class="feature-card feature-card-mint reveal reveal-delay-1">
             <span class="feature-symbol">⌁</span>
             <h3>批量而不吵闹</h3>
-            <p>BOM 导入、多线程处理和断点记忆，让大批量元件也保持清爽。</p>
+            <p>BOM 导入、多线程处理与自动记住设置，让大批量任务更从容。</p>
           </article>
           <article class="feature-card feature-card-peach reveal reveal-delay-2">
             <span class="feature-symbol">◒</span>

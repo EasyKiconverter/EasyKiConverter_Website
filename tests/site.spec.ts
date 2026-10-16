@@ -373,7 +373,7 @@ test('homepage format summary matches the capability matrix data', async ({ page
     const summary = page.locator('[data-format-summary]');
     await expect(summary).toContainText('KiCad');
     await expect(summary).toContainText('Altium Designer');
-    await expect(summary).toContainText(/\+ 9 (个已注册目标|registered targets)/);
+    await expect(summary).toContainText(path === '/' ? '+ 9 个其他目标' : '+ 9 additional targets');
     await expect(summary).not.toContainText('3D');
   }
 });
@@ -1204,6 +1204,31 @@ test('English homepage keeps product section labels concrete', async ({ page }) 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.product-showcase .kicker')).toHaveText('THE REAL WORKBENCH');
   await expect(page.locator('#workflow .kicker')).toHaveText('A SMALL WORKFLOW');
+  await expect(page.locator('.feature-card-mint p')).toHaveText(
+    'BOM import, multi-threading and remembered settings keep large jobs calm.',
+  );
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.feature-card-mint p')).toHaveText(
+    'BOM 导入、多线程处理与自动记住设置，让大批量任务更从容。',
+  );
+});
+
+test('English pages preserve copy across visual line breaks', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const path of ['/en/', '/en/formats/', '/en/cases/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const mismatches = await page.locator('main h1, main h2, main h3, main h4').evaluateAll((headings) => headings
+      .map((heading) => ({
+        content: heading.textContent?.replace(/\s+/g, ' ').trim(),
+        visual: heading.innerText?.replace(/\s+/g, ' ').trim(),
+      }))
+      .filter(({ content, visual }) => content !== visual));
+    expect(mismatches, `${path} heading text`).toEqual([]);
+  }
+
+  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#features-title')).toHaveText('Make the tedious parts a little easier.');
 });
 
 test('bilingual workflow copy explains the same four concrete steps', async ({ page }) => {
@@ -1497,6 +1522,30 @@ test('Lab explains that surface detail continues after the GLB is ready', async 
     const stage = page.locator('[data-model-stage]');
     await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
     await expect(stage.locator('[data-model-detail-status]')).toContainText(/表面细节|SURFACE DETAIL/);
+  }
+});
+
+test('Lab loading state is bilingual, respects reduced motion, and ends when ready', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const path of ['/lab/', '/en/lab/']) {
+    let continueAsset!: () => void;
+    const assetGate = new Promise<void>((resolve) => { continueAsset = resolve; });
+    await page.route('**/assets/model/*.glb', async (route) => {
+      await assetGate;
+      await route.continue();
+    });
+
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const stage = page.locator('[data-model-stage]');
+    const loading = stage.locator('.model-loading-state');
+    await expect(loading).toBeVisible();
+    await expect(loading).toContainText(path.startsWith('/en/') ? 'Preparing the real 3D model' : '正在准备真实 3D 模型');
+    await expect(loading.locator('.model-loading-orbit')).toHaveCSS('animation-name', 'none');
+    continueAsset();
+    await expect(stage).toHaveClass(/model-loaded/, { timeout: 20_000 });
+    await expect(loading).toBeHidden();
+    await page.unroute('**/assets/model/*.glb');
   }
 });
 

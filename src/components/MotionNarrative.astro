@@ -9,13 +9,17 @@ const appImage = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-mai
   <div class="motion-pin">
     <div class="motion-heading">
       <p class="kicker">{en ? 'ONE COMPONENT, A NEW SHAPE' : '同一个元件，新的形状'}</p>
-      <h1>{en ? <>Component conversion,<br /><em>made tangible.</em></> : <>让元件库转换，<br /><em>顺手一点。</em></>}</h1>
+      <h1>{en ? <>Component conversion,{" "}<br /><em>made tangible.</em></> : <>让元件库转换，<br /><em>顺手一点。</em></>}</h1>
       <p>{en ? 'Follow one real component from LCSC / EasyEDA into the EDA tools you already use.' : '跟随一个真实元件，从 LCSC / EasyEDA 出发，走进你熟悉的 EDA 工作流。'}</p>
     </div>
 
     <div class="motion-model" data-model-stage data-artifact-view="model">
       <div class="motion-model-note"><span class="live-dot"></span><span data-artifact-label>{en ? 'GLB DELIVERY MODEL' : 'GLB 交付模型'}</span><small>01 / 04</small></div>
       <div class="model-detail-status" data-model-detail-status aria-live="polite">{en ? 'SURFACE DETAIL · LOADING' : '表面细节 · 加载中'}</div>
+      <div class="model-loading-state" role="status" aria-live="polite">
+        <span class="model-loading-orbit" aria-hidden="true"></span>
+        <span>{en ? 'Preparing the real 3D model…' : '正在准备真实 3D 模型…'}</span>
+      </div>
       <div class="neural-memory-readout" data-neural-memory aria-live="polite">{en ? 'SYNAPTIC MEMORY · 0 PATHS' : '突触记忆 · 0 条路径'}</div>
       <div class="swarm-lineage-readout" data-swarm-lineage-readout aria-live="polite">{en ? 'LINEAGE ∞ 0' : '谱系 ∞ 0'}</div>
       <div class="swarm-lineage-picker" data-swarm-lineage-picker role="group" aria-label={en ? 'Recall an archived topology genome' : '回溯已归档的拓扑基因'}></div>
@@ -214,18 +218,76 @@ const appImage = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-mai
 
     <div class="motion-progress" aria-hidden="true"><span></span></div>
     <article class="motion-chapter motion-chapter-input" data-motion-chapter="input">
-      <span>{en ? '01 — INPUT' : '01 — 输入'}</span><h2>{en ? <>Begin with<br /><em>a part number.</em></> : <>从一个编号<br /><em>开始。</em></>}</h2>
+      <span>{en ? '01 — INPUT' : '01 — 输入'}</span><h2>{en ? <>Begin with{" "}<br /><em>a part number.</em></> : <>从一个编号<br /><em>开始。</em></>}</h2>
       <p>{en ? 'LCSC · EasyEDA · BOM' : 'LCSC · EasyEDA · BOM'}</p>
     </article>
     <article class="motion-chapter motion-chapter-library" data-motion-chapter="library">
-      <span>{en ? '02 — BUILD THE LIBRARY' : '02 — 构建元件库'}</span><h2>{en ? <>One component.<br /><em>Three useful views.</em></> : <>一个元件，<br /><em>三种设计语言。</em></>}</h2>
+      <span>{en ? '02 — BUILD THE LIBRARY' : '02 — 构建元件库'}</span><h2>{en ? <>One component.{" "}<br /><em>Three useful views.</em></> : <>一个元件，<br /><em>三种设计语言。</em></>}</h2>
       <div class="motion-artifacts"><b>{en ? 'SYMBOL' : '符号'}</b><i>+</i><b>{en ? 'FOOTPRINT' : '封装'}</b><i>+</i><b>{en ? '3D MODEL' : '3D 模型'}</b></div>
       <p>{en ? 'A visual metaphor for the output — not a live CAD conversion.' : '这是对转换结果的视觉隐喻，并非网页中的实时 CAD 转换。'}</p>
     </article>
     <article class="motion-chapter motion-chapter-product" data-motion-chapter="product">
-      <span>{en ? '03 — THE REAL WORKBENCH' : '03 — 真实工作台'}</span><h2>{en ? <>Then, back<br /><em>to your work.</em></> : <>最后回到<br /><em>真实工作台。</em></>}</h2>
+      <span>{en ? '03 — THE REAL WORKBENCH' : '03 — 真实工作台'}</span><h2>{en ? <>Then, back{" "}<br /><em>to your work.</em></> : <>最后回到<br /><em>真实工作台。</em></>}</h2>
       <figure class="motion-app-window"><img src={appImage} alt={en ? 'The real EasyKiConverter Qt Quick desktop interface; Local output path hidden' : 'EasyKiConverter 真实 Qt Quick 桌面工作界面；本机输出路径已隐藏'} loading="lazy" /><figcaption>{en ? 'THE REAL QT QUICK APP · LOCAL PATH HIDDEN' : '真实 Qt Quick 应用界面 · 本机路径已隐藏'}</figcaption></figure>
     </article>
     <div class="motion-destinations" aria-label={en ? 'Supported EDA destinations' : '支持的 EDA 目标'}><span>KiCad</span><i>↗</i><span>Altium</span><small>{en ? '04 — CONTINUE DESIGNING' : '04 — 继续你的设计'}</small></div>
   </div>
 </section>
+
+<style>
+  .model-loading-state {
+    position: absolute;
+    z-index: 1;
+    inset: 28% 0 22%;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 18px;
+    color: #625b70;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+    transition: opacity 240ms ease;
+  }
+
+  .model-loading-orbit {
+    width: 58px;
+    aspect-ratio: 1;
+    border: 1px solid #7667cb55;
+    border-radius: 50%;
+    position: relative;
+    animation: model-loading-breathe 1.8s ease-in-out infinite;
+  }
+
+  .model-loading-orbit::before,
+  .model-loading-orbit::after {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border: 1px solid #61bca766;
+    border-radius: 42% 58% 54% 46%;
+    transform: rotate(35deg);
+  }
+
+  .model-loading-orbit::after {
+    inset: 20px;
+    background: #7667cb;
+    border: 0;
+    border-radius: 50%;
+    opacity: 0.7;
+  }
+
+  :global(.motion-model.model-loaded) .model-loading-state,
+  :global(.motion-model.model-fallback) .model-loading-state {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  @keyframes model-loading-breathe {
+    50% { transform: scale(1.08) rotate(35deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .model-loading-orbit { animation: none; }
+  }
+</style>
