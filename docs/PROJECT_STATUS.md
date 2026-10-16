@@ -10,7 +10,7 @@
 
 ## 当前阶段
 
-项目处于 V0.0.1 稳定维护与用户体验持续改进阶段。2026-10-16 核对：`version/V0.0.1` 当前为 `c131e1b`，PR #361 已合入，PR/合并后 Site Quality 与 Dependency Review 均成功（本地完整 Playwright 232 passed、4 skipped）；Feng083 已独立审评。`master` 仍为 `d0c4b59`，本轮未晋级或部署生产。主项目最新 Release API 为 `v3.1.13`。本轮只读生产检查仍观察到首页重复 `<title>`；另一次资产请求遇到 TLS 握手超时，因此不据此推断全部线上资源状态。WEB-04 双语页面体验优化继续推进；真实手机与网络性能仍未验证。
+项目处于 V0.0.1 稳定维护与用户体验持续改进阶段。2026-10-16 核对：`version/V0.0.1` 当前为 `70bc4c9`，PR #363 已合入；Feng083 独立审评，PR 与合并后 Site Quality、Dependency Review 均成功（本地完整 Playwright 232 passed、4 skipped）。`master` 仍为 `d0c4b59`，本轮未晋级或部署生产。主项目最新 Release API 为 `v3.1.13`。本轮只读生产检查仍观察到首页重复 `<title>`；另一次资产请求遇到 TLS 握手超时，因此不据此推断全部线上资源状态。WEB-04 双语页面体验优化继续推进；真实手机与网络性能仍未验证。
 
 随后 PR #345 经 Feng083 独立审评并合入 `version/V0.0.1`（merge `74f8437`），修复 reduced-motion 下 Lab 标题/模型舞台重叠及控件定位；PR Site Quality、Dependency Review 和合并后 Site Quality run `38756881636` 均通过。生产未部署。
 
@@ -36,6 +36,8 @@
 
 PR #361 解决了 320px 窄屏 Lab 模型状态长文本与视图切换器相撞的问题，并让 reduced-motion 下的切换器保持单行、可横向滚动；双语 320/360px 长文本回归覆盖普通/减少动效布局。Feng083 独立审评后合入 `version/V0.0.1`（merge `c131e1b`）；PR Site Quality `38826221413`、Dependency Review `38826221350` 和合并后 Site Quality `38826667752` 均成功。本地完整 Playwright 232 passed、4 skipped，构建、Astro 检查、8 页面验证和模型资产检查通过。中英文 320px 截图见 `.github/pr-evidence/lab-readout-clearance-after-{zh,en}-320.png`。未晋级 `master`、未部署生产或验证真机。
 
+随后 PR #363 修复 Lab 移动端视图切换器遮挡真实模型上部的问题：320/390px 双语截图确认几何完整可见；不超过 360px 时收紧状态读数，短屏（高度不超过 700px）将模型舞台增至至少 320px，并压缩章节文案避免英文叙述与模型相撞。首次 Runner 回归暴露状态读数/注记碰撞及短屏章节边界问题，均已修正并增加/强化双语回归。Feng083 独立审评后合入 `version/V0.0.1`（merge `70bc4c9`）；PR Site Quality `38911452427`、`38911454408`、Dependency Review `38911452401`、`38911454092` 和合并后 Site Quality `38912132079` 均通过（232 passed、4 skipped）。本地构建、Astro 检查、8 页面校验、模型资产检查及完整 Playwright（232 passed、4 skipped）通过。截图见 `.github/pr-evidence/model-clearance-after-{zh,en}-{320,390}.png`。未晋级 `master`、未部署生产或验证真机。
+
 状态更新（2026-10-16）：PR #355 已合入 `version/V0.0.1`（merge `48251d3`），PR Site Quality run `38807819176`、Dependency Review `38807819227` 和合并后 Site Quality run `38808569106` 均成功；合并后浏览器测试 224 passed、4 skipped。随后首页双语 CTA 复核发现英文下载按钮在 320px 下折为两行，而中文为一行。PR #356 首轮 Site Quality run `38811418997` 证实 GitHub Runner 字体下英文标签仍折行；进一步精简文案后，本机聚焦与完整 Playwright（226 passed、4 skipped）均通过。首页、Lab、Formats、Cases 的版本下载入口统一为紧凑的双语文案，并添加 320px 单行回归。构建、Astro 检查、8 路由校验、模型资源检查、6 项 Python 单测通过；英文前后图见 `.github/pr-evidence/home-cta-{before,after}-en-320.png`。首次本地 Release 同步遇到 403 并回退到已检查的 `v3.1.13`；后续构建同步成功。改动面向 `version/V0.0.1`，未更改 `master` 或生产站；真机和网络性能仍未验证。
 
 后续核实：PR #356（merge `eaa19a1`）和 #357（merge `4d14888`）已依次合入 `version/V0.0.1`，对应合并后 Site Quality runs `38813432765`（226 passed、4 skipped）和 `38815851191`（228 passed、4 skipped）均成功。PR #358 修复 851–980px 首页顶栏溢出（保留内容断点），经 Feng083 独立审评和必需 CI 通过后合入（merge `7b925ee`）；合并后 Site Quality run `38819346037` 成功（232 passed、4 skipped）。随后 Lab 移动端截图/边界审查发现英文模型标签与状态读数在 360/390px 相交，中文无碰撞。PR #359 扩展 320–428px 双语碰撞回归，并依据 Runner 实测调整读数、细节标签与视图切换控件间距；Feng083 独立审评后合入 `version/V0.0.1`（merge `54b078b`）。PR 与合并后 Site Quality run `38823392621` 均通过（232 passed、4 skipped）；本地完整 Playwright、构建、8 路由校验、模型资产检查、6 项 Python 单测和聚焦回归通过。英语前后与中文 360px 截图见 `.github/pr-evidence/lab-metadata-{before-en-360,after-en-360,after-zh-360}.png`。未晋级 `master`、未部署生产或验证真机。
@@ -57,7 +59,7 @@ PR #347 将 3D Lab 的环境光、补光和正面光强度调低，以改善板�
 | WEB-01 / P1 | 修正首页双语品牌大小写、格式支持说明和下载引导。 | 双语文案/样式回归；构建、站点校验、完整 Playwright；PR #285/#286。 | 已完成并晋级 `master`；未部署生产 |
 | WEB-02 / P1 | 将已在 `master` 的首页唯一标题修复同步至正式站，并验证 8 路由及首页标题。 | 先核对远端备份/回滚与当前版本；仅在项目所有者明确批准此次生产部署后执行；逐路由检查 HTTP、标题数、语言互链、资源和浏览器冒烟。 | 源码已修复；部署脚本会校验构建产物、发布后的 8 路由和 SEO 元数据，并在验证失败时回滚。2026-10-15 只读复查：8 路由均 HTTP 200、canonical 正确，但 `/` 与 `/en/` 各有两个 `<title>`；生产部署仍需针对本次操作明确批准 |
 | WEB-03 / P2 | 测量真实手机和不同网络环境下的加载、缓存与交互性能，形成可复现记录。 | 收集设备/网络型号、浏览器、缓存状态和测试步骤；测首屏/模型加载、下载与交互，记录原始数据。 | 等待真实设备及可控网络；未验证 |
-| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | 延续 PR #291–#359 的文案、响应式、可访问性、截图隐私与模型展示改进；新变更需双语回归、构建、路由/资产检查、完整 Playwright 和独立审评。 | PR #359 修复 3D Lab 手机宽度下元信息、读数和视图控件碰撞并合入 `version/V0.0.1`（merge `54b078b`）；合并后 Site Quality run `38823392621` 通过（232 passed、4 skipped）。本地构建、8 路由浏览器/静态校验、模型资产检查及本地 Playwright 均通过。下一步继续基于双语页面审查结果改进用户可见内容与视觉一致性。生产未部署、真机未验证；版本未晋级 `master` |
+| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | 延续 PR #291–#363 的文案、响应式、可访问性、截图隐私与模型展示改进；新变更需双语回归、构建、路由/资产检查、完整 Playwright 和独立审评。 | PR #363 修复 Lab 移动端模型上部被切换器遮挡与短屏章节碰撞，经 Feng083 独立审评后合入 `version/V0.0.1`（merge `70bc4c9`）；PR/合并后 CI 与 Dependency Review 通过，本地完整 Playwright 232 passed、4 skipped。下一步继续基于双语页面审查结果改进用户可见内容与视觉一致性。生产未部署、真机未验证；版本未晋级 `master` |
 | WEB-05 / P1 | 让格式矩阵每个目标链接到准确的专属验证依据，并准确描述自动测试和人工规程的覆盖边界。 | 11 行双语链接回归；构建、站点校验、资产检查、完整 Playwright；PR #287/#288 CI 和独立审查。 | 已完成并晋级 `master` |
 
 ## 关键风险与控制
