@@ -1582,6 +1582,33 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
     await expect(stage.locator('#model-canvas')).not.toHaveAttribute('aria-hidden', 'true');
     await expect(stage.locator('.mesh-atlas')).toHaveAttribute('inert', '');
     await expect(stage.locator('[data-artifact-label]')).toContainText(/GLB DELIVERY MODEL|GLB 交付模型/);
+
+    for (const view of ['tomogram', 'oracle', 'trinity', 'morph']) {
+      const viewButton = stage.locator(`[data-artifact-view="${view}"]`);
+      await viewButton.dispatchEvent('click');
+      await expect(stage).toHaveAttribute('data-artifact-view', view);
+      await expect(stage.locator('.motion-model-note')).toBeHidden();
+      await expect(stage.locator('.model-detail-status')).toBeHidden();
+      await expect(stage.locator('.neural-memory-readout')).toBeHidden();
+    }
+
+    await stage.locator('[data-artifact-view="tomogram"]').dispatchEvent('click');
+    const tomogramLayout = await stage.evaluate((element) => {
+      const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
+      const switcher = rect('.artifact-switcher');
+      const toolbarButtons = [...element.querySelectorAll<HTMLElement>('.tomogram-toolbar > button')]
+        .filter((button) => getComputedStyle(button).display !== 'none')
+        .map((button) => button.getBoundingClientRect());
+      const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      return {
+        switcherAboveStageBottom: switcher.bottom <= element.getBoundingClientRect().bottom,
+        switcherOverToolbar: intersects(switcher, rect('.tomogram-toolbar')),
+        toolbarOverSpecimenLabel: intersects(rect('.tomogram-toolbar'), rect('.tomogram-specimen-label')),
+        specimenPreviewOverSwitcher: intersects(rect('#model-canvas'), switcher),
+        toolbarButtonsOverlap: window.innerWidth <= 760 && toolbarButtons.some((button, index) => toolbarButtons.slice(index + 1).some((other) => intersects(button, other))),
+      };
+    });
+    expect(tomogramLayout).toEqual({ switcherAboveStageBottom: true, switcherOverToolbar: false, toolbarOverSpecimenLabel: false, specimenPreviewOverSwitcher: false, toolbarButtonsOverlap: false });
   }
 });
 
