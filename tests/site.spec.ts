@@ -1585,6 +1585,42 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
   }
 });
 
+test('Lab analysis views keep canvas metadata and mobile Tomogram tools clear', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route('**/assets/model/**', (route) => route.abort());
+  await page.route('**/assets/vendor/**', (route) => route.abort());
+
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const stage = page.locator('[data-model-stage]');
+
+    for (const view of ['tomogram', 'oracle', 'trinity', 'morph']) {
+      await stage.evaluate((element, artifactView) => { element.dataset.artifactView = artifactView; }, view);
+      await expect(stage.locator('.motion-model-note')).toBeHidden();
+      await expect(stage.locator('.model-detail-status')).toBeHidden();
+      await expect(stage.locator('.neural-memory-readout')).toBeHidden();
+    }
+
+    await stage.evaluate((element) => { element.dataset.artifactView = 'tomogram'; });
+    const tomogramLayout = await stage.evaluate((element) => {
+      const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
+      const switcher = rect('.artifact-switcher');
+      const toolbarButtons = [...element.querySelectorAll<HTMLElement>('.tomogram-toolbar > button')]
+        .filter((button) => getComputedStyle(button).display !== 'none')
+        .map((button) => button.getBoundingClientRect());
+      const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      return {
+        switcherAboveStageBottom: switcher.bottom <= element.getBoundingClientRect().bottom,
+        switcherOverToolbar: intersects(switcher, rect('.tomogram-toolbar')),
+        toolbarOverSpecimenLabel: intersects(rect('.tomogram-toolbar'), rect('.tomogram-specimen-label')),
+        specimenPreviewOverSwitcher: intersects(rect('#model-canvas'), switcher),
+        toolbarButtonsOverlap: toolbarButtons.some((button, index) => toolbarButtons.slice(index + 1).some((other) => intersects(button, other))),
+      };
+    });
+    expect(tomogramLayout).toEqual({ switcherAboveStageBottom: true, switcherOverToolbar: false, toolbarOverSpecimenLabel: false, specimenPreviewOverSwitcher: false, toolbarButtonsOverlap: false });
+  }
+});
+
 test('Lab keeps the model view switcher in the upper stage on desktop and mobile', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 320, height: 640 }]) {
