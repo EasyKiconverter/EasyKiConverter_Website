@@ -6,6 +6,8 @@ import "../../css/home-polish.css";
 import SeoHead from "../../components/SeoHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
+import ProductStage from "../../components/ProductStage.astro";
+import ConversionScene from "../../components/ConversionScene.astro";
 import PlatformAvailability from "../../components/PlatformAvailability.astro";
 import ShowcaseCaption from "../../components/ShowcaseCaption.astro";
 import WorkbenchActions from "../../components/WorkbenchActions.astro";
@@ -22,6 +24,7 @@ const socialImageUrl = new URL(
   siteBase,
 ).href;
 const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
+const modelImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easyki-real-model-hero.webp`;
 const exportImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-export.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
 const additionalFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
@@ -102,30 +105,7 @@ const platformAvailability = getPlatformAvailability("en");
             </span>
           </div>
         </div>
-        <div class="hero-stage hero-product-stage reveal reveal-delay">
-          <div class="hero-stage-orbit hero-stage-orbit-one" aria-hidden="true"></div>
-          <div class="hero-stage-orbit hero-stage-orbit-two" aria-hidden="true"></div>
-          <figure class="hero-product-window">
-            <figcaption><span>EasyKiConverter</span><span>COMPONENT LIBRARY</span></figcaption>
-            <img
-              src={appImageUrl}
-              alt="The real EasyKiConverter Qt Quick interface showing component entry, BOM import and export settings; Local output path hidden"
-              fetchpriority="high"
-            />
-          </figure>
-          <aside class="hero-float-card hero-float-input" aria-hidden="true">
-            <span class="hero-float-label">BOM · IMPORTED</span>
-            <strong>C2040</strong>
-            <span class="hero-float-meta"><i></i> Component data ready</span>
-          </aside>
-          <aside class="hero-float-card hero-float-output" aria-hidden="true">
-            <span class="hero-float-label">LIBRARY OUTPUT</span>
-            <span class="hero-output-row"><i class="hero-output-symbol">⌁</i> Symbol <b>✓</b></span>
-            <span class="hero-output-row"><i class="hero-output-footprint"></i> Footprint <b>✓</b></span>
-            <span class="hero-output-row"><i class="hero-output-model"></i> 3D model <b>✓</b></span>
-          </aside>
-          <span class="hero-stage-tag">FROM COMPONENT DATA <b>→</b> EDA LIBRARY</span>
-        </div>
+        <ProductStage lang="en" appImageUrl={appImageUrl} modelImageUrl={modelImageUrl} />
         <a class="scroll-cue" href="#story" aria-label="Continue downward">
           Continue <span></span>
         </a>
@@ -153,20 +133,20 @@ const platformAvailability = getPlatformAvailability("en");
         class="story section shell"
         aria-labelledby="story-title"
       >
-        <div class="section-intro reveal">
-          <p class="kicker">FROM INPUT TO OUTPUT</p>
+        <div id="workflow" class="section-intro workflow-copy reveal">
+          <p class="kicker">ONE PATH, THREE STAGES</p>
           <h2 id="story-title">
-            Data finds{" "}
+            Component data,{" "}
             <br />
-            <em>its own shape.</em>
+            <em>ready for your EDA.</em>
           </h2>
           <p>
-            EasyKiConverter is a quiet bridge: it receives LCSC / EasyEDA data
-            and returns useful results to KiCad, Altium and your existing
-            workflow.
+            Enter an LCSC number or BOM, prepare symbols, footprints and 3D models, then bring the target library into KiCad, Altium or your existing design workflow.
           </p>
+          <WorkflowActions lang="en" />
         </div>
         <div class="story-rail" data-story-rail>
+          <ConversionScene lang="en" modelImageUrl={modelImageUrl} />
           <article class="story-card story-card-a reveal">
             <span class="story-index">01 / INPUT</span>
             <h3>
@@ -202,18 +182,17 @@ const platformAvailability = getPlatformAvailability("en");
             </div>
           </article>
           <article class="story-card story-card-c reveal reveal-delay-2">
-            <span class="story-index">03 / RETURN</span>
+            <span class="story-index">03 / DELIVER</span>
             <h3>
-              Go back to{" "}
+              Take it into{" "}
               <br />
-              your design.
+              your target EDA.
             </h3>
             <p>
-              When the export is ready, continue in your target EDA. The tool
-              should stay out of the way.
+              Generate the target library, review the conversion result, and continue designing in your EDA.
             </p>
-            <a class="story-link" href="#download">View downloads <span>→</span></a>
-            <div class="story-check">✓ ready to use</div>
+            <a class="story-link" href="formats/">Check format support <span>→</span></a>
+            <div class="story-check">✓ library generated</div>
           </article>
         </div>
       </section>
@@ -249,7 +228,7 @@ const platformAvailability = getPlatformAvailability("en");
             alt="The actual EasyKiConverter Qt Quick export view showing export settings, processing progress and component results; local output path hidden"
             loading="lazy"
           />
-          <ShowcaseCaption lang="en" />
+          <ShowcaseCaption lang="en" imageUrl={exportImageUrl} />
         </figure>
         <WorkbenchActions lang="en" />
       </section>
@@ -319,55 +298,6 @@ const platformAvailability = getPlatformAvailability("en");
             <p>Open it again and continue from the state you know.</p>
           </article>
         </div>
-      </section>
-      <section
-        id="workflow"
-        data-process-story
-        class="workflow section shell"
-        aria-labelledby="workflow-title"
-      >
-        <div class="workflow-copy reveal">
-          <p class="kicker">A SMALL WORKFLOW</p>
-          <h2 id="workflow-title">
-            Four steps,{" "}
-            <br />
-            <em>then back to design.</em>
-          </h2>
-          <p>
-            Paste an LCSC number or import a BOM. Choose target EDA formats and 3D model options, run the conversion, then bring the generated libraries back into your EDA.
-          </p>
-          <WorkflowActions lang="en" />
-        </div>
-        <ol class="steps reveal reveal-delay">
-          <li>
-            <span>01</span>
-            <div>
-              <b>Add components</b>
-              <p>Paste LCSC numbers or import a BOM.</p>
-            </div>
-          </li>
-          <li>
-            <span>02</span>
-            <div>
-              <b>Choose a target</b>
-              <p>Select the EDA output and 3D model options.</p>
-            </div>
-          </li>
-          <li>
-            <span>03</span>
-            <div>
-              <b>Start converting</b>
-              <p>Data fetching, processing and writing follow the workflow.</p>
-            </div>
-          </li>
-          <li>
-            <span>04</span>
-            <div>
-              <b>Continue designing</b>
-              <p>Bring the generated libraries back to your EDA.</p>
-            </div>
-          </li>
-        </ol>
       </section>
       <section
         class="platforms section shell"

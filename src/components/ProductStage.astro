@@ -1,0 +1,65 @@
+---
+interface Props {
+  lang: "zh" | "en";
+  appImageUrl: string;
+  modelImageUrl: string;
+}
+
+const { lang, appImageUrl, modelImageUrl } = Astro.props;
+const en = lang === "en";
+---
+
+<div
+  class="hero-stage hero-product-stage reveal reveal-delay"
+  data-product-stage
+  aria-label={en ? "A real STEP-derived model moving from component data to an EDA library" : "真实 STEP 模型从元件数据走向 EDA 元件库"}
+>
+  <div class="hero-stage-orbit hero-stage-orbit-one" aria-hidden="true"></div>
+  <div class="hero-stage-orbit hero-stage-orbit-two" aria-hidden="true"></div>
+  <div class="hero-scene-board" aria-hidden="true">
+    <svg viewBox="0 0 600 400" preserveAspectRatio="none">
+      <path d="M30 92h120v48h75M210 140v74h110m0 0v64h118m-118-64h-90m185-44h94v70h-46m-8-128h74v58" />
+      <circle cx="150" cy="140" r="5" /><circle cx="320" cy="214" r="5" />
+      <circle cx="438" cy="278" r="5" /><circle cx="509" cy="140" r="5" />
+    </svg>
+  </div>
+
+  <figure class="hero-product-window hero-model-window">
+    <figcaption>
+      <span>{en ? "STEP-DERIVED MODEL" : "STEP 几何模型"}</span>
+      <span>{en ? "REAL WEBGL RENDER" : "真实 WebGL 渲染"}</span>
+    </figcaption>
+    <img
+      src={modelImageUrl}
+      alt={en ? "A component board rendered from the real STEP-derived GLB model, showing connectors, capacitors and surface-mount parts in three dimensions" : "由真实 STEP 派生 GLB 模型渲染的元件板，展示立体连接器、电容与贴片元件"}
+      fetchpriority="high"
+      width="1100"
+      height="800"
+    />
+    <span class="hero-model-caption">{en ? "STEP → 3D MODEL" : "STEP → 3D 模型"}</span>
+  </figure>
+
+  <aside class="hero-float-card hero-float-input">
+    <span class="hero-float-label">{en ? "01 · COMPONENT DATA" : "01 · 元件数据"}</span>
+    <strong>{en ? "LCSC / BOM" : "LCSC / BOM"}</strong>
+    <span class="hero-float-meta"><i></i>{en ? "Ready to organize" : "等待整理"}</span>
+  </aside>
+
+  <aside class="hero-float-card hero-float-output">
+    <span class="hero-float-label">{en ? "02 · LIBRARY OUTPUT" : "02 · 元件库输出"}</span>
+    <span class="hero-output-row"><i class="hero-output-symbol">⌁</i>{en ? "Symbol" : "符号"}<b>✓</b></span>
+    <span class="hero-output-row"><i class="hero-output-footprint"></i>{en ? "Footprint" : "封装"}<b>✓</b></span>
+    <span class="hero-output-row"><i class="hero-output-model"></i>{en ? "3D model" : "3D 模型"}<b>✓</b></span>
+  </aside>
+
+  <a class="hero-software-window" href={en ? "#showcase-title" : "#showcase-title"} aria-label={en ? "Jump to the real EasyKiConverter software screenshot" : "跳转查看 EasyKiConverter 真实软件界面"}>
+    <img
+      src={appImageUrl}
+      alt=""
+      loading="lazy"
+    />
+    <span>{en ? "REAL QT QUICK APP" : "真实 Qt Quick 软件"}</span>
+  </a>
+
+  <span class="hero-stage-tag">{en ? "COMPONENT DATA" : "元件数据"} <b>→</b> {en ? "EDA LIBRARY" : "EDA 库"}</span>
+</div>

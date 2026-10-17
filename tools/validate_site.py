@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 source_pages = [ROOT / "src/pages/index.astro", ROOT / "src/pages/en/index.astro"]
 lab_source_pages = [ROOT / "src/pages/lab/index.astro", ROOT / "src/pages/en/lab/index.astro"]
 seo_source = ROOT / "src/components/SeoHead.astro"
+product_stage_source = ROOT / "src/components/ProductStage.astro"
 output_pages = [
     ROOT / "dist/index.html",
     ROOT / "dist/en/index.html",
@@ -45,6 +46,7 @@ if 'new URL(import.meta.env.BASE_URL, document.baseURI)' not in model_source:
     errors.append("src/js/model-viewer.ts: Lab assets must resolve from Astro BASE_URL")
 if 'assets/vendor/' not in model_source or 'assets/model/Easykiconverter_展示模型.step' not in model_source:
     errors.append("src/js/model-viewer.ts: Lab asset URLs are incomplete")
+product_stage_text = product_stage_source.read_text(encoding="utf-8")
 if 'modelNormals' not in model_source or 'computeVertexNormals' not in model_source:
     errors.append("src/js/model-viewer.ts: GLB normals must be preserved with a STEP fallback computation")
 if 'rendering' not in model_source or 'reducedMotion' not in model_source or 'clearTimeout' not in model_source:
@@ -65,14 +67,14 @@ for page in source_pages:
     if "Xpedition" in text:
         errors.append(f"{page}: stable homepage must not claim Xpedition")
     has_model_stage = "data-model-stage" in text and "model-canvas" in text
-    has_product_stage = "hero-product-stage" in text and "hero-product-window" in text
+    has_product_stage = "ProductStage" in text and "hero-product-stage" in product_stage_text and "hero-product-window" in product_stage_text
     if not has_model_stage and not has_product_stage:
         errors.append(f"{page}: missing interactive product or model stage")
     if "SeoHead" not in text:
         errors.append(f"{page}: missing shared SeoHead component")
     if "application/ld+json" not in text:
         errors.append(f"{page}: missing SoftwareApplication structured data")
-    has_accessible_stage_fallback = "model-fallback-copy" in text or "hero-product-window" in text
+    has_accessible_stage_fallback = "model-fallback-copy" in text or ("ProductStage" in text and "hero-product-window" in product_stage_text)
     has_shared_header = "SiteHeader" in text
     if not has_accessible_stage_fallback or ("menu-button" not in text and not has_shared_header):
         errors.append(f"{page}: missing accessible interaction fallback or mobile navigation")

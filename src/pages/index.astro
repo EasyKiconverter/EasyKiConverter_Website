@@ -6,6 +6,8 @@ import "../css/home-polish.css";
 import SeoHead from "../components/SeoHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import ProductStage from "../components/ProductStage.astro";
+import ConversionScene from "../components/ConversionScene.astro";
 import PlatformAvailability from "../components/PlatformAvailability.astro";
 import ShowcaseCaption from "../components/ShowcaseCaption.astro";
 import WorkbenchActions from "../components/WorkbenchActions.astro";
@@ -22,6 +24,7 @@ const socialImageUrl = new URL(
   siteBase,
 ).href;
 const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
+const modelImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easyki-real-model-hero.webp`;
 const exportImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-export.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
 const additionalFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
@@ -103,30 +106,7 @@ const platformAvailability = getPlatformAvailability("zh");
             </span>
           </div>
         </div>
-        <div class="hero-stage hero-product-stage reveal reveal-delay">
-          <div class="hero-stage-orbit hero-stage-orbit-one" aria-hidden="true"></div>
-          <div class="hero-stage-orbit hero-stage-orbit-two" aria-hidden="true"></div>
-          <figure class="hero-product-window">
-            <figcaption><span>EasyKiConverter</span><span>元件库</span></figcaption>
-            <img
-              src={appImageUrl}
-              alt="EasyKiConverter 实际 Qt Quick 界面，显示元件输入、BOM 导入与导出设置；本机输出路径已隐藏"
-              fetchpriority="high"
-            />
-          </figure>
-          <aside class="hero-float-card hero-float-input" aria-hidden="true">
-            <span class="hero-float-label">BOM · 已导入</span>
-            <strong>C2040</strong>
-            <span class="hero-float-meta"><i></i> 元件数据已就绪</span>
-          </aside>
-          <aside class="hero-float-card hero-float-output" aria-hidden="true">
-            <span class="hero-float-label">库文件输出</span>
-            <span class="hero-output-row"><i class="hero-output-symbol">⌁</i> 符号 <b>✓</b></span>
-            <span class="hero-output-row"><i class="hero-output-footprint"></i> 封装 <b>✓</b></span>
-            <span class="hero-output-row"><i class="hero-output-model"></i> 3D 模型 <b>✓</b></span>
-          </aside>
-          <span class="hero-stage-tag">元件数据 <b>→</b> EDA 库</span>
-        </div>
+        <ProductStage lang="zh" appImageUrl={appImageUrl} modelImageUrl={modelImageUrl} />
         <a class="scroll-cue" href="#story" aria-label="继续向下">
           <span></span>继续向下
         </a>
@@ -156,19 +136,20 @@ const platformAvailability = getPlatformAvailability("zh");
         class="story section shell"
         aria-labelledby="story-title"
       >
-        <div class="section-intro reveal">
-          <p class="kicker">从输入到输出</p>
+        <div id="workflow" class="section-intro workflow-copy reveal">
+          <p class="kicker">一条路径，三个阶段</p>
           <h2 id="story-title">
-            数据在这里
+            从元件数据，
             <br />
-            <em>找到自己的形状。</em>
+            <em>到可用的 EDA 库。</em>
           </h2>
           <p>
-            EasyKiConverter 是一座安静的桥：左边接住 LCSC /
-            EasyEDA，右边把能用的结果交还给 KiCad、Altium 和你的工作流。
+            输入 LCSC 编号或 BOM，准备符号、封装与 3D 模型，再将目标格式带回 KiCad、Altium 等设计工作流。
           </p>
+          <WorkflowActions lang="zh" />
         </div>
         <div class="story-rail" data-story-rail>
+          <ConversionScene lang="zh" modelImageUrl={modelImageUrl} />
           <article class="story-card story-card-a reveal">
             <span class="story-index">01 / 输入</span>
             <h3>
@@ -200,15 +181,15 @@ const platformAvailability = getPlatformAvailability("zh");
             </div>
           </article>
           <article class="story-card story-card-c reveal reveal-delay-2">
-            <span class="story-index">03 / 回到工作流</span>
+            <span class="story-index">03 / 交付</span>
             <h3>
-              回到你的
+              带回目标
               <br />
-              设计里。
+              EDA 继续设计。
             </h3>
-            <p>输出完成后，继续在目标 EDA 中设计。工具不应该抢走你的注意力。</p>
-            <a class="story-link" href="#download">查看下载项 <span>→</span></a>
-            <div class="story-check">✓ 已准备就绪</div>
+            <p>生成对应格式的库文件，核对转换结果，然后在目标 EDA 中继续设计。</p>
+            <a class="story-link" href="formats/">核对格式支持 <span>→</span></a>
+            <div class="story-check">✓ 库文件已生成</div>
           </article>
         </div>
       </section>
@@ -244,7 +225,7 @@ const platformAvailability = getPlatformAvailability("zh");
             alt="EasyKiConverter 实际 Qt Quick 导出界面，展示导出设置、处理进度和元件结果；本机输出路径已隐藏"
             loading="lazy"
           />
-          <ShowcaseCaption lang="zh" />
+          <ShowcaseCaption lang="zh" imageUrl={exportImageUrl} />
         </figure>
         <WorkbenchActions lang="zh" />
       </section>
@@ -305,55 +286,6 @@ const platformAvailability = getPlatformAvailability("zh");
             <p>配置自动保存，下次打开时从你熟悉的状态继续。</p>
           </article>
         </div>
-      </section>
-      <section
-        id="workflow"
-        data-process-story
-        class="workflow section shell"
-        aria-labelledby="workflow-title"
-      >
-        <div class="workflow-copy reveal">
-          <p class="kicker">小小的工作流程</p>
-          <h2 id="workflow-title">
-            四步，
-            <br />
-            <em>然后回去设计。</em>
-          </h2>
-          <p>
-            粘贴 LCSC 编号或导入 BOM，选择目标 EDA 格式和 3D 模型选项，运行转换，再把生成的库带回 EDA 工具。
-          </p>
-          <WorkflowActions lang="zh" />
-        </div>
-        <ol class="steps reveal reveal-delay">
-          <li>
-            <span>01</span>
-            <div>
-              <b>添加元件</b>
-              <p>粘贴 LCSC 编号，或导入 BOM 文件。</p>
-            </div>
-          </li>
-          <li>
-            <span>02</span>
-            <div>
-              <b>选择目标</b>
-              <p>选择需要的 EDA 输出和 3D 模型。</p>
-            </div>
-          </li>
-          <li>
-            <span>03</span>
-            <div>
-              <b>开始转换</b>
-              <p>数据获取、处理与写入由工作流完成。</p>
-            </div>
-          </li>
-          <li>
-            <span>04</span>
-            <div>
-              <b>继续设计</b>
-              <p>把生成的库带回你的 EDA 工具。</p>
-            </div>
-          </li>
-        </ol>
       </section>
       <section
         class="platforms section shell"

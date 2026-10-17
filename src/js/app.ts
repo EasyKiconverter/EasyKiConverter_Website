@@ -115,8 +115,7 @@ motionPreference.addEventListener('change', ({ matches }) => {
 
 const depthStage = document.querySelector<HTMLElement>('.hero-product-stage');
 const depthRail = document.querySelector<HTMLElement>('[data-story-rail]');
-const processStory = document.querySelector<HTMLElement>('[data-process-story]');
-if ((depthStage || processStory) && !motionPreference.matches) {
+if ((depthStage || depthRail) && !motionPreference.matches) {
   let pointerX = 0;
   let pointerY = 0;
   let currentX = 0;
@@ -138,22 +137,27 @@ if ((depthStage || processStory) && !motionPreference.matches) {
       depthStage.style.setProperty('--scene-progress', progress.toFixed(3));
     }
     if (depthRail) {
-      depthRail.style.setProperty('--story-progress', progress.toFixed(3));
-      depthRail.querySelectorAll<HTMLElement>('.story-card').forEach((card, index) => {
-        const centerOffset = index - 1;
-        card.style.setProperty('--story-z', `${Math.round((1 - progress) * 18 - Math.abs(centerOffset) * 15)}px`);
-        card.style.setProperty('--story-turn', `${(centerOffset * (3 + progress * 4)).toFixed(2)}deg`);
-      });
-    }
-    if (processStory) {
-      const processBox = processStory.getBoundingClientRect();
-      const processProgress = clamp((window.innerHeight * 0.82 - processBox.top) / Math.max(1, processBox.height + window.innerHeight * 0.24), 0, 1);
-      processStory.style.setProperty('--process-progress', processProgress.toFixed(3));
-      processStory.querySelectorAll<HTMLElement>('.steps > li').forEach((step, index) => {
-        const activation = clamp(processProgress * 1.55 - index * 0.25, 0, 1);
-        step.style.setProperty('--step-depth', `${Math.round((1 - activation) * 24)}px`);
-        step.style.setProperty('--step-turn', `${((1 - activation) * (index % 2 ? -4 : 4)).toFixed(2)}deg`);
-        step.toggleAttribute('data-active', activation > 0.52);
+      const railBox = depthRail.getBoundingClientRect();
+      const scene = depthRail.querySelector<HTMLElement>('[data-conversion-scene]');
+      const sceneBox = scene?.getBoundingClientRect();
+      const sceneIsSticky = scene && window.getComputedStyle(scene).position === 'sticky';
+      const storyStart = sceneIsSticky ? Number.parseFloat(window.getComputedStyle(scene).top) || 0 : window.innerHeight * 0.78;
+      const storyRunway = sceneIsSticky && sceneBox
+        ? Math.max(1, railBox.height - sceneBox.height)
+        : Math.max(1, railBox.height + window.innerHeight * 0.36);
+      const storyProgress = clamp((storyStart - railBox.top) / storyRunway, 0, 1);
+      depthRail.style.setProperty('--story-progress', storyProgress.toFixed(3));
+      const cards = [...depthRail.querySelectorAll<HTMLElement>('.story-card')];
+      const storyPosition = storyProgress * Math.max(1, cards.length - 1);
+      if (scene && cards.length) {
+        scene.dataset.stage = ['input', 'prepare', 'deliver'][Math.round(storyPosition)] || 'deliver';
+      }
+      cards.forEach((card, index) => {
+        const centerOffset = index - (cards.length - 1) / 2;
+        const activation = clamp(1 - Math.abs(storyPosition - index) * 1.45, 0, 1);
+        card.style.setProperty('--story-z', `${Math.round(activation * 20 - Math.abs(centerOffset) * 10)}px`);
+        card.style.setProperty('--story-turn', `${(centerOffset * 2.4 * (1 - activation)).toFixed(2)}deg`);
+        card.toggleAttribute('data-active', activation > 0.48);
       });
     }
     if (Math.abs(pointerX - currentX) > 0.002 || Math.abs(pointerY - currentY) > 0.002) scheduleDepthFrame();

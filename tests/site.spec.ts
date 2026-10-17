@@ -78,24 +78,38 @@ test('homepage release CTA stays on one line at 320px in both languages', async 
   }
 });
 
-test('bilingual homepage shows distinct sanitized input and export screenshots', async ({ page }) => {
+test('bilingual homepage distinguishes the STEP model render from real software screenshots', async ({ page }) => {
   for (const [path, disclosure] of [
     ['/', '本机输出路径已隐藏'],
     ['/en/', 'Local output path hidden'],
   ]) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const heroImage = page.locator('.hero-product-window img');
+    const softwarePreview = page.locator('.hero-software-window img');
     const showcaseImage = page.locator('.app-window > img');
     const heroSource = await heroImage.getAttribute('src');
+    const softwareSource = await softwarePreview.getAttribute('src');
     const showcaseSource = await showcaseImage.getAttribute('src');
-    expect(heroSource).toContain('easykiconverter-main-public.webp');
+    expect(heroSource).toContain('easyki-real-model-hero.webp');
+    expect(softwareSource).toContain('easykiconverter-main-public.webp');
     expect(showcaseSource).toContain('easykiconverter-export.webp');
-    expect(showcaseSource).not.toBe(heroSource);
-    await expect(heroImage).toHaveAttribute('alt', new RegExp(disclosure, 'i'));
+    expect(showcaseSource).not.toBe(softwareSource);
+    await expect(heroImage).toHaveAttribute('alt', /STEP/i);
     await expect(showcaseImage).toHaveAttribute('alt', new RegExp(disclosure, 'i'));
+    await expect(page.locator('.hero-software-window')).toHaveAttribute('href', '#showcase-title');
     await expect(page.locator('.app-window .showcase-source')).toContainText(disclosure);
+    const fullSizeLink = page.locator('.app-window .showcase-source a');
+    await expect(fullSizeLink).toHaveAttribute('href', showcaseSource || '');
+    await expect(fullSizeLink).toHaveAttribute('target', '_blank');
+    await expect(fullSizeLink).toHaveAttribute('rel', 'noreferrer');
+    await expect(fullSizeLink).toContainText(/full-size capture|完整原图/i);
     await expect(page.locator('.app-window .showcase-proof-items')).toContainText(/progress|进度/i);
-    for (const image of [heroImage, showcaseImage]) {
+    for (const image of [heroImage, softwarePreview, showcaseImage]) {
+      await image.evaluate(async (element) => {
+        const image = element as HTMLImageElement;
+        image.loading = 'eager';
+        await image.decode();
+      });
       const dimensions = await image.evaluate((element) => {
         const image = element as HTMLImageElement;
         return { width: image.naturalWidth, height: image.naturalHeight };
@@ -103,6 +117,19 @@ test('bilingual homepage shows distinct sanitized input and export screenshots',
       expect(dimensions.width).toBeGreaterThan(0);
       expect(dimensions.height).toBeGreaterThan(0);
     }
+  }
+});
+
+test('bilingual homepage keeps the conversion story and download actions usable when showcase images fail', async ({ page }) => {
+  await page.route('**/assets/showcase/**', (route) => route.abort());
+  for (const [path, title] of [['/', '让元件库转换'], ['/en/', 'Component data']]) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.hero-product-window img')).toHaveAttribute('alt', /STEP/i);
+    await expect(page.locator('#story')).toBeVisible();
+    await expect(page.locator('#download')).toBeVisible();
+    await expect(page.locator('.hero-actions a').first()).toBeVisible();
+    await expect(page.locator('.download-actions a').first()).toBeVisible();
+    await expect(page.locator('main')).toContainText(title);
   }
 });
 
@@ -300,13 +327,13 @@ test('bilingual homepages do not overflow horizontally on narrow screens', async
   }
 });
 
-test('mobile homepage keeps the Hero product proof readable', async ({ page }) => {
+test('mobile homepage keeps the STEP-derived model render readable', async ({ page }) => {
   test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const image = page.locator('.hero-product-window img');
     await expect(image).toHaveCSS('object-fit', 'cover');
-    await expect(image).toHaveCSS('object-position', '50% 0%');
+    await expect(image).toHaveCSS('object-position', '50% 50%');
     const box = await image.boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(220);
   }
@@ -1009,7 +1036,8 @@ test('bilingual homepages keep the same interaction rhythm', async ({ page }) =>
     await expect(page.locator('.feature-card-mint')).toHaveClass(/reveal-delay-1/);
     await expect(page.locator('.feature-card-peach')).toHaveClass(/reveal-delay-2/);
     await expect(page.locator('.feature-card-yellow')).toHaveClass(/reveal-delay-1/);
-    await expect(page.locator('.steps')).toHaveClass(/reveal-delay/);
+    await expect(page.locator('.story-rail .story-card')).toHaveCount(3);
+    await expect(page.locator('#workflow .workflow-actions')).toBeVisible();
     await expect(page.locator('.platform-list')).toHaveClass(/reveal-delay/);
     await expect(page.locator('.download-actions .button-light')).toHaveClass(/magnetic/);
     await expect(page.locator('.download-actions .button-light span')).toHaveText('↗');
@@ -1051,14 +1079,14 @@ test('bilingual shared text colors meet WCAG AA on light brand surfaces', async 
 test('bilingual workbench captions describe export-stage product evidence', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /导出设置、处理进度和元件结果/);
-  await expect(page.locator('.showcase-source')).toHaveText('截取自桌面软件实际运行界面 · 本机输出路径已隐藏');
+  await expect(page.locator('.showcase-source')).toHaveText('截取自桌面软件实际运行界面 · 本机输出路径已隐藏打开完整原图 ↗');
   await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
   await expect(page.locator('.showcase-proof-items')).toContainText('设置导出选项');
   await expect(page.locator('.showcase-proof-items')).toContainText('核对导出结果');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /export settings, processing progress and component results/);
-  await expect(page.locator('.showcase-source')).toHaveText('Captured from the running desktop app · Local output path hidden');
+  await expect(page.locator('.showcase-source')).toHaveText('Captured from the running desktop app · Local output path hiddenOpen full-size capture ↗');
   await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
   await expect(page.locator('.showcase-proof-items')).toContainText('Set export options');
   await expect(page.locator('.showcase-proof-items')).toContainText('Review results');
@@ -1094,8 +1122,61 @@ test('homepage story cards connect the narrative to evidence and action', async 
     await expect(links).toHaveCount(3);
     await expect(links.nth(0)).toHaveAttribute('href', 'cases/');
     await expect(links.nth(1)).toHaveAttribute('href', 'lab/');
-    await expect(links.nth(2)).toHaveAttribute('href', '#download');
-    await expect(links.nth(2)).toContainText(path === '/' ? '查看下载项' : 'View downloads');
+    await expect(links.nth(2)).toHaveAttribute('href', 'formats/');
+    await expect(links.nth(2)).toContainText(path === '/' ? '核对格式支持' : 'Check format support');
+  }
+});
+
+test('homepage scroll story activates input, preparation, and delivery in order', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  for (const path of ['/', '/en/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const rail = page.locator('.story-rail');
+    const storyTop = await rail.evaluate((element) => element.getBoundingClientRect().top + window.scrollY);
+    const railHeight = await rail.evaluate((element) => element.getBoundingClientRect().height);
+    const scene = page.locator('[data-conversion-scene]');
+    const sceneHeight = await scene.evaluate((element) => element.getBoundingClientRect().height);
+    const stickyTop = await scene.evaluate((element) => Number.parseFloat(getComputedStyle(element).top));
+    const denominator = Math.max(1, railHeight - sceneHeight);
+    const sceneTransforms = new Set<string>();
+    for (const [progress, activeIndex] of [[0, 0], [0.5, 1], [1, 2]] as const) {
+      await page.evaluate(({ storyTop, stickyTop, denominator, progress }) => {
+        document.documentElement.style.scrollBehavior = 'auto';
+        window.scrollTo(0, storyTop - stickyTop + denominator * progress);
+      }, { storyTop, stickyTop, denominator, progress });
+      await expect.poll(() => page.locator('.story-card').evaluateAll((cards) => cards.map((card) => card.hasAttribute('data-active'))))
+        .toEqual([false, false, false].map((_, index) => index === activeIndex));
+      await expect(scene).toHaveAttribute('data-stage', ['input', 'prepare', 'deliver'][activeIndex]);
+      sceneTransforms.add(await scene.locator('.conversion-scene-board').evaluate((board) => getComputedStyle(board).transform));
+    }
+    expect(sceneTransforms.size, `${path} should change the real scene transform across scroll progress`).toBe(3);
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.story-card')).toHaveCount(3);
+    await expect(page.locator('.story-card').first()).toBeVisible();
+    await expect(scene).toHaveCSS('position', 'relative');
+    await expect(page.locator('.download-actions .button-light')).toBeVisible();
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+  }
+});
+
+test('conversion scene becomes an inline, unclipped stage on tablet and phones', async ({ page }) => {
+  for (const width of [768, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ['/', '/en/']) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const scene = page.locator('[data-conversion-scene]');
+      await expect(scene).toHaveCSS('position', 'relative');
+      const bounds = await scene.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return { left: rect.left, right: rect.right, width: rect.width, scrollWidth: document.documentElement.scrollWidth };
+      });
+      expect(bounds.left, `${path} ${width}px scene left edge`).toBeGreaterThanOrEqual(0);
+      expect(bounds.right, `${path} ${width}px scene right edge`).toBeLessThanOrEqual(width);
+      expect(bounds.scrollWidth, `${path} ${width}px document width`).toBe(width);
+      await expect(page.locator('.story-card')).toHaveCount(3);
+    }
   }
 });
 
@@ -1215,7 +1296,7 @@ test('bilingual hero artwork stays fully visible from phone through desktop widt
 test('English homepage keeps product section labels concrete', async ({ page }) => {
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.product-showcase .kicker')).toHaveText('THE REAL WORKBENCH');
-  await expect(page.locator('#workflow .kicker')).toHaveText('A SMALL WORKFLOW');
+  await expect(page.locator('#workflow .kicker')).toHaveText('ONE PATH, THREE STAGES');
   await expect(page.locator('.feature-card-mint p')).toHaveText(
     'BOM import, multi-threading and remembered settings keep large jobs calm.',
   );
@@ -1243,15 +1324,15 @@ test('English pages preserve copy across visual line breaks', async ({ page }) =
   await expect(page.locator('#features-title')).toHaveText('Make the tedious parts a little easier.');
 });
 
-test('bilingual workflow copy explains the same four concrete steps', async ({ page }) => {
+test('bilingual conversion narrative explains the same input-to-library path', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#workflow .workflow-copy > p').nth(1)).toHaveText(
-    '粘贴 LCSC 编号或导入 BOM，选择目标 EDA 格式和 3D 模型选项，运行转换，再把生成的库带回 EDA 工具。',
+  await expect(page.locator('#workflow > p').nth(1)).toHaveText(
+    '输入 LCSC 编号或 BOM，准备符号、封装与 3D 模型，再将目标格式带回 KiCad、Altium 等设计工作流。',
   );
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#workflow .workflow-copy > p').nth(1)).toHaveText(
-    'Paste an LCSC number or import a BOM. Choose target EDA formats and 3D model options, run the conversion, then bring the generated libraries back into your EDA.',
+  await expect(page.locator('#workflow > p').nth(1)).toHaveText(
+    'Enter an LCSC number or BOM, prepare symbols, footprints and 3D models, then bring the target library into KiCad, Altium or your existing design workflow.',
   );
 });
 
@@ -1353,16 +1434,16 @@ test('Chinese homepage and inner-page titles avoid orphaned characters on mobile
 test('Chinese homepage keeps visual microcopy localized', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const homepage = page.locator('main');
-  await expect(homepage.locator('.hero-product-window figcaption')).toContainText('元件库');
-  await expect(homepage.locator('.hero-float-input')).toContainText('元件数据已就绪');
-  await expect(homepage.locator('.hero-float-output')).toContainText('库文件输出');
+  await expect(homepage.locator('.hero-product-window figcaption')).toContainText('STEP 几何模型');
+  await expect(homepage.locator('.hero-float-input')).toContainText('等待整理');
+  await expect(homepage.locator('.hero-float-output')).toContainText('元件库输出');
   await expect(homepage.locator('.hero-float-output')).toContainText('3D 模型');
   await expect(homepage.locator('.hero-stage-tag')).toHaveText('元件数据 → EDA 库');
   await expect(homepage.locator('.story-card-a .story-index')).toHaveText('01 / 输入');
   await expect(homepage.locator('.story-card-b .story-index')).toHaveText('02 / 整理');
-  await expect(homepage.locator('.story-card-c .story-index')).toHaveText('03 / 回到工作流');
-  await expect(homepage.locator('.story-check')).toHaveText('✓ 已准备就绪');
-  await expect(homepage).not.toContainText('Component data ready');
+  await expect(homepage.locator('.story-card-c .story-index')).toHaveText('03 / 交付');
+  await expect(homepage.locator('.story-check')).toHaveText('✓ 库文件已生成');
+  await expect(homepage).not.toContainText('Ready to organize');
   await expect(homepage).not.toContainText('LIBRARY OUTPUT');
   await expect(homepage).not.toContainText('ready to use');
   await expect(homepage.locator('.download-stamp')).toContainText('开源');
