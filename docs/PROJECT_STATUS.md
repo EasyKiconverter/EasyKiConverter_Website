@@ -14,6 +14,8 @@
 
 本轮 Lab 手机视图切换栏审查发现 9 个选项虽可横向滚动，但隐藏滚动条且没有提示，导致后续视图不易发现。已增加中英文屏幕提示与辅助技术说明；390px 窄屏普通/减少动态模式专项回归通过，768/1440px 不显示多余提示；完整 Playwright（240 passed、4 skipped）、构建、8 路由和模型资产检查均通过。PR #398 由 Feng083 独立审评通过；Site Quality run `38985998641`（240 passed、4 skipped）及 Dependency Review `38985998628` 均通过。变更尚未部署生产或验证真机。
 
+继续 WEB-04 时，双语 390px Lab 滚动截图显示“构建元件库 / Build the library”节点的板卡模型接近侧视（约 95°），器件细节难以辨认。移动视口的叙事旋转行程已降至桌面角度行程的 30%，并在 760–1280px 平滑过渡；该节点移动姿态现约 62°，1440px 桌面行程保持不变。中英文真实 GLB 截图及单测已补充，`pnpm run check`、构建、完整 Playwright（242 passed、4 skipped）、8 路由校验、模型资产检查、6 项 Python 单测均通过。当前修复仍在 `fix/lab-mobile-model-detail-angle`，未部署或实机验证。
+
 随后 PR #345 经 Feng083 独立审评并合入 `version/V0.0.1`（merge `74f8437`），修复 reduced-motion 下 Lab 标题/模型舞台重叠及控件定位；PR Site Quality、Dependency Review 和合并后 Site Quality run `38756881636` 均通过。生产未部署。
 
 随后 PR #349 将 Lab 中“过去”轨迹的 18 个模型网格副本移到当前几何后方，新增深度方向测试；PR 与合并后 Site Quality run `38775991721` 均通过（210 passed、4 skipped），并合入 `version/V0.0.1`（merge `5184429`）。PR #350 将暴露本机输出路径的公开截图替换为仅清空路径栏的派生资产，并覆盖首页、Lab 与社交预览；经 Feng083 独立审批后合并（merge `a4eb250`），PR Site Quality `38781120997`、Dependency Review `38781121168` 和合并后 Site Quality `38781625268` 均通过（214 passed、4 skipped）。未部署生产。

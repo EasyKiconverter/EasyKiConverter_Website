@@ -1,5 +1,27 @@
 export type NarrativeTrack = "past" | "present" | "future";
 
+const MOBILE_VIEWPORT_MAX_WIDTH = 760;
+const DESKTOP_VIEWPORT_FULL_ROTATION_WIDTH = 1280;
+const MOBILE_ROTATION_TRAVEL = 0.3;
+
+export const narrativeRotationTravel = (viewportWidth: number): number => {
+  const responsiveProgress = Math.max(
+    0,
+    Math.min(
+      1,
+      (viewportWidth - MOBILE_VIEWPORT_MAX_WIDTH) /
+        (DESKTOP_VIEWPORT_FULL_ROTATION_WIDTH - MOBILE_VIEWPORT_MAX_WIDTH),
+    ),
+  );
+  return MOBILE_ROTATION_TRAVEL + responsiveProgress * (1 - MOBILE_ROTATION_TRAVEL);
+};
+
+export const narrativeModelRotation = (
+  initialRotation: number,
+  targetRotation: number,
+  viewportWidth: number,
+): number => initialRotation + (targetRotation - initialRotation) * narrativeRotationTravel(viewportWidth);
+
 const TEMPORAL_GHOST_DEPTH = 0.022;
 const TEMPORAL_GHOST_OPACITY: Record<NarrativeTrack, number> = {
   past: 0.06,

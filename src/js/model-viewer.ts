@@ -1,5 +1,5 @@
 import type * as THREE from "three";
-import { temporalGhostDepth, temporalGhostOpacity, type NarrativeTrack } from "./model-narrative";
+import { narrativeModelRotation, temporalGhostDepth, temporalGhostOpacity, type NarrativeTrack } from "./model-narrative";
 
 type MeshMessage = {
   type: "mesh" | "error";
@@ -4323,9 +4323,8 @@ export const setupModel = async (): Promise<void> => {
     camera.zoom = 1 + branchWarp * 0.14 + modelFeedback * 0.06 + directorZoom + neuralReflex * 0.045 + forecastDrift * forecastPulse * 0.028;
     camera.updateProjectionMatrix();
     const initialRotation = keyframes[0].ry;
-    const rotationTravel = state.width <= 760 ? 0.5 : 1;
     group.rotation.y =
-      initialRotation + (blend(from.ry, to.ry) - initialRotation) * rotationTravel +
+      narrativeModelRotation(initialRotation, blend(from.ry, to.ry), state.width) +
       (state.reducedMotion ? 0 : state.pointerX * 0.12) + branchWarp * 0.08;
     group.rotation.x =
       blend(from.rx, to.rx) +
