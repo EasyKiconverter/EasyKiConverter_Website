@@ -1,26 +1,27 @@
 export type NarrativeTrack = "past" | "present" | "future";
 
-const MOBILE_VIEWPORT_MAX_WIDTH = 760;
-const DESKTOP_VIEWPORT_FULL_ROTATION_WIDTH = 1280;
+const MOBILE_STAGE_WIDTH_MAX = 360;
+const DESKTOP_STAGE_WIDTH_BASELINE = 700;
 const MOBILE_ROTATION_TRAVEL = 0.3;
+const DESKTOP_ROTATION_TRAVEL = 0.5;
 
-export const narrativeRotationTravel = (viewportWidth: number): number => {
+export const narrativeRotationTravel = (stageWidth: number): number => {
   const responsiveProgress = Math.max(
     0,
     Math.min(
       1,
-      (viewportWidth - MOBILE_VIEWPORT_MAX_WIDTH) /
-        (DESKTOP_VIEWPORT_FULL_ROTATION_WIDTH - MOBILE_VIEWPORT_MAX_WIDTH),
+      (stageWidth - MOBILE_STAGE_WIDTH_MAX) /
+        (DESKTOP_STAGE_WIDTH_BASELINE - MOBILE_STAGE_WIDTH_MAX),
     ),
   );
-  return MOBILE_ROTATION_TRAVEL + responsiveProgress * (1 - MOBILE_ROTATION_TRAVEL);
+  return MOBILE_ROTATION_TRAVEL + responsiveProgress * (DESKTOP_ROTATION_TRAVEL - MOBILE_ROTATION_TRAVEL);
 };
 
 export const narrativeModelRotation = (
   initialRotation: number,
   targetRotation: number,
-  viewportWidth: number,
-): number => initialRotation + (targetRotation - initialRotation) * narrativeRotationTravel(viewportWidth);
+  stageWidth: number,
+): number => initialRotation + (targetRotation - initialRotation) * narrativeRotationTravel(stageWidth);
 
 const TEMPORAL_GHOST_DEPTH = 0.022;
 const TEMPORAL_GHOST_OPACITY: Record<NarrativeTrack, number> = {

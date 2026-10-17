@@ -1,17 +1,18 @@
 import { expect, test } from '@playwright/test';
 import { narrativeModelRotation, narrativeRotationTravel, temporalGhostDepth, temporalGhostOpacity } from '../src/js/model-narrative';
 
-test('mobile story rotation keeps the library-build view angled toward component detail', () => {
+test('responsive story rotation keeps the library-build view angled toward component detail', () => {
   const initialAngle = 0.22;
-  const libraryBuildAngle = 3.1;
-  const mobileAngle = narrativeModelRotation(initialAngle, libraryBuildAngle, 390);
+  const libraryBuildAngle = 2.2;
+  const mobileAngle = narrativeModelRotation(initialAngle, libraryBuildAngle, 359);
+  const desktopAngle = narrativeModelRotation(initialAngle, libraryBuildAngle, 700);
 
-  expect(narrativeRotationTravel(760)).toBe(0.3);
-  expect(mobileAngle).toBeLessThan((70 * Math.PI) / 180);
-  expect(narrativeRotationTravel(761)).toBeGreaterThan(0.3);
-  expect(narrativeRotationTravel(761)).toBeLessThan(narrativeRotationTravel(768));
-  expect(narrativeRotationTravel(1280)).toBe(1);
-  expect(narrativeModelRotation(initialAngle, libraryBuildAngle, 1440)).toBe(libraryBuildAngle);
+  expect(narrativeRotationTravel(360)).toBe(0.3);
+  expect(narrativeRotationTravel(530)).toBeCloseTo(0.4);
+  expect(mobileAngle).toBeLessThan((50 * Math.PI) / 180);
+  expect(narrativeRotationTravel(699)).toBeLessThan(0.5);
+  expect(narrativeRotationTravel(700)).toBe(0.5);
+  expect(desktopAngle).toBeLessThan((70 * Math.PI) / 180);
 });
 
 test('temporal model echoes trail behind past geometry and lead future geometry', () => {
