@@ -45,6 +45,7 @@ export const startConversionModel = async (host: HTMLElement) => {
   let pageVisible = !document.hidden;
   let frame = 0;
   let loaded = false;
+  let disposed = false;
   let parts: Array<{ mesh: THREE.Mesh; base: THREE.Vector3; direction: THREE.Vector3; distance: number }> = [];
 
   const draw = () => {
@@ -64,7 +65,7 @@ export const startConversionModel = async (host: HTMLElement) => {
     renderer.render(scene, camera);
   };
   const scheduleDraw = () => {
-    if (!frame && visible && pageVisible && loaded) frame = window.requestAnimationFrame(draw);
+    if (!disposed && !frame && visible && pageVisible && loaded) frame = window.requestAnimationFrame(draw);
   };
   const resize = () => {
     const { width, height } = viewport.getBoundingClientRect();
@@ -84,23 +85,50 @@ export const startConversionModel = async (host: HTMLElement) => {
   const onScroll = () => {
     if (!motionPreference.matches) scheduleDraw();
   };
-  observer.observe(host);
   const resizeObserver = new ResizeObserver(resize);
-  resizeObserver.observe(viewport);
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', resize, { passive: true });
-  window.visualViewport?.addEventListener('resize', resize, { passive: true });
-  document.addEventListener('visibilitychange', () => {
+  const onVisibilityChange = () => {
     pageVisible = !document.hidden;
     if (pageVisible) scheduleDraw();
     else if (frame) { window.cancelAnimationFrame(frame); frame = 0; }
-  }, { passive: true });
-  motionPreference.addEventListener('change', scheduleDraw);
+  };
+  const onMotionPreferenceChange = () => scheduleDraw();
+  let onContextLost: (event: Event) => void = () => {};
+  const cleanup = () => {
+    if (disposed) return;
+    disposed = true;
+    observer.disconnect();
+    resizeObserver.disconnect();
+    window.removeEventListener('scroll', onScroll);
+    window.removeEventListener('resize', resize);
+    window.visualViewport?.removeEventListener('resize', resize);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    motionPreference.removeEventListener('change', onMotionPreferenceChange);
+    canvas.removeEventListener('webglcontextlost', onContextLost);
+    if (frame) { window.cancelAnimationFrame(frame); frame = 0; }
+  };
+  onContextLost = (event: Event) => {
+    event.preventDefault();
+    loaded = false;
+    viewport.removeAttribute('data-webgl-ready');
+    viewport.dataset.webglError = 'true';
+    cleanup();
+    renderer.dispose();
+  };
+
+  observer.observe(host);
+  resizeObserver.observe(viewport);
+  canvas.addEventListener('webglcontextlost', onContextLost);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', resize, { passive: true });
+  window.visualViewport?.addEventListener('resize', resize, { passive: true });
+  document.addEventListener('visibilitychange', onVisibilityChange, { passive: true });
+  motionPreference.addEventListener('change', onMotionPreferenceChange);
 
   try {
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
     const gltf = await loader.loadAsync(modelUrl);
+    if (disposed) return;
     const model = gltf.scene;
     model.updateMatrixWorld(true);
     const bounds = new THREE.Box3().setFromObject(model);
@@ -151,6 +179,7 @@ export const startConversionModel = async (host: HTMLElement) => {
     resize();
     scheduleDraw();
   } catch {
+    cleanup();
     viewport.dataset.webglError = 'true';
     renderer.dispose();
   }

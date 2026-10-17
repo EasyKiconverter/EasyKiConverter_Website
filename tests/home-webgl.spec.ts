@@ -42,6 +42,17 @@ test('homepage lazily renders and scroll-assembles the real multipart model with
   await page.waitForTimeout(100);
   await expect(viewport).toHaveAttribute('data-part-separation', '0.000');
 
+  const contextLossSupported = await viewport.locator('canvas').evaluate((canvas) => {
+    const context = canvas.getContext('webgl2');
+    const extension = context?.getExtension('WEBGL_lose_context');
+    extension?.loseContext();
+    return Boolean(extension);
+  });
+  expect(contextLossSupported).toBe(true);
+  await expect(viewport).toHaveAttribute('data-webgl-error', 'true');
+  await expect(viewport).not.toHaveAttribute('data-webgl-ready', 'true');
+  await expect(viewport.locator('img')).toHaveCSS('opacity', '1');
+
   await page.route('**/easyki-conversion-story.glb', (route) => route.abort());
   await page.reload({ waitUntil: 'domcontentloaded' });
   const fallbackViewport = page.locator('.conversion-model-viewport');
