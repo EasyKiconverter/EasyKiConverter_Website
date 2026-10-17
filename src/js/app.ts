@@ -115,26 +115,40 @@ motionPreference.addEventListener('change', ({ matches }) => {
 
 const depthStage = document.querySelector<HTMLElement>('.hero-product-stage');
 const depthRail = document.querySelector<HTMLElement>('[data-story-rail]');
-if ((depthStage || depthRail) && !motionPreference.matches) {
+if (depthStage || depthRail) {
   let pointerX = 0;
   let pointerY = 0;
   let currentX = 0;
   let currentY = 0;
   let frame = 0;
-  let active = true;
+  let inViewport = !('IntersectionObserver' in window);
+  let pageVisible = !document.hidden;
 
   const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+  const canAnimate = () => inViewport && pageVisible && !motionPreference.matches;
+  const resetDepthMotion = () => {
+    pointerX = 0;
+    pointerY = 0;
+    currentX = 0;
+    currentY = 0;
+    depthStage?.style.setProperty('--scene-x', '0');
+    depthStage?.style.setProperty('--scene-y', '0');
+  };
   const renderDepth = () => {
     frame = 0;
-    if (!active) return;
+    if (!pageVisible || !inViewport) return;
     const stageBox = depthStage?.getBoundingClientRect();
     const progress = stageBox ? clamp((window.innerHeight * 0.72 - stageBox.top) / Math.max(1, window.innerHeight * 1.2), 0, 1) : 0;
-    currentX += (pointerX - currentX) * 0.12;
-    currentY += (pointerY - currentY) * 0.12;
+    if (canAnimate()) {
+      currentX += (pointerX - currentX) * 0.12;
+      currentY += (pointerY - currentY) * 0.12;
+    } else {
+      resetDepthMotion();
+    }
     if (depthStage) {
       depthStage.style.setProperty('--scene-x', currentX.toFixed(3));
       depthStage.style.setProperty('--scene-y', currentY.toFixed(3));
-      depthStage.style.setProperty('--scene-progress', progress.toFixed(3));
+      depthStage.style.setProperty('--scene-progress', (canAnimate() ? progress : 0).toFixed(3));
     }
     if (depthRail) {
       const railBox = depthRail.getBoundingClientRect();
@@ -143,7 +157,7 @@ if ((depthStage || depthRail) && !motionPreference.matches) {
       const sceneIsSticky = scene && window.getComputedStyle(scene).position === 'sticky';
       const storyStart = sceneIsSticky ? Number.parseFloat(window.getComputedStyle(scene).top) || 0 : window.innerHeight * 0.78;
       const storyRunway = sceneIsSticky && sceneBox
-        ? Math.max(1, railBox.height - sceneBox.height)
+        ? Math.max(1, (railBox.height - sceneBox.height) * (window.innerWidth <= 850 ? 0.75 : 1))
         : Math.max(1, railBox.height + window.innerHeight * 0.36);
       const storyProgress = clamp((storyStart - railBox.top) / storyRunway, 0, 1);
       depthRail.style.setProperty('--story-progress', storyProgress.toFixed(3));
@@ -160,13 +174,14 @@ if ((depthStage || depthRail) && !motionPreference.matches) {
         card.toggleAttribute('data-active', activation > 0.48);
       });
     }
-    if (Math.abs(pointerX - currentX) > 0.002 || Math.abs(pointerY - currentY) > 0.002) scheduleDepthFrame();
+    if (canAnimate() && (Math.abs(pointerX - currentX) > 0.002 || Math.abs(pointerY - currentY) > 0.002)) scheduleDepthFrame();
   };
   const scheduleDepthFrame = () => {
-    if (!frame) frame = window.requestAnimationFrame(renderDepth);
+    if (!frame && pageVisible && inViewport) frame = window.requestAnimationFrame(renderDepth);
   };
 
   depthStage?.addEventListener('pointermove', (event) => {
+    if (!canAnimate()) return;
     const box = depthStage.getBoundingClientRect();
     pointerX = clamp((event.clientX - box.left) / box.width * 2 - 1, -1, 1);
     pointerY = clamp((event.clientY - box.top) / box.height * 2 - 1, -1, 1);
@@ -174,8 +189,60 @@ if ((depthStage || depthRail) && !motionPreference.matches) {
   }, { passive: true });
   depthStage?.addEventListener('pointerleave', () => { pointerX = 0; pointerY = 0; scheduleDepthFrame(); }, { passive: true });
   window.addEventListener('scroll', scheduleDepthFrame, { passive: true });
-  document.addEventListener('visibilitychange', () => { active = !document.hidden; if (active) scheduleDepthFrame(); }, { passive: true });
+  window.addEventListener('resize', scheduleDepthFrame, { passive: true });
+  window.visualViewport?.addEventListener('resize', scheduleDepthFrame, { passive: true });
+  window.addEventListener('orientationchange', scheduleDepthFrame, { passive: true });
+  const sizeObserver = 'ResizeObserver' in window ? new ResizeObserver(scheduleDepthFrame) : null;
+  [depthStage, depthRail, depthRail?.querySelector('[data-conversion-scene]')].forEach((element) => {
+    if (element) sizeObserver?.observe(element);
+  });
+  document.addEventListener('visibilitychange', () => {
+    pageVisible = !document.hidden;
+    if (pageVisible) scheduleDepthFrame();
+    else if (frame) { window.cancelAnimationFrame(frame); frame = 0; }
+  }, { passive: true });
+  const intersectingTargets = new Set<Element>();
+  const viewportObserver = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) intersectingTargets.add(entry.target);
+      else intersectingTargets.delete(entry.target);
+    });
+    inViewport = intersectingTargets.size > 0;
+    if (inViewport) scheduleDepthFrame();
+    else if (frame) { window.cancelAnimationFrame(frame); frame = 0; }
+  }, { rootMargin: '120px 0px', threshold: 0 }) : null;
+  [depthStage, depthRail].forEach((element) => { if (element) viewportObserver?.observe(element); });
+  motionPreference.addEventListener('change', ({ matches }) => {
+    if (matches) {
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0;
+      resetDepthMotion();
+      depthStage?.style.setProperty('--scene-progress', '0');
+      depthRail?.querySelectorAll<HTMLElement>('.story-card').forEach((card) => {
+        card.style.removeProperty('--story-z');
+        card.style.removeProperty('--story-turn');
+      });
+    } else scheduleDepthFrame();
+  });
   scheduleDepthFrame();
+}
+
+const conversionScene = document.querySelector<HTMLElement>('[data-conversion-scene][data-model-url]');
+if (conversionScene) {
+  let modelStarted = false;
+  const startModel = () => {
+    if (modelStarted) return;
+    modelStarted = true;
+    void import('./conversion-model').then(({ startConversionModel }) => startConversionModel(conversionScene));
+  };
+  if ('IntersectionObserver' in window) {
+    const modelLoaderObserver = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      modelLoaderObserver.disconnect();
+      startModel();
+    }, { rootMargin: '420px 0px' });
+    modelLoaderObserver.observe(conversionScene);
+  } else startModel();
 }
 
 const secretKeys = ['q', 't', '6']; let keyBuffer: string[] = [];

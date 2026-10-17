@@ -8,7 +8,8 @@ The pages load the derived WebP files:
 
 - `easykiconverter-main-public.webp`: about 307 KB, used by the homepage, 3D Lab, and social previews; only the local output-path field is cleared, while the rest of the original screenshot is preserved
 - `easykiconverter-export.webp`: about 210 KB, used by the homepage workbench showcase; it keeps only export settings, progress, and results, clears the local output path, and crops away the watermarked statistics area below
-- `easyki-real-model-hero.webp`: about 27 KB, used in the homepage hero. It is a cropped static WebGL render of `public/assets/model/Easykiconverter_展示模型.glb` from this repository's Three.js Lab—not a Qt Quick screenshot—and keeps the GLB off the homepage. Before regenerating it, confirm the STEP-derived model and materials in the Lab, capture the model canvas at 2× DPR, and crop it. Never use a synthetic render in place of a real product-software screenshot.
+- `easyki-real-model-hero.webp`: about 18 KB, used in the homepage hero. It is a static WebGL render of `public/assets/model/Easykiconverter_展示模型.glb`, not a Qt Quick screenshot, and does not load the GLB above the fold. To regenerate, confirm the model and materials, capture only the model canvas (exclude page routes, labels, and overlays) at 2× DPR, then visually check for ghost wireframes. Never use a synthetic render in place of a real product-software screenshot.
+- `easyki-conversion-story.glb`: about 2.1 MB, generated from the full STEP-derived GLB with `pnpm run assets:story-model`; it preserves 303 independent part meshes with Meshopt geometry compression. The homepage lazy-loads it near the conversion story, and keeps the static WebP preview if WebGL or the asset fails.
 
 Regenerate them with:
 

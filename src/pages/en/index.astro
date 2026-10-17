@@ -25,6 +25,7 @@ const socialImageUrl = new URL(
 ).href;
 const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
 const modelImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easyki-real-model-hero.webp`;
+const storyModelUrl = `${import.meta.env.BASE_URL}assets/showcase/easyki-conversion-story.glb`;
 const exportImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-export.webp`;
 const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
 const additionalFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
@@ -146,7 +147,7 @@ const platformAvailability = getPlatformAvailability("en");
           <WorkflowActions lang="en" />
         </div>
         <div class="story-rail" data-story-rail>
-          <ConversionScene lang="en" modelImageUrl={modelImageUrl} />
+          <ConversionScene lang="en" modelImageUrl={modelImageUrl} modelUrl={storyModelUrl} />
           <article class="story-card story-card-a reveal">
             <span class="story-index">01 / INPUT</span>
             <h3>

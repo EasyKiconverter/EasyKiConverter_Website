@@ -2,26 +2,23 @@
 interface Props {
   lang: "zh" | "en";
   modelImageUrl: string;
+  modelUrl: string;
 }
 
-const { lang, modelImageUrl } = Astro.props;
+const { lang, modelImageUrl, modelUrl } = Astro.props;
 const en = lang === "en";
 ---
 
-<div class="conversion-scene" data-conversion-scene data-stage="input" aria-hidden="true">
-  <div class="conversion-scene-halo"></div>
-  <svg class="conversion-scene-routes" viewBox="0 0 600 500" preserveAspectRatio="none">
-    <path d="M40 145h120v65h74m0 0v98h120m0 0h85v-82h120M180 210v-74h124m0 0h96v74h98" />
-    <circle cx="160" cy="210" r="5" /><circle cx="234" cy="210" r="5" />
-    <circle cx="354" cy="308" r="5" /><circle cx="439" cy="226" r="5" />
-  </svg>
-
+<div class="conversion-scene" data-conversion-scene data-model-url={modelUrl} data-stage="input" aria-hidden="true">
   <figure class="conversion-scene-board">
     <figcaption>
       <span>{en ? "STEP-DERIVED GEOMETRY" : "STEP 派生几何"}</span>
-      <span>{en ? "STATIC WEBGL RENDER" : "静态 WebGL 渲染"}</span>
+      <span>{en ? "STATIC 3D PREVIEW" : "静态 3D 预览"}</span>
     </figcaption>
-    <img src={modelImageUrl} alt="" loading="lazy" width="1100" height="800" />
+    <div class="conversion-model-viewport">
+      <canvas data-conversion-canvas aria-hidden="true"></canvas>
+      <img src={modelImageUrl} alt="" loading="lazy" width="1100" height="800" />
+    </div>
   </figure>
 
   <div class="conversion-input-layer">

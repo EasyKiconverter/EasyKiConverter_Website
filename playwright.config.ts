@@ -18,7 +18,24 @@ export default defineConfig({
     timeout: 30_000,
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'chromium-mobile', use: { ...devices['Pixel 5'] } },
+    {
+      name: 'chromium',
+      testIgnore: '**/home-webgl.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'chromium-mobile',
+      testIgnore: '**/home-webgl.spec.ts',
+      use: { ...devices['Pixel 5'] },
+    },
+    {
+      name: 'chromium-webgl',
+      testMatch: '**/home-webgl.spec.ts',
+      workers: 1,
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: { args: ['--enable-webgl', '--use-gl=angle', '--use-angle=swiftshader'] },
+      },
+    },
   ],
 });

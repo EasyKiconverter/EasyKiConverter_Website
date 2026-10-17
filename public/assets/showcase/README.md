@@ -8,7 +8,8 @@
 
 - `easykiconverter-main-public.webp`：约 307 KB，用于首页、3D Lab 和社交预览；只清空本机输出路径输入框，保留其他原始截图内容
 - `easykiconverter-export.webp`：约 210 KB，首页工作台展示使用；只保留导出设置、进度和结果区域，本机输出路径已清空，下方带水印的统计区域已裁去
-- `easyki-real-model-hero.webp`：约 27 KB，首页首屏使用；它是 `public/assets/model/Easykiconverter_展示模型.glb` 在本仓库 3D Lab/Three.js 中的静态 WebGL 渲染裁切，不是 Qt Quick 软件截图，也不加载 GLB 到首页。重新生成前先在 3D Lab 确认该 STEP 派生模型与材质状态，再用 2× DPR 捕获模型画布并裁切；不得用合成图替代真实产品软件截图。
+- `easyki-real-model-hero.webp`：约 18 KB，首页首屏使用；它是 `public/assets/model/Easykiconverter_展示模型.glb` 的静态 WebGL 渲染，不是 Qt Quick 软件截图，也不加载 GLB 到首屏。重新生成前先确认模型与材质，再仅捕获模型画布（不要包含页面轨迹、标签或叠层），以 2× DPR 导出并目视确认没有幽灵线框；不得用合成图替代真实产品软件截图。
+- `easyki-conversion-story.glb`：约 2.1 MB，由 `pnpm run assets:story-model` 从完整 STEP 派生 GLB 生成，保留 303 个独立零件网格并启用 Meshopt 几何压缩；首页仅在滚动接近转换叙事时懒加载，WebGL 或资源加载失败时仍显示静态 WebP 预览。
 
 派生方式：
 

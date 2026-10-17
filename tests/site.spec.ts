@@ -1,6 +1,7 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const pages = ['/', '/en/'];
+const depthStyle = (page: Page) => page.locator('.hero-product-stage').evaluate((stage) => getComputedStyle(stage).getPropertyValue('--scene-progress').trim());
 
 test('bilingual homepages render one localized document title', async ({ page }) => {
   for (const path of pages) {
@@ -1152,22 +1153,50 @@ test('homepage scroll story activates input, preparation, and delivery in order'
     expect(sceneTransforms.size, `${path} should change the real scene transform across scroll progress`).toBe(3);
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect.poll(() => depthStyle(page)).toBe('0');
     await expect(page.locator('.story-card')).toHaveCount(3);
     await expect(page.locator('.story-card').first()).toBeVisible();
-    await expect(scene).toHaveCSS('position', 'relative');
+    await expect(scene).toHaveCSS('position', 'sticky');
     await expect(page.locator('.download-actions .button-light')).toBeVisible();
     await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await expect.poll(() => depthStyle(page)).not.toBe('0');
   }
 });
 
-test('conversion scene becomes an inline, unclipped stage on tablet and phones', async ({ page }) => {
+test('conversion scene stays visible with its active narrative on tablet and phones', async ({ page }) => {
   for (const width of [768, 390, 320]) {
-    await page.setViewportSize({ width, height: 900 });
+    await page.setViewportSize({ width, height: 760 });
     for (const path of ['/', '/en/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const scene = page.locator('[data-conversion-scene]');
-      await expect(scene).toHaveCSS('position', 'relative');
+      await expect(scene).toHaveCSS('position', 'sticky');
+      await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
+      const { railTop, railHeight, sceneHeight, stickyTop } = await page.locator('[data-story-rail]').evaluate((rail) => {
+        const sceneElement = rail.querySelector<HTMLElement>('[data-conversion-scene]')!;
+        return {
+          railTop: rail.getBoundingClientRect().top + window.scrollY,
+          railHeight: rail.getBoundingClientRect().height,
+          sceneHeight: sceneElement.getBoundingClientRect().height,
+          stickyTop: Number.parseFloat(getComputedStyle(sceneElement).top),
+        };
+      });
+      const scrollRunway = (railHeight - sceneHeight) * 0.75;
+      for (const [progress, activeIndex] of [[0, 0], [0.5, 1], [1, 2], [0.5, 1], [0, 0]] as const) {
+        await page.evaluate(({ railTop, stickyTop, scrollRunway, progress }) => {
+          window.scrollTo({ top: railTop - stickyTop + scrollRunway * progress, behavior: 'instant' });
+        }, { railTop, stickyTop, scrollRunway, progress });
+        await expect(scene).toHaveAttribute('data-stage', ['input', 'prepare', 'deliver'][activeIndex]);
+        const visibleGeometry = await scene.evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          return { top: rect.top, bottom: rect.bottom, viewportHeight: window.innerHeight };
+        });
+        expect(visibleGeometry.top).toBeGreaterThanOrEqual(stickyTop - 2);
+        expect(visibleGeometry.bottom).toBeLessThanOrEqual(visibleGeometry.viewportHeight + 1);
+        const activeHeading = await page.locator('.story-card[data-active] h3').boundingBox();
+        expect(activeHeading, `${path} ${width}px stage ${progress} active heading`).not.toBeNull();
+        expect(activeHeading!.y).toBeGreaterThan(visibleGeometry.bottom - 18);
+        expect(activeHeading!.y + activeHeading!.height).toBeLessThan(visibleGeometry.viewportHeight);
+      }
       const bounds = await scene.evaluate((element) => {
         const rect = element.getBoundingClientRect();
         return { left: rect.left, right: rect.right, width: rect.width, scrollWidth: document.documentElement.scrollWidth };
@@ -1178,6 +1207,35 @@ test('conversion scene becomes an inline, unclipped stage on tablet and phones',
       await expect(page.locator('.story-card')).toHaveCount(3);
     }
   }
+});
+
+test('homepage story motion responds to live viewport resize and reduced-motion changes', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 760 });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
+  const storyRail = page.locator('[data-story-rail]');
+  const { railTop, railHeight, sceneHeight, stickyTop } = await storyRail.evaluate((rail) => {
+    const scene = rail.querySelector<HTMLElement>('[data-conversion-scene]')!;
+    return {
+      railTop: rail.getBoundingClientRect().top + window.scrollY,
+      railHeight: rail.getBoundingClientRect().height,
+      sceneHeight: scene.getBoundingClientRect().height,
+      stickyTop: Number.parseFloat(getComputedStyle(scene).top),
+    };
+  });
+  await page.evaluate(({ railTop, stickyTop, runway }) => {
+    window.scrollTo({ top: railTop - stickyTop + runway * 0.4, behavior: 'instant' });
+  }, { railTop, stickyTop, runway: (railHeight - sceneHeight) * 0.75 });
+  await expect.poll(() => depthStyle(page)).not.toBe('0');
+  const narrowProgress = await storyRail.evaluate((rail) => Number.parseFloat(getComputedStyle(rail).getPropertyValue('--story-progress')));
+
+  await page.setViewportSize({ width: 900, height: 760 });
+  await expect.poll(() => storyRail.evaluate((rail) => Number.parseFloat(getComputedStyle(rail).getPropertyValue('--story-progress'))))
+    .not.toBe(narrowProgress);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect.poll(() => depthStyle(page)).toBe('0');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect.poll(() => depthStyle(page)).not.toBe('0');
 });
 
 test('homepage platform summary mirrors the available Release assets', async ({ page }) => {
