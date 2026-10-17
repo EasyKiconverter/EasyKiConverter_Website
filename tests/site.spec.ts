@@ -1164,8 +1164,14 @@ test('homepage scroll story activates input, preparation, and delivery in order'
 });
 
 test('conversion scene stays visible with its active narrative on tablet and phones', async ({ page }) => {
-  for (const width of [768, 390, 320]) {
-    await page.setViewportSize({ width, height: 760 });
+  for (const viewport of [
+    { width: 768, height: 760 },
+    { width: 390, height: 760 },
+    { width: 320, height: 760 },
+    { width: 844, height: 390 },
+  ]) {
+    const { width, height } = viewport;
+    await page.setViewportSize(viewport);
     for (const path of ['/', '/en/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const scene = page.locator('[data-conversion-scene]');
@@ -1194,8 +1200,14 @@ test('conversion scene stays visible with its active narrative on tablet and pho
         expect(visibleGeometry.bottom).toBeLessThanOrEqual(visibleGeometry.viewportHeight + 1);
         const activeHeading = await page.locator('.story-card[data-active] h3').boundingBox();
         expect(activeHeading, `${path} ${width}px stage ${progress} active heading`).not.toBeNull();
-        expect(activeHeading!.y).toBeGreaterThan(visibleGeometry.bottom - 18);
         expect(activeHeading!.y + activeHeading!.height).toBeLessThan(visibleGeometry.viewportHeight);
+        if (height <= 500 && width > 600) {
+          const sceneBounds = await scene.boundingBox();
+          expect(sceneBounds).not.toBeNull();
+          expect(activeHeading!.x, `${path} ${width}px landscape card clears the model stage`).toBeGreaterThan(sceneBounds!.x + sceneBounds!.width);
+        } else {
+          expect(activeHeading!.y).toBeGreaterThan(visibleGeometry.bottom - 18);
+        }
       }
       const bounds = await scene.evaluate((element) => {
         const rect = element.getBoundingClientRect();
