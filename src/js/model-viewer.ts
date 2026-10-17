@@ -1,5 +1,5 @@
 import type * as THREE from "three";
-import { temporalGhostDepth, temporalGhostOpacity, type NarrativeTrack } from "./model-narrative";
+import { narrativeModelRotation, temporalGhostDepth, temporalGhostOpacity, type NarrativeTrack } from "./model-narrative";
 
 type MeshMessage = {
   type: "mesh" | "error";
@@ -3100,7 +3100,7 @@ export const setupModel = async (): Promise<void> => {
   const keyframes = [
     { at: 0, x: 0, y: 0, rx: -0.28, ry: 0.22, scale: 1 },
     { at: 0.23, x: -0.28, y: 0.02, rx: -0.12, ry: 1.3, scale: 0.92 },
-    { at: 0.48, x: 0.3, y: -0.03, rx: -0.48, ry: 3.1, scale: 0.9 },
+    { at: 0.48, x: 0.3, y: -0.03, rx: -0.48, ry: 2.2, scale: 0.9 },
     { at: 0.73, x: 0.72, y: 0.02, rx: -0.2, ry: 4.7, scale: 0.65 },
     { at: 1, x: 1.15, y: -0.04, rx: 0.04, ry: 6.1, scale: 0.34 },
   ];
@@ -4323,9 +4323,8 @@ export const setupModel = async (): Promise<void> => {
     camera.zoom = 1 + branchWarp * 0.14 + modelFeedback * 0.06 + directorZoom + neuralReflex * 0.045 + forecastDrift * forecastPulse * 0.028;
     camera.updateProjectionMatrix();
     const initialRotation = keyframes[0].ry;
-    const rotationTravel = state.width <= 760 ? 0.5 : 1;
     group.rotation.y =
-      initialRotation + (blend(from.ry, to.ry) - initialRotation) * rotationTravel +
+      narrativeModelRotation(initialRotation, blend(from.ry, to.ry), state.width) +
       (state.reducedMotion ? 0 : state.pointerX * 0.12) + branchWarp * 0.08;
     group.rotation.x =
       blend(from.rx, to.rx) +
