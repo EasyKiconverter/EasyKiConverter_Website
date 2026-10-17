@@ -1996,6 +1996,47 @@ test('mobile Lab controls keep the model open and reveal slice controls on deman
   }
 });
 
+test('mobile Lab view switcher explains horizontal scrolling in both languages and motion modes', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+      await page.emulateMedia({ reducedMotion });
+      const switcher = page.locator('.artifact-switcher');
+      const hint = page.locator('.artifact-scroll-hint');
+      const descriptionId = path.startsWith('/en/') ? 'artifact-scroll-description-en' : 'artifact-scroll-description-zh';
+      const description = page.locator(`#${descriptionId}`);
+      await expect(switcher).toHaveAttribute('aria-describedby', descriptionId);
+      await expect(description).toContainText(path.startsWith('/en/') ? 'scroll horizontally' : '横向滑动');
+      await expect(hint).toBeVisible();
+      await expect(hint).toContainText(path.startsWith('/en/') ? 'Swipe for more views' : '左右滑动查看更多');
+      const layout = await page.evaluate(() => {
+        const stage = document.querySelector('[data-model-stage]')!.getBoundingClientRect();
+        const switcher = document.querySelector('.artifact-switcher')!.getBoundingClientRect();
+        const hint = document.querySelector('.artifact-scroll-hint')!.getBoundingClientRect();
+        const detail = document.querySelector('.model-detail-status')!.getBoundingClientRect();
+        return {
+          hintInsideStage: hint.left >= stage.left && hint.right <= stage.right,
+          hintBelowSwitcher: hint.top >= switcher.bottom,
+          hintAboveDetail: hint.bottom <= detail.top,
+        };
+      });
+      expect(layout, `${path} ${reducedMotion} scroll cue should stay clear of nearby model controls`).toEqual({
+        hintInsideStage: true,
+        hintBelowSwitcher: true,
+        hintAboveDetail: true,
+      });
+    }
+  }
+  for (const width of [768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(page.locator('.artifact-scroll-hint')).toBeHidden();
+  }
+  await context.close();
+});
+
 test('Lab loading guidance avoids repeating the same delivery facts', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });

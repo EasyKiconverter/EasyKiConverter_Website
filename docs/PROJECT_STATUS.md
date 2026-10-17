@@ -12,6 +12,8 @@
 
 项目处于 V0.0.1 稳定维护与用户体验持续改进阶段。PR #393 修正首页流程卡片的双语下载 CTA，经 PR #394 晋级 `master`（merge `92a20a2`）；master push Site Quality `38982780264` 通过（238 passed、4 skipped）。为使后续晋级 PR 与 master 历史一致，PR #395 将 master 祖先历史同步回版本分支（merge `4d9735f`，无文件差异）；PR 与合并后 Site Quality 检查均通过。源码未部署生产；线上首页重复 `<title>` 仍待获准部署后复验。真实手机与网络性能仍未验证。Release API 仍可能返回 HTTP 403，仓库核对过的回退版本为 `v3.1.13`。
 
+本轮 Lab 手机视图切换栏审查发现 9 个选项虽可横向滚动，但隐藏滚动条且没有提示，导致后续视图不易发现。已增加中英文屏幕提示与辅助技术说明；窄屏普通/减少动态模式的专项回归、完整 Playwright（240 passed、4 skipped）、构建、8 路由和模型资产检查均通过。改动在 `fix/lab-mobile-view-discoverability`，待独立审评及远程必需检查；未部署生产或验证真机。
+
 随后 PR #345 经 Feng083 独立审评并合入 `version/V0.0.1`（merge `74f8437`），修复 reduced-motion 下 Lab 标题/模型舞台重叠及控件定位；PR Site Quality、Dependency Review 和合并后 Site Quality run `38756881636` 均通过。生产未部署。
 
 随后 PR #349 将 Lab 中“过去”轨迹的 18 个模型网格副本移到当前几何后方，新增深度方向测试；PR 与合并后 Site Quality run `38775991721` 均通过（210 passed、4 skipped），并合入 `version/V0.0.1`（merge `5184429`）。PR #350 将暴露本机输出路径的公开截图替换为仅清空路径栏的派生资产，并覆盖首页、Lab 与社交预览；经 Feng083 独立审批后合并（merge `a4eb250`），PR Site Quality `38781120997`、Dependency Review `38781121168` 和合并后 Site Quality `38781625268` 均通过（214 passed、4 skipped）。未部署生产。
