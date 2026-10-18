@@ -4,10 +4,10 @@
 
 ## Current boundaries
 
-- The Chinese homepage `/` and English homepage `/en/` use WebP product screenshots, CSS depth and a small page script. They do not load STEP, OpenCascade/WASM or the Three.js model runtime.
+- The Chinese homepage `/` and English homepage `/en/` use WebP product screenshots and CSS depth above the fold, with no STEP or OpenCascade/WASM request. Only near the conversion story do they load the approximately 2.19 MB Meshopt GLB and Three.js renderer code.
 - The 3D Lab at `/lab/` and `/en/lab/` selects about 9.6 MB of desktop GLB or about 8.1 MB of mobile GLB by viewport; it falls back to about 11 MB of STEP and about 7.3 MB of WASM only when the GLB path fails. These experimental assets are not part of the homepage baseline.
 - Homepage delivery uses `public/assets/showcase/*.webp`; original PNG, STEP and WASM files remain for provenance or the lab and have not yet been moved out of the published asset tree.
-- `src/js/app.ts` keeps page animation active only while relevant and provides a static path for `prefers-reduced-motion`.
+- `src/js/app.ts` handles visibility, viewport-size and live `prefers-reduced-motion` changes. The actual 3D parts move through assembled → separated → assembled states only with scroll; reduced-motion fixes the model in its assembled state and stops continuous animation.
 
 ## Repeatable checks
 
@@ -25,7 +25,7 @@ Older STEP/WASM, Worker, Lighthouse 100 and TBT 0 ms observations describe the f
 
 ## Asset decision
 
-STEP remains the Lab's engineering source asset, while `tools/prepare_model_asset.py` generates the GLB used for default Web delivery. The homepage must not reintroduce browser-side CAD triangulation. If the Lab becomes a product feature, it still needs its own asset-size, triangle-budget and fallback browser baseline.
+STEP remains the Lab's engineering source asset, while `tools/prepare_model_asset.py` generates the base GLB. The homepage story GLB is further Meshopt-compressed by `pnpm run assets:story-model`, preserving 303 meshes and 278,784 triangles under a 2.5 MB / 300,000-triangle delivery budget. The homepage does no browser-side CAD triangulation and falls back to the static WebP if its model or WebGL is unavailable.
 
 ## Production Chromium observation
 

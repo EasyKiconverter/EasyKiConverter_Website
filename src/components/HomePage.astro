@@ -1,0 +1,370 @@
+---
+import "../css/styles.css";
+import "../css/accessibility.css";
+import "../css/easter-eggs.css";
+import "../css/home-polish.css";
+import SeoHead from "./SeoHead.astro";
+import SiteHeader from "./SiteHeader.astro";
+import SiteFooter from "./SiteFooter.astro";
+import ConversionScene from "./ConversionScene.astro";
+import PlatformAvailability from "./PlatformAvailability.astro";
+import ShowcaseCaption from "./ShowcaseCaption.astro";
+import WorkbenchActions from "./WorkbenchActions.astro";
+import WorkflowActions from "./WorkflowActions.astro";
+import { targetFormats } from "../data/formats";
+import { getPlatformAvailability } from "../data/platforms";
+import { latestRelease } from "../data/release";
+const siteRoot = new URL(import.meta.env.SITE);
+const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
+const chineseUrl = siteBase.href;
+const englishUrl = new URL("en/", siteBase).href;
+const socialImageUrl = new URL(
+  "assets/showcase/easykiconverter-main-public.webp",
+  siteBase,
+).href;
+const modelImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easyki-real-model-hero.webp`;
+const storyModelUrl = `${import.meta.env.BASE_URL}assets/showcase/easyki-conversion-story.glb`;
+const exportImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-export.webp`;
+const primaryFormats = targetFormats.filter((format) => format.tier === "primary");
+const additionalFormatCount = targetFormats.filter((format) => format.tier === "registered").length;
+const localizeAssetLabel = (label: string) => en ? label : label
+  .replace(" installer", " 安装包")
+  .replace("Apple Silicon", "Apple 芯片");
+interface Props { lang: "zh" | "en"; }
+const { lang } = Astro.props;
+const en = lang === "en";
+const locale = en ? "en" : "zh-CN";
+const platformAvailability = getPlatformAvailability(lang);
+const iconUrl = `${import.meta.env.BASE_URL}assets/icons/easyki-icon.svg`;
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <SeoHead
+      lang={locale}
+      pageUrl={new URL(en ? englishUrl : chineseUrl)}
+      alternateUrl={new URL(en ? chineseUrl : englishUrl)}
+      title={en ? "EasyKiConverter · Make parts EDA-ready" : "EasyKiConverter · 让元件库转换顺手一点"}
+      description={en ? "Convert LCSC / EasyEDA data into symbols, footprints, and 3D models for KiCad or Altium. Free, open source, and cross-platform." : "从 LCSC / EasyEDA 到你的 EDA 工作台。免费、开源、跨平台。"}
+      socialImageUrl={new URL(socialImageUrl)}
+    />
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        name: "EasyKiConverter",
+        applicationCategory: "DeveloperApplication",
+        operatingSystem: "Windows, Linux, macOS",
+        softwareVersion: latestRelease.version,
+        license: "https://www.gnu.org/licenses/gpl-3.0.html",
+        downloadUrl:
+          "https://github.com/EasyKiconverter/EasyKiConverter/releases",
+        url: en ? englishUrl : chineseUrl,
+        codeRepository: "https://github.com/EasyKiconverter/EasyKiConverter",
+        description:
+          "Convert LCSC and EasyEDA component data into practical KiCad and Altium libraries with GUI and CLI workflows.",
+      })}
+    ></script>
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <a class="skip-link" href="#top">{en ? "Skip to content" : "跳转到正文"}</a>
+    <SiteHeader lang={locale} variant="home" homeHref="#top" alternateUrl={new URL(en ? chineseUrl : englishUrl)} />
+    <main id="top" tabindex="-1">
+      <div class="product-journey" data-story-rail>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy reveal">
+          <p class="kicker">{en ? "OPEN SOURCE · " : "开源 · "}<span class="kicker-brand-case">Qt</span> {en ? "6 DESKTOP TOOL" : "6 桌面工具"}</p>
+          <h1 id="hero-title">
+            {en ? <>Make parts{" "}<br /><em>EDA-ready.</em></> : <>让元件库<span class="hero-title-conversion">转换</span>，<em>顺手一点。</em></>}
+          </h1>
+          <p class="hero-lede">
+            {en ? "LCSC / EasyEDA parts → symbols, footprints & 3D models for KiCad / Altium." : "把 LCSC / EasyEDA 元件数据整理为 KiCad、Altium 可用的符号、封装与 3D 模型。"}
+          </p>
+          <div class="hero-actions">
+            <a
+              class="button button-dark magnetic"
+              data-release-link
+              href={latestRelease.url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {latestRelease.tag} {en ? "downloads" : "下载项"} <span>↗</span>
+            </a>
+            <a class="text-link text-link-down" href="#story">
+              {en ? "See how it works" : "看看它如何工作"} <span>↓</span>
+            </a>
+          </div>
+          <div class="hero-facts">
+            <span>
+              <b data-release-version>{latestRelease.tag}</b> {en ? "current stable" : "当前稳定版"}
+            </span>
+            <span>
+              <b>GPL-3.0</b> {en ? "open source" : "开源许可"}
+            </span>
+            <span>
+              <b>GUI + CLI</b> {en ? "two ways in" : "两种方式"}
+            </span>
+          </div>
+        </div>
+        <a class="scroll-cue" href="#story" aria-label={en ? "Continue downward" : "继续向下"}>
+          {en ? <>Continue <span></span></> : <><span></span>继续向下</>}
+        </a>
+      </section>
+      <ConversionScene lang={lang} modelImageUrl={modelImageUrl} modelUrl={storyModelUrl} />
+      <section
+        id="story"
+        class="story section"
+        aria-labelledby="story-title"
+      >
+        <div id="workflow" class="section-intro workflow-copy reveal">
+          <p class="kicker">{en ? "ONE CONVERSION PATH, FOUR STEPS" : "一条转换路径，四个环节"}</p>
+          <h2 id="story-title">
+            {en ? <>Component data,{" "}<br /><em>ready for your EDA.</em></> : <>从元件数据，<br /><em>到可用的 EDA 库。</em></>}
+          </h2>
+          <p>
+            {en ? "Start with component data, prepare the library assets, convert to a target format, then continue in the EDA workflow you already use." : "从元件数据开始，逐步准备库文件、转换目标格式，并回到熟悉的 EDA 工作流继续设计。"}
+          </p>
+          <WorkflowActions lang={lang} />
+        </div>
+        <div class="story-rail" data-story-track>
+          <article class="story-card story-card-a reveal" data-story-stage="input">
+            <span class="story-index">01 / {en ? "INPUT" : "输入"}</span>
+            <h3>
+              {en ? <>Bring the{" "}<br />part in.</> : <>先把元件<br />带进来。</>}
+            </h3>
+            <p>
+              {en ? "Paste an LCSC number or import a BOM. Clipboard extraction keeps the small work small." : "输入 LCSC 编号，或直接导入 BOM。剪贴板里的编号也不用重新整理。"}
+            </p>
+            <a class="story-link" href="cases/">{en ? "Read a real case" : "查看真实案例"} <span>→</span></a>
+            <div class="story-pulse">
+              C2040 <span>→</span>
+            </div>
+          </article>
+          <article class="story-card story-card-b reveal reveal-delay-1" data-story-stage="prepare">
+            <span class="story-index">02 / {en ? "PREPARE" : "整理"}</span>
+            <h3>
+              {en ? <>Symbol, footprint{" "}<br />and model together.</> : <>符号、封装、<br />模型，一起准备。</>}
+            </h3>
+            <p>{en ? "Fetch data, map layers and process 3D files while batch work stays multi-threaded." : "下载数据、映射图层、处理 3D 文件，批量操作交给多线程。"}</p>
+            <a class="story-link" href="lab/">{en ? "Open 3D Lab" : "进入 3D Lab"} <span>→</span></a>
+            <div class="story-stack">
+              <b>{en ? "SYMBOL" : "符号"}</b>
+              <b>{en ? "FOOTPRINT" : "封装"}</b>
+              <b>{en ? "3D MODEL" : "3D 模型"}</b>
+            </div>
+          </article>
+          <article class="story-card story-card-c reveal reveal-delay-2" data-story-stage="convert">
+            <span class="story-index">03 / {en ? "CONVERT" : "转换"}</span>
+            <h3>
+              {en ? <>Generate your{" "}<br />target EDA library.</> : <>输出目标<br />EDA 元件库。</>}
+            </h3>
+            <p>{en ? "Create the matching library files, then check format support for the current version." : "按目标 EDA 生成对应库文件，再核对当前版本的格式支持范围。"}</p>
+            <a class="story-link" href="formats/">{en ? "View format matrix" : "查看格式矩阵"} <span>→</span></a>
+            <div class="story-check">✓ {en ? "library generated" : "库文件已生成"}</div>
+          </article>
+          <article class="story-card story-card-d reveal" data-story-stage="use">
+            <span class="story-index">04 / {en ? "USE" : "使用"}</span>
+            <h3>
+              {en ? <>Back to your{" "}<br />design workbench.</> : <>带回你的<br />设计工作台。</>}
+            </h3>
+            <p>{en ? "Continue in KiCad, Altium or another target EDA. The real export screen and results are shown below." : "在 KiCad、Altium 等目标 EDA 中继续设计；下方展示真实导出界面与处理结果。"}</p>
+            <a class="story-link" href="#showcase-title">{en ? "See the real app" : "查看真实软件界面"} <span>↓</span></a>
+            <div class="story-use-proof">{en ? "REAL QT QUICK EXPORT RESULT" : "真实 Qt Quick 导出结果"}</div>
+          </article>
+        </div>
+      </section>
+      </div>
+      <div class="marquee" aria-hidden="true">
+        <div>
+          <span>{en ? "SYMBOL" : "符号"}</span><i>✳</i><span>{en ? "FOOTPRINT" : "封装"}</span><i>✳</i><span>{en ? "EDA LIBRARY" : "EDA 库"}</span><i>✳</i>
+          <span>BOM</span><i>✳</i><span>GUI + CLI</span><i>✳</i><span>{en ? "SYMBOL" : "符号"}</span><i>✳</i>
+          <span>{en ? "FOOTPRINT" : "封装"}</span><i>✳</i><span>{en ? "EDA LIBRARY" : "EDA 库"}</span><i>✳</i>
+        </div>
+      </div>
+      <section
+        class="product-showcase section shell"
+        aria-labelledby="showcase-title"
+      >
+        <div class="section-intro section-intro-wide reveal">
+          <p class="kicker">{en ? "THE REAL WORKBENCH" : "真实的工作台"}</p>
+          <h2 id="showcase-title">
+            {en ? <>This is not a concept image.{" "}<br /><em>It is the actual workbench.</em></> : <>这不是概念图。<br /><em>这是真实界面。</em></>}
+          </h2>
+          <p>
+            {en ? "The opening view shows component entry and BOM import. Here, the real export settings, processing progress and component results complete the story from setup to delivery." : "首屏展示元件与 BOM 输入；这里接着呈现真实导出设置、处理进度和元件结果，串起从准备到交付的工作流。"}
+          </p>
+        </div>
+        <figure class="app-window reveal">
+          <div class="window-chrome">
+            <span class="window-icon">
+              <img src={iconUrl} alt="" />
+            </span>
+            <b>EasyKiConverter</b>
+            <span class="window-spacer"></span>
+            <i></i>
+            <i></i>
+            <i></i>
+          </div>
+          <img
+            src={exportImageUrl}
+            alt={en ? "The actual EasyKiConverter Qt Quick export view showing export settings, processing progress and component results; local output path hidden" : "EasyKiConverter 实际 Qt Quick 导出界面，展示导出设置、处理进度和元件结果；本机输出路径已隐藏"}
+            loading="lazy"
+          />
+          <ShowcaseCaption lang={lang} imageUrl={exportImageUrl} />
+        </figure>
+        <WorkbenchActions lang={lang} />
+      </section>
+      <section
+        id="features"
+        class="features section shell"
+        aria-labelledby="features-title"
+      >
+        <div class="section-heading reveal">
+          <div>
+            <p class="kicker">{en ? "A TOOL WITH GOOD MANNERS" : "一款得体的工具"}</p>
+            <h2 id="features-title">
+              {en ? <>Make the tedious parts{" "}<br /><em>a little easier.</em></> : <>把繁琐的部分，<br /><em>做得体面一点。</em></>}
+            </h2>
+          </div>
+          <p>
+            {en ? "Every feature is grounded in a real electronics workflow: it does not pretend to design for you, it simply removes mechanical work." : "功能都围绕真实的电子工程工作流展开：不假装替你设计，只替你省下机械操作。"}
+          </p>
+        </div>
+        <div class="feature-grid">
+          <article id="formats" class="feature-card feature-card-large reveal">
+            <span class="feature-number">01</span>
+            <div>
+              <h3>{en ? "Multiple targets" : "多目标输出"}</h3>
+              <p>
+                {en ? "The current stable release focuses on KiCad and Altium. For other targets, use the matching Release and format matrix to confirm current support." : "当前稳定版以 KiCad、Altium 为主要目标；其他目标格式的具体支持范围，请查看对应版本的发布说明和格式矩阵。"}
+              </p>
+              <div class="format-pills" data-format-summary>
+                {primaryFormats.map((format) => <b>{format.name}</b>)}
+                <b>+ {additionalFormatCount} {en ? "additional targets" : "个其他目标"}</b>
+              </div>
+              <div class="feature-links" aria-label={en ? "Format and case-study entries" : "格式与案例入口"}>
+                <a class="feature-link feature-link-internal feature-link-primary" href="formats/">{en ? "View format matrix" : "查看格式矩阵"} <span>→</span></a>
+                <a class="feature-link feature-link-internal feature-link-secondary" href="cases/">{en ? "View conversion cases" : "查看真实转换案例"} <span>→</span></a>
+              </div>
+            </div>
+          </article>
+          <article class="feature-card feature-card-mint reveal reveal-delay-1">
+            <span class="feature-number">01 / {en ? "ONE PART" : "单个元件"}</span>
+            <h3>{en ? "Prepare one component" : "准备一个元件"}</h3>
+            <p>{en ? "Enter an LCSC number, review its data, and prepare a target library file." : "输入 LCSC 编号，查看元件数据，再整理为目标库文件。"}</p>
+            <a class="feature-task-link" href="cases/">{en ? "See a conversion case" : "查看转换案例"} <span>→</span></a>
+          </article>
+          <article class="feature-card feature-card-peach reveal reveal-delay-2">
+            <span class="feature-number">02 / {en ? "BOM BATCH" : "BOM 批处理"}</span>
+            <h3>{en ? "Process a parts list" : "批量处理清单"}</h3>
+            <p>{en ? "Import a BOM, use multi-threaded processing, and review progress and diagnostics." : "导入 BOM，交由多线程处理；在界面中查看进度与诊断信息。"}</p>
+            <a class="feature-task-link" href="cases/">{en ? "See batch evidence" : "查看批处理证据"} <span>→</span></a>
+          </article>
+          <article class="feature-card feature-card-lilac reveal">
+            <span class="feature-number">03 / {en ? "AUTOMATION" : "自动化"}</span>
+            <h3>{en ? "Use the command line" : "接入命令行"}</h3>
+            <p>{en ? "Choose the Qt 6 GUI for interactive work or the project CLI for scripted workflows." : "交互操作可用 Qt 6 GUI；需要脚本化时，可选择项目提供的 CLI。"}</p>
+            <a class="feature-task-link" href={en ? "https://github.com/EasyKiconverter/EasyKiConverter/blob/master/docs/CLI_USAGE_en.md" : "https://github.com/EasyKiconverter/EasyKiConverter/blob/master/docs/CLI_USAGE.md"} target="_blank" rel="noreferrer">{en ? "CLI documentation" : "CLI 使用说明"} <span>↗</span></a>
+          </article>
+          <article class="feature-card feature-card-yellow reveal reveal-delay-1">
+            <span class="feature-number">04 / {en ? "ASSET REVIEW" : "资产检查"}</span>
+            <h3>{en ? "Check model and footprint" : "核对模型与封装"}</h3>
+            <p>{en ? "Inspect the 3D solid, footprint view, and how the library assets relate." : "在 3D Lab 中查看实体模型、封装视图及其对应关系。"}</p>
+            <a class="feature-task-link" href="lab/">{en ? "Open 3D Lab" : "打开 3D Lab"} <span>→</span></a>
+          </article>
+        </div>
+      </section>
+      <section
+        class="platforms section shell"
+        aria-labelledby="platforms-title"
+      >
+        <div class="platform-intro reveal">
+          <p class="kicker">{en ? "PLATFORM STATUS" : "平台状态"}</p>
+          <h2 id="platforms-title">
+            {en ? <>macOS packages,{" "}<br /><em>still experimental.</em></> : <>macOS 安装包，<br /><em>仍属实验阶段。</em></>}
+          </h2>
+          <p class="platform-summary">{en ? "The current stable release provides packages for Windows, Linux and macOS; macOS builds have not completed maintainer validation. Choose the download that matches your architecture." : "当前稳定版提供 Windows、Linux 和 macOS 安装包；macOS 构建尚未完成维护者验收，请按设备架构选择对应下载项。"}</p>
+          <a class="text-link text-link-down platform-intro-link" href="#download">{en ? "See platform downloads" : "查看平台下载项"} <span>↓</span></a>
+        </div>
+        <PlatformAvailability language={lang} platforms={platformAvailability} />
+      </section>
+      <section
+        id="download"
+        class="download section shell"
+        aria-labelledby="download-title"
+      >
+        <div class="download-card reveal">
+          <div class="download-orbit orbit-one"></div>
+          <div class="download-orbit orbit-two"></div>
+          <div class="download-copy">
+            <p class="kicker">{en ? "READY WHEN YOU ARE" : "随时可以开始"}</p>
+            <h2 id="download-title">
+              {en ? <>Let the next board{" "}<br /><em>start sooner.</em></> : <>让下一块板，<br /><em>早点开始。</em></>}
+            </h2>
+            <p>
+              {en ? "Current stable " : "当前稳定版 "}<strong data-release-version>{latestRelease.tag}</strong> · {en ? "Free" : "免费"} · GPL-3.0
+            </p>
+            <p class="download-platform-notice">
+              {en ? "The macOS build has not completed maintainer validation. An Apple Silicon user reported Gatekeeper’s “damaged or incomplete” warning. " : "macOS 构建尚未完成维护者验收。Apple Silicon 用户曾报告 Gatekeeper 提示“应用已损坏或不完整”。"}
+              <a href="https://github.com/EasyKiconverter/EasyKiConverter/issues/153" target="_blank" rel="noreferrer">{en ? "See the known issue" : "查看已知问题"} <span aria-hidden="true">↗</span></a>
+              {en ? ". Do not disable macOS security protections based on unverified advice." : "。请勿根据未经核实的教程关闭系统安全防护。"}
+            </p>
+            <div class="download-actions">
+              <a
+                class="button button-light magnetic"
+                data-release-link
+                href={latestRelease.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {en ? "View downloads for " + latestRelease.tag : "查看 " + latestRelease.tag + " 下载项"} <span>↗</span>
+              </a>
+              <a
+                class="download-link download-link-external"
+                href="https://github.com/EasyKiconverter/EasyKiConverter/releases"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {en ? "All releases" : "查看全部发布版本"} <span>↗</span>
+              </a>
+            </div>
+            <div class="download-links" aria-label={en ? "Platform download entries" : "平台下载入口"}>
+              {latestRelease.assets.windows.map((asset, index) => <a data-release-asset={`windows-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Windows</b><span>{localizeAssetLabel(asset.label)}</span></a>)}
+              {latestRelease.assets.linux.map((asset, index) => <a data-release-asset={`linux-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>Linux</b><span>{localizeAssetLabel(asset.label)}</span></a>)}
+              {latestRelease.assets.macos.map((asset, index) => <a data-release-asset={`macos-${index}`} href={asset.url} target="_blank" rel="noreferrer"><b>macOS</b><span>{localizeAssetLabel(asset.label)}</span></a>)}
+              <a
+                data-release-asset="checksum"
+                href={latestRelease.checksumUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <b>{en ? "SHA256 checks" : "SHA256 校验"}</b>
+                <span>SHA256SUMS ↗</span>
+              </a>
+            </div>
+            <small>{en ? "The website does not host large binaries. Choose the direct architecture download below; the current Release lists portable builds, MSIX, RPM, Arch Linux packages, and per-file checksums. Review its notes and verify SHA256 before installing; stable downloads remain available if the version lookup is temporarily unavailable." : "官网不托管大型安装包。请选择匹配设备架构的直达下载；便携版、MSIX、RPM、Arch Linux 包及逐项校验文件见当前版本发布页。安装前请阅读发布说明并核对 SHA256；版本信息暂不可用时，稳定版下载入口仍有效。"}</small>
+          </div>
+          <div class="download-stamp" aria-hidden="true">
+            <span>
+              {en ? <>OPEN{" "}<br />SOURCE</> : <>开源<br />工具</>}
+            </span>
+            <b>✳</b>
+            <span>
+              {en ? <>MADE FOR{" "}<br />ENGINEERS</> : <>为<br />工程师而做</>}
+            </span>
+          </div>
+        </div>
+      </section>
+    </main>
+    <SiteFooter lang={locale} homeHref="#top" />
+    <div class="egg-toast" role="status" aria-live="polite"></div>
+    <script>
+      import "../js/app.ts";
+    </script>
+  </body>
+</html>

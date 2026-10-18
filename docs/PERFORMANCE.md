@@ -4,10 +4,10 @@
 
 ## 当前边界
 
-- 中文首页 `/` 和英文首页 `/en/` 使用 WebP 产品截图、CSS 空间效果和少量页面脚本，不加载 STEP、OpenCascade/WASM 或 Three.js 模型运行时。
+- 中文首页 `/` 和英文首页 `/en/` 首屏使用 WebP 产品截图与 CSS 空间效果，不请求 STEP 或 OpenCascade/WASM；滚动接近转换叙事时，才按需加载约 2.19 MB 的 Meshopt GLB 和 Three.js 渲染代码。
 - 3D Lab `/lab/` 与 `/en/lab/` 按视口默认加载约 9.6 MB 桌面 GLB 或约 8.1 MB 移动 GLB；GLB 缺失时才回退到约 11 MB STEP、约 7.3 MB WASM 的解析路径，这是实验资源，不是首页基线。
 - 首页首屏资源使用 `public/assets/showcase/*.webp`；原始 PNG、STEP 和 WASM 仍保留用于溯源或实验室，尚未从发布目录迁移。
-- `src/js/app.ts` 的交互只在页面可见时维护动画，并对 `prefers-reduced-motion` 提供静态路径。
+- `src/js/app.ts` 处理可见性、视口尺寸和运行时 `prefers-reduced-motion` 变化；3D 零件只随滚动在“组合→分解→组合”间变化，减少动态效果时固定为装配态并停止连续动画。
 
 ## 可重复检查
 
@@ -25,7 +25,7 @@ pnpm run test:browser
 
 ## 资产决策
 
-STEP 是实验室的工程源资产，GLB 由 `tools/prepare_model_asset.py` 离线生成并作为默认 Web 交付资产。首页不应重新引入浏览器 CAD 三角化；若 Lab 成为正式产品功能，仍必须单独建立模型体积、三角形预算和 fallback 的浏览器基准。
+STEP 是实验室的工程源资产，基础 GLB 由 `tools/prepare_model_asset.py` 离线生成；首页叙事 GLB 由 `pnpm run assets:story-model` 进一步以 Meshopt 压缩，保留 303 个网格和 278,784 个三角面，交付上限为 2.5 MB / 300,000 个三角面。首页不进行浏览器 CAD 三角化；模型资源或 WebGL 不可用时使用静态 WebP 回退。
 
 ## Chromium 生产观测
 

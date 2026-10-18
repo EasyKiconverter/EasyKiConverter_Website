@@ -2,7 +2,7 @@
 
 [中文](PROJECT_STATUS.md)
 
-Last checked: 2026-10-17. This status is based on the current repository, GitHub PRs/checks, Release API, and read-only live-site checks. External state can change and must be rechecked before action.
+Last checked: 2026-10-18. This status reflects the current repository and GitHub PR/check state; production and physical-device status were not rechecked this cycle and must be verified before action.
 
 ## Project Goal
 
@@ -10,7 +10,7 @@ Explain EasyKiConverter’s real workflow in Chinese and English, show the actua
 
 ## Current Stage
 
-The project remains in V0.0.1 stability maintenance and visitor-experience improvement. The current `version/V0.0.1` includes PR #398's mobile Lab view-switcher cue, PR #399's mobile/desktop model-detail pose fix, and PR #400's bilingual verification record (HEAD `9e6d80b`). Feng083 independently reviewed and merged all three; required CI and post-merge Site Quality passed. `master` is currently `d7596a6`: PR #393's homepage download CTA fix was promoted by PR #394, PR #395 synchronized ancestry, and PR #397 updated project records; #398–#400 have not been promoted to `master`. Source is not deployed; the duplicate homepage `<title>` issue still requires an approved deployment and recheck. Real-device and network-performance validation remain pending. The Release API may return HTTP 403; the checked-in fallback is `v3.1.13`.
+The project remains in V0.0.1 stability maintenance and visitor-experience improvement. At this check, `version/V0.0.1` is `dae2a14` and `master` is `d7596a6`. PR #402's 600×800 label/model overlap and 320px heading-clearance issues are fixed; refreshed bilingual 768×760 real-WebGL captures show the complete model board and step labels. On head `a75b4ae`, Site Quality (`39117276727`), Dependency Review (`39117276659`), and Actionlint (`39117276671`) all passed, and Feng083 independently approved. Full Playwright passed (252 passed, 4 skipped); Astro check (37 files, zero diagnostics), eight-page build, site validation, and model asset checks passed. PR is awaiting merge; production is unchanged, and real-device and network-performance validation remain pending. The local Release API returned HTTP 403, so the checked-in `v3.1.13` fallback was used.
 
 This Lab mobile review found that all nine view options were horizontally scrollable, but the hidden scrollbar and lack of guidance made off-screen views hard to discover. Added a bilingual cue and assistive-technology description; 390px normal/reduced-motion regressions pass, and the cue stays hidden at 768/1440px. Full Playwright (240 passed, 4 skipped), build, eight-route validation, and model-asset checks passed. Feng083 independently approved PR #398; Site Quality run `38985998641` (240 passed, 4 skipped) and Dependency Review `38985998628` passed. Not deployed or tested on a real device.
 

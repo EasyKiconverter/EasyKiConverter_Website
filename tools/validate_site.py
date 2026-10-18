@@ -7,8 +7,10 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 source_pages = [ROOT / "src/pages/index.astro", ROOT / "src/pages/en/index.astro"]
+homepage_source = ROOT / "src/components/HomePage.astro"
 lab_source_pages = [ROOT / "src/pages/lab/index.astro", ROOT / "src/pages/en/lab/index.astro"]
 seo_source = ROOT / "src/components/SeoHead.astro"
+conversion_scene_source = ROOT / "src/components/ConversionScene.astro"
 output_pages = [
     ROOT / "dist/index.html",
     ROOT / "dist/en/index.html",
@@ -45,6 +47,8 @@ if 'new URL(import.meta.env.BASE_URL, document.baseURI)' not in model_source:
     errors.append("src/js/model-viewer.ts: Lab assets must resolve from Astro BASE_URL")
 if 'assets/vendor/' not in model_source or 'assets/model/Easykiconverter_展示模型.step' not in model_source:
     errors.append("src/js/model-viewer.ts: Lab asset URLs are incomplete")
+conversion_scene_text = conversion_scene_source.read_text(encoding="utf-8")
+homepage_text = homepage_source.read_text(encoding="utf-8")
 if 'modelNormals' not in model_source or 'computeVertexNormals' not in model_source:
     errors.append("src/js/model-viewer.ts: GLB normals must be preserved with a STEP fallback computation")
 if 'rendering' not in model_source or 'reducedMotion' not in model_source or 'clearTimeout' not in model_source:
@@ -60,25 +64,37 @@ for marker in (
     if marker not in seo_text:
         errors.append(f"{seo_source}: missing shared SEO marker {marker}")
 
+if "Xpedition" in homepage_text:
+    errors.append(f"{homepage_source}: stable homepage must not claim Xpedition")
+has_product_journey = (
+    "ConversionScene" in homepage_text
+    and "data-story-rail" in homepage_text
+    and "data-story-stage" in homepage_text
+    and "data-product-stage" in conversion_scene_text
+    and "data-conversion-canvas" in conversion_scene_text
+)
+if not has_product_journey:
+    errors.append(f"{homepage_source}: missing interactive product or model stage")
+if "SeoHead" not in homepage_text:
+    errors.append(f"{homepage_source}: missing shared SeoHead component")
+if "application/ld+json" not in homepage_text:
+    errors.append(f"{homepage_source}: missing SoftwareApplication structured data")
+has_accessible_stage_fallback = (
+    "ConversionScene" in homepage_text
+    and "<img" in conversion_scene_text
+    and "aria-label" in conversion_scene_text
+)
+if not has_accessible_stage_fallback or "SiteHeader" not in homepage_text:
+    errors.append(f"{homepage_source}: missing accessible interaction fallback or mobile navigation")
+for marker in ("download-links", "Windows", "Linux", "macOS", "SHA256"):
+    if marker not in homepage_text:
+        errors.append(f"{homepage_source}: missing download marker {marker}")
+
 for page in source_pages:
     text = page.read_text(encoding="utf-8")
-    if "Xpedition" in text:
-        errors.append(f"{page}: stable homepage must not claim Xpedition")
-    has_model_stage = "data-model-stage" in text and "model-canvas" in text
-    has_product_stage = "hero-product-stage" in text and "hero-product-window" in text
-    if not has_model_stage and not has_product_stage:
-        errors.append(f"{page}: missing interactive product or model stage")
-    if "SeoHead" not in text:
-        errors.append(f"{page}: missing shared SeoHead component")
-    if "application/ld+json" not in text:
-        errors.append(f"{page}: missing SoftwareApplication structured data")
-    has_accessible_stage_fallback = "model-fallback-copy" in text or "hero-product-window" in text
-    has_shared_header = "SiteHeader" in text
-    if not has_accessible_stage_fallback or ("menu-button" not in text and not has_shared_header):
-        errors.append(f"{page}: missing accessible interaction fallback or mobile navigation")
-    for marker in ("download-links", "Windows", "Linux", "macOS", "SHA256"):
-        if marker not in text:
-            errors.append(f"{page}: missing download marker {marker}")
+    expected_language = "en" if page.parent.name == "en" else "zh"
+    if f'<HomePage lang="{expected_language}"' not in text:
+        errors.append(f"{page}: route must render the shared homepage in {expected_language}")
 
 for page in lab_source_pages:
     text = page.read_text(encoding="utf-8")

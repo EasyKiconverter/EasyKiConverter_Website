@@ -113,56 +113,86 @@ motionPreference.addEventListener('change', ({ matches }) => {
   if (matches) document.querySelectorAll<HTMLElement>('.magnetic').forEach((button) => { button.style.transform = ''; });
 });
 
-const depthStage = document.querySelector<HTMLElement>('.hero-product-stage');
+const depthStage = document.querySelector<HTMLElement>('[data-product-stage]');
 const depthRail = document.querySelector<HTMLElement>('[data-story-rail]');
-const processStory = document.querySelector<HTMLElement>('[data-process-story]');
-if ((depthStage || processStory) && !motionPreference.matches) {
+if (depthStage || depthRail) {
   let pointerX = 0;
   let pointerY = 0;
   let currentX = 0;
   let currentY = 0;
   let frame = 0;
-  let active = true;
+  let inViewport = !('IntersectionObserver' in window);
+  let pageVisible = !document.hidden;
 
   const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+  const canAnimate = () => inViewport && pageVisible && !motionPreference.matches;
+  const resetDepthMotion = () => {
+    pointerX = 0;
+    pointerY = 0;
+    currentX = 0;
+    currentY = 0;
+    depthStage?.style.setProperty('--scene-x', '0');
+    depthStage?.style.setProperty('--scene-y', '0');
+  };
   const renderDepth = () => {
     frame = 0;
-    if (!active) return;
+    if (!pageVisible || !inViewport) return;
     const stageBox = depthStage?.getBoundingClientRect();
     const progress = stageBox ? clamp((window.innerHeight * 0.72 - stageBox.top) / Math.max(1, window.innerHeight * 1.2), 0, 1) : 0;
-    currentX += (pointerX - currentX) * 0.12;
-    currentY += (pointerY - currentY) * 0.12;
+    if (canAnimate()) {
+      currentX += (pointerX - currentX) * 0.12;
+      currentY += (pointerY - currentY) * 0.12;
+    } else {
+      resetDepthMotion();
+    }
     if (depthStage) {
       depthStage.style.setProperty('--scene-x', currentX.toFixed(3));
       depthStage.style.setProperty('--scene-y', currentY.toFixed(3));
-      depthStage.style.setProperty('--scene-progress', progress.toFixed(3));
+      depthStage.style.setProperty('--scene-progress', (canAnimate() ? progress : 0).toFixed(3));
     }
     if (depthRail) {
-      depthRail.style.setProperty('--story-progress', progress.toFixed(3));
-      depthRail.querySelectorAll<HTMLElement>('.story-card').forEach((card, index) => {
-        const centerOffset = index - 1;
-        card.style.setProperty('--story-z', `${Math.round((1 - progress) * 18 - Math.abs(centerOffset) * 15)}px`);
-        card.style.setProperty('--story-turn', `${(centerOffset * (3 + progress * 4)).toFixed(2)}deg`);
+      const scene = depthRail.querySelector<HTMLElement>('[data-conversion-scene]');
+      const sceneBox = scene?.getBoundingClientRect();
+      const sceneIsSticky = scene && window.getComputedStyle(scene).position === 'sticky';
+      const cards = [...depthRail.querySelectorAll<HTMLElement>('.story-card')];
+      const sceneCenter = sceneIsSticky && sceneBox
+        ? (Number.parseFloat(window.getComputedStyle(scene).top) || 0) + sceneBox.height / 2
+        : window.innerHeight * 0.62;
+      const phoneLayout = window.matchMedia('(max-width: 599px)').matches;
+      const shortLandscape = window.matchMedia('(min-width: 600px) and (max-width: 850px) and (max-height: 500px)').matches;
+      const storyAnchor = sceneBox && (phoneLayout || shortLandscape)
+        ? sceneCenter + sceneBox.height / 2 + (shortLandscape ? 155 : 150)
+        : sceneCenter;
+      const firstCard = cards[0]?.getBoundingClientRect();
+      const lastCard = cards[cards.length - 1]?.getBoundingClientRect();
+      const firstCardCenter = firstCard ? firstCard.top + firstCard.height / 2 : sceneCenter;
+      const lastCardCenter = lastCard ? lastCard.top + lastCard.height / 2 : firstCardCenter;
+      const storyProgress = clamp(
+        (storyAnchor - firstCardCenter) / Math.max(1, lastCardCenter - firstCardCenter),
+        0,
+        1,
+      );
+      depthRail.style.setProperty('--story-progress', storyProgress.toFixed(3));
+      const storyPosition = storyProgress * Math.max(1, cards.length - 1);
+      if (scene && cards.length) {
+        scene.dataset.stage = cards[Math.round(storyPosition)]?.dataset.storyStage || 'use';
+      }
+      cards.forEach((card, index) => {
+        const centerOffset = index - (cards.length - 1) / 2;
+        const activation = clamp(1 - Math.abs(storyPosition - index) * 1.45, 0, 1);
+        card.style.setProperty('--story-z', `${Math.round(activation * 20 - Math.abs(centerOffset) * 10)}px`);
+        card.style.setProperty('--story-turn', `${(centerOffset * 2.4 * (1 - activation)).toFixed(2)}deg`);
+        card.toggleAttribute('data-active', activation > 0.48);
       });
     }
-    if (processStory) {
-      const processBox = processStory.getBoundingClientRect();
-      const processProgress = clamp((window.innerHeight * 0.82 - processBox.top) / Math.max(1, processBox.height + window.innerHeight * 0.24), 0, 1);
-      processStory.style.setProperty('--process-progress', processProgress.toFixed(3));
-      processStory.querySelectorAll<HTMLElement>('.steps > li').forEach((step, index) => {
-        const activation = clamp(processProgress * 1.55 - index * 0.25, 0, 1);
-        step.style.setProperty('--step-depth', `${Math.round((1 - activation) * 24)}px`);
-        step.style.setProperty('--step-turn', `${((1 - activation) * (index % 2 ? -4 : 4)).toFixed(2)}deg`);
-        step.toggleAttribute('data-active', activation > 0.52);
-      });
-    }
-    if (Math.abs(pointerX - currentX) > 0.002 || Math.abs(pointerY - currentY) > 0.002) scheduleDepthFrame();
+    if (canAnimate() && (Math.abs(pointerX - currentX) > 0.002 || Math.abs(pointerY - currentY) > 0.002)) scheduleDepthFrame();
   };
   const scheduleDepthFrame = () => {
-    if (!frame) frame = window.requestAnimationFrame(renderDepth);
+    if (!frame && pageVisible && inViewport) frame = window.requestAnimationFrame(renderDepth);
   };
 
   depthStage?.addEventListener('pointermove', (event) => {
+    if (!canAnimate()) return;
     const box = depthStage.getBoundingClientRect();
     pointerX = clamp((event.clientX - box.left) / box.width * 2 - 1, -1, 1);
     pointerY = clamp((event.clientY - box.top) / box.height * 2 - 1, -1, 1);
@@ -170,8 +200,60 @@ if ((depthStage || processStory) && !motionPreference.matches) {
   }, { passive: true });
   depthStage?.addEventListener('pointerleave', () => { pointerX = 0; pointerY = 0; scheduleDepthFrame(); }, { passive: true });
   window.addEventListener('scroll', scheduleDepthFrame, { passive: true });
-  document.addEventListener('visibilitychange', () => { active = !document.hidden; if (active) scheduleDepthFrame(); }, { passive: true });
+  window.addEventListener('resize', scheduleDepthFrame, { passive: true });
+  window.visualViewport?.addEventListener('resize', scheduleDepthFrame, { passive: true });
+  window.addEventListener('orientationchange', scheduleDepthFrame, { passive: true });
+  const sizeObserver = 'ResizeObserver' in window ? new ResizeObserver(scheduleDepthFrame) : null;
+  [depthStage, depthRail, depthRail?.querySelector('[data-story-track]')].forEach((element) => {
+    if (element) sizeObserver?.observe(element);
+  });
+  document.addEventListener('visibilitychange', () => {
+    pageVisible = !document.hidden;
+    if (pageVisible) scheduleDepthFrame();
+    else if (frame) { window.cancelAnimationFrame(frame); frame = 0; }
+  }, { passive: true });
+  const intersectingTargets = new Set<Element>();
+  const viewportObserver = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) intersectingTargets.add(entry.target);
+      else intersectingTargets.delete(entry.target);
+    });
+    inViewport = intersectingTargets.size > 0;
+    if (inViewport) scheduleDepthFrame();
+    else if (frame) { window.cancelAnimationFrame(frame); frame = 0; }
+  }, { rootMargin: '120px 0px', threshold: 0 }) : null;
+  [depthStage, depthRail?.querySelector('[data-story-track]')].forEach((element) => { if (element) viewportObserver?.observe(element); });
+  motionPreference.addEventListener('change', ({ matches }) => {
+    if (matches) {
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0;
+      resetDepthMotion();
+      depthStage?.style.setProperty('--scene-progress', '0');
+      depthRail?.querySelectorAll<HTMLElement>('.story-card').forEach((card) => {
+        card.style.removeProperty('--story-z');
+        card.style.removeProperty('--story-turn');
+      });
+    } else scheduleDepthFrame();
+  });
   scheduleDepthFrame();
+}
+
+const conversionScene = document.querySelector<HTMLElement>('[data-conversion-scene][data-model-url]');
+if (conversionScene) {
+  let modelStarted = false;
+  const startModel = () => {
+    if (modelStarted) return;
+    modelStarted = true;
+    void import('./conversion-model').then(({ startConversionModel }) => startConversionModel(conversionScene));
+  };
+  if ('IntersectionObserver' in window) {
+    const modelLoaderObserver = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      modelLoaderObserver.disconnect();
+      startModel();
+    }, { rootMargin: '420px 0px' });
+    modelLoaderObserver.observe(conversionScene);
+  } else startModel();
 }
 
 const secretKeys = ['q', 't', '6']; let keyBuffer: string[] = [];

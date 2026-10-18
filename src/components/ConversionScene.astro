@@ -1,0 +1,63 @@
+---
+interface Props {
+  lang: "zh" | "en";
+  modelImageUrl: string;
+  modelUrl: string;
+}
+
+import { rp2040StoryComponent } from '../data/story-component';
+
+const { lang, modelImageUrl, modelUrl } = Astro.props;
+const en = lang === "en";
+---
+
+<div
+  class="conversion-scene product-journey-scene"
+  data-conversion-scene
+  data-product-stage
+  data-model-url={modelUrl}
+  data-stage="input"
+  role="img"
+  aria-label={en ? "A Raspberry Pi RP2040 (LCSC C2040) conversion story, with an illustrative QFN package model and a board context in the final step" : "Raspberry Pi RP2040（LCSC C2040）转换演示；QFN 封装为示意，最后一步切换为整板背景"}
+>
+  <figure class="conversion-scene-board">
+    <figcaption>
+      <span>{en ? "RP2040 QFN-56 · ILLUSTRATIVE" : "RP2040 QFN-56 · 封装示意"}</span>
+      <span>{en ? "BOARD CONTEXT · USE STAGE" : "使用阶段切换为整板背景"}</span>
+    </figcaption>
+    <div class="conversion-model-viewport">
+      <canvas data-conversion-canvas aria-hidden="true"></canvas>
+      <img src={modelImageUrl} alt="" loading="eager" fetchpriority="high" width="1100" height="800" />
+    </div>
+  </figure>
+
+  <div class="conversion-input-layer">
+    <small>{en ? "LCSC COMPONENT" : "LCSC 元件"}</small>
+    <strong>{rp2040StoryComponent.name}</strong>
+    <span><i></i>{rp2040StoryComponent.lcscId} · {rp2040StoryComponent.packageName}</span>
+  </div>
+
+  <div class="conversion-parts-layer">
+    <small>{en ? `${rp2040StoryComponent.packageSizeMm} × ${rp2040StoryComponent.packageSizeMm} MM · ${rp2040StoryComponent.contactCount} PINS` : `${rp2040StoryComponent.packageSizeMm} × ${rp2040StoryComponent.packageSizeMm} 毫米 · ${rp2040StoryComponent.contactCount} 引脚`}</small>
+    <b>{en ? "SYMBOL" : "符号"}</b>
+    <b>{en ? "FOOTPRINT" : "封装"}</b>
+    <b>{en ? "3D MODEL" : "3D 模型"}</b>
+  </div>
+
+  <div class="conversion-output-layer">
+    <small>{en ? "CONVERT TO TARGET" : "转换为目标格式"}</small>
+    <strong>{en ? "KiCad / Altium" : "KiCad / Altium"}</strong>
+    <span><i>✓</i>{en ? "C2040 · symbol, footprint & 3D succeeded" : "C2040 · 符号、封装、3D 均成功"}</span>
+  </div>
+
+  <div class="conversion-use-layer">
+    <small>{en ? "BACK TO YOUR WORKBENCH" : "回到设计工作台"}</small>
+    <strong>{en ? "Continue in your EDA" : "在目标 EDA 中继续设计"}</strong>
+    <span>{en ? "Recorded export · 21/21 succeeded · C2040 included" : "真实导出记录 · 21 项全成功 · 含 C2040"}</span>
+  </div>
+
+  <span class="conversion-scene-note">
+    <span class="conversion-scene-note-primary">{en ? "ILLUSTRATIVE QFN PACKAGE · BOARD CONTEXT AT USE" : "QFN 封装为示意 · 使用阶段展示整板背景"}</span>
+    <span class="conversion-scene-note-fallback">{en ? "WEBGL UNAVAILABLE · STATIC BOARD PREVIEW" : "WebGL 不可用 · 静态整板预览"}</span>
+  </span>
+</div>

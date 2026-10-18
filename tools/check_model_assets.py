@@ -16,6 +16,7 @@ STEP_PATH = MODEL_ROOT / "Easykiconverter_展示模型.step"
 ASSETS = {
     "desktop": MODEL_ROOT / "Easykiconverter_展示模型.glb",
     "mobile": MODEL_ROOT / "Easykiconverter_展示模型-mobile.glb",
+    "story": ROOT / "public/assets/showcase/easyki-conversion-story.glb",
 }
 GLB_MAGIC = 0x46546C67
 JSON_CHUNK = 0x4E4F534A
@@ -68,6 +69,8 @@ def read_glb(path: Path) -> dict:
 
 def inspect_asset(name: str, path: Path) -> AssetReport:
     document = read_glb(path)
+    if name == "story" and "EXT_meshopt_compression" not in document.get("extensionsRequired", []):
+        raise ValueError(f"{path}: homepage story model must require Meshopt geometry compression")
     accessors = document.get("accessors", [])
     meshes = document.get("meshes", [])
     primitives = 0
@@ -103,6 +106,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--max-desktop-triangles", type=int, default=300_000)
     parser.add_argument("--max-mobile-triangles", type=int, default=250_000)
+    parser.add_argument("--max-story-triangles", type=int, default=300_000)
+    parser.add_argument("--max-story-bytes", type=int, default=2_500_000)
     parser.add_argument("--json", action="store_true", dest="as_json")
     args = parser.parse_args()
     errors: list[str] = []
@@ -119,10 +124,12 @@ def main() -> int:
             reports.append(inspect_asset(name, path))
         except (OSError, ValueError, KeyError, IndexError, json.JSONDecodeError) as error:
             errors.append(str(error))
-    limits = {"desktop": args.max_desktop_triangles, "mobile": args.max_mobile_triangles}
+    limits = {"desktop": args.max_desktop_triangles, "mobile": args.max_mobile_triangles, "story": args.max_story_triangles}
     for report in reports:
         if report.triangles > limits[report.name]:
             errors.append(f"{report.name}: {report.triangles:,} triangles exceed {limits[report.name]:,} budget")
+        if report.name == "story" and report.bytes > args.max_story_bytes:
+            errors.append(f"story: {report.bytes:,} bytes exceed {args.max_story_bytes:,} delivery budget")
         if report.normals != report.primitives:
             errors.append(f"{report.name}: every primitive must provide generated normals")
     if args.as_json:
