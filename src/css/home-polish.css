@@ -1784,6 +1784,12 @@
   }
 }
 
+@media (max-width: 360px) {
+  .product-journey > .story {
+    padding-top: 52px;
+  }
+}
+
 @media (max-width: 850px) and (max-height: 500px) {
   .product-journey > .hero {
     min-height: 440px;
