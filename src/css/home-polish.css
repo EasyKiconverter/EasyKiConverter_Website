@@ -1620,6 +1620,41 @@
     height: clamp(130px, 38svh, 190px);
     min-height: 130px;
   }
+
+  .conversion-scene[data-stage] .conversion-input-layer,
+  .conversion-scene[data-stage] .conversion-parts-layer,
+  .conversion-scene[data-stage] .conversion-output-layer,
+  .conversion-scene[data-stage] .conversion-use-layer {
+    max-width: 34%;
+    gap: 2px;
+    padding: 5px 7px;
+  }
+
+  .conversion-scene[data-stage] .conversion-input-layer span,
+  .conversion-scene[data-stage] .conversion-output-layer span,
+  .conversion-scene[data-stage] .conversion-use-layer span {
+    display: none;
+  }
+
+  .conversion-scene[data-stage="use"] .conversion-use-layer small {
+    display: none;
+  }
+
+  .conversion-scene[data-stage="prepare"] .conversion-parts-layer {
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+
+  .conversion-scene[data-stage="prepare"] .conversion-parts-layer small {
+    display: none;
+  }
+
+  .conversion-scene[data-stage] .conversion-input-layer strong,
+  .conversion-scene[data-stage] .conversion-output-layer strong,
+  .conversion-scene[data-stage] .conversion-use-layer strong {
+    font-size: 10px;
+    line-height: 1.2;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

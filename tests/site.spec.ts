@@ -1265,6 +1265,10 @@ test('conversion scene stays visible with its active narrative on tablet and pho
           expect(stageCardGeometry.board.right, `${path} ${width}px stage ${progress} transformed model board right`).toBeLessThanOrEqual(stageCardGeometry.scene.right + 1);
           expect(stageCardGeometry.board.y, `${path} ${width}px stage ${progress} transformed model board top`).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 3);
           expect(stageCardGeometry.board.bottom, `${path} ${width}px stage ${progress} transformed model board bottom`).toBeLessThanOrEqual(stageCardGeometry.scene.bottom + 1);
+          if (height <= 500) {
+            expect(stageCardGeometry.layer.width, `${path} short-landscape active card stays compact`).toBeLessThanOrEqual(stageCardGeometry.board.width * 0.46);
+            expect(stageCardGeometry.layer.height, `${path} short-landscape active card preserves model visibility`).toBeLessThanOrEqual(stageCardGeometry.scene.height * 0.45);
+          }
         }
         expect(stageCardGeometry.layer.x, `${path} ${width}px stage ${progress} active label left`).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
         expect(stageCardGeometry.layer.right, `${path} ${width}px stage ${progress} active label right`).toBeLessThanOrEqual(stageCardGeometry.scene.right + 1);
