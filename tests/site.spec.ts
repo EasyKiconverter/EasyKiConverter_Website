@@ -1261,6 +1261,14 @@ test('conversion scene stays visible with its active narrative on tablet and pho
             expect(stageCardGeometry.card.y, `${path} ${width}px stage ${progress} complete card top`).toBeGreaterThanOrEqual(-1);
             expect(stageCardGeometry.card.bottom, `${path} ${width}px stage ${progress} complete card bottom`).toBeLessThanOrEqual(height + 1);
           }
+          if (width <= 850 && height > 500) {
+            const stageModelCardOverlapWidth = Math.max(0, Math.min(stageCardGeometry.model.right, stageCardGeometry.layer.right) - Math.max(stageCardGeometry.model.x, stageCardGeometry.layer.x));
+            const stageModelCardOverlapHeight = Math.max(0, Math.min(stageCardGeometry.model.bottom, stageCardGeometry.layer.bottom) - Math.max(stageCardGeometry.model.y, stageCardGeometry.layer.y));
+            expect(stageModelCardOverlapWidth * stageModelCardOverlapHeight, `${path} ${width}x${height}px stage ${progress} active label must not cover transformed model`).toBeLessThan(4);
+            const boardCardOverlapWidth = Math.max(0, Math.min(stageCardGeometry.board.right, stageCardGeometry.layer.right) - Math.max(stageCardGeometry.board.x, stageCardGeometry.layer.x));
+            const boardCardOverlapHeight = Math.max(0, Math.min(stageCardGeometry.board.bottom, stageCardGeometry.layer.bottom) - Math.max(stageCardGeometry.board.y, stageCardGeometry.layer.y));
+            expect(boardCardOverlapWidth * boardCardOverlapHeight, `${path} ${width}x${height}px stage ${progress} active label must clear the complete transformed model card`).toBeLessThan(4);
+          }
           expect(stageCardGeometry.board.x, `${path} ${width}px stage ${progress} transformed model board left`).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
           expect(stageCardGeometry.board.right, `${path} ${width}px stage ${progress} transformed model board right`).toBeLessThanOrEqual(stageCardGeometry.scene.right + 1);
           expect(stageCardGeometry.board.y, `${path} ${width}px stage ${progress} transformed model board top`).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 3);

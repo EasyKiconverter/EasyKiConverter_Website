@@ -1517,14 +1517,15 @@
   }
 
   .product-journey > .conversion-scene .conversion-scene-board {
-    left: 7%;
-    width: 86%;
+    top: 29%;
+    left: 10%;
+    width: 80%;
     transform: perspective(1100px)
       rotateX(calc(9deg + var(--story-progress) * 6deg - var(--scene-y, 0) * 2deg))
       rotateY(calc(-13deg + var(--story-progress) * 20deg + var(--scene-x, 0) * 4deg))
       rotateZ(calc(-5deg + var(--story-progress) * 5deg + var(--scene-x, 0) * 1deg))
-      translate3d(calc(-10px + var(--story-progress) * 8px + var(--scene-x, 0) * 4px), calc(var(--scene-y, 0) * 4px), calc(30px + var(--story-progress) * 32px))
-      scale(.84);
+      translate3d(calc(-6px + var(--story-progress) * 5px + var(--scene-x, 0) * 3px), calc(var(--scene-y, 0) * 3px), calc(30px + var(--story-progress) * 32px))
+      scale(.82);
   }
 
   .product-journey > .story {
@@ -1619,6 +1620,18 @@
     top: 64px;
     height: clamp(130px, 38svh, 190px);
     min-height: 130px;
+  }
+
+  .product-journey > .conversion-scene .conversion-scene-board {
+    top: 10%;
+    left: 7%;
+    width: 86%;
+    transform: perspective(1100px)
+      rotateX(calc(9deg + var(--story-progress) * 6deg - var(--scene-y, 0) * 2deg))
+      rotateY(calc(-13deg + var(--story-progress) * 20deg + var(--scene-x, 0) * 4deg))
+      rotateZ(calc(-5deg + var(--story-progress) * 5deg + var(--scene-x, 0) * 1deg))
+      translate3d(calc(-10px + var(--story-progress) * 8px + var(--scene-x, 0) * 4px), calc(var(--scene-y, 0) * 4px), calc(30px + var(--story-progress) * 32px))
+      scale(.84);
   }
 
   .conversion-scene[data-stage] .conversion-input-layer,
