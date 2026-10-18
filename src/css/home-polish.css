@@ -1785,8 +1785,9 @@
 }
 
 @media (max-width: 360px) {
-  .product-journey > .story {
-    padding-top: 52px;
+  .product-journey .story-card,
+  .product-journey .story-card-b {
+    padding-top: 46px;
   }
 }
 
