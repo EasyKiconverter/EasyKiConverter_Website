@@ -1013,6 +1013,10 @@ test('Lab primary action brings the interactive model into view in both language
     }
   }
 
+});
+
+test('reduced-motion Lab primary action keeps the model visible in both languages', async ({ page }) => {
+  test.setTimeout(60000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/lab/', '/en/lab/']) {
