@@ -1483,7 +1483,8 @@ test('bilingual conversion narrative explains the same input-to-library path', a
   await expect(chineseScene.locator('.conversion-parts-layer small')).toContainText('56 引脚');
   await expect(chineseScene.locator('.conversion-output-layer span')).toContainText('符号、封装、3D 均成功');
   await expect(chineseScene.locator('.conversion-use-layer span')).toContainText('21 项全成功 · 含 C2040');
-  await expect(chineseScene.locator('.conversion-scene-note')).toContainText('整板模型仅作示意');
+  await expect(chineseScene.locator('.conversion-scene-note')).toContainText('QFN 封装为示意');
+  await expect(chineseScene.locator('.conversion-scene-note')).toContainText('使用阶段展示整板背景');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('#workflow > p').nth(1)).toHaveText(
@@ -1495,7 +1496,8 @@ test('bilingual conversion narrative explains the same input-to-library path', a
   await expect(englishScene.locator('.conversion-parts-layer small')).toContainText('56 PINS');
   await expect(englishScene.locator('.conversion-output-layer span')).toContainText('symbol, footprint & 3D succeeded');
   await expect(englishScene.locator('.conversion-use-layer span')).toContainText('21/21 succeeded · C2040 included');
-  await expect(englishScene.locator('.conversion-scene-note')).toContainText('ILLUSTRATIVE BOARD MODEL');
+  await expect(englishScene.locator('.conversion-scene-note')).toContainText('ILLUSTRATIVE QFN PACKAGE');
+  await expect(englishScene.locator('.conversion-scene-note')).toContainText('BOARD CONTEXT AT USE');
 });
 
 test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
@@ -1596,7 +1598,7 @@ test('Chinese homepage and inner-page titles avoid orphaned characters on mobile
 test('Chinese homepage keeps visual microcopy localized', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const homepage = page.locator('main');
-  await expect(homepage.locator('.conversion-scene-board figcaption')).toContainText('STEP 派生几何');
+  await expect(homepage.locator('.conversion-scene-board figcaption')).toContainText('RP2040 QFN-56 · 封装示意');
   await expect(homepage.locator('.conversion-input-layer')).toContainText('LCSC 元件');
   await expect(homepage.locator('.conversion-input-layer')).toContainText('RP2040');
   await expect(homepage.locator('.conversion-input-layer')).toContainText('C2040 · QFN-56');

@@ -30,9 +30,15 @@ test('homepage renders and scroll-assembles the real multipart model with reduce
   await expect(viewport).toHaveAttribute('data-webgl-ready', 'true');
   await expect(viewport).toHaveAttribute('data-part-count', '303');
   await expect(viewport).toHaveAttribute('data-moving-part-count', '302');
+  await expect(viewport).toHaveAttribute('data-protagonist-contact-count', '56');
   expect(modelRequests).toHaveLength(1);
 
-  for (const [progress, expectedSeparation] of [[0, 0], [1 / 3, 1], [2 / 3, 0.36], [1, 0]] as const) {
+  for (const [progress, expectedSeparation, expectedVisual, expectedDisplaced] of [
+    [0, 0, 'rp2040-package', '0'],
+    [1 / 3, 1, 'rp2040-package', '57'],
+    [2 / 3, 0.36, 'rp2040-package', '57'],
+    [1, 0, 'illustrative-board-context', '0'],
+  ] as const) {
     const target = await rail.evaluate((element, progress) => {
       const scene = element.querySelector<HTMLElement>('[data-conversion-scene]')!;
       const cards = [...element.querySelectorAll<HTMLElement>('.story-card')];
@@ -51,7 +57,9 @@ test('homepage renders and scroll-assembles the real multipart model with reduce
       window.scrollTo({ top: scrollTarget, behavior: 'instant' });
     }, target);
     await expect(viewport).toHaveAttribute('data-part-separation', expectedSeparation.toFixed(3));
-    await expect(viewport).toHaveAttribute('data-displaced-part-count', expectedSeparation === 0 ? '0' : '302');
+    await expect(viewport).toHaveAttribute('data-active-visual', expectedVisual);
+    await expect(viewport).toHaveAttribute('data-displaced-part-count', expectedDisplaced);
+    await expect(viewport).toHaveAttribute('data-active-part-count', expectedVisual === 'rp2040-package' ? '57' : '303');
   }
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -86,6 +94,7 @@ test('homepage renders and scroll-assembles the real multipart model with reduce
   await expect(viewport).toHaveAttribute('data-webgl-error', 'true');
   await expect(viewport).not.toHaveAttribute('data-webgl-ready', 'true');
   await expect(viewport.locator('img')).toHaveCSS('opacity', '1');
+  await expect(page.locator('.conversion-scene-note-fallback')).toBeVisible();
 
   await page.route('**/easyki-conversion-story.glb', (route) => route.abort());
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -108,5 +117,6 @@ test('homepage renders and scroll-assembles the real multipart model with reduce
   }, fallbackTarget);
   await expect.poll(() => fallbackViewport.getAttribute('data-webgl-error')).toBe('true');
   await expect(fallbackViewport.locator('img')).toHaveCSS('opacity', '1');
+  await expect(page.locator('.conversion-scene-note-fallback')).toBeVisible();
   expect(modelRequests).toHaveLength(2);
 });

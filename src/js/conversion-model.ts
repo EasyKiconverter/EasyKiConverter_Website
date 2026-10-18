@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { createRp2040Prototype } from './rp2040-prototype';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -26,6 +27,7 @@ export const startConversionModel = async (host: HTMLElement) => {
     renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'low-power' });
   } catch {
     viewport.dataset.webglError = 'true';
+    host.dataset.modelFallback = 'true';
     return;
   }
 
@@ -49,12 +51,15 @@ export const startConversionModel = async (host: HTMLElement) => {
   camera.lookAt(0, 0, 0);
   const assembly = new THREE.Group();
   scene.add(assembly);
+  const protagonist = createRp2040Prototype();
+  assembly.add(protagonist.group);
 
   let visible = false;
   let pageVisible = !document.hidden;
   let frame = 0;
   let loaded = false;
   let disposed = false;
+  let boardModel: THREE.Group | null = null;
   let parts: Array<{ mesh: THREE.Mesh; base: THREE.Vector3; direction: THREE.Vector3; distance: number }> = [];
 
   const draw = () => {
@@ -64,14 +69,22 @@ export const startConversionModel = async (host: HTMLElement) => {
     const progress = motionPreference.matches
       ? 1
       : clamp(Number.parseFloat(getComputedStyle(storyRail).getPropertyValue('--story-progress')) || 0, 0, 1);
+    const boardContext = progress >= 0.84;
     const separation = motionPreference.matches ? 0 : storySeparation(progress);
     let displacedPartCount = 0;
-    parts.forEach(({ mesh, base, direction }) => {
+    const activeParts = boardContext ? parts : protagonist.movableParts;
+    protagonist.group.visible = !boardContext;
+    if (boardModel) boardModel.visible = boardContext;
+    activeParts.forEach(({ mesh, base, direction }) => {
       mesh.position.copy(base).addScaledVector(direction, separation);
       if (mesh.position.distanceToSquared(base) > 1e-12) displacedPartCount += 1;
     });
+    if (!boardContext) parts.forEach(({ mesh, base }) => mesh.position.copy(base));
     viewport.dataset.partSeparation = separation.toFixed(3);
     viewport.dataset.displacedPartCount = String(displacedPartCount);
+    viewport.dataset.activeVisual = boardContext ? 'illustrative-board-context' : 'rp2040-package';
+    viewport.dataset.activePartCount = String(activeParts.length);
+    viewport.dataset.protagonistContactCount = String(protagonist.contactCount);
     assembly.rotation.z = (progress - 0.5) * 0.08;
     assembly.position.x = (progress - 0.5) * 0.06;
     renderer.render(scene, camera);
@@ -123,6 +136,7 @@ export const startConversionModel = async (host: HTMLElement) => {
     loaded = false;
     viewport.removeAttribute('data-webgl-ready');
     viewport.dataset.webglError = 'true';
+    host.dataset.modelFallback = 'true';
     cleanup();
     renderer.dispose();
   };
@@ -142,6 +156,8 @@ export const startConversionModel = async (host: HTMLElement) => {
     const gltf = await loader.loadAsync(modelUrl);
     if (disposed) return;
     const model = gltf.scene;
+    boardModel = model;
+    boardModel.visible = false;
     model.updateMatrixWorld(true);
     const sourceBounds = new THREE.Box3().setFromObject(model);
     const sourceSize = sourceBounds.getSize(new THREE.Vector3());
@@ -206,6 +222,7 @@ export const startConversionModel = async (host: HTMLElement) => {
   } catch {
     cleanup();
     viewport.dataset.webglError = 'true';
+    host.dataset.modelFallback = 'true';
     renderer.dispose();
   }
 };

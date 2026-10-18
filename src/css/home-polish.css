@@ -701,6 +701,18 @@
   opacity: 1;
 }
 
+.conversion-scene-note-fallback {
+  display: none;
+}
+
+[data-conversion-scene][data-model-fallback="true"] .conversion-scene-note-primary {
+  display: none;
+}
+
+[data-conversion-scene][data-model-fallback="true"] .conversion-scene-note-fallback {
+  display: inline;
+}
+
 .conversion-scene-board img {
   display: block;
 }
