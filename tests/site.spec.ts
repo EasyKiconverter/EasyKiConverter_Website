@@ -1194,20 +1194,55 @@ test('conversion scene stays visible with its active narrative on tablet and pho
         await expect(scene).toHaveAttribute('data-stage', ['input', 'prepare', 'deliver'][activeIndex]);
         const visibleGeometry = await scene.evaluate((element) => {
           const rect = element.getBoundingClientRect();
-          return { top: rect.top, bottom: rect.bottom, viewportHeight: window.innerHeight };
+          return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, viewportHeight: window.innerHeight };
         });
         expect(visibleGeometry.top).toBeGreaterThanOrEqual(stickyTop - 2);
         expect(visibleGeometry.bottom).toBeLessThanOrEqual(visibleGeometry.viewportHeight + 1);
-        const activeHeading = await page.locator('.story-card[data-active] h3').boundingBox();
+        const activeCard = page.locator('.story-card[data-active]');
+        const activeHeading = await activeCard.locator('h3').boundingBox();
         expect(activeHeading, `${path} ${width}px stage ${progress} active heading`).not.toBeNull();
         expect(activeHeading!.y + activeHeading!.height).toBeLessThan(visibleGeometry.viewportHeight);
-        if (height <= 500 && width > 600) {
-          const sceneBounds = await scene.boundingBox();
-          expect(sceneBounds).not.toBeNull();
-          expect(activeHeading!.x, `${path} ${width}px landscape card clears the model stage`).toBeGreaterThan(sceneBounds!.x + sceneBounds!.width);
+        if (width >= 600) {
+          expect(activeHeading!.x, `${path} ${width}px narrative card clears the stage`).toBeGreaterThan(visibleGeometry.right);
         } else {
-          expect(activeHeading!.y).toBeGreaterThan(visibleGeometry.bottom - 18);
+          expect(activeHeading!.y, `${path} ${width}px narrative heading follows the stage`).toBeGreaterThan(visibleGeometry.bottom - 18);
         }
+        const stageCardGeometry = await page.evaluate(() => {
+          const scene = document.querySelector<HTMLElement>('[data-conversion-scene]')!;
+          const model = scene.querySelector<HTMLElement>('.conversion-model-viewport')!;
+          const board = scene.querySelector<HTMLElement>('.conversion-scene-board')!;
+          const card = document.querySelector<HTMLElement>('.story-card[data-active]')!;
+          const layer = scene.querySelector<HTMLElement>(
+            scene.dataset.stage === 'input' ? '.conversion-input-layer' :
+              scene.dataset.stage === 'prepare' ? '.conversion-parts-layer' : '.conversion-output-layer',
+          )!;
+          const rect = (element: HTMLElement) => {
+            const { x, y, right, bottom, width, height } = element.getBoundingClientRect();
+            return { x, y, right, bottom, width, height };
+          };
+          return {
+            scene: rect(scene), board: rect(board), model: rect(model), card: rect(card), layer: rect(layer),
+          };
+        });
+        if (width >= 600) {
+          const overlapWidth = Math.max(0, Math.min(stageCardGeometry.model.right, stageCardGeometry.card.right) - Math.max(stageCardGeometry.model.x, stageCardGeometry.card.x));
+          const overlapHeight = Math.max(0, Math.min(stageCardGeometry.model.bottom, stageCardGeometry.card.bottom) - Math.max(stageCardGeometry.model.y, stageCardGeometry.card.y));
+          expect(overlapWidth * overlapHeight, `${path} ${width}x${height}px stage ${progress} model/card occlusion`).toBeLessThan(4);
+          if (height > 500) {
+            expect(stageCardGeometry.card.x, `${path} ${width}px stage ${progress} card left edge`).toBeGreaterThanOrEqual(-1);
+            expect(stageCardGeometry.card.right, `${path} ${width}px stage ${progress} card right edge`).toBeLessThanOrEqual(width + 1);
+            expect(stageCardGeometry.card.y, `${path} ${width}px stage ${progress} complete card top`).toBeGreaterThanOrEqual(-1);
+            expect(stageCardGeometry.card.bottom, `${path} ${width}px stage ${progress} complete card bottom`).toBeLessThanOrEqual(height + 1);
+          }
+          expect(stageCardGeometry.board.x, `${path} ${width}px stage ${progress} transformed model board left`).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
+          expect(stageCardGeometry.board.right, `${path} ${width}px stage ${progress} transformed model board right`).toBeLessThanOrEqual(stageCardGeometry.scene.right + 1);
+          expect(stageCardGeometry.board.y, `${path} ${width}px stage ${progress} transformed model board top`).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 1);
+          expect(stageCardGeometry.board.bottom, `${path} ${width}px stage ${progress} transformed model board bottom`).toBeLessThanOrEqual(stageCardGeometry.scene.bottom + 1);
+        }
+        expect(stageCardGeometry.layer.x, `${path} ${width}px stage ${progress} active label left`).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
+        expect(stageCardGeometry.layer.right, `${path} ${width}px stage ${progress} active label right`).toBeLessThanOrEqual(stageCardGeometry.scene.right + 1);
+        expect(stageCardGeometry.layer.y, `${path} ${width}px stage ${progress} active label top`).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 1);
+        expect(stageCardGeometry.layer.bottom, `${path} ${width}px stage ${progress} active label bottom`).toBeLessThanOrEqual(stageCardGeometry.scene.bottom + 1);
       }
       const bounds = await scene.evaluate((element) => {
         const rect = element.getBoundingClientRect();

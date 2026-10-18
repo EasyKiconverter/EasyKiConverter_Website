@@ -607,7 +607,7 @@
     rotateX(calc(9deg + var(--story-progress) * 6deg))
     rotateY(calc(-13deg + var(--story-progress) * 20deg))
     rotateZ(calc(-5deg + var(--story-progress) * 5deg))
-    translate3d(calc(-10px + var(--story-progress) * 22px), 0, calc(30px + var(--story-progress) * 40px))
+    translate3d(calc(-10px + var(--story-progress) * 16px), 0, calc(30px + var(--story-progress) * 40px))
     scale(calc(.84 + var(--story-progress) * .1));
   transform-style: preserve-3d;
   will-change: transform;
@@ -900,7 +900,7 @@
   }
 
   .conversion-scene-board {
-    top: 7%;
+    top: 10%;
     left: 2%;
     width: 96%;
     padding: 6px;
@@ -1161,8 +1161,8 @@
   }
 }
 
-@media (min-width: 600px) and (max-width: 850px) and (max-height: 500px) {
-  .story-rail {
+@media (min-width: 600px) and (max-width: 850px) {
+  .section .story-rail {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: start;
   }
