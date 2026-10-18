@@ -8,7 +8,7 @@ test('homepage renders and scroll-assembles the real multipart model with reduce
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const viewport = page.locator('.conversion-model-viewport');
   await expect(page.locator('[data-conversion-canvas]')).toBeAttached();
-  expect(modelRequests).toHaveLength(1);
+  await expect.poll(() => modelRequests.length, { timeout: 15_000 }).toBe(1);
 
   const rail = page.locator('[data-story-rail]');
   const initialTarget = await rail.evaluate((element) => {

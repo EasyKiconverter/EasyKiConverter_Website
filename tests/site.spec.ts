@@ -1234,14 +1234,26 @@ test('conversion scene stays visible with its active narrative on tablet and pho
             const { x, y, right, bottom, width, height } = element.getBoundingClientRect();
             return { x, y, right, bottom, width, height };
           };
+          const modelRect = model.getBoundingClientRect();
+          let storyCardHitCount = 0;
+          for (let row = 0; row < 7; row += 1) {
+            for (let column = 0; column < 7; column += 1) {
+              const x = modelRect.left + (column + 0.5) * modelRect.width / 7;
+              const y = modelRect.top + (row + 0.5) * modelRect.height / 7;
+              if (document.elementsFromPoint(x, y).some((element) => element.closest('.story-card[data-active]'))) {
+                storyCardHitCount += 1;
+              }
+            }
+          }
           return {
-            scene: rect(scene), board: rect(board), model: rect(model), card: rect(card), layer: rect(layer),
+            scene: rect(scene), board: rect(board), model: rect(model), card: rect(card), layer: rect(layer), storyCardHitCount,
           };
         });
         if (width >= 600) {
           const overlapWidth = Math.max(0, Math.min(stageCardGeometry.model.right, stageCardGeometry.card.right) - Math.max(stageCardGeometry.model.x, stageCardGeometry.card.x));
           const overlapHeight = Math.max(0, Math.min(stageCardGeometry.model.bottom, stageCardGeometry.card.bottom) - Math.max(stageCardGeometry.model.y, stageCardGeometry.card.y));
           expect(overlapWidth * overlapHeight, `${path} ${width}x${height}px stage ${progress} model/card occlusion`).toBeLessThan(4);
+          expect(stageCardGeometry.storyCardHitCount, `${path} ${width}x${height}px stage ${progress} rendered story-card occlusion`).toBe(0);
           if (height > 500) {
             expect(stageCardGeometry.card.x, `${path} ${width}px stage ${progress} card left edge`).toBeGreaterThanOrEqual(-1);
             expect(stageCardGeometry.card.right, `${path} ${width}px stage ${progress} card right edge`).toBeLessThanOrEqual(width + 1);
