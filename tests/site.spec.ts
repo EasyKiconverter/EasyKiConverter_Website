@@ -12,6 +12,35 @@ test('bilingual homepages render one localized document title', async ({ page })
   }
 });
 
+test('mobile homepage shows the 3D conversion model in the first viewport in both languages', async ({ page }) => {
+  for (const viewport of [
+    { width: 320, height: 760 },
+    { width: 320, height: 844 },
+    { width: 360, height: 760 },
+    { width: 390, height: 760 },
+    { width: 390, height: 844 },
+    { width: 428, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    for (const path of pages) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const modelBounds = await page.locator('.conversion-model-viewport').evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        const visibleHeight = Math.max(0, Math.min(window.innerHeight, rect.bottom) - Math.max(0, rect.top));
+        return {
+          left: rect.left,
+          right: rect.right,
+          height: rect.height,
+          visibleRatio: visibleHeight / rect.height,
+        };
+      });
+      expect(modelBounds.left, `${path} ${viewport.width}x${viewport.height}px model stays horizontally visible`).toBeGreaterThanOrEqual(0);
+      expect(modelBounds.right, `${path} ${viewport.width}x${viewport.height}px model stays horizontally visible`).toBeLessThanOrEqual(viewport.width);
+      expect(modelBounds.visibleRatio, `${path} ${viewport.width}x${viewport.height}px first-screen model visibility`).toBeGreaterThanOrEqual(0.5);
+    }
+  }
+});
+
 for (const path of pages) {
   test(`${path} serves the release-backed static page`, async ({ page }) => {
     const errors: string[] = [];
