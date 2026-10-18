@@ -2,10 +2,11 @@
 
 [English](QUALITY_BASELINE_en.md)
 
-记录日期：2026-10-17。本文只记录可由当前仓库、CI 或明确的线上检查复现的事实，不把域名部署或真机性能推测为已完成。
+记录日期：2026-10-18。本文只记录可由当前仓库、CI 或明确的线上检查复现的事实，不把域名部署或真机性能推测为已完成。
 
 ## 已验证
 
+- 2026-10-18：在本地 `feature/3d-product-story` 迭代中复核平板流程场景遮挡问题。768×760 中文、英文输入/整理/转换/使用四阶段截图均显示变换后的模型、活动标签与完整流程卡片互不遮挡；Playwright 几何回归同时检查 320、390、600、768、1024px 及 844×390 视口的各阶段边界和命中遮挡。CSS 源码统一由 Prettier 格式化，并新增 `pnpm run format:check` 与 CI 检查。格式检查、Astro（37 个文件，0 诊断）、8 页静态构建、站点校验、模型资产检查和完整浏览器套件（252 passed、4 skipped）通过。提交 `630cf82` 至 `e3f50f7` 均仅在本地分支；未推送、未运行远程 CI、未部署生产或验证真机。
 - 2026-10-17：手机端 Lab 的 9 个视图选项超出可视宽度，且隐藏滚动条令横向滑动不易发现。新增中英文视觉提示及屏幕阅读器说明；提示只在窄屏 3D 实体视图显示，普通/减少动态模式下均避开状态标签和控件，768/1440px 隐藏提示。双语 390px 截图：`.github/pr-evidence/lab-scroll-cue-after-{zh,en}-390.png`。构建（8 路由、Astro 0 诊断）、`pnpm run check`、完整 Playwright（240 passed、4 skipped）、8 页面校验、模型资产检查及 `git diff --check` 均通过。Feng083 独立审评 PR #398；Site Quality run `38985998641`（240 passed、4 skipped）及 Dependency Review `38985998628` 均通过。未部署生产或验证真机。
 - 2026-10-17：中英文 390px 与中文 1440px Lab 滚动截图均显示“构建元件库”节点模型接近 95° 侧视。390px 与 1440px 视口下舞台分别为 359px、700px；移动舞台旋转行程在 360–700px 内从完整关键帧变化的 30% 平滑过渡到 50%，并将节点目标角从 3.1rad 改为 2.2rad。手机/桌面模型姿态现约 46°/69°，板面细节更可辨。前后截图见 `.github/pr-evidence/lab-mobile-model-detail-{before,after}-*`。本地 `pnpm run check`、构建（8 路由、Astro 0 诊断）、完整 Playwright（242 passed、4 skipped）、8 页面校验、模型资产检查、6 项 Python 单测和 `git diff --check` 通过。Feng083 独立审评后，PR #399 合入 `version/V0.0.1`（merge `4bf7257`）；PR Site Quality `38990293629` 与 Dependency Review `38990293643` 通过，合并后 Site Quality `38990624444` 通过（242 passed、4 skipped）。未部署生产或验证真机。
 - 2026-10-17：PR #393 将首页第三张流程卡片中“开始下载”改为“查看下载项”，英文同步从 “Start downloading” 改为 “View downloads”，准确描述跳转到本页下载区域。新增双语浏览器断言，并复核 390px/1440px 流程卡截图。本地 Astro 检查、构建、完整 Playwright（238 passed、4 skipped）、8 路由校验、模型资产检查与 `git diff --check` 通过。Feng083 独立审评；PR Site Quality `38981064439`、Dependency Review `38981064437` 与版本合并后 Site Quality `38981532611` 均通过（238 passed、4 skipped）。PR #395 同步 master 祖先历史（无文件差异）；PR checks `38982132479`、合并后 `38982415123` 通过。随后 PR #394 将更新晋级 `master`（merge `92a20a2`）；PR Site Quality `38982421088` 与 master push Site Quality `38982780264` 均通过（238 passed、4 skipped）。未部署生产或验证真机。
