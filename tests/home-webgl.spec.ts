@@ -83,6 +83,24 @@ test('homepage renders and scroll-assembles the real multipart model with reduce
   }, reducedMotionTarget);
   await page.waitForTimeout(100);
   await expect(viewport).toHaveAttribute('data-part-separation', '0.000');
+  await expect(viewport).toHaveAttribute('data-active-visual', 'rp2040-package');
+  const reducedMotionFinalTarget = await rail.evaluate((element) => {
+    const scene = element.querySelector<HTMLElement>('[data-conversion-scene]')!;
+    const cards = [...element.querySelectorAll<HTMLElement>('.story-card')];
+    const first = cards[0].getBoundingClientRect();
+    const last = cards[cards.length - 1].getBoundingClientRect();
+    const firstCenter = first.top + window.scrollY + first.height / 2;
+    const lastCenter = last.top + window.scrollY + last.height / 2;
+    const sceneBox = scene.getBoundingClientRect();
+    const sceneCenter = (Number.parseFloat(getComputedStyle(scene).top) || 0) + sceneBox.height / 2;
+    const phone = window.innerWidth < 600;
+    const landscape = window.innerWidth >= 600 && window.innerWidth <= 850 && window.innerHeight <= 500;
+    const anchor = sceneCenter + (phone ? sceneBox.height / 2 + 150 : landscape ? sceneBox.height / 2 + 155 : 0);
+    return firstCenter - anchor + (lastCenter - firstCenter);
+  });
+  await page.evaluate((scrollTarget) => window.scrollTo({ top: scrollTarget, behavior: 'instant' }), reducedMotionFinalTarget);
+  await expect(viewport).toHaveAttribute('data-active-visual', 'illustrative-board-context');
+  await expect(viewport).toHaveAttribute('data-part-separation', '0.000');
 
   const contextLossSupported = await viewport.locator('canvas').evaluate((canvas) => {
     const context = canvas.getContext('webgl2');

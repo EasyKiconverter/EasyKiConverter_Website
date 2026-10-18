@@ -66,9 +66,7 @@ export const startConversionModel = async (host: HTMLElement) => {
     frame = 0;
     if (!loaded || !visible || !pageVisible) return;
 
-    const progress = motionPreference.matches
-      ? 1
-      : clamp(Number.parseFloat(getComputedStyle(storyRail).getPropertyValue('--story-progress')) || 0, 0, 1);
+    const progress = clamp(Number.parseFloat(getComputedStyle(storyRail).getPropertyValue('--story-progress')) || 0, 0, 1);
     const boardContext = progress >= 0.84;
     const separation = motionPreference.matches ? 0 : storySeparation(progress);
     let displacedPartCount = 0;
@@ -85,8 +83,8 @@ export const startConversionModel = async (host: HTMLElement) => {
     viewport.dataset.activeVisual = boardContext ? 'illustrative-board-context' : 'rp2040-package';
     viewport.dataset.activePartCount = String(activeParts.length);
     viewport.dataset.protagonistContactCount = String(protagonist.contactCount);
-    assembly.rotation.z = (progress - 0.5) * 0.08;
-    assembly.position.x = (progress - 0.5) * 0.06;
+    assembly.rotation.z = motionPreference.matches ? 0 : (progress - 0.5) * 0.08;
+    assembly.position.x = motionPreference.matches ? 0 : (progress - 0.5) * 0.06;
     renderer.render(scene, camera);
   };
   const scheduleDraw = () => {
@@ -107,9 +105,7 @@ export const startConversionModel = async (host: HTMLElement) => {
     if (visible) scheduleDraw();
     else if (frame) { window.cancelAnimationFrame(frame); frame = 0; }
   }, { rootMargin: '80px 0px', threshold: 0 });
-  const onScroll = () => {
-    if (!motionPreference.matches) scheduleDraw();
-  };
+  const onScroll = () => scheduleDraw();
   const resizeObserver = new ResizeObserver(resize);
   const onVisibilityChange = () => {
     pageVisible = !document.hidden;
