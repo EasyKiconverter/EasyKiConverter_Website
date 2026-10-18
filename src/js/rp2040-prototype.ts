@@ -17,7 +17,6 @@ export interface ProtagonistPart {
 export const createRp2040Prototype = () => {
   const group = new THREE.Group();
   group.name = 'Illustrative Raspberry Pi RP2040 QFN-56 package';
-  group.scale.setScalar(2.3 / rp2040StoryComponent.packageSizeMm);
 
   const bodyMaterial = new THREE.MeshStandardMaterial({
     color: 0x292a30,

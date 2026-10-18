@@ -1,9 +1,55 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { rp2040StoryComponent } from '../data/story-component';
 import { createRp2040Prototype } from './rp2040-prototype';
 
+const MODEL_SPAN = 2.3;
+const CONTEXT_TRANSITION_START = 0.76;
+const CONTEXT_TRANSITION_END = 0.92;
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+type OpacityState = {
+  material: THREE.Material & { opacity: number };
+  opacity: number;
+  transparent: boolean;
+  depthWrite: boolean;
+};
+
+const collectOpacityStates = (root: THREE.Object3D): OpacityState[] => {
+  const states: OpacityState[] = [];
+  const seen = new Set<THREE.Material>();
+  root.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => {
+      if (seen.has(material) || !('opacity' in material)) return;
+      seen.add(material);
+      const opacityMaterial = material as THREE.Material & { opacity: number };
+      states.push({
+        material: opacityMaterial,
+        opacity: opacityMaterial.opacity,
+        transparent: opacityMaterial.transparent,
+        depthWrite: opacityMaterial.depthWrite,
+      });
+    });
+  });
+  return states;
+};
+
+const setOpacity = (states: OpacityState[], amount: number) => {
+  const blending = amount < 0.999;
+  states.forEach((state) => {
+    state.material.opacity = state.opacity * amount;
+    state.material.depthWrite = blending ? false : state.depthWrite;
+    const transparent = state.transparent || blending;
+    if (state.material.transparent !== transparent) {
+      state.material.transparent = transparent;
+      state.material.needsUpdate = true;
+    }
+  });
+};
 
 const storySeparation = (progress: number) => {
   const keyframes = [0, 1, 0.36, 0];
@@ -47,12 +93,14 @@ export const startConversionModel = async (host: HTMLElement) => {
 
   const camera = new THREE.PerspectiveCamera(33, 1, 0.02, 50);
   camera.up.set(0, 0, 1);
-  camera.position.set(2, -2.7, 3.65);
+  const cameraHome = new THREE.Vector3(2, -2.7, 3.65);
+  camera.position.copy(cameraHome);
   camera.lookAt(0, 0, 0);
   const assembly = new THREE.Group();
   scene.add(assembly);
   const protagonist = createRp2040Prototype();
   assembly.add(protagonist.group);
+  const protagonistMaterials = collectOpacityStates(protagonist.group);
 
   let visible = false;
   let pageVisible = !document.hidden;
@@ -60,6 +108,8 @@ export const startConversionModel = async (host: HTMLElement) => {
   let loaded = false;
   let disposed = false;
   let boardModel: THREE.Group | null = null;
+  let boardMaterials: OpacityState[] = [];
+  let componentZoom = 1;
   let parts: Array<{ mesh: THREE.Mesh; base: THREE.Vector3; direction: THREE.Vector3; distance: number }> = [];
 
   const draw = () => {
@@ -67,12 +117,17 @@ export const startConversionModel = async (host: HTMLElement) => {
     if (!loaded || !visible || !pageVisible) return;
 
     const progress = clamp(Number.parseFloat(getComputedStyle(storyRail).getPropertyValue('--story-progress')) || 0, 0, 1);
-    const boardContext = progress >= 0.84;
+    const transitionProgress = motionPreference.matches
+      ? progress >= 0.84 ? 1 : 0
+      : clamp((progress - CONTEXT_TRANSITION_START) / (CONTEXT_TRANSITION_END - CONTEXT_TRANSITION_START), 0, 1);
+    const boardContext = transitionProgress === 1;
     const separation = motionPreference.matches ? 0 : storySeparation(progress);
     let displacedPartCount = 0;
     const activeParts = boardContext ? parts : protagonist.movableParts;
-    protagonist.group.visible = !boardContext;
-    if (boardModel) boardModel.visible = boardContext;
+    protagonist.group.visible = transitionProgress < 1;
+    setOpacity(protagonistMaterials, 1 - transitionProgress);
+    if (boardModel) boardModel.visible = transitionProgress > 0;
+    setOpacity(boardMaterials, transitionProgress);
     activeParts.forEach(({ mesh, base, direction }) => {
       mesh.position.copy(base).addScaledVector(direction, separation);
       if (mesh.position.distanceToSquared(base) > 1e-12) displacedPartCount += 1;
@@ -81,8 +136,16 @@ export const startConversionModel = async (host: HTMLElement) => {
     viewport.dataset.partSeparation = separation.toFixed(3);
     viewport.dataset.displacedPartCount = String(displacedPartCount);
     viewport.dataset.activeVisual = boardContext ? 'illustrative-board-context' : 'rp2040-package';
+    if (transitionProgress > 0 && transitionProgress < 1) viewport.dataset.activeVisual = 'component-to-board-transition';
     viewport.dataset.activePartCount = String(activeParts.length);
     viewport.dataset.protagonistContactCount = String(protagonist.contactCount);
+    viewport.dataset.transitionProgress = transitionProgress.toFixed(3);
+    const cameraZoom = motionPreference.matches
+      ? boardContext ? 1 : componentZoom
+      : componentZoom + (1 - componentZoom) * transitionProgress;
+    viewport.dataset.cameraZoom = cameraZoom.toFixed(4);
+    camera.position.copy(cameraHome).multiplyScalar(cameraZoom);
+    camera.lookAt(0, 0, 0);
     assembly.rotation.z = motionPreference.matches ? 0 : (progress - 0.5) * 0.08;
     assembly.position.x = motionPreference.matches ? 0 : (progress - 0.5) * 0.06;
     renderer.render(scene, camera);
@@ -158,7 +221,16 @@ export const startConversionModel = async (host: HTMLElement) => {
     const sourceBounds = new THREE.Box3().setFromObject(model);
     const sourceSize = sourceBounds.getSize(new THREE.Vector3());
     const sourceSpan = Math.max(sourceSize.x, sourceSize.y, sourceSize.z, 0.01);
-    model.scale.multiplyScalar(2.3 / sourceSpan);
+    const sourceModelSpanMm = gltf.parser.json.asset.extras?.sourceModelSpanMm;
+    if (typeof sourceModelSpanMm !== 'number' || !Number.isFinite(sourceModelSpanMm) || sourceModelSpanMm <= 0) {
+      throw new Error('Story GLB is missing its source model span metadata');
+    }
+    componentZoom = rp2040StoryComponent.packageSizeMm / sourceModelSpanMm;
+    protagonist.group.scale.setScalar(MODEL_SPAN / sourceModelSpanMm);
+    viewport.dataset.modelSourceSpanMm = sourceModelSpanMm.toFixed(3);
+    viewport.dataset.protagonistScale = protagonist.group.scale.x.toFixed(6);
+    boardMaterials = collectOpacityStates(model);
+    model.scale.multiplyScalar(MODEL_SPAN / sourceSpan);
     assembly.add(model);
     assembly.updateMatrixWorld(true);
     model.updateMatrixWorld(true);

@@ -31,13 +31,19 @@ test('homepage renders and scroll-assembles the real multipart model with reduce
   await expect(viewport).toHaveAttribute('data-part-count', '303');
   await expect(viewport).toHaveAttribute('data-moving-part-count', '302');
   await expect(viewport).toHaveAttribute('data-protagonist-contact-count', '56');
+  const physicalProtagonistScale = await viewport.evaluate((element) =>
+    Number(element.dataset.protagonistScale) * Number(element.dataset.modelSourceSpanMm),
+  );
+  expect(physicalProtagonistScale).toBeCloseTo(2.3, 2);
+  expect(Number(await viewport.getAttribute('data-camera-zoom'))).toBeCloseTo(7 / 54.077, 3);
   expect(modelRequests).toHaveLength(1);
 
-  for (const [progress, expectedSeparation, expectedVisual, expectedDisplaced] of [
-    [0, 0, 'rp2040-package', '0'],
-    [1 / 3, 1, 'rp2040-package', '57'],
-    [2 / 3, 0.36, 'rp2040-package', '57'],
-    [1, 0, 'illustrative-board-context', '0'],
+  for (const [progress, expectedSeparation, expectedVisual, expectedDisplaced, expectedTransition] of [
+    [0, 0, 'rp2040-package', '0', 0],
+    [1 / 3, 1, 'rp2040-package', '57', 0],
+    [2 / 3, 0.36, 'rp2040-package', '57', 0],
+    [0.84, 0.169, 'component-to-board-transition', '57', 0.5],
+    [1, 0, 'illustrative-board-context', '0', 1],
   ] as const) {
     const target = await rail.evaluate((element, progress) => {
       const scene = element.querySelector<HTMLElement>('[data-conversion-scene]')!;
@@ -59,7 +65,8 @@ test('homepage renders and scroll-assembles the real multipart model with reduce
     await expect(viewport).toHaveAttribute('data-part-separation', expectedSeparation.toFixed(3));
     await expect(viewport).toHaveAttribute('data-active-visual', expectedVisual);
     await expect(viewport).toHaveAttribute('data-displaced-part-count', expectedDisplaced);
-    await expect(viewport).toHaveAttribute('data-active-part-count', expectedVisual === 'rp2040-package' ? '57' : '303');
+    await expect(viewport).toHaveAttribute('data-active-part-count', expectedVisual === 'illustrative-board-context' ? '303' : '57');
+    await expect(viewport).toHaveAttribute('data-transition-progress', expectedTransition.toFixed(3));
   }
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -137,4 +144,40 @@ test('homepage renders and scroll-assembles the real multipart model with reduce
   await expect(fallbackViewport.locator('img')).toHaveCSS('opacity', '1');
   await expect(page.locator('.conversion-scene-note-fallback')).toBeVisible();
   expect(modelRequests).toHaveLength(2);
+});
+
+test('mobile WebGL keeps the RP2040 package visible at its board-relative scale', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const viewport = page.locator('.conversion-model-viewport');
+  await expect(viewport).toHaveAttribute('data-webgl-ready', 'true');
+
+  const rail = page.locator('[data-story-rail]');
+  const target = await rail.evaluate((element) => {
+    const scene = element.querySelector<HTMLElement>('[data-conversion-scene]')!;
+    const cards = [...element.querySelectorAll<HTMLElement>('.story-card')];
+    const first = cards[0].getBoundingClientRect();
+    const last = cards[cards.length - 1].getBoundingClientRect();
+    const firstCenter = first.top + window.scrollY + first.height / 2;
+    const lastCenter = last.top + window.scrollY + last.height / 2;
+    const sceneBox = scene.getBoundingClientRect();
+    const sceneCenter = (Number.parseFloat(getComputedStyle(scene).top) || 0) + sceneBox.height / 2;
+    const anchor = sceneCenter + sceneBox.height / 2 + 150;
+    return firstCenter - anchor + (lastCenter - firstCenter) * 0.5;
+  });
+  await page.evaluate((scrollTarget) => {
+    document.documentElement.style.scrollBehavior = 'auto';
+    window.scrollTo({ top: scrollTarget, behavior: 'instant' });
+  }, target);
+
+  await expect(viewport).toHaveAttribute('data-active-visual', 'rp2040-package');
+  const geometry = await page.locator('[data-conversion-canvas]').evaluate((canvas) => {
+    const bounds = canvas.getBoundingClientRect();
+    const scene = canvas.closest<HTMLElement>('[data-conversion-scene]')!.getBoundingClientRect();
+    return { bounds: bounds.toJSON(), scene: scene.toJSON() };
+  });
+  expect(geometry.bounds.width).toBeGreaterThan(200);
+  expect(geometry.bounds.left).toBeGreaterThanOrEqual(geometry.scene.left - 1);
+  expect(geometry.bounds.right).toBeLessThanOrEqual(geometry.scene.right + 1);
+  expect(Number(await viewport.getAttribute('data-camera-zoom'))).toBeCloseTo(7 / 54.077, 3);
 });
