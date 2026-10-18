@@ -972,15 +972,18 @@ test('Lab pages keep the experiment connected to product navigation', async ({ p
   }
 });
 
-test('Lab primary action brings the interactive model into view in both languages', async ({ page }) => {
-  test.setTimeout(60000);
-  for (const viewport of [
-    { width: 390, height: 844 },
-    { width: 768, height: 760 },
-    { width: 1440, height: 900 },
-  ]) {
-    await page.setViewportSize(viewport);
-    for (const [path, label] of [['/lab/', '开始 3D 体验'], ['/en/lab/', 'Explore 3D']] as const) {
+const labEntryRoutes = [['/lab/', '开始 3D 体验'], ['/en/lab/', 'Explore 3D']] as const;
+const labEntryViewports = [
+  { width: 390, height: 844 },
+  { width: 768, height: 760 },
+  { width: 1440, height: 900 },
+] as const;
+
+for (const viewport of labEntryViewports) {
+  for (const [path, label] of labEntryRoutes) {
+    test(`Lab primary action brings the ${path} model into view at ${viewport.width}px`, async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name === 'chromium-mobile' && viewport.width > 850, 'Desktop viewport is covered by Chromium desktop');
+      await page.setViewportSize(viewport);
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
       const exploreLink = page.locator('[data-lab-explore]');
@@ -1004,35 +1007,41 @@ test('Lab primary action brings the interactive model into view in both language
       await expect(page).toHaveURL(/#story$/);
       const model = page.locator('.motion-model');
       await expect(model).toBeVisible();
-      const modelBounds = await model.evaluate((element) => {
+      const modelBounds = await page.evaluate(() => {
+        const element = document.querySelector<HTMLElement>('.motion-model');
+        if (!element) return null;
         const { top, bottom } = element.getBoundingClientRect();
         return { top, bottom };
       });
+      expect(modelBounds, `${path} ${viewport.width}px model`).not.toBeNull();
+      if (!modelBounds) return;
       expect(modelBounds.top, `${path} ${viewport.width}px model top`).toBeGreaterThanOrEqual(0);
       expect(modelBounds.bottom, `${path} ${viewport.width}px model bottom`).toBeLessThanOrEqual(viewport.height);
-    }
+    });
   }
+}
 
-});
-
-test('reduced-motion Lab primary action keeps the model visible in both languages', async ({ page }) => {
-  test.setTimeout(60000);
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ['/lab/', '/en/lab/']) {
+for (const [path] of labEntryRoutes) {
+  test(`reduced-motion Lab primary action keeps ${path} model visible`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
     await page.locator('[data-lab-explore]').evaluate((link: HTMLAnchorElement) => link.click());
     const model = page.locator('.motion-model');
     await expect(model).toBeVisible();
-    const modelBounds = await model.evaluate((element) => {
+    const modelBounds = await page.evaluate(() => {
+      const element = document.querySelector<HTMLElement>('.motion-model');
+      if (!element) return null;
       const { top, bottom, height } = element.getBoundingClientRect();
       return { top, bottom, height };
     });
+    expect(modelBounds, `${path} reduced-motion model`).not.toBeNull();
+    if (!modelBounds) return;
     const visibleHeight = Math.max(0, Math.min(modelBounds.bottom, 844) - Math.max(modelBounds.top, 0));
     expect(visibleHeight / modelBounds.height, `${path} reduced-motion model visibility`).toBeGreaterThan(0.9);
-  }
-});
+  });
+}
 
 test('Lab advanced controls explain their collapsed hierarchy', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
