@@ -10,7 +10,7 @@
 
 ## 当前阶段
 
-项目处于 V0.0.1 稳定维护与用户体验持续改进阶段。截至本次只读核对，`version/V0.0.1` 为 `dae2a14`，`master` 为 `d7596a6`。本地 `feature/3d-product-story` 已提交 PR #402，目标为 `version/V0.0.1`，加入交互式双语首页 3D 转换叙事、模型/遮挡回归、格式化门禁和视觉证据；PR Dependency Review 与 Actionlint 已通过，Site Quality run `39113587637` 尚在运行，等待独立审评。PR 未合并，生产源码未更改。此前线上首页重复 `<title>` 的检查日期为 2026-10-17，本轮未重新检查或部署；真实手机与网络性能仍未验证。Release API 本地返回 HTTP 403，构建使用已核对的 `v3.1.13` 回退数据。
+项目处于 V0.0.1 稳定维护与用户体验持续改进阶段。截至本次核对，`version/V0.0.1` 为 `dae2a14`，`master` 为 `d7596a6`。PR #402（`feature/3d-product-story` → `version/V0.0.1`）加入交互式双语首页 3D 转换叙事、模型/遮挡回归、格式化门禁和视觉证据。首轮 Site Quality run `39113766054` 在 600×800 英文布局回归中发现叙事标签与模型板卡轻微重叠；已下移平板板卡并保存中英文真实 WebGL 整理阶段截图（`.github/pr-evidence/homepage-3d-story-{zh,en}-600-prepare.png`）。修复后 Chromium 与 Chromium Mobile 聚焦回归通过；完整浏览器回归及新一轮远程 CI/独立审评待完成。Dependency Review 与 Actionlint 首轮通过。PR 未合并，生产源码未更改。此前线上首页重复 `<title>` 的检查日期为 2026-10-17，本轮未重新检查或部署；真实手机与网络性能仍未验证。Release API 本地返回 HTTP 403，构建使用已核对的 `v3.1.13` 回退数据。
 
 本轮 Lab 手机视图切换栏审查发现 9 个选项虽可横向滚动，但隐藏滚动条且没有提示，导致后续视图不易发现。已增加中英文屏幕提示与辅助技术说明；390px 窄屏普通/减少动态模式专项回归通过，768/1440px 不显示多余提示；完整 Playwright（240 passed、4 skipped）、构建、8 路由和模型资产检查均通过。PR #398 由 Feng083 独立审评通过；Site Quality run `38985998641`（240 passed、4 skipped）及 Dependency Review `38985998628` 均通过。变更尚未部署生产或验证真机。
 
