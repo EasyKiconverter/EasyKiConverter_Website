@@ -56,10 +56,13 @@ export const startConversionModel = async (host: HTMLElement) => {
       ? 1
       : clamp(Number.parseFloat(getComputedStyle(storyRail).getPropertyValue('--story-progress')) || 0, 0, 1);
     const separation = motionPreference.matches ? 0 : Math.sin(progress * Math.PI);
-    parts.forEach(({ mesh, base, direction, distance }) => {
-      mesh.position.copy(base).addScaledVector(direction, separation * distance);
+    let displacedPartCount = 0;
+    parts.forEach(({ mesh, base, direction }) => {
+      mesh.position.copy(base).addScaledVector(direction, separation);
+      if (mesh.position.distanceToSquared(base) > 1e-12) displacedPartCount += 1;
     });
     viewport.dataset.partSeparation = separation.toFixed(3);
+    viewport.dataset.displacedPartCount = String(displacedPartCount);
     assembly.rotation.z = (progress - 0.5) * 0.08;
     assembly.position.x = (progress - 0.5) * 0.06;
     renderer.render(scene, camera);
@@ -131,22 +134,28 @@ export const startConversionModel = async (host: HTMLElement) => {
     if (disposed) return;
     const model = gltf.scene;
     model.updateMatrixWorld(true);
+    const sourceBounds = new THREE.Box3().setFromObject(model);
+    const sourceSize = sourceBounds.getSize(new THREE.Vector3());
+    const sourceSpan = Math.max(sourceSize.x, sourceSize.y, sourceSize.z, 0.01);
+    model.scale.multiplyScalar(2.3 / sourceSpan);
+    assembly.add(model);
+    assembly.updateMatrixWorld(true);
+    model.updateMatrixWorld(true);
+
     const bounds = new THREE.Box3().setFromObject(model);
     const modelCenter = bounds.getCenter(new THREE.Vector3());
     const modelSize = bounds.getSize(new THREE.Vector3());
-    const modelSpan = Math.max(modelSize.x, modelSize.y, modelSize.z, 0.01);
+    model.position.sub(modelCenter);
+    model.updateMatrixWorld(true);
 
     model.traverse((object) => {
       if (!(object instanceof THREE.Mesh)) return;
-      const geometry = object.geometry;
-      geometry.computeBoundingBox();
-      if (!geometry.boundingBox) return;
-      const partCenter = geometry.boundingBox.getCenter(new THREE.Vector3());
-      const partSize = geometry.boundingBox.getSize(new THREE.Vector3());
-      const base = object.position.clone().add(partCenter).sub(modelCenter);
+      const partBounds = new THREE.Box3().setFromObject(object);
+      if (partBounds.isEmpty()) return;
+      const partCenter = partBounds.getCenter(new THREE.Vector3());
+      const partSize = partBounds.getSize(new THREE.Vector3());
+      const base = object.position.clone();
       const index = parts.length;
-      geometry.translate(-partCenter.x, -partCenter.y, -partCenter.z);
-      object.position.copy(base);
       object.castShadow = false;
       object.receiveShadow = false;
       const materialList = Array.isArray(object.material) ? object.material : [object.material];
@@ -159,23 +168,30 @@ export const startConversionModel = async (host: HTMLElement) => {
 
       const planarExtent = Math.max(partSize.x, partSize.y);
       const isBoard = planarExtent > Math.max(modelSize.x, modelSize.y) * 0.72;
-      const radial = new THREE.Vector3(base.x * 0.68, base.y * 0.68, 0.82 + (index % 7) * 0.06);
+      const relativeCenter = partCenter.clone();
+      const radial = new THREE.Vector3(relativeCenter.x * 0.68, relativeCenter.y * 0.68, 0.82 + (index % 7) * 0.06);
       if (radial.lengthSq() < 0.0001) radial.set(Math.cos(index * 2.4), Math.sin(index * 2.4), 0.5);
       radial.normalize();
+      const distance = isBoard ? 0 : 0.18 + (index % 5) * 0.04;
+      const parent = object.parent;
+      const direction = radial.clone().multiplyScalar(distance);
+      if (parent && distance > 0) {
+        const targetWorldPosition = object.getWorldPosition(new THREE.Vector3()).addScaledVector(radial, distance);
+        const targetParentPosition = targetWorldPosition.applyMatrix4(parent.matrixWorld.clone().invert());
+        direction.copy(targetParentPosition.sub(base));
+      }
       parts.push({
         mesh: object,
         base,
-        direction: radial,
-        distance: isBoard ? 0 : 0.18 + (index % 5) * 0.04,
+        direction,
+        distance,
       });
     });
 
-    const scale = 2.3 / modelSpan;
-    model.scale.setScalar(scale);
-    assembly.add(model);
     loaded = true;
     viewport.dataset.webglReady = 'true';
     viewport.dataset.partCount = String(parts.length);
+    viewport.dataset.movingPartCount = String(parts.filter((part) => part.distance > 0).length);
     resize();
     scheduleDraw();
   } catch {

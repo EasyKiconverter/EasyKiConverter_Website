@@ -1216,6 +1216,25 @@ test('conversion scene stays visible with its active narrative on tablet and pho
       expect(bounds.left, `${path} ${width}px scene left edge`).toBeGreaterThanOrEqual(0);
       expect(bounds.right, `${path} ${width}px scene right edge`).toBeLessThanOrEqual(width);
       expect(bounds.scrollWidth, `${path} ${width}px document width`).toBe(width);
+      const modelBounds = await scene.evaluate((element) => {
+        const board = element.querySelector<HTMLElement>('.conversion-scene-board')!;
+        const viewport = board.querySelector<HTMLElement>('.conversion-model-viewport')!;
+        return {
+          stageWidth: element.clientWidth,
+          stageHeight: element.clientHeight,
+          boardLeft: board.offsetLeft,
+          boardTop: board.offsetTop,
+          boardRight: board.offsetLeft + board.offsetWidth,
+          boardBottom: board.offsetTop + board.offsetHeight,
+          modelWidth: viewport.offsetWidth,
+          modelHeight: viewport.offsetHeight,
+        };
+      });
+      expect(modelBounds.boardLeft, `${path} ${width}px model board clears the left scene edge`).toBeGreaterThanOrEqual(0);
+      expect(modelBounds.boardRight, `${path} ${width}px model board fits scene width`).toBeLessThanOrEqual(modelBounds.stageWidth);
+      expect(modelBounds.boardBottom, `${path} ${width}px model board fits scene height`).toBeLessThanOrEqual(modelBounds.stageHeight + 1);
+      expect(modelBounds.modelWidth).toBeLessThanOrEqual(modelBounds.boardRight - modelBounds.boardLeft);
+      expect(modelBounds.modelHeight).toBeLessThan(modelBounds.stageHeight);
       await expect(page.locator('.story-card')).toHaveCount(3);
     }
   }

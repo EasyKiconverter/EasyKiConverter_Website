@@ -907,6 +907,25 @@
     border-radius: 15px;
   }
 
+  @supports (height: 1cqh) {
+    .conversion-scene {
+      container-type: size;
+    }
+
+    .conversion-scene-board {
+      right: 0;
+      left: 0;
+      width: min(96%, calc((100cqh - 52px) * 1.375));
+      margin-inline: auto;
+    }
+
+    .conversion-model-viewport {
+      width: 100%;
+      max-height: calc(100cqh - 52px);
+      margin-inline: auto;
+    }
+  }
+
   .conversion-scene-board figcaption {
     gap: 4px;
     padding: 0 3px 4px;

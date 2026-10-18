@@ -25,6 +25,7 @@ test('homepage lazily renders and scroll-assembles the real multipart model with
   }, { top, stickyTop, runway });
   await expect(viewport).toHaveAttribute('data-webgl-ready', 'true');
   await expect(viewport).toHaveAttribute('data-part-count', '303');
+  await expect(viewport).toHaveAttribute('data-moving-part-count', '302');
   expect(modelRequests).toHaveLength(1);
 
   for (const [progress, expectedSeparation] of [[0, 0], [0.5, 1], [1, 0]] as const) {
@@ -32,6 +33,7 @@ test('homepage lazily renders and scroll-assembles the real multipart model with
       window.scrollTo({ top: top - stickyTop + runway * progress, behavior: 'instant' });
     }, { top, stickyTop, runway, progress });
     await expect(viewport).toHaveAttribute('data-part-separation', expectedSeparation.toFixed(3));
+    await expect(viewport).toHaveAttribute('data-displaced-part-count', expectedSeparation === 0 ? '0' : '302');
   }
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
