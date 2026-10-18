@@ -985,6 +985,21 @@ test('Lab primary action brings the interactive model into view in both language
       await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
       const exploreLink = page.locator('[data-lab-explore]');
       await expect(exploreLink).toHaveText(label + ' ↓');
+      if (viewport.width === 390) {
+        const actionRows = await page.locator('.lab-intro-actions').evaluate((actions) => {
+          const primary = actions.querySelector<HTMLElement>('[data-lab-explore]')!.getBoundingClientRect();
+          const release = actions.querySelector<HTMLElement>('[data-release-link]')!.getBoundingClientRect();
+          return {
+            primaryTop: primary.top,
+            primaryBottom: primary.bottom,
+            releaseTop: release.top,
+            releaseBottom: release.bottom,
+          };
+        });
+        const rowOverlap = Math.min(actionRows.primaryBottom, actionRows.releaseBottom)
+          - Math.max(actionRows.primaryTop, actionRows.releaseTop);
+        expect(rowOverlap, `${path} mobile primary/download action row`).toBeGreaterThan(0);
+      }
       await exploreLink.evaluate((link: HTMLAnchorElement) => link.click());
       await expect(page).toHaveURL(/#story$/);
       const model = page.locator('.motion-model');
@@ -995,12 +1010,6 @@ test('Lab primary action brings the interactive model into view in both language
       });
       expect(modelBounds.top, `${path} ${viewport.width}px model top`).toBeGreaterThanOrEqual(0);
       expect(modelBounds.bottom, `${path} ${viewport.width}px model bottom`).toBeLessThanOrEqual(viewport.height);
-      if (viewport.width === 390) {
-        const primaryBounds = (await exploreLink.boundingBox())!;
-        const releaseBounds = (await page.locator('[data-release-link]').boundingBox())!;
-        expect(releaseBounds.y + releaseBounds.height, `${path} mobile primary/download action row`)
-          .toBeLessThanOrEqual(primaryBounds.y + primaryBounds.height + 1);
-      }
     }
   }
 
