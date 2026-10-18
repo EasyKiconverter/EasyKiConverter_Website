@@ -1742,7 +1742,7 @@
   .product-journey > .hero {
     grid-column: 1;
     grid-row: 1;
-    min-height: 630px;
+    min-height: 0;
     padding: 42px 0 32px;
   }
 
