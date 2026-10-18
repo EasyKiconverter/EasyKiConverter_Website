@@ -88,7 +88,12 @@ test('homepage renders and scroll-assembles the real multipart model with reduce
   await page.evaluate((scrollTarget) => {
     window.scrollTo({ top: scrollTarget, behavior: 'instant' });
   }, reducedMotionTarget);
-  await page.waitForTimeout(100);
+  await expect.poll(() => page.evaluate((scrollTarget) =>
+    Math.abs(window.scrollY - scrollTarget), reducedMotionTarget,
+  )).toBeLessThan(2);
+  await expect.poll(() => rail.evaluate((element) =>
+    Number.parseFloat(getComputedStyle(element).getPropertyValue('--story-progress')),
+  )).toBeCloseTo(0.5, 1);
   await expect(viewport).toHaveAttribute('data-part-separation', '0.000');
   await expect(viewport).toHaveAttribute('data-active-visual', 'rp2040-package');
   const reducedMotionFinalTarget = await rail.evaluate((element) => {
