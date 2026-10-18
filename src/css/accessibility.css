@@ -21,7 +21,7 @@
 .nav-link-external span {
   display: inline-block;
   margin-left: 3px;
-  transition: transform .35s var(--spring);
+  transition: transform 0.35s var(--spring);
 }
 
 .nav-link-external:hover span {
