@@ -6,7 +6,6 @@ import "../../css/home-polish.css";
 import SeoHead from "../../components/SeoHead.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
-import ProductStage from "../../components/ProductStage.astro";
 import ConversionScene from "../../components/ConversionScene.astro";
 import PlatformAvailability from "../../components/PlatformAvailability.astro";
 import ShowcaseCaption from "../../components/ShowcaseCaption.astro";
@@ -23,7 +22,6 @@ const socialImageUrl = new URL(
   "assets/showcase/easykiconverter-main-public.webp",
   siteBase,
 ).href;
-const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
 const modelImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easyki-real-model-hero.webp`;
 const storyModelUrl = `${import.meta.env.BASE_URL}assets/showcase/easyki-conversion-story.glb`;
 const exportImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-export.webp`;
@@ -69,7 +67,8 @@ const platformAvailability = getPlatformAvailability("en");
     <a class="skip-link" href="#top">Skip to content</a>
     <SiteHeader lang="en" variant="home" homeHref="#top" alternateUrl={new URL(chineseUrl)} />
     <main id="top" tabindex="-1">
-      <section class="hero shell" aria-labelledby="hero-title">
+      <div class="product-journey" data-story-rail>
+      <section class="hero" aria-labelledby="hero-title">
         <div class="hero-copy reveal">
           <p class="kicker">OPEN SOURCE · <span class="kicker-brand-case">Qt</span> 6 DESKTOP TOOL</p>
           <h1 id="hero-title">
@@ -106,49 +105,30 @@ const platformAvailability = getPlatformAvailability("en");
             </span>
           </div>
         </div>
-        <ProductStage lang="en" appImageUrl={appImageUrl} modelImageUrl={modelImageUrl} />
         <a class="scroll-cue" href="#story" aria-label="Continue downward">
           Continue <span></span>
         </a>
       </section>
-      <div class="marquee" aria-hidden="true">
-        <div>
-          <span>SYMBOL</span>
-          <i>✳</i>
-          <span>FOOTPRINT</span>
-          <i>✳</i>
-          <span>EDA LIBRARY</span>
-          <i>✳</i>
-          <span>BOM</span>
-          <i>✳</i>
-          <span>GUI + CLI</span>
-          <i>✳</i>
-          <span>SYMBOL</span>
-          <i>✳</i>
-          <span>FOOTPRINT</span>
-          <i>✳</i>
-        </div>
-      </div>
+      <ConversionScene lang="en" modelImageUrl={modelImageUrl} modelUrl={storyModelUrl} />
       <section
         id="story"
-        class="story section shell"
+        class="story section"
         aria-labelledby="story-title"
       >
         <div id="workflow" class="section-intro workflow-copy reveal">
-          <p class="kicker">ONE PATH, THREE STAGES</p>
+          <p class="kicker">ONE CONVERSION PATH, FOUR STEPS</p>
           <h2 id="story-title">
             Component data,{" "}
             <br />
             <em>ready for your EDA.</em>
           </h2>
           <p>
-            Enter an LCSC number or BOM, prepare symbols, footprints and 3D models, then bring the target library into KiCad, Altium or your existing design workflow.
+            Start with component data, prepare the library assets, convert to a target format, then continue in the EDA workflow you already use.
           </p>
           <WorkflowActions lang="en" />
         </div>
-        <div class="story-rail" data-story-rail>
-          <ConversionScene lang="en" modelImageUrl={modelImageUrl} modelUrl={storyModelUrl} />
-          <article class="story-card story-card-a reveal">
+        <div class="story-rail" data-story-track>
+          <article class="story-card story-card-a reveal" data-story-stage="input">
             <span class="story-index">01 / INPUT</span>
             <h3>
               Bring the{" "}
@@ -164,7 +144,7 @@ const platformAvailability = getPlatformAvailability("en");
               C2040 <span>→</span>
             </div>
           </article>
-          <article class="story-card story-card-b reveal reveal-delay-1">
+          <article class="story-card story-card-b reveal reveal-delay-1" data-story-stage="prepare">
             <span class="story-index">02 / SHAPE</span>
             <h3>
               Symbol, footprint{" "}
@@ -182,21 +162,40 @@ const platformAvailability = getPlatformAvailability("en");
               <b>3D MODEL</b>
             </div>
           </article>
-          <article class="story-card story-card-c reveal reveal-delay-2">
-            <span class="story-index">03 / DELIVER</span>
+          <article class="story-card story-card-c reveal reveal-delay-2" data-story-stage="convert">
+            <span class="story-index">03 / CONVERT</span>
             <h3>
-              Take it into{" "}
+              Generate your{" "}
               <br />
-              your target EDA.
+              target EDA library.
             </h3>
             <p>
-              Generate the target library, review the conversion result, and continue designing in your EDA.
+              Create the matching library files, then check format support for the current version.
             </p>
-            <a class="story-link" href="formats/">Check format support <span>→</span></a>
+            <a class="story-link" href="formats/">View format matrix <span>→</span></a>
             <div class="story-check">✓ library generated</div>
+          </article>
+          <article class="story-card story-card-d reveal" data-story-stage="use">
+            <span class="story-index">04 / USE</span>
+            <h3>
+              Back to your{" "}
+              <br />
+              design workbench.
+            </h3>
+            <p>Continue in KiCad, Altium or another target EDA. The real export screen and results are shown below.</p>
+            <a class="story-link" href="#showcase-title">See the real app <span>↓</span></a>
+            <div class="story-use-proof">REAL QT QUICK EXPORT RESULT</div>
           </article>
         </div>
       </section>
+      </div>
+      <div class="marquee" aria-hidden="true">
+        <div>
+          <span>SYMBOL</span><i>✳</i><span>FOOTPRINT</span><i>✳</i><span>EDA LIBRARY</span><i>✳</i>
+          <span>BOM</span><i>✳</i><span>GUI + CLI</span><i>✳</i><span>SYMBOL</span><i>✳</i>
+          <span>FOOTPRINT</span><i>✳</i>
+        </div>
+      </div>
       <section
         class="product-showcase section shell"
         aria-labelledby="showcase-title"
@@ -273,30 +272,28 @@ const platformAvailability = getPlatformAvailability("en");
             </div>
           </article>
           <article class="feature-card feature-card-mint reveal reveal-delay-1">
-            <span class="feature-symbol">⌁</span>
-            <h3>Batch, quietly</h3>
-            <p>
-              BOM import, multi-threading and remembered settings keep large
-              jobs calm.
-            </p>
+            <span class="feature-number">01 / ONE PART</span>
+            <h3>Prepare one component</h3>
+            <p>Enter an LCSC number, review its data, and prepare a target library file.</p>
+            <a class="feature-task-link" href="cases/">See a conversion case <span>→</span></a>
           </article>
           <article class="feature-card feature-card-peach reveal reveal-delay-2">
-            <span class="feature-symbol">◒</span>
-            <h3>Visible results</h3>
-            <p>LCSC previews, conversion state and diagnostics stay in view.</p>
+            <span class="feature-number">02 / BOM BATCH</span>
+            <h3>Process a parts list</h3>
+            <p>Import a BOM, use multi-threaded processing, and review progress and diagnostics.</p>
+            <a class="feature-task-link" href="cases/">See batch evidence <span>→</span></a>
           </article>
           <article class="feature-card feature-card-lilac reveal">
-            <span class="feature-symbol">⌘</span>
-            <h3>GUI + CLI</h3>
-            <p>
-              A Qt 6 interface when you want it, a command line when you need
-              automation.
-            </p>
+            <span class="feature-number">03 / AUTOMATION</span>
+            <h3>Use the command line</h3>
+            <p>Choose the Qt 6 GUI for interactive work or the project CLI for scripted workflows.</p>
+            <a class="feature-task-link" href="https://github.com/EasyKiconverter/EasyKiConverter/blob/master/docs/CLI_USAGE_en.md" target="_blank" rel="noreferrer">CLI documentation <span>↗</span></a>
           </article>
           <article class="feature-card feature-card-yellow reveal reveal-delay-1">
-            <span class="feature-symbol">↗</span>
-            <h3>Settings remembered</h3>
-            <p>Open it again and continue from the state you know.</p>
+            <span class="feature-number">04 / ASSET REVIEW</span>
+            <h3>Check model and footprint</h3>
+            <p>Inspect the 3D solid, footprint view, and how the library assets relate.</p>
+            <a class="feature-task-link" href="lab/">Open 3D Lab <span>→</span></a>
           </article>
         </div>
       </section>

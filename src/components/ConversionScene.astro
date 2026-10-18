@@ -9,7 +9,15 @@ const { lang, modelImageUrl, modelUrl } = Astro.props;
 const en = lang === "en";
 ---
 
-<div class="conversion-scene" data-conversion-scene data-model-url={modelUrl} data-stage="input" aria-hidden="true">
+<div
+  class="conversion-scene product-journey-scene"
+  data-conversion-scene
+  data-product-stage
+  data-model-url={modelUrl}
+  data-stage="input"
+  role="img"
+  aria-label={en ? "A STEP-derived component assembly follows the four steps from input to EDA use" : "STEP 派生元件模型沿输入、整理、转换、使用四个环节展示"}
+>
   <figure class="conversion-scene-board">
     <figcaption>
       <span>{en ? "STEP-DERIVED GEOMETRY" : "STEP 派生几何"}</span>
@@ -17,7 +25,7 @@ const en = lang === "en";
     </figcaption>
     <div class="conversion-model-viewport">
       <canvas data-conversion-canvas aria-hidden="true"></canvas>
-      <img src={modelImageUrl} alt="" loading="lazy" width="1100" height="800" />
+      <img src={modelImageUrl} alt="" loading="eager" fetchpriority="high" width="1100" height="800" />
     </div>
   </figure>
 
@@ -35,9 +43,15 @@ const en = lang === "en";
   </div>
 
   <div class="conversion-output-layer">
-    <small>{en ? "TARGET LIBRARY" : "目标元件库"}</small>
+    <small>{en ? "CONVERT TO TARGET" : "转换为目标格式"}</small>
     <strong>{en ? "KiCad / Altium" : "KiCad / Altium"}</strong>
-    <span><i>✓</i>{en ? "Ready to use" : "可供设计使用"}</span>
+    <span><i>✓</i>{en ? "Library generated" : "元件库已生成"}</span>
+  </div>
+
+  <div class="conversion-use-layer">
+    <small>{en ? "BACK TO YOUR WORKBENCH" : "回到设计工作台"}</small>
+    <strong>{en ? "Continue in your EDA" : "在目标 EDA 中继续设计"}</strong>
+    <span>{en ? "Real export screen shown below" : "下方展示真实导出界面"}</span>
   </div>
 
   <span class="conversion-scene-note">{en ? "ILLUSTRATIVE MODEL · REAL APP SHOWN BELOW" : "模型为视觉演示 · 实际软件界面见下方"}</span>

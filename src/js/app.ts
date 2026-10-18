@@ -113,7 +113,7 @@ motionPreference.addEventListener('change', ({ matches }) => {
   if (matches) document.querySelectorAll<HTMLElement>('.magnetic').forEach((button) => { button.style.transform = ''; });
 });
 
-const depthStage = document.querySelector<HTMLElement>('.hero-product-stage');
+const depthStage = document.querySelector<HTMLElement>('[data-product-stage]');
 const depthRail = document.querySelector<HTMLElement>('[data-story-rail]');
 if (depthStage || depthRail) {
   let pointerX = 0;
@@ -151,20 +151,31 @@ if (depthStage || depthRail) {
       depthStage.style.setProperty('--scene-progress', (canAnimate() ? progress : 0).toFixed(3));
     }
     if (depthRail) {
-      const railBox = depthRail.getBoundingClientRect();
       const scene = depthRail.querySelector<HTMLElement>('[data-conversion-scene]');
       const sceneBox = scene?.getBoundingClientRect();
       const sceneIsSticky = scene && window.getComputedStyle(scene).position === 'sticky';
-      const storyStart = sceneIsSticky ? Number.parseFloat(window.getComputedStyle(scene).top) || 0 : window.innerHeight * 0.78;
-      const storyRunway = sceneIsSticky && sceneBox
-        ? Math.max(1, (railBox.height - sceneBox.height) * (window.innerWidth <= 850 ? 0.75 : 1))
-        : Math.max(1, railBox.height + window.innerHeight * 0.36);
-      const storyProgress = clamp((storyStart - railBox.top) / storyRunway, 0, 1);
-      depthRail.style.setProperty('--story-progress', storyProgress.toFixed(3));
       const cards = [...depthRail.querySelectorAll<HTMLElement>('.story-card')];
+      const sceneCenter = sceneIsSticky && sceneBox
+        ? (Number.parseFloat(window.getComputedStyle(scene).top) || 0) + sceneBox.height / 2
+        : window.innerHeight * 0.62;
+      const phoneLayout = window.matchMedia('(max-width: 599px)').matches;
+      const shortLandscape = window.matchMedia('(min-width: 600px) and (max-width: 850px) and (max-height: 500px)').matches;
+      const storyAnchor = sceneBox && (phoneLayout || shortLandscape)
+        ? sceneCenter + sceneBox.height / 2 + (shortLandscape ? 155 : 150)
+        : sceneCenter;
+      const firstCard = cards[0]?.getBoundingClientRect();
+      const lastCard = cards[cards.length - 1]?.getBoundingClientRect();
+      const firstCardCenter = firstCard ? firstCard.top + firstCard.height / 2 : sceneCenter;
+      const lastCardCenter = lastCard ? lastCard.top + lastCard.height / 2 : firstCardCenter;
+      const storyProgress = clamp(
+        (storyAnchor - firstCardCenter) / Math.max(1, lastCardCenter - firstCardCenter),
+        0,
+        1,
+      );
+      depthRail.style.setProperty('--story-progress', storyProgress.toFixed(3));
       const storyPosition = storyProgress * Math.max(1, cards.length - 1);
       if (scene && cards.length) {
-        scene.dataset.stage = ['input', 'prepare', 'deliver'][Math.round(storyPosition)] || 'deliver';
+        scene.dataset.stage = cards[Math.round(storyPosition)]?.dataset.storyStage || 'use';
       }
       cards.forEach((card, index) => {
         const centerOffset = index - (cards.length - 1) / 2;
@@ -193,7 +204,7 @@ if (depthStage || depthRail) {
   window.visualViewport?.addEventListener('resize', scheduleDepthFrame, { passive: true });
   window.addEventListener('orientationchange', scheduleDepthFrame, { passive: true });
   const sizeObserver = 'ResizeObserver' in window ? new ResizeObserver(scheduleDepthFrame) : null;
-  [depthStage, depthRail, depthRail?.querySelector('[data-conversion-scene]')].forEach((element) => {
+  [depthStage, depthRail, depthRail?.querySelector('[data-story-track]')].forEach((element) => {
     if (element) sizeObserver?.observe(element);
   });
   document.addEventListener('visibilitychange', () => {
@@ -211,7 +222,7 @@ if (depthStage || depthRail) {
     if (inViewport) scheduleDepthFrame();
     else if (frame) { window.cancelAnimationFrame(frame); frame = 0; }
   }, { rootMargin: '120px 0px', threshold: 0 }) : null;
-  [depthStage, depthRail].forEach((element) => { if (element) viewportObserver?.observe(element); });
+  [depthStage, depthRail?.querySelector('[data-story-track]')].forEach((element) => { if (element) viewportObserver?.observe(element); });
   motionPreference.addEventListener('change', ({ matches }) => {
     if (matches) {
       if (frame) window.cancelAnimationFrame(frame);

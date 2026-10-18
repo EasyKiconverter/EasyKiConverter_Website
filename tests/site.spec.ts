@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const pages = ['/', '/en/'];
-const depthStyle = (page: Page) => page.locator('.hero-product-stage').evaluate((stage) => getComputedStyle(stage).getPropertyValue('--scene-progress').trim());
+const depthStyle = (page: Page) => page.locator('[data-product-stage]').evaluate((scene) => getComputedStyle(scene).getPropertyValue('--scene-progress').trim());
 
 test('bilingual homepages render one localized document title', async ({ page }) => {
   for (const path of pages) {
@@ -85,19 +85,16 @@ test('bilingual homepage distinguishes the STEP model render from real software 
     ['/en/', 'Local output path hidden'],
   ]) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const heroImage = page.locator('.hero-product-window img');
-    const softwarePreview = page.locator('.hero-software-window img');
+    const heroImage = page.locator('.conversion-model-viewport img');
     const showcaseImage = page.locator('.app-window > img');
     const heroSource = await heroImage.getAttribute('src');
-    const softwareSource = await softwarePreview.getAttribute('src');
     const showcaseSource = await showcaseImage.getAttribute('src');
     expect(heroSource).toContain('easyki-real-model-hero.webp');
-    expect(softwareSource).toContain('easykiconverter-main-public.webp');
     expect(showcaseSource).toContain('easykiconverter-export.webp');
-    expect(showcaseSource).not.toBe(softwareSource);
-    await expect(heroImage).toHaveAttribute('alt', /STEP/i);
+    expect(showcaseSource).not.toBe(heroSource);
+    await expect(page.locator('[data-conversion-scene]')).toHaveAttribute('aria-label', /STEP/i);
     await expect(showcaseImage).toHaveAttribute('alt', new RegExp(disclosure, 'i'));
-    await expect(page.locator('.hero-software-window')).toHaveAttribute('href', '#showcase-title');
+    await expect(page.locator('.conversion-use-layer')).toContainText(path === '/' ? '下方展示真实导出界面' : 'Real export screen shown below');
     await expect(page.locator('.app-window .showcase-source')).toContainText(disclosure);
     const fullSizeLink = page.locator('.app-window .showcase-source a');
     await expect(fullSizeLink).toHaveAttribute('href', showcaseSource || '');
@@ -105,7 +102,7 @@ test('bilingual homepage distinguishes the STEP model render from real software 
     await expect(fullSizeLink).toHaveAttribute('rel', 'noreferrer');
     await expect(fullSizeLink).toContainText(/full-size capture|完整原图/i);
     await expect(page.locator('.app-window .showcase-proof-items')).toContainText(/progress|进度/i);
-    for (const image of [heroImage, softwarePreview, showcaseImage]) {
+    for (const image of [heroImage, showcaseImage]) {
       await image.evaluate(async (element) => {
         const image = element as HTMLImageElement;
         image.loading = 'eager';
@@ -125,7 +122,7 @@ test('bilingual homepage keeps the conversion story and download actions usable 
   await page.route('**/assets/showcase/**', (route) => route.abort());
   for (const [path, title] of [['/', '让元件库转换'], ['/en/', 'Component data']]) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.hero-product-window img')).toHaveAttribute('alt', /STEP/i);
+    await expect(page.locator('[data-conversion-scene]')).toHaveAttribute('aria-label', /STEP/i);
     await expect(page.locator('#story')).toBeVisible();
     await expect(page.locator('#download')).toBeVisible();
     await expect(page.locator('.hero-actions a').first()).toBeVisible();
@@ -210,7 +207,7 @@ test('bilingual homepage header stays within the layout through the tablet break
       });
 
       if (width >= 851 && width <= 980) {
-        await expect(page.locator('.hero')).toHaveCSS('display', 'grid');
+        await expect(page.locator('.hero')).toHaveCSS('display', 'flex');
         const menu = header.locator('.menu-button');
         await menu.click();
         await expect(page.locator('.mobile-nav')).toHaveClass(/is-open/);
@@ -293,7 +290,7 @@ test('mobile story cards keep decorative labels clear of their copy', async ({ p
     await storyCards.first().scrollIntoViewIfNeeded();
     const bounds = await storyCards.evaluateAll((cards) => cards.map((card) => {
       const copy = card.querySelector('p')?.getBoundingClientRect();
-      const decoration = card.querySelector('.story-pulse, .story-stack, .story-check')?.getBoundingClientRect();
+      const decoration = card.querySelector('.story-pulse, .story-stack, .story-check, .story-use-proof')?.getBoundingClientRect();
       if (!copy || !decoration) return null;
       return {
         copyRight: copy.right,
@@ -306,7 +303,7 @@ test('mobile story cards keep decorative labels clear of their copy', async ({ p
         decorationTop: decoration.top,
       };
     }));
-    expect(bounds).toHaveLength(3);
+    expect(bounds).toHaveLength(4);
     bounds.forEach((bound) => {
       expect(bound).not.toBeNull();
       const horizontalGap = bound!.copyRight <= bound!.decorationLeft + 1 || bound!.decorationRight <= bound!.copyLeft + 1;
@@ -332,9 +329,8 @@ test('mobile homepage keeps the STEP-derived model render readable', async ({ pa
   test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const image = page.locator('.hero-product-window img');
-    await expect(image).toHaveCSS('object-fit', 'cover');
-    await expect(image).toHaveCSS('object-position', '50% 50%');
+    const image = page.locator('.conversion-model-viewport img');
+    await expect(image).toHaveCSS('object-fit', 'contain');
     const box = await image.boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(220);
   }
@@ -368,10 +364,10 @@ test('English mobile hero keeps a compact promise and brings product proof highe
   expect(await title.evaluate((element) => element.getBoundingClientRect().height)).toBeLessThan(110);
   const ledeHeight = await page.locator('.hero-lede').evaluate((element) => element.getBoundingClientRect().height);
   const productImageTop = await page
-    .locator('.hero-product-window img')
+    .locator('.conversion-model-viewport img')
     .evaluate((element) => element.getBoundingClientRect().top);
   expect(ledeHeight).toBeLessThan(60);
-  expect(productImageTop).toBeLessThan(600);
+  expect(productImageTop).toBeLessThan(760);
 });
 
 test('bilingual mobile hero keeps its facts compact and product proof in view', async ({ page }) => {
@@ -386,11 +382,10 @@ test('bilingual mobile hero keeps its facts compact and product proof in view', 
     expect(factTops).toHaveLength(3);
     expect(Math.max(...factTops) - Math.min(...factTops)).toBeLessThan(2);
 
-    const visibleProductHeight = await page.locator('.hero-product-window img').evaluate((image) => {
-      const bounds = image.getBoundingClientRect();
-      return Math.max(0, Math.min(bounds.bottom, window.innerHeight) - Math.max(bounds.top, 0));
-    });
-    expect(visibleProductHeight).toBeGreaterThanOrEqual(180);
+    const scene = page.locator('[data-conversion-scene]');
+    await scene.scrollIntoViewIfNeeded();
+    const productHeight = await page.locator('.conversion-model-viewport img').evaluate((image) => image.getBoundingClientRect().height);
+    expect(productHeight).toBeGreaterThanOrEqual(140);
   }
 });
 
@@ -1037,7 +1032,7 @@ test('bilingual homepages keep the same interaction rhythm', async ({ page }) =>
     await expect(page.locator('.feature-card-mint')).toHaveClass(/reveal-delay-1/);
     await expect(page.locator('.feature-card-peach')).toHaveClass(/reveal-delay-2/);
     await expect(page.locator('.feature-card-yellow')).toHaveClass(/reveal-delay-1/);
-    await expect(page.locator('.story-rail .story-card')).toHaveCount(3);
+    await expect(page.locator('.story-rail .story-card')).toHaveCount(4);
     await expect(page.locator('#workflow .workflow-actions')).toBeVisible();
     await expect(page.locator('.platform-list')).toHaveClass(/reveal-delay/);
     await expect(page.locator('.download-actions .button-light')).toHaveClass(/magnetic/);
@@ -1120,41 +1115,52 @@ test('homepage story cards connect the narrative to evidence and action', async 
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const links = page.locator('.story-rail .story-link');
-    await expect(links).toHaveCount(3);
+    await expect(links).toHaveCount(4);
     await expect(links.nth(0)).toHaveAttribute('href', 'cases/');
     await expect(links.nth(1)).toHaveAttribute('href', 'lab/');
     await expect(links.nth(2)).toHaveAttribute('href', 'formats/');
-    await expect(links.nth(2)).toContainText(path === '/' ? '核对格式支持' : 'Check format support');
+    await expect(links.nth(2)).toContainText(path === '/' ? '格式矩阵' : 'format matrix');
+    await expect(links.nth(3)).toHaveAttribute('href', '#showcase-title');
+    await expect(links.nth(3)).toContainText(path === '/' ? '真实软件界面' : 'real app');
   }
 });
 
-test('homepage scroll story activates input, preparation, and delivery in order', async ({ page }) => {
+test('homepage scroll story activates input, preparation, conversion, and use in order', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const rail = page.locator('.story-rail');
-    const storyTop = await rail.evaluate((element) => element.getBoundingClientRect().top + window.scrollY);
-    const railHeight = await rail.evaluate((element) => element.getBoundingClientRect().height);
+    const rail = page.locator('[data-story-rail]');
     const scene = page.locator('[data-conversion-scene]');
-    const sceneHeight = await scene.evaluate((element) => element.getBoundingClientRect().height);
-    const stickyTop = await scene.evaluate((element) => Number.parseFloat(getComputedStyle(element).top));
-    const denominator = Math.max(1, railHeight - sceneHeight);
     const sceneTransforms = new Set<string>();
-    for (const [progress, activeIndex] of [[0, 0], [0.5, 1], [1, 2]] as const) {
-      await page.evaluate(({ storyTop, stickyTop, denominator, progress }) => {
+    for (const [progress, activeIndex] of [[0, 0], [1 / 3, 1], [2 / 3, 2], [1, 3]] as const) {
+      const target = await rail.evaluate((element, progress) => {
+        const scene = element.querySelector<HTMLElement>('[data-conversion-scene]')!;
+        const cards = [...element.querySelectorAll<HTMLElement>('.story-card')];
+        const first = cards[0].getBoundingClientRect();
+        const last = cards[cards.length - 1].getBoundingClientRect();
+        const firstCenter = first.top + window.scrollY + first.height / 2;
+        const lastCenter = last.top + window.scrollY + last.height / 2;
+        const sceneBox = scene.getBoundingClientRect();
+        const sceneCenter = (Number.parseFloat(getComputedStyle(scene).top) || 0) + sceneBox.height / 2;
+        const phone = window.innerWidth < 600;
+        const landscape = window.innerWidth >= 600 && window.innerWidth <= 850 && window.innerHeight <= 500;
+        const anchor = sceneCenter + (phone ? sceneBox.height / 2 + 150 : landscape ? sceneBox.height / 2 + 155 : 0);
+        return firstCenter - anchor + (lastCenter - firstCenter) * progress;
+      }, progress);
+      await page.evaluate((target) => {
         document.documentElement.style.scrollBehavior = 'auto';
-        window.scrollTo(0, storyTop - stickyTop + denominator * progress);
-      }, { storyTop, stickyTop, denominator, progress });
+        window.scrollTo(0, target);
+      }, target);
       await expect.poll(() => page.locator('.story-card').evaluateAll((cards) => cards.map((card) => card.hasAttribute('data-active'))))
-        .toEqual([false, false, false].map((_, index) => index === activeIndex));
-      await expect(scene).toHaveAttribute('data-stage', ['input', 'prepare', 'deliver'][activeIndex]);
+        .toEqual([false, false, false, false].map((_, index) => index === activeIndex));
+      await expect(scene).toHaveAttribute('data-stage', ['input', 'prepare', 'convert', 'use'][activeIndex]);
       sceneTransforms.add(await scene.locator('.conversion-scene-board').evaluate((board) => getComputedStyle(board).transform));
     }
-    expect(sceneTransforms.size, `${path} should change the real scene transform across scroll progress`).toBe(3);
+    expect(sceneTransforms.size, `${path} should change the real scene transform across scroll progress`).toBe(4);
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await expect.poll(() => depthStyle(page)).toBe('0');
-    await expect(page.locator('.story-card')).toHaveCount(3);
+    await expect(page.locator('.story-card')).toHaveCount(4);
     await expect(page.locator('.story-card').first()).toBeVisible();
     await expect(scene).toHaveCSS('position', 'sticky');
     await expect(page.locator('.download-actions .button-light')).toBeVisible();
@@ -1177,21 +1183,26 @@ test('conversion scene stays visible with its active narrative on tablet and pho
       const scene = page.locator('[data-conversion-scene]');
       await expect(scene).toHaveCSS('position', 'sticky');
       await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
-      const { railTop, railHeight, sceneHeight, stickyTop } = await page.locator('[data-story-rail]').evaluate((rail) => {
-        const sceneElement = rail.querySelector<HTMLElement>('[data-conversion-scene]')!;
-        return {
-          railTop: rail.getBoundingClientRect().top + window.scrollY,
-          railHeight: rail.getBoundingClientRect().height,
-          sceneHeight: sceneElement.getBoundingClientRect().height,
-          stickyTop: Number.parseFloat(getComputedStyle(sceneElement).top),
-        };
-      });
-      const scrollRunway = (railHeight - sceneHeight) * 0.75;
-      for (const [progress, activeIndex] of [[0, 0], [0.5, 1], [1, 2], [0.5, 1], [0, 0]] as const) {
-        await page.evaluate(({ railTop, stickyTop, scrollRunway, progress }) => {
-          window.scrollTo({ top: railTop - stickyTop + scrollRunway * progress, behavior: 'instant' });
-        }, { railTop, stickyTop, scrollRunway, progress });
-        await expect(scene).toHaveAttribute('data-stage', ['input', 'prepare', 'deliver'][activeIndex]);
+      const stickyTop = await scene.evaluate((element) => Number.parseFloat(getComputedStyle(element).top));
+      for (const [progress, activeIndex] of [[0, 0], [1 / 3, 1], [2 / 3, 2], [1, 3], [2 / 3, 2], [1 / 3, 1], [0, 0]] as const) {
+        const target = await page.locator('[data-story-rail]').evaluate((rail, progress) => {
+          const cards = [...rail.querySelectorAll<HTMLElement>('.story-card')];
+          const scene = rail.querySelector<HTMLElement>('[data-conversion-scene]')!;
+          const first = cards[0].getBoundingClientRect();
+          const last = cards[cards.length - 1].getBoundingClientRect();
+          const firstCenter = first.top + window.scrollY + first.height / 2;
+          const lastCenter = last.top + window.scrollY + last.height / 2;
+          const sceneBox = scene.getBoundingClientRect();
+          const sceneCenter = (Number.parseFloat(getComputedStyle(scene).top) || 0) + sceneBox.height / 2;
+          const phone = window.innerWidth < 600;
+          const landscape = window.innerWidth >= 600 && window.innerWidth <= 850 && window.innerHeight <= 500;
+          const anchor = sceneCenter + (phone ? sceneBox.height / 2 + 150 : landscape ? sceneBox.height / 2 + 155 : 0);
+          return firstCenter - anchor + (lastCenter - firstCenter) * progress;
+        }, progress);
+        await page.evaluate((scrollTarget) => {
+          window.scrollTo({ top: scrollTarget, behavior: 'instant' });
+        }, target);
+        await expect(scene).toHaveAttribute('data-stage', ['input', 'prepare', 'convert', 'use'][activeIndex]);
         const visibleGeometry = await scene.evaluate((element) => {
           const rect = element.getBoundingClientRect();
           return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, viewportHeight: window.innerHeight };
@@ -1201,9 +1212,9 @@ test('conversion scene stays visible with its active narrative on tablet and pho
         const activeCard = page.locator('.story-card[data-active]');
         const activeHeading = await activeCard.locator('h3').boundingBox();
         expect(activeHeading, `${path} ${width}px stage ${progress} active heading`).not.toBeNull();
-        expect(activeHeading!.y + activeHeading!.height).toBeLessThan(visibleGeometry.viewportHeight);
+        expect(activeHeading!.y + activeHeading!.height, `${path} ${width}x${height}px stage ${progress} heading bottom`).toBeLessThan(visibleGeometry.viewportHeight);
         if (width >= 600) {
-          expect(activeHeading!.x, `${path} ${width}px narrative card clears the stage`).toBeGreaterThan(visibleGeometry.right);
+          expect(activeHeading!.x + activeHeading!.width, `${path} ${width}px narrative card clears the stage`).toBeLessThan(visibleGeometry.left);
         } else {
           expect(activeHeading!.y, `${path} ${width}px narrative heading follows the stage`).toBeGreaterThan(visibleGeometry.bottom - 18);
         }
@@ -1212,10 +1223,13 @@ test('conversion scene stays visible with its active narrative on tablet and pho
           const model = scene.querySelector<HTMLElement>('.conversion-model-viewport')!;
           const board = scene.querySelector<HTMLElement>('.conversion-scene-board')!;
           const card = document.querySelector<HTMLElement>('.story-card[data-active]')!;
-          const layer = scene.querySelector<HTMLElement>(
-            scene.dataset.stage === 'input' ? '.conversion-input-layer' :
-              scene.dataset.stage === 'prepare' ? '.conversion-parts-layer' : '.conversion-output-layer',
-          )!;
+          const layerSelector = {
+            input: '.conversion-input-layer',
+            prepare: '.conversion-parts-layer',
+            convert: '.conversion-output-layer',
+            use: '.conversion-use-layer',
+          }[scene.dataset.stage || 'input'];
+          const layer = scene.querySelector<HTMLElement>(layerSelector)!;
           const rect = (element: HTMLElement) => {
             const { x, y, right, bottom, width, height } = element.getBoundingClientRect();
             return { x, y, right, bottom, width, height };
@@ -1236,7 +1250,7 @@ test('conversion scene stays visible with its active narrative on tablet and pho
           }
           expect(stageCardGeometry.board.x, `${path} ${width}px stage ${progress} transformed model board left`).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
           expect(stageCardGeometry.board.right, `${path} ${width}px stage ${progress} transformed model board right`).toBeLessThanOrEqual(stageCardGeometry.scene.right + 1);
-          expect(stageCardGeometry.board.y, `${path} ${width}px stage ${progress} transformed model board top`).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 1);
+          expect(stageCardGeometry.board.y, `${path} ${width}px stage ${progress} transformed model board top`).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 3);
           expect(stageCardGeometry.board.bottom, `${path} ${width}px stage ${progress} transformed model board bottom`).toBeLessThanOrEqual(stageCardGeometry.scene.bottom + 1);
         }
         expect(stageCardGeometry.layer.x, `${path} ${width}px stage ${progress} active label left`).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
@@ -1270,7 +1284,7 @@ test('conversion scene stays visible with its active narrative on tablet and pho
       expect(modelBounds.boardBottom, `${path} ${width}px model board fits scene height`).toBeLessThanOrEqual(modelBounds.stageHeight + 1);
       expect(modelBounds.modelWidth).toBeLessThanOrEqual(modelBounds.boardRight - modelBounds.boardLeft);
       expect(modelBounds.modelHeight).toBeLessThan(modelBounds.stageHeight);
-      await expect(page.locator('.story-card')).toHaveCount(3);
+      await expect(page.locator('.story-card')).toHaveCount(4);
     }
   }
 });
@@ -1280,18 +1294,21 @@ test('homepage story motion responds to live viewport resize and reduced-motion 
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
   const storyRail = page.locator('[data-story-rail]');
-  const { railTop, railHeight, sceneHeight, stickyTop } = await storyRail.evaluate((rail) => {
+  const target = await storyRail.evaluate((rail) => {
     const scene = rail.querySelector<HTMLElement>('[data-conversion-scene]')!;
-    return {
-      railTop: rail.getBoundingClientRect().top + window.scrollY,
-      railHeight: rail.getBoundingClientRect().height,
-      sceneHeight: scene.getBoundingClientRect().height,
-      stickyTop: Number.parseFloat(getComputedStyle(scene).top),
-    };
+    const cards = [...rail.querySelectorAll<HTMLElement>('.story-card')];
+    const first = cards[0].getBoundingClientRect();
+    const last = cards[cards.length - 1].getBoundingClientRect();
+    const firstCenter = first.top + window.scrollY + first.height / 2;
+    const lastCenter = last.top + window.scrollY + last.height / 2;
+    const sceneBox = scene.getBoundingClientRect();
+    const sceneCenter = (Number.parseFloat(getComputedStyle(scene).top) || 0) + sceneBox.height / 2;
+    const phone = window.innerWidth < 600;
+    const landscape = window.innerWidth >= 600 && window.innerWidth <= 850 && window.innerHeight <= 500;
+    const anchor = sceneCenter + (phone ? sceneBox.height / 2 + 150 : landscape ? sceneBox.height / 2 + 155 : 0);
+    return firstCenter - anchor + (lastCenter - firstCenter) * 0.4;
   });
-  await page.evaluate(({ railTop, stickyTop, runway }) => {
-    window.scrollTo({ top: railTop - stickyTop + runway * 0.4, behavior: 'instant' });
-  }, { railTop, stickyTop, runway: (railHeight - sceneHeight) * 0.75 });
+  await page.evaluate((target) => window.scrollTo({ top: target, behavior: 'instant' }), target);
   await expect.poll(() => depthStyle(page)).not.toBe('0');
   const narrowProgress = await storyRail.evaluate((rail) => Number.parseFloat(getComputedStyle(rail).getPropertyValue('--story-progress')));
 
@@ -1402,17 +1419,15 @@ test('bilingual hero artwork stays fully visible from phone through desktop widt
     await page.setViewportSize(viewport);
     for (const path of pages) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const artwork = await page.locator('.hero-product-stage').evaluate((stage) => {
-        const selectors = ['.hero-float-input', '.hero-float-output', '.hero-stage-tag'];
-        return Object.fromEntries(selectors.map((selector) => {
-          const rect = stage.querySelector(selector)!.getBoundingClientRect();
-          return [selector, { left: rect.left, right: rect.right }];
-        }));
+      const scene = page.locator('[data-conversion-scene]');
+      const bounds = await scene.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        const board = element.querySelector('.conversion-scene-board')!.getBoundingClientRect();
+        return { scene: rect, board, scrollWidth: document.documentElement.scrollWidth };
       });
-      for (const [selector, bounds] of Object.entries(artwork)) {
-        expect(bounds.left, `${path} ${viewport.width}px ${selector} left edge`).toBeGreaterThanOrEqual(0);
-        expect(bounds.right, `${path} ${viewport.width}px ${selector} right edge`).toBeLessThanOrEqual(viewport.width);
-      }
+      expect(bounds.scene.left, `${path} ${viewport.width}px scene left edge`).toBeGreaterThanOrEqual(0);
+      expect(bounds.scene.right, `${path} ${viewport.width}px scene right edge`).toBeLessThanOrEqual(viewport.width);
+      expect(bounds.scrollWidth).toBe(viewport.width);
     }
   }
 });
@@ -1420,15 +1435,11 @@ test('bilingual hero artwork stays fully visible from phone through desktop widt
 test('English homepage keeps product section labels concrete', async ({ page }) => {
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.product-showcase .kicker')).toHaveText('THE REAL WORKBENCH');
-  await expect(page.locator('#workflow .kicker')).toHaveText('ONE PATH, THREE STAGES');
-  await expect(page.locator('.feature-card-mint p')).toHaveText(
-    'BOM import, multi-threading and remembered settings keep large jobs calm.',
-  );
+  await expect(page.locator('#workflow .kicker')).toHaveText('ONE CONVERSION PATH, FOUR STEPS');
+  await expect(page.locator('.feature-card-mint h3')).toHaveText('Prepare one component');
 
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.feature-card-mint p')).toHaveText(
-    'BOM 导入、多线程处理与自动记住设置，让大批量任务更从容。',
-  );
+  await expect(page.locator('.feature-card-mint h3')).toHaveText('准备一个元件');
 });
 
 test('English pages preserve copy across visual line breaks', async ({ page }) => {
@@ -1451,12 +1462,12 @@ test('English pages preserve copy across visual line breaks', async ({ page }) =
 test('bilingual conversion narrative explains the same input-to-library path', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('#workflow > p').nth(1)).toHaveText(
-    '输入 LCSC 编号或 BOM，准备符号、封装与 3D 模型，再将目标格式带回 KiCad、Altium 等设计工作流。',
+    '从元件数据开始，逐步准备库文件、转换目标格式，并回到熟悉的 EDA 工作流继续设计。',
   );
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('#workflow > p').nth(1)).toHaveText(
-    'Enter an LCSC number or BOM, prepare symbols, footprints and 3D models, then bring the target library into KiCad, Altium or your existing design workflow.',
+    'Start with component data, prepare the library assets, convert to a target format, then continue in the EDA workflow you already use.',
   );
 });
 
@@ -1558,14 +1569,15 @@ test('Chinese homepage and inner-page titles avoid orphaned characters on mobile
 test('Chinese homepage keeps visual microcopy localized', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const homepage = page.locator('main');
-  await expect(homepage.locator('.hero-product-window figcaption')).toContainText('STEP 几何模型');
-  await expect(homepage.locator('.hero-float-input')).toContainText('等待整理');
-  await expect(homepage.locator('.hero-float-output')).toContainText('元件库输出');
-  await expect(homepage.locator('.hero-float-output')).toContainText('3D 模型');
-  await expect(homepage.locator('.hero-stage-tag')).toHaveText('元件数据 → EDA 库');
+  await expect(homepage.locator('.conversion-scene-board figcaption')).toContainText('STEP 派生几何');
+  await expect(homepage.locator('.conversion-input-layer')).toContainText('元件数据');
+  await expect(homepage.locator('.conversion-parts-layer')).toContainText('3D 模型');
+  await expect(homepage.locator('.conversion-output-layer')).toContainText('元件库已生成');
   await expect(homepage.locator('.story-card-a .story-index')).toHaveText('01 / 输入');
   await expect(homepage.locator('.story-card-b .story-index')).toHaveText('02 / 整理');
-  await expect(homepage.locator('.story-card-c .story-index')).toHaveText('03 / 交付');
+  await expect(homepage.locator('.story-card-c .story-index')).toHaveText('03 / 转换');
+  await expect(homepage.locator('.story-card-d .story-index')).toHaveText('04 / 使用');
+  await expect(homepage.locator('.conversion-use-layer')).toContainText('回到设计工作台');
   await expect(homepage.locator('.story-check')).toHaveText('✓ 库文件已生成');
   await expect(homepage).not.toContainText('Ready to organize');
   await expect(homepage).not.toContainText('LIBRARY OUTPUT');

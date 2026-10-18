@@ -4,6 +4,15 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+const storySeparation = (progress: number) => {
+  const keyframes = [0, 1, 0.36, 0];
+  const position = clamp(progress, 0, 1) * (keyframes.length - 1);
+  const index = Math.min(Math.floor(position), keyframes.length - 2);
+  const amount = position - index;
+  const easedAmount = amount * amount * (3 - 2 * amount);
+  return keyframes[index] + (keyframes[index + 1] - keyframes[index]) * easedAmount;
+};
+
 export const startConversionModel = async (host: HTMLElement) => {
   const canvas = host.querySelector<HTMLCanvasElement>('[data-conversion-canvas]');
   const viewport = canvas?.parentElement;
@@ -55,7 +64,7 @@ export const startConversionModel = async (host: HTMLElement) => {
     const progress = motionPreference.matches
       ? 1
       : clamp(Number.parseFloat(getComputedStyle(storyRail).getPropertyValue('--story-progress')) || 0, 0, 1);
-    const separation = motionPreference.matches ? 0 : Math.sin(progress * Math.PI);
+    const separation = motionPreference.matches ? 0 : storySeparation(progress);
     let displacedPartCount = 0;
     parts.forEach(({ mesh, base, direction }) => {
       mesh.position.copy(base).addScaledVector(direction, separation);

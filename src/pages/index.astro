@@ -6,7 +6,6 @@ import "../css/home-polish.css";
 import SeoHead from "../components/SeoHead.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
-import ProductStage from "../components/ProductStage.astro";
 import ConversionScene from "../components/ConversionScene.astro";
 import PlatformAvailability from "../components/PlatformAvailability.astro";
 import ShowcaseCaption from "../components/ShowcaseCaption.astro";
@@ -23,7 +22,6 @@ const socialImageUrl = new URL(
   "assets/showcase/easykiconverter-main-public.webp",
   siteBase,
 ).href;
-const appImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-main-public.webp`;
 const modelImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easyki-real-model-hero.webp`;
 const storyModelUrl = `${import.meta.env.BASE_URL}assets/showcase/easyki-conversion-story.glb`;
 const exportImageUrl = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-export.webp`;
@@ -72,7 +70,8 @@ const platformAvailability = getPlatformAvailability("zh");
     <a class="skip-link" href="#top">跳转到正文</a>
     <SiteHeader lang="zh-CN" variant="home" homeHref="#top" alternateUrl={new URL(englishUrl)} />
     <main id="top" tabindex="-1">
-      <section class="hero shell" aria-labelledby="hero-title">
+      <div class="product-journey" data-story-rail>
+      <section class="hero" aria-labelledby="hero-title">
         <div class="hero-copy reveal">
           <p class="kicker">开源 · <span class="kicker-brand-case">Qt</span> 6 桌面工具</p>
           <h1 id="hero-title">
@@ -107,51 +106,30 @@ const platformAvailability = getPlatformAvailability("zh");
             </span>
           </div>
         </div>
-        <ProductStage lang="zh" appImageUrl={appImageUrl} modelImageUrl={modelImageUrl} />
         <a class="scroll-cue" href="#story" aria-label="继续向下">
           <span></span>继续向下
         </a>
       </section>
-      <div class="marquee" aria-hidden="true">
-        <div>
-          <span>符号</span>
-          <i>✳</i>
-          <span>封装</span>
-          <i>✳</i>
-          <span>EDA 库</span>
-          <i>✳</i>
-          <span>BOM</span>
-          <i>✳</i>
-          <span>GUI + CLI</span>
-          <i>✳</i>
-          <span>符号</span>
-          <i>✳</i>
-          <span>封装</span>
-          <i>✳</i>
-          <span>EDA 库</span>
-          <i>✳</i>
-        </div>
-      </div>
+      <ConversionScene lang="zh" modelImageUrl={modelImageUrl} modelUrl={storyModelUrl} />
       <section
         id="story"
-        class="story section shell"
+        class="story section"
         aria-labelledby="story-title"
       >
         <div id="workflow" class="section-intro workflow-copy reveal">
-          <p class="kicker">一条路径，三个阶段</p>
+          <p class="kicker">一条转换路径，四个环节</p>
           <h2 id="story-title">
             从元件数据，
             <br />
             <em>到可用的 EDA 库。</em>
           </h2>
           <p>
-            输入 LCSC 编号或 BOM，准备符号、封装与 3D 模型，再将目标格式带回 KiCad、Altium 等设计工作流。
+            从元件数据开始，逐步准备库文件、转换目标格式，并回到熟悉的 EDA 工作流继续设计。
           </p>
           <WorkflowActions lang="zh" />
         </div>
-        <div class="story-rail" data-story-rail>
-          <ConversionScene lang="zh" modelImageUrl={modelImageUrl} modelUrl={storyModelUrl} />
-          <article class="story-card story-card-a reveal">
+        <div class="story-rail" data-story-track>
+          <article class="story-card story-card-a reveal" data-story-stage="input">
             <span class="story-index">01 / 输入</span>
             <h3>
               先把元件
@@ -166,7 +144,7 @@ const platformAvailability = getPlatformAvailability("zh");
               C2040 <span>→</span>
             </div>
           </article>
-          <article class="story-card story-card-b reveal reveal-delay-1">
+          <article class="story-card story-card-b reveal reveal-delay-1" data-story-stage="prepare">
             <span class="story-index">02 / 整理</span>
             <h3>
               符号、封装、
@@ -181,19 +159,38 @@ const platformAvailability = getPlatformAvailability("zh");
               <b>3D 模型</b>
             </div>
           </article>
-          <article class="story-card story-card-c reveal reveal-delay-2">
-            <span class="story-index">03 / 交付</span>
+          <article class="story-card story-card-c reveal reveal-delay-2" data-story-stage="convert">
+            <span class="story-index">03 / 转换</span>
             <h3>
-              带回目标
+              输出目标
               <br />
-              EDA 继续设计。
+              EDA 元件库。
             </h3>
-            <p>生成对应格式的库文件，核对转换结果，然后在目标 EDA 中继续设计。</p>
-            <a class="story-link" href="formats/">核对格式支持 <span>→</span></a>
+            <p>按目标 EDA 生成对应库文件，再核对当前版本的格式支持范围。</p>
+            <a class="story-link" href="formats/">查看格式矩阵 <span>→</span></a>
             <div class="story-check">✓ 库文件已生成</div>
+          </article>
+          <article class="story-card story-card-d reveal" data-story-stage="use">
+            <span class="story-index">04 / 使用</span>
+            <h3>
+              带回你的
+              <br />
+              设计工作台。
+            </h3>
+            <p>在 KiCad、Altium 等目标 EDA 中继续设计；下方展示真实导出界面与处理结果。</p>
+            <a class="story-link" href="#showcase-title">查看真实软件界面 <span>↓</span></a>
+            <div class="story-use-proof">真实 Qt Quick 导出结果</div>
           </article>
         </div>
       </section>
+      </div>
+      <div class="marquee" aria-hidden="true">
+        <div>
+          <span>符号</span><i>✳</i><span>封装</span><i>✳</i><span>EDA 库</span><i>✳</i>
+          <span>BOM</span><i>✳</i><span>GUI + CLI</span><i>✳</i><span>符号</span><i>✳</i>
+          <span>封装</span><i>✳</i><span>EDA 库</span><i>✳</i>
+        </div>
+      </div>
       <section
         class="product-showcase section shell"
         aria-labelledby="showcase-title"
@@ -267,24 +264,28 @@ const platformAvailability = getPlatformAvailability("zh");
             </div>
           </article>
           <article class="feature-card feature-card-mint reveal reveal-delay-1">
-            <span class="feature-symbol">⌁</span>
-            <h3>批量而不吵闹</h3>
-            <p>BOM 导入、多线程处理与自动记住设置，让大批量任务更从容。</p>
+            <span class="feature-number">01 / 单个元件</span>
+            <h3>准备一个元件</h3>
+            <p>输入 LCSC 编号，查看元件数据，再整理为目标库文件。</p>
+            <a class="feature-task-link" href="cases/">查看转换案例 <span>→</span></a>
           </article>
           <article class="feature-card feature-card-peach reveal reveal-delay-2">
-            <span class="feature-symbol">◒</span>
-            <h3>看得见结果</h3>
-            <p>LCSC 预览图、转换状态和诊断信息，都在界面里保持可见。</p>
+            <span class="feature-number">02 / BOM 批处理</span>
+            <h3>批量处理清单</h3>
+            <p>导入 BOM，交由多线程处理；在界面中查看进度与诊断信息。</p>
+            <a class="feature-task-link" href="cases/">查看批处理证据 <span>→</span></a>
           </article>
           <article class="feature-card feature-card-lilac reveal">
-            <span class="feature-symbol">⌘</span>
-            <h3>GUI + CLI</h3>
-            <p>想点选时有 Qt 6 界面，需要自动化时也有命令行。</p>
+            <span class="feature-number">03 / 自动化</span>
+            <h3>接入命令行</h3>
+            <p>交互操作可用 Qt 6 GUI；需要脚本化时，可选择项目提供的 CLI。</p>
+            <a class="feature-task-link" href="https://github.com/EasyKiconverter/EasyKiConverter/blob/master/docs/CLI_USAGE.md" target="_blank" rel="noreferrer">CLI 使用说明 <span>↗</span></a>
           </article>
           <article class="feature-card feature-card-yellow reveal reveal-delay-1">
-            <span class="feature-symbol">↗</span>
-            <h3>不把设置忘掉</h3>
-            <p>配置自动保存，下次打开时从你熟悉的状态继续。</p>
+            <span class="feature-number">04 / 资产检查</span>
+            <h3>核对模型与封装</h3>
+            <p>在 3D Lab 中查看实体模型、封装视图及其对应关系。</p>
+            <a class="feature-task-link" href="lab/">打开 3D Lab <span>→</span></a>
           </article>
         </div>
       </section>
