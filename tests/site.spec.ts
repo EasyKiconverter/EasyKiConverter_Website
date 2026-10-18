@@ -92,9 +92,10 @@ test('bilingual homepage distinguishes the STEP model render from real software 
     expect(heroSource).toContain('easyki-real-model-hero.webp');
     expect(showcaseSource).toContain('easykiconverter-export.webp');
     expect(showcaseSource).not.toBe(heroSource);
-    await expect(page.locator('[data-conversion-scene]')).toHaveAttribute('aria-label', /STEP/i);
+    await expect(page.locator('[data-conversion-scene]')).toHaveAttribute('aria-label', /RP2040.*C2040/i);
+    await expect(page.locator('[data-conversion-scene]')).toHaveAttribute('aria-label', /illustrative|示意/i);
     await expect(showcaseImage).toHaveAttribute('alt', new RegExp(disclosure, 'i'));
-    await expect(page.locator('.conversion-use-layer')).toContainText(path === '/' ? '下方展示真实导出界面' : 'Real export screen shown below');
+    await expect(page.locator('.conversion-use-layer')).toContainText(path === '/' ? '21 项全成功 · 含 C2040' : '21/21 succeeded · C2040 included');
     await expect(page.locator('.app-window .showcase-source')).toContainText(disclosure);
     const fullSizeLink = page.locator('.app-window .showcase-source a');
     await expect(fullSizeLink).toHaveAttribute('href', showcaseSource || '');
@@ -122,7 +123,7 @@ test('bilingual homepage keeps the conversion story and download actions usable 
   await page.route('**/assets/showcase/**', (route) => route.abort());
   for (const [path, title] of [['/', '让元件库转换'], ['/en/', 'Component data']]) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('[data-conversion-scene]')).toHaveAttribute('aria-label', /STEP/i);
+    await expect(page.locator('[data-conversion-scene]')).toHaveAttribute('aria-label', /RP2040.*C2040/i);
     await expect(page.locator('#story')).toBeVisible();
     await expect(page.locator('#download')).toBeVisible();
     await expect(page.locator('.hero-actions a').first()).toBeVisible();
@@ -1476,11 +1477,25 @@ test('bilingual conversion narrative explains the same input-to-library path', a
   await expect(page.locator('#workflow > p').nth(1)).toHaveText(
     '从元件数据开始，逐步准备库文件、转换目标格式，并回到熟悉的 EDA 工作流继续设计。',
   );
+  const chineseScene = page.locator('[data-conversion-scene]');
+  await expect(chineseScene.locator('.conversion-input-layer strong')).toHaveText('RP2040');
+  await expect(chineseScene.locator('.conversion-input-layer span')).toContainText('C2040');
+  await expect(chineseScene.locator('.conversion-parts-layer small')).toContainText('56 引脚');
+  await expect(chineseScene.locator('.conversion-output-layer span')).toContainText('符号、封装、3D 均成功');
+  await expect(chineseScene.locator('.conversion-use-layer span')).toContainText('21 项全成功 · 含 C2040');
+  await expect(chineseScene.locator('.conversion-scene-note')).toContainText('整板模型仅作示意');
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('#workflow > p').nth(1)).toHaveText(
     'Start with component data, prepare the library assets, convert to a target format, then continue in the EDA workflow you already use.',
   );
+  const englishScene = page.locator('[data-conversion-scene]');
+  await expect(englishScene.locator('.conversion-input-layer strong')).toHaveText('RP2040');
+  await expect(englishScene.locator('.conversion-input-layer span')).toContainText('C2040');
+  await expect(englishScene.locator('.conversion-parts-layer small')).toContainText('56 PINS');
+  await expect(englishScene.locator('.conversion-output-layer span')).toContainText('symbol, footprint & 3D succeeded');
+  await expect(englishScene.locator('.conversion-use-layer span')).toContainText('21/21 succeeded · C2040 included');
+  await expect(englishScene.locator('.conversion-scene-note')).toContainText('ILLUSTRATIVE BOARD MODEL');
 });
 
 test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
@@ -1582,9 +1597,12 @@ test('Chinese homepage keeps visual microcopy localized', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const homepage = page.locator('main');
   await expect(homepage.locator('.conversion-scene-board figcaption')).toContainText('STEP 派生几何');
-  await expect(homepage.locator('.conversion-input-layer')).toContainText('元件数据');
+  await expect(homepage.locator('.conversion-input-layer')).toContainText('LCSC 元件');
+  await expect(homepage.locator('.conversion-input-layer')).toContainText('RP2040');
+  await expect(homepage.locator('.conversion-input-layer')).toContainText('C2040 · QFN-56');
   await expect(homepage.locator('.conversion-parts-layer')).toContainText('3D 模型');
-  await expect(homepage.locator('.conversion-output-layer')).toContainText('元件库已生成');
+  await expect(homepage.locator('.conversion-parts-layer')).toContainText('7 × 7 毫米 · 56 引脚');
+  await expect(homepage.locator('.conversion-output-layer')).toContainText('C2040 · 符号、封装、3D 均成功');
   await expect(homepage.locator('.story-card-a .story-index')).toHaveText('01 / 输入');
   await expect(homepage.locator('.story-card-b .story-index')).toHaveText('02 / 整理');
   await expect(homepage.locator('.story-card-c .story-index')).toHaveText('03 / 转换');

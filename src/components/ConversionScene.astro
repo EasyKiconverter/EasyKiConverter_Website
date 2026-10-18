@@ -16,7 +16,7 @@ const en = lang === "en";
   data-model-url={modelUrl}
   data-stage="input"
   role="img"
-  aria-label={en ? "A STEP-derived component assembly follows the four steps from input to EDA use" : "STEP 派生元件模型沿输入、整理、转换、使用四个环节展示"}
+  aria-label={en ? "A Raspberry Pi RP2040 (LCSC C2040) conversion story, with an illustrative board model and real export evidence" : "Raspberry Pi RP2040（LCSC C2040）转换演示；整板模型仅作示意，下方提供真实导出证据"}
 >
   <figure class="conversion-scene-board">
     <figcaption>
@@ -30,13 +30,13 @@ const en = lang === "en";
   </figure>
 
   <div class="conversion-input-layer">
-    <small>{en ? "COMPONENT DATA" : "元件数据"}</small>
-    <strong>LCSC / BOM</strong>
-    <span><i></i>{en ? "C2040 · ready" : "C2040 · 已载入"}</span>
+    <small>{en ? "LCSC COMPONENT" : "LCSC 元件"}</small>
+    <strong>RP2040</strong>
+    <span><i></i>{en ? "C2040 · QFN-56" : "C2040 · QFN-56"}</span>
   </div>
 
   <div class="conversion-parts-layer">
-    <small>{en ? "LIBRARY PARTS" : "库文件内容"}</small>
+    <small>{en ? "7 × 7 MM · 56 PINS" : "7 × 7 毫米 · 56 引脚"}</small>
     <b>{en ? "SYMBOL" : "符号"}</b>
     <b>{en ? "FOOTPRINT" : "封装"}</b>
     <b>{en ? "3D MODEL" : "3D 模型"}</b>
@@ -45,14 +45,14 @@ const en = lang === "en";
   <div class="conversion-output-layer">
     <small>{en ? "CONVERT TO TARGET" : "转换为目标格式"}</small>
     <strong>{en ? "KiCad / Altium" : "KiCad / Altium"}</strong>
-    <span><i>✓</i>{en ? "Library generated" : "元件库已生成"}</span>
+    <span><i>✓</i>{en ? "C2040 · symbol, footprint & 3D succeeded" : "C2040 · 符号、封装、3D 均成功"}</span>
   </div>
 
   <div class="conversion-use-layer">
     <small>{en ? "BACK TO YOUR WORKBENCH" : "回到设计工作台"}</small>
     <strong>{en ? "Continue in your EDA" : "在目标 EDA 中继续设计"}</strong>
-    <span>{en ? "Real export screen shown below" : "下方展示真实导出界面"}</span>
+    <span>{en ? "Recorded export · 21/21 succeeded · C2040 included" : "真实导出记录 · 21 项全成功 · 含 C2040"}</span>
   </div>
 
-  <span class="conversion-scene-note">{en ? "ILLUSTRATIVE MODEL · REAL APP SHOWN BELOW" : "模型为视觉演示 · 实际软件界面见下方"}</span>
+  <span class="conversion-scene-note">{en ? "ILLUSTRATIVE BOARD MODEL · C2040 EXPORT EVIDENCE BELOW" : "整板模型仅作示意 · 下方为 C2040 导出证据"}</span>
 </div>

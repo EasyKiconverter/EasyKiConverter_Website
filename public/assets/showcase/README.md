@@ -7,9 +7,11 @@
 页面实际加载对应的 WebP 派生文件：
 
 - `easykiconverter-main-public.webp`：约 307 KB，用于首页、3D Lab 和社交预览；只清空本机输出路径输入框，保留其他原始截图内容
-- `easykiconverter-export.webp`：约 210 KB，首页工作台展示使用；只保留导出设置、进度和结果区域，本机输出路径已清空，下方带水印的统计区域已裁去
+- `easykiconverter-export.webp`：约 210 KB，首页工作台展示使用；只保留导出设置、进度和结果区域，本机输出路径已清空，下方带水印的统计区域已裁去。截图中的这次记录为 21/21 项成功、0 项失败，C2040 一行的符号、封装和 3D 模型状态均成功；该信息仅说明截图记录的那次运行，不代表在线服务承诺。
 - `easyki-real-model-hero.webp`：约 18 KB，首页首屏使用；它是 `public/assets/model/Easykiconverter_展示模型.glb` 的静态 WebGL 渲染，不是 Qt Quick 软件截图，也不加载 GLB 到首屏。重新生成前先确认模型与材质，再仅捕获模型画布（不要包含页面轨迹、标签或叠层），以 2× DPR 导出并目视确认没有幽灵线框；不得用合成图替代真实产品软件截图。
-- `easyki-conversion-story.glb`：约 2.1 MB，由 `pnpm run assets:story-model` 从完整 STEP 派生 GLB 生成，保留 303 个独立零件网格并启用 Meshopt 几何压缩；首页仅在滚动接近转换叙事时懒加载，WebGL 或资源加载失败时仍显示静态 WebP 预览。
+- `easyki-conversion-story.glb`：约 2.1 MB，由 `pnpm run assets:story-model` 从完整 STEP 整板装配模型派生 GLB 生成，保留 303 个独立零件网格并启用 Meshopt 几何压缩。它是整板演示场景，不是 RP2040/C2040 单个元件的 CAD 模型；首页仅在滚动接近转换叙事时懒加载，WebGL 或资源加载失败时仍显示静态 WebP 预览。
+
+首页以 Raspberry Pi RP2040（[LCSC 编号 C2040](https://lcsc.com/product-detail/Raspberry-Pi_Raspberry-Pi-RP2040_C2040.html)）作为具名示例。LCSC 将其封装列为 LQFN-56（7 × 7 mm）；Raspberry Pi 的 [RP2040 数据手册](https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf)记载 7 × 7 mm 的 QFN-56 封装。首页关于 C2040 的导出结论仅限于上方保存的截图；页面不会把整板 GLB 冒称为该元件的 CAD 模型。
 
 派生方式：
 
