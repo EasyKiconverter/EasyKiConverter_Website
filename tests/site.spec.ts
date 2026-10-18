@@ -1172,7 +1172,9 @@ test('homepage scroll story activates input, preparation, conversion, and use in
 
 test('conversion scene stays visible with its active narrative on tablet and phones', async ({ page }) => {
   for (const viewport of [
+    { width: 600, height: 800 },
     { width: 768, height: 760 },
+    { width: 1024, height: 768 },
     { width: 390, height: 760 },
     { width: 320, height: 760 },
     { width: 844, height: 390 },
@@ -1214,6 +1216,10 @@ test('conversion scene stays visible with its active narrative on tablet and pho
         const activeHeading = await activeCard.locator('h3').boundingBox();
         expect(activeHeading, `${path} ${width}px stage ${progress} active heading`).not.toBeNull();
         expect(activeHeading!.y + activeHeading!.height, `${path} ${width}x${height}px stage ${progress} heading bottom`).toBeLessThan(visibleGeometry.viewportHeight);
+        if (width === 600 && path === '/' && activeIndex === 1) {
+          const headingLineHeight = await activeCard.locator('h3').evaluate((heading) => Number.parseFloat(getComputedStyle(heading).lineHeight));
+          expect(activeHeading!.height, '600px Chinese preparation heading should fit its two intended lines').toBeLessThanOrEqual(headingLineHeight * 2.2);
+        }
         if (width >= 600) {
           expect(activeHeading!.x + activeHeading!.width, `${path} ${width}px narrative card clears the stage`).toBeLessThan(visibleGeometry.left);
         } else {
