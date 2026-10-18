@@ -981,7 +981,8 @@ const labEntryViewports = [
 
 for (const viewport of labEntryViewports) {
   for (const [path, label] of labEntryRoutes) {
-    test(`Lab primary action brings the ${path} model into view at ${viewport.width}px`, async ({ page }) => {
+    test(`Lab primary action brings the ${path} model into view at ${viewport.width}px`, async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name === 'chromium-mobile' && viewport.width > 850, 'Desktop viewport is covered by Chromium desktop');
       await page.setViewportSize(viewport);
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
@@ -1006,10 +1007,14 @@ for (const viewport of labEntryViewports) {
       await expect(page).toHaveURL(/#story$/);
       const model = page.locator('.motion-model');
       await expect(model).toBeVisible();
-      const modelBounds = await model.evaluate((element) => {
+      const modelBounds = await page.evaluate(() => {
+        const element = document.querySelector<HTMLElement>('.motion-model');
+        if (!element) return null;
         const { top, bottom } = element.getBoundingClientRect();
         return { top, bottom };
       });
+      expect(modelBounds, `${path} ${viewport.width}px model`).not.toBeNull();
+      if (!modelBounds) return;
       expect(modelBounds.top, `${path} ${viewport.width}px model top`).toBeGreaterThanOrEqual(0);
       expect(modelBounds.bottom, `${path} ${viewport.width}px model bottom`).toBeLessThanOrEqual(viewport.height);
     });
@@ -1025,10 +1030,14 @@ for (const [path] of labEntryRoutes) {
     await page.locator('[data-lab-explore]').evaluate((link: HTMLAnchorElement) => link.click());
     const model = page.locator('.motion-model');
     await expect(model).toBeVisible();
-    const modelBounds = await model.evaluate((element) => {
+    const modelBounds = await page.evaluate(() => {
+      const element = document.querySelector<HTMLElement>('.motion-model');
+      if (!element) return null;
       const { top, bottom, height } = element.getBoundingClientRect();
       return { top, bottom, height };
     });
+    expect(modelBounds, `${path} reduced-motion model`).not.toBeNull();
+    if (!modelBounds) return;
     const visibleHeight = Math.max(0, Math.min(modelBounds.bottom, 844) - Math.max(modelBounds.top, 0));
     expect(visibleHeight / modelBounds.height, `${path} reduced-motion model visibility`).toBeGreaterThan(0.9);
   });
