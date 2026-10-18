@@ -963,10 +963,61 @@ test('Lab pages keep the experiment connected to product navigation', async ({ p
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const actions = page.locator('.lab-intro-actions');
     await expect(actions).toBeVisible();
-    await expect(actions.locator('a').first()).toHaveAttribute('data-release-link', '');
-    await expect(actions.locator('a.text-link').first()).toHaveAttribute('href', /^(\/|https?:)/);
-    await expect(actions.locator('[data-release-link]')).toHaveClass(/button-dark/);
+    await expect(actions.locator('[data-lab-explore]')).toHaveAttribute('href', '#story');
+    await expect(actions.locator('[data-lab-explore]')).toHaveClass(/button-dark/);
+    await expect(actions.locator('[data-release-link]')).toHaveAttribute('target', '_blank');
+    await expect(actions.locator('[data-release-link]')).toHaveAttribute('rel', 'noreferrer');
+    await expect(actions.locator('[data-release-link]')).toHaveClass(/text-link-external/);
     await expect(actions.locator('a[href*="formats"]')).toHaveAttribute('href', /formats/);
+  }
+});
+
+test('Lab primary action brings the interactive model into view in both languages', async ({ page }) => {
+  test.setTimeout(60000);
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 768, height: 760 },
+    { width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    for (const [path, label] of [['/lab/', '开始 3D 体验'], ['/en/lab/', 'Explore 3D']] as const) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
+      const exploreLink = page.locator('[data-lab-explore]');
+      await expect(exploreLink).toHaveText(label + ' ↓');
+      await exploreLink.evaluate((link: HTMLAnchorElement) => link.click());
+      await expect(page).toHaveURL(/#story$/);
+      const model = page.locator('.motion-model');
+      await expect(model).toBeVisible();
+      const modelBounds = await model.evaluate((element) => {
+        const { top, bottom } = element.getBoundingClientRect();
+        return { top, bottom };
+      });
+      expect(modelBounds.top, `${path} ${viewport.width}px model top`).toBeGreaterThanOrEqual(0);
+      expect(modelBounds.bottom, `${path} ${viewport.width}px model bottom`).toBeLessThanOrEqual(viewport.height);
+      if (viewport.width === 390) {
+        const primaryBounds = (await exploreLink.boundingBox())!;
+        const releaseBounds = (await page.locator('[data-release-link]').boundingBox())!;
+        expect(releaseBounds.y + releaseBounds.height, `${path} mobile primary/download action row`)
+          .toBeLessThanOrEqual(primaryBounds.y + primaryBounds.height + 1);
+      }
+    }
+  }
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
+    await page.locator('[data-lab-explore]').evaluate((link: HTMLAnchorElement) => link.click());
+    const model = page.locator('.motion-model');
+    await expect(model).toBeVisible();
+    const modelBounds = await model.evaluate((element) => {
+      const { top, bottom, height } = element.getBoundingClientRect();
+      return { top, bottom, height };
+    });
+    const visibleHeight = Math.max(0, Math.min(modelBounds.bottom, 844) - Math.max(modelBounds.top, 0));
+    expect(visibleHeight / modelBounds.height, `${path} reduced-motion model visibility`).toBeGreaterThan(0.9);
   }
 });
 
@@ -2406,7 +2457,7 @@ test('Lab pages clearly label the versioned release downloads page', async ({ pa
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const link = page.locator('[data-release-link]');
-    await expect(link).toHaveClass(/button-dark/);
+    await expect(link).toHaveClass(/text-link-external/);
     await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noreferrer');

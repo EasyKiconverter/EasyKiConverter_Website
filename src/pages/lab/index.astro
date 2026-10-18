@@ -46,7 +46,8 @@ const englishUrl = new URL("en/lab/", siteBase);
           <p>首页不加载 CAD/WASM；模型就绪后开放实验控件。GLB 加载失败时才回退到 STEP/WASM。技术验证建议使用桌面浏览器；下载请使用下方稳定版入口。</p>
         </div>
         <div class="lab-intro-actions">
-          <a class="button button-dark" data-release-link href={latestRelease.url} target="_blank" rel="noreferrer">{latestRelease.tag} 下载项 <span>↗</span></a>
+          <a class="button button-dark" data-lab-explore href="#story">开始 3D 体验 <span>↓</span></a>
+          <a class="text-link text-link-external" data-release-link href={latestRelease.url} target="_blank" rel="noreferrer">{latestRelease.tag} 下载项 <span>↗</span></a>
           <a class="text-link text-link-internal" href={siteBase.href}>返回产品首页 <span>→</span></a>
           <a class="text-link text-link-internal" href={new URL("formats/", siteBase).pathname}>查看格式矩阵 <span>→</span></a>
         </div>
