@@ -136,8 +136,8 @@ test('tablet story stages keep the transformed model clear of complete cards and
   await page.setViewportSize({ width: 768, height: 760 });
 
   for (const [path, stages] of [
-    ['/', ['input', 'prepare', 'convert']],
-    ['/en/', ['input', 'prepare', 'convert']],
+    ['/', ['input', 'prepare', 'convert', 'use']],
+    ['/en/', ['input', 'prepare', 'convert', 'use']],
   ] as const) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const viewport = page.locator('.conversion-model-viewport');
@@ -146,7 +146,7 @@ test('tablet story stages keep the transformed model clear of complete cards and
     });
     const rail = page.locator('[data-story-rail]');
 
-    for (const [index, progress] of [0, 1 / 3, 2 / 3].entries()) {
+    for (const [index, progress] of [0, 1 / 3, 2 / 3, 1].entries()) {
       const target = await storyScrollTarget(page, progress);
       await page.evaluate((scrollTarget) => {
         document.documentElement.style.scrollBehavior = 'auto';
@@ -163,24 +163,27 @@ test('tablet story stages keep the transformed model clear of complete cards and
         const canvas = scene.querySelector<HTMLCanvasElement>('[data-conversion-canvas]')!;
         const card = document.querySelector<HTMLElement>('.story-card[data-active]')!;
         const caption = [...board.querySelectorAll<HTMLElement>('figcaption span')];
-        const activeLayer = scene.querySelector<HTMLElement>(
-          `.conversion-${scene.dataset.stage === 'input' ? 'input' : scene.dataset.stage === 'prepare' ? 'parts' : 'output'}-layer`
-        )!;
+        const activeLayerName = {
+          input: 'input',
+          prepare: 'parts',
+          convert: 'output',
+          use: 'use',
+        }[scene.dataset.stage || 'input'];
+        const activeLayer = scene.querySelector<HTMLElement>(`.conversion-${activeLayerName}-layer`)!;
         const rect = (element: Element) => {
           const { left, right, top, bottom, width, height } = element.getBoundingClientRect();
           return { left, right, top, bottom, width, height };
         };
         const canvasRect = rect(canvas);
-        const hitSamples = [
-          [canvasRect.left + canvasRect.width * 0.28, canvasRect.top + canvasRect.height * 0.5],
-          [canvasRect.left + canvasRect.width * 0.72, canvasRect.top + canvasRect.height * 0.5],
-          [canvasRect.left + canvasRect.width * 0.28, canvasRect.top + canvasRect.height * 0.76],
-          [canvasRect.left + canvasRect.width * 0.72, canvasRect.top + canvasRect.height * 0.76],
-          [(canvasRect.left + canvasRect.right) / 2, (canvasRect.top + canvasRect.bottom) / 2],
-        ].map(([x, y]) => {
-          const hit = document.elementFromPoint(x, y);
-          return Boolean(hit && (hit === canvas || canvas.contains(hit)));
-        });
+        const hitSamples = Array.from({ length: 13 }, (_, row) =>
+          Array.from({ length: 13 }, (_, column) => {
+            const x = canvasRect.left + ((column + 0.5) * canvasRect.width) / 13;
+            const y = canvasRect.top + ((row + 0.5) * canvasRect.height) / 13;
+            const hit = document.elementFromPoint(x, y);
+            return !hit?.closest('.story-card');
+          }),
+        ).flat();
+        const captionContentFits = caption.every((element) => element.scrollWidth <= element.clientWidth);
 
         return {
           scene: rect(scene),
@@ -188,6 +191,7 @@ test('tablet story stages keep the transformed model clear of complete cards and
           canvas: canvasRect,
           card: rect(card),
           caption: caption.map(rect),
+          captionContentFits,
           activeLayer: {
             ...rect(activeLayer),
             display: getComputedStyle(activeLayer).display,
@@ -218,7 +222,10 @@ test('tablet story stages keep the transformed model clear of complete cards and
       }
       expect(overlaps(layout.canvas, layout.card), `${path} ${stages[index]} story card does not cover the model`).toBe(false);
       expect(layout.activeLayer.display, `${path} ${stages[index]} floating card stays out of the tablet model area`).toBe('none');
-      expect(layout.hitSamples, `${path} ${stages[index]} no DOM card intercepts the transformed model samples`).toEqual([true, true, true, true, true]);
+      expect(layout.captionContentFits, `${path} ${stages[index]} caption text is not clipped`).toBe(true);
+      expect(layout.hitSamples, `${path} ${stages[index]} dense hit grid keeps the transformed model unobstructed`).toEqual(
+        Array.from({ length: 13 * 13 }, () => true),
+      );
     }
   }
 });
