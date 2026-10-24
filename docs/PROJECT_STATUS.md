@@ -2,7 +2,7 @@
 
 [English](PROJECT_STATUS_en.md)
 
-最后核对：2026-10-18。本文根据当前仓库、GitHub PR/CI 和正式站只读检查更新；未执行部署，真机状态未核实。
+最后核对：2026-10-25。本文根据当前仓库、GitHub PR/CI、正式部署记录和线上浏览器复核更新；真机与不同网络条件仍未核实。
 
 ## 项目目标
 
@@ -10,11 +10,15 @@
 
 ## 当前阶段
 
-项目处于 V0.0.1 稳定维护与用户体验持续改进阶段。截至 2026-10-18，`version/V0.0.1` 为 `ee58d16`，`master` 为 `d7596a6`。PR #406（`feature/lab-viewer-entry-cta`）已由 Feng083 独立审评并合入版本分支（merge `dc20c3c`）；PR Site Quality `39131893571` 通过（258 passed、4 skipped），Dependency Review `39131893478` 通过。该改动将中英文 3D Lab 主操作改为直接进入交互模型，Release 下载保留为次级外链；移动端 CTA 同排并覆盖 390/768/1440px 与 reduced-motion。合并后回归发现部分 CTA 测试在 CI runner 超时；PR #407 拆分语言/视口/动态偏好用例后，由 Feng083 独立审评并合入（merge `ee58d16`），PR Site Quality `39133965985` 通过（268 passed、6 skipped，其中移动项目跳过两项桌面视口重复检查），Dependency Review `39133965987` 通过；合并后 Site Quality `39134484986` 通过（268 passed、6 skipped）。PR #404（`fix/mobile-homepage-3d-first-fold`）已由 Feng083 独立审评并合入版本分支；PR Site Quality 与 Dependency Review 均通过，合并后 Site Quality `39121400170` 通过（254 passed、4 skipped）。该改动将 390×844 中英文首屏真实 WebGL 模型视口从约 39% 可见提升至完整可见，320–428px、760/844px 双语首屏回归通过。PR #402 的平板叙事场景遮挡修复仍有效：当前 768×760 中英文四阶段浏览器回归通过；整理阶段截图为 `.github/pr-evidence/homepage-3d-story-{zh,en}-768-prepare-after-overlap.png`，现有几何/遮挡回归覆盖各叙事阶段。本地构建、Astro（37 文件、0 诊断）、8 页校验、模型资产检查、6 项 Python 单测和 CSS 格式检查通过；Release API 返回 HTTP 403 时本地构建使用已核对的 `v3.1.13` 回退数据。生产部署、真机和网络性能仍未验收；生产 2026-10-18 只读检查发现两种首页仍有重复 `<title>`，详情见 WEB-02。
+截至 2026-10-25，`version/V0.0.1` 为 `4c754a2`；PR #416 以合并提交 `d2e5d43` 晋级至 `master`。PR #414 补强平板四阶段遮挡回归并合入版本分支；PR #416 经 Feng083 独立审批、Site Quality（274 passed、6 skipped）、Dependency Review 和 Actionlint 通过后，以 merge commit 晋级 `master`。本地构建生成 8 页且 Astro 0 诊断；格式、页面、模型资产和差异检查通过。正式站已于 2026-10-25 通过仓库部署工具发布，备份为 `/var/www/backups/easykiconverter-website-20261025-061311`；脚本验证 8 个路由 HTTP 200、单一 `<title>`、canonical 和 hreflang 正确。线上 Chromium 复核覆盖 8 路由 × 320/390/768/1440px 共 32 组，无横向溢出、页面/控制台错误或本站资源失败；首页 390/768px 的中英文四阶段均加载真实 WebGL，303 个网格中 302 个可移动，阶段截图无卡片遮挡。Release API 返回 403，构建使用仓库 `v3.1.13` 回退数据。生产部署和桌面模拟浏览器验收完成；真实设备及不同网络条件仍未验证。
 
-本轮 Lab 手机视图切换栏审查发现 9 个选项虽可横向滚动，但隐藏滚动条且没有提示，导致后续视图不易发现。已增加中英文屏幕提示与辅助技术说明；390px 窄屏普通/减少动态模式专项回归通过，768/1440px 不显示多余提示；完整 Playwright（240 passed、4 skipped）、构建、8 路由和模型资产检查均通过。PR #398 由 Feng083 独立审评通过；Site Quality run `38985998641`（240 passed、4 skipped）及 Dependency Review `38985998628` 均通过。变更尚未部署生产或验证真机。
+历史记录（2026-10-17，PR #398）：Lab 手机视图切换栏增加了中英文提示并通过回归；当时尚未部署。当前生产状态以 2026-10-25 部署后审计为准。
 
-### 2026-10-18 追补审计（PR #408 之后）
+### 2026-10-25 部署后审计（PR #416 之后）
+
+正式站由 `tools/deploy_production.py` 完成部署，部署 ID 为 `20261025-061311`。脚本构建并校验后创建远端备份、切换目录并重载 Nginx；线上 smoke test 确认 8 个公开路由、标题、canonical 和 hreflang 均符合要求。Chromium SwiftShader 另复核 32 个路由/视口组合及中英文首页真实 3D 阶段；无控制台/页面错误、本站资源失败或横向溢出，所有首页叙事阶段均加载 WebGL 模型。截图和采样结果保存在本机 `/tmp/easyki-production-check/`、`/tmp/easyki-production-scrolled/` 与 `/tmp/easyki-production-story/`，不作为仓库资源提交。该证据不替代实机和不同网络测试。
+
+### 2026-10-18 追补审计
 
 PR #408 为文档同步 PR，已合并至 `version/V0.0.1`，合并提交 `8b13839`；其中记录的 `ee58d16` 是 PR #407 后的功能代码基线。PR #408 的合并后 Site Quality run `39135450332` 成功。当前版本分支重新构建通过：Astro 37 个文件、0 诊断，生成 8 个页面；`python3 tools/validate_site.py` 与 `pnpm run assets:check` 均通过。本地 `dist/index.html` 与 `dist/en/index.html` 各含一个 `<title>`。Release API 返回 HTTP 403，本地构建使用已核对的 `v3.1.13` 回退数据。
 
@@ -74,22 +78,22 @@ PR #347 将 3D Lab 的环境光、补光和正面光强度调低，以改善板�
 
 | ID / 优先级 | 目标、范围与交付 | 依赖、步骤与验收 | 状态 |
 | --- | --- | --- | --- |
-| WEB-01 / P1 | 修正首页双语品牌大小写、格式支持说明和下载引导。 | 双语文案/样式回归；构建、站点校验、完整 Playwright；PR #285/#286。 | 已完成并晋级 `master`；未部署生产 |
-| WEB-02 / P1 | 将唯一标题的当前版本构建发布到正式站，并验证 8 路由及首页标题。 | 先核对远端备份/回滚与当前版本；仅在项目所有者明确批准此次生产部署后执行；逐路由检查 HTTP、标题数、语言互链、资源和浏览器冒烟。 | 当前 `version/V0.0.1` 构建的首页各有一个 `<title>`，8 页构建/校验通过。正式站首页仍各返回两个完全相同的标题（最新只读响应 `Last-Modified: Tue, 13 Oct 2026 00:20:00 GMT`、`CF-Cache-Status: DYNAMIC`）；部署整个版本分支仍待明确批准。部署脚本具有发布后校验及失败回滚 |
+| WEB-01 / P1 | 修正首页双语品牌大小写、格式支持说明和下载引导。 | 双语文案/样式回归；构建、站点校验、完整 Playwright；PR #285/#286。 | 已完成、晋级 `master` 并随 2026-10-25 部署上线 |
+| WEB-02 / P1 | 将唯一标题的当前版本构建发布到正式站，并验证 8 路由及首页标题。 | 已按正式流程 dry-run、备份、部署，并逐路由验证 HTTP、标题数、语言互链、资源和浏览器表现。 | 已于 2026-10-25 部署；备份 `/var/www/backups/easykiconverter-website-20261025-061311`。脚本确认 8 路由均 HTTP 200、单一 `<title>`、canonical/hreflang 正确；线上 32 组路由/视口检查无溢出、页面/控制台错误或本站资源失败。已完成；保留部署回滚备份 |
 | WEB-03 / P2 | 测量真实手机和不同网络环境下的加载、缓存与交互性能，形成可复现记录。 | 收集设备/网络型号、浏览器、缓存状态和测试步骤；测首屏/模型加载、下载与交互，记录原始数据。 | 等待真实设备及可控网络；未验证 |
-| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | 新变更需双语回归、构建、路由/资产检查、完整 Playwright 和独立审评。 | PR #398 提升 Lab 手机视图切换器可发现性；#399 调整叙事姿态；#400、#403 同步验证与状态记录；#402 建立首页 3D 转换故事并修复阶段卡片/模型遮挡；#404 将移动端 3D 模型带入首屏；#406 将 Lab 首要 CTA 改为进入交互模型并明确区分 Release 外链；#407 稳定 CTA 视口回归。上述 PR 均已独立审评并合入 `version/V0.0.1`。#404 的 390×844 中英文前后截图见 `.github/pr-evidence/home-first-fold-{before,after}-{zh,en}-390.png`，双语首屏回归覆盖 320–428px；#406 的 Lab 前后截图见 `.github/pr-evidence/lab-viewer-entry-{before,after}-*`，并覆盖 390/768/1440px、双语与 reduced-motion；PR Site Quality 通过（258 passed、4 skipped）。#407 将相关回归拆为小型独立用例，桌面 1440px 仅由桌面项目执行；PR Site Quality 通过（268 passed、6 skipped）。平板“整理”阶段 768×760 中英文截图见 `.github/pr-evidence/homepage-3d-story-{zh,en}-768-prepare-after-overlap.png`；当前场景几何与遮挡回归覆盖各阶段，聚焦浏览器测试通过。视口截图不替代真机验证；源码未部署生产。 |
+| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | 新变更需双语回归、构建、路由/资产检查、完整 Playwright 和独立审评。 | PR #398 提升 Lab 手机视图切换器可发现性；#399 调整叙事姿态；#400、#403 同步验证与状态记录；#402 建立首页 3D 转换故事并修复阶段卡片/模型遮挡；#404 将移动端 3D 模型带入首屏；#406 将 Lab 首要 CTA 改为进入交互模型并明确区分 Release 外链；#407 稳定 CTA 视口回归。上述 PR 均已独立审评并合入 `version/V0.0.1`。#404 的 390×844 中英文前后截图见 `.github/pr-evidence/home-first-fold-{before,after}-{zh,en}-390.png`，双语首屏回归覆盖 320–428px；#406 的 Lab 前后截图见 `.github/pr-evidence/lab-viewer-entry-{before,after}-*`，并覆盖 390/768/1440px、双语与 reduced-motion；PR Site Quality 通过（258 passed、4 skipped）。#407 将相关回归拆为小型独立用例，桌面 1440px 仅由桌面项目执行；PR Site Quality 通过（268 passed、6 skipped）。平板“整理”阶段 768×760 中英文截图见 `.github/pr-evidence/homepage-3d-story-{zh,en}-768-prepare-after-overlap.png`；当前场景几何与遮挡回归覆盖各阶段，聚焦浏览器测试通过。视口截图不替代真机验证；PR #416 合并提交 `d2e5d43` 对应的网站代码已于 2026-10-25 部署，真机仍未验证。 |
 | WEB-05 / P1 | 让格式矩阵每个目标链接到准确的专属验证依据，并准确描述自动测试和人工规程的覆盖边界。 | 11 行双语链接回归；构建、站点校验、资产检查、完整 Playwright；PR #287/#288 CI 和独立审查。 | 已完成并晋级 `master` |
 
 ## 关键风险与控制
 
-1. **生产与源码不同步。** 最新只读检查确认首页仍有重复标题，而当前版本构建各只有一个；响应为 Cloudflare `DYNAMIC`。版本分支/`master` CI 通过不等于已部署；生产部署仍需针对本次操作明确批准。
+1. **生产与源码需持续同步。** 2026-10-25 已将 `master` 的验证版本部署到正式站，8 路由及首页唯一标题线上检查通过；后续源码发布仍须通过分支保护并使用正式部署工具。
 2. **实机证据缺失。** Chromium Mobile 和视口截图不能代替真实手机、受限网络、缓存和设备性能测试；WEB-03 保持未验证。
 3. **Release API 受限。** 本地构建可能退回 `v3.1.13` 快照；CI 设置 `RELEASE_SYNC_REQUIRED=1` 并负责验证实时 Release 同步。不得把本地快照当成 Release 已更新。
 
 ## 后续执行顺序
 
 1. 继续 WEB-04，审查 Home → Formats → Cases → Lab 的证据范围、内容层级和双语视觉一致性，基于新证据按同类问题成组处理。
-2. WEB-02 只在获得针对这次生产部署的明确批准后执行，使用仓库现有备份/回滚流程；未获批准时继续其他官网工作。
+2. 后续版本继续执行受保护的版本晋级和部署流程；本次 WEB-02 已完成，无需重复部署。
 3. 获得设备与网络条件后完成 WEB-03，保留测量数据和环境信息。
 
 ## 状态更新规则
