@@ -7203,14 +7203,35 @@ export const setupModel = async (): Promise<void> => {
     });
   };
 
-  const toFloat32Attribute = (attribute: THREE.BufferAttribute): Float32Array => {
-    const values = new Float32Array(attribute.count * attribute.itemSize);
+  const exportWorldPositions = (
+    attribute: THREE.BufferAttribute,
+    matrixWorld: THREE.Matrix4,
+  ): Float32Array => {
+    const values = new Float32Array(attribute.count * 3);
+    const point = new THREE.Vector3();
     for (let index = 0; index < attribute.count; index += 1) {
-      const offset = index * attribute.itemSize;
-      values[offset] = attribute.getX(index);
-      if (attribute.itemSize > 1) values[offset + 1] = attribute.getY(index);
-      if (attribute.itemSize > 2) values[offset + 2] = attribute.getZ(index);
-      if (attribute.itemSize > 3) values[offset + 3] = attribute.getW(index);
+      point.set(attribute.getX(index), attribute.getY(index), attribute.getZ(index)).applyMatrix4(matrixWorld);
+      const offset = index * 3;
+      values[offset] = point.x;
+      values[offset + 1] = point.y;
+      values[offset + 2] = point.z;
+    }
+    return values;
+  };
+
+  const exportWorldNormals = (
+    attribute: THREE.BufferAttribute,
+    matrixWorld: THREE.Matrix4,
+  ): Float32Array => {
+    const values = new Float32Array(attribute.count * 3);
+    const normalMatrix = new THREE.Matrix3().getNormalMatrix(matrixWorld);
+    const normal = new THREE.Vector3();
+    for (let index = 0; index < attribute.count; index += 1) {
+      normal.set(attribute.getX(index), attribute.getY(index), attribute.getZ(index)).applyNormalMatrix(normalMatrix);
+      const offset = index * 3;
+      values[offset] = normal.x;
+      values[offset + 1] = normal.y;
+      values[offset + 2] = normal.z;
     }
     return values;
   };
@@ -7228,16 +7249,17 @@ export const setupModel = async (): Promise<void> => {
       (gltf) => {
         try {
           const meshes: NonNullable<MeshMessage["meshes"]> = [];
+          gltf.scene.updateMatrixWorld(true);
           gltf.scene.traverse((object) => {
             if (!(object instanceof THREE.Mesh)) return;
             const position = object.geometry.getAttribute("position");
             if (!position) return;
             const normal = object.geometry.getAttribute("normal");
-            // Meshopt quantizes accessors to normalized integer attributes.
-            // Expand normalized values before copying into the Float32 worker
-            // message format; BufferAttribute accessors apply glTF normalization.
-            const positions = toFloat32Attribute(position);
-            const normals = normal ? toFloat32Attribute(normal) : undefined;
+            // Quantization stores part of the geometry transform on the glTF
+            // node. Export world-space positions and normals before flattening
+            // meshes into the STEP-compatible worker message format.
+            const positions = exportWorldPositions(position, object.matrixWorld);
+            const normals = normal ? exportWorldNormals(normal, object.matrixWorld) : undefined;
             const indices = object.geometry.index
               ? Uint32Array.from(object.geometry.index.array as ArrayLike<number>)
               : (() => {
