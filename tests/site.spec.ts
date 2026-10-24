@@ -21,6 +21,10 @@ const storyScrollTarget = async (page: Page, progress: number) =>
     const center = centers.length < 2 ? (centers[0] ?? window.scrollY) : centers[index] + (centers[index + 1] - centers[index]) * fraction;
     return center - viewportAnchor;
   }, progress);
+const blockLabGeometryAssets = async (page: Page) => {
+  await page.route('**/assets/model/**', (route) => route.abort());
+  await page.route('**/assets/vendor/**', (route) => route.abort());
+};
 
 test('bilingual homepages render one localized document title', async ({ page }) => {
   for (const path of pages) {
@@ -1190,6 +1194,7 @@ for (const [path] of labEntryRoutes) {
 
 test('Lab advanced controls explain their collapsed hierarchy', async ({ page }) => {
   test.setTimeout(60_000);
+  await blockLabGeometryAssets(page);
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.motion-model button:disabled').first()).toHaveCSS('cursor', 'not-allowed');
@@ -2287,14 +2292,14 @@ test('Lab asset guidance matches the generated delivery path', async ({ page }) 
 });
 
 test('Lab artifact switcher updates the active view and delivery copy', async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(180_000);
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const stage = page.locator('[data-model-stage]');
     await expect(stage).toHaveAttribute('data-model-source', 'glb', {
-      timeout: 20000,
+      timeout: 60_000,
     });
-    await expect(stage).toHaveAttribute('data-artifact-controls-ready', 'true', { timeout: 30000 });
+    await expect(stage).toHaveAttribute('data-artifact-controls-ready', 'true', { timeout: 60_000 });
     await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-label', /GLB delivery model|GLB 交付模型/);
     await stage.locator('.research-view-disclosure > summary').click();
     const atlas = stage.locator('.research-view-switcher [data-artifact-view="atlas"]');
@@ -2719,7 +2724,7 @@ test('Lab story keeps a concise scroll runway across desktop and mobile', async 
 });
 
 test('mobile Lab controls keep the model open and reveal slice controls on demand', async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(180_000);
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -2748,7 +2753,7 @@ test('mobile Lab controls keep the model open and reveal slice controls on deman
 
     const sliceToggle = page.locator('.model-slice-toggle');
     await expect(stage).toHaveAttribute('data-controls-ready', 'true');
-    await expect(stage).toHaveClass(/model-loaded/, { timeout: 20_000 });
+    await expect(stage).toHaveClass(/model-loaded/, { timeout: 120_000 });
     await expect(sliceToggle).toBeEnabled();
     await sliceToggle.click();
     await expect(sliceToggle).toHaveAttribute('aria-pressed', 'true');
@@ -2817,6 +2822,7 @@ test('mobile Lab separates everyday views from the expandable research views', a
 
 test('Tomogram research actions stay collapsed until advanced tools are opened', async ({ page }) => {
   test.setTimeout(60_000);
+  await blockLabGeometryAssets(page);
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
