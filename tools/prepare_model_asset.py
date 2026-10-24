@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the browser-delivery GLB from the checked-in STEP source."""
+"""Build an uncompressed source GLB from the checked-in STEP source."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT = ROOT / "public/assets/model/Easykiconverter_展示模型.step"
 DEFAULT_RUNTIME = ROOT / "public/assets/vendor"
-DEFAULT_OUTPUT = ROOT / "public/assets/model/Easykiconverter_展示模型.glb"
+DEFAULT_OUTPUT = ROOT / "src/assets/source/model/Easykiconverter_展示模型.glb"
 
 
 def main() -> int:

@@ -1,5 +1,5 @@
 import type * as THREE from "three";
-import { temporalGhostDepth, temporalGhostOpacity, type NarrativeTrack } from "./model-narrative";
+import { narrativeModelRotation, temporalGhostDepth, temporalGhostOpacity, type NarrativeTrack } from "./model-narrative";
 
 type MeshMessage = {
   type: "mesh" | "error";
@@ -105,6 +105,7 @@ export const setupModel = async (): Promise<void> => {
 
   const THREE = await import("three");
   const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
+  const { MeshoptDecoder } = await import("three/addons/libs/meshopt_decoder.module.js");
   const canvas = document.querySelector<HTMLCanvasElement>("#model-canvas");
   const atlasCanvas = stage?.querySelector<HTMLCanvasElement>("[data-mesh-atlas]");
   const atlasContext = atlasCanvas?.getContext("2d") ?? null;
@@ -1133,6 +1134,7 @@ export const setupModel = async (): Promise<void> => {
   let neuralDecisionRole: SectionLoop["role"] = "outer";
   let rendering = false;
   let reducedMotionRenderPending = true;
+  let modelUploaded = false;
   const neuralMemory = stage.querySelector<HTMLElement>("[data-neural-memory]");
   const synapticStorageKey = "easyki-synaptic-memory-v1";
   const persistedSynapses = new Map<string, { weight: number; lastSeen: number }>();
@@ -3100,7 +3102,7 @@ export const setupModel = async (): Promise<void> => {
   const keyframes = [
     { at: 0, x: 0, y: 0, rx: -0.28, ry: 0.22, scale: 1 },
     { at: 0.23, x: -0.28, y: 0.02, rx: -0.12, ry: 1.3, scale: 0.92 },
-    { at: 0.48, x: 0.3, y: -0.03, rx: -0.48, ry: 3.1, scale: 0.9 },
+    { at: 0.48, x: 0.3, y: -0.03, rx: -0.48, ry: 2.2, scale: 0.9 },
     { at: 0.73, x: 0.72, y: 0.02, rx: -0.2, ry: 4.7, scale: 0.65 },
     { at: 1, x: 1.15, y: -0.04, rx: 0.04, ry: 6.1, scale: 0.34 },
   ];
@@ -3130,7 +3132,16 @@ export const setupModel = async (): Promise<void> => {
     if (caption && artifactCaption) artifactCaption.textContent = caption;
     if (requestFrame) wake();
   };
-  artifactButtons.forEach((button) => button.addEventListener("click", () => syncArtifactView(button)));
+  artifactButtons.forEach((button) =>
+    button.addEventListener("click", () => {
+      syncArtifactView(button);
+      if (!button.closest(".research-view-switcher")) return;
+      const disclosure = button.closest(".research-view-disclosure");
+      if (!(disclosure instanceof HTMLDetailsElement)) return;
+      disclosure.open = false;
+      disclosure.querySelector("summary")?.focus({ preventScroll: true });
+    }),
+  );
   const initialArtifactButton = artifactButtons.find((button) => button.dataset.artifactView === stage.dataset.artifactView) ?? artifactButtons[0];
   if (initialArtifactButton) syncArtifactView(initialArtifactButton, false);
   stage.dataset.artifactControlsReady = "true";
@@ -4323,9 +4334,8 @@ export const setupModel = async (): Promise<void> => {
     camera.zoom = 1 + branchWarp * 0.14 + modelFeedback * 0.06 + directorZoom + neuralReflex * 0.045 + forecastDrift * forecastPulse * 0.028;
     camera.updateProjectionMatrix();
     const initialRotation = keyframes[0].ry;
-    const rotationTravel = state.width <= 760 ? 0.5 : 1;
     group.rotation.y =
-      initialRotation + (blend(from.ry, to.ry) - initialRotation) * rotationTravel +
+      narrativeModelRotation(initialRotation, blend(from.ry, to.ry), state.width) +
       (state.reducedMotion ? 0 : state.pointerX * 0.12) + branchWarp * 0.08;
     group.rotation.x =
       blend(from.rx, to.rx) +
@@ -4336,6 +4346,10 @@ export const setupModel = async (): Promise<void> => {
     applyExplode();
     updateSectionPlane();
     renderer.render(scene, camera);
+    if (modelUploaded && stage.dataset.firstFrameRendered !== "true") {
+      stage.dataset.firstFrameRendered = "true";
+      stage.classList.add("model-loaded");
+    }
     if (stage.dataset.artifactView === "atlas" || stage.dataset.artifactView === "tomogram") drawAtlas();
     if (stage.dataset.artifactView === "oracle") drawOracle();
     if (stage.dataset.artifactView === "trinity") drawTrinity();
@@ -4360,6 +4374,7 @@ export const setupModel = async (): Promise<void> => {
     spanMm: number,
     centerMm: number[],
   ): void => {
+    modelUploaded = true;
     modelSpanMm = spanMm;
     modelCenterMm = centerMm.length === 3 ? centerMm : [0, 0, 0];
     const materials = new Map<string, THREE.MeshStandardMaterial>();
@@ -7150,7 +7165,6 @@ export const setupModel = async (): Promise<void> => {
       wake();
     });
     syncNeuralMemory();
-    stage.classList.add("model-loaded");
     if (pendingGenomeIndex !== null && swarmArchive[pendingGenomeIndex]) {
       const index = pendingGenomeIndex;
       pendingGenomeIndex = null;
@@ -7189,8 +7203,44 @@ export const setupModel = async (): Promise<void> => {
     });
   };
 
+  const exportWorldPositions = (
+    attribute: THREE.BufferAttribute,
+    matrixWorld: THREE.Matrix4,
+    worldBounds: THREE.Box3,
+  ): Float32Array => {
+    const values = new Float32Array(attribute.count * 3);
+    const point = new THREE.Vector3();
+    for (let index = 0; index < attribute.count; index += 1) {
+      point.set(attribute.getX(index), attribute.getY(index), attribute.getZ(index)).applyMatrix4(matrixWorld);
+      worldBounds.expandByPoint(point);
+      const offset = index * 3;
+      values[offset] = point.x;
+      values[offset + 1] = point.y;
+      values[offset + 2] = point.z;
+    }
+    return values;
+  };
+
+  const exportWorldNormals = (
+    attribute: THREE.BufferAttribute,
+    matrixWorld: THREE.Matrix4,
+  ): Float32Array => {
+    const values = new Float32Array(attribute.count * 3);
+    const normalMatrix = new THREE.Matrix3().getNormalMatrix(matrixWorld);
+    const normal = new THREE.Vector3();
+    for (let index = 0; index < attribute.count; index += 1) {
+      normal.set(attribute.getX(index), attribute.getY(index), attribute.getZ(index)).applyNormalMatrix(normalMatrix);
+      const offset = index * 3;
+      values[offset] = normal.x;
+      values[offset + 1] = normal.y;
+      values[offset + 2] = normal.z;
+    }
+    return values;
+  };
+
   const loadGlb = (): void => {
     const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
     const mobileAsset = stage.clientWidth < 520 || window.matchMedia("(max-width: 760px)").matches;
     const modelAsset = mobileAsset
       ? "assets/model/Easykiconverter_展示模型-mobile.glb"
@@ -7201,13 +7251,18 @@ export const setupModel = async (): Promise<void> => {
       (gltf) => {
         try {
           const meshes: NonNullable<MeshMessage["meshes"]> = [];
+          const worldBounds = new THREE.Box3().makeEmpty();
+          gltf.scene.updateMatrixWorld(true);
           gltf.scene.traverse((object) => {
             if (!(object instanceof THREE.Mesh)) return;
             const position = object.geometry.getAttribute("position");
             if (!position) return;
             const normal = object.geometry.getAttribute("normal");
-            const positions = Float32Array.from(position.array as ArrayLike<number>);
-            const normals = normal ? Float32Array.from(normal.array as ArrayLike<number>) : undefined;
+            // Quantization stores part of the geometry transform on the glTF
+            // node. Export world-space positions and normals before flattening
+            // meshes into the STEP-compatible worker message format.
+            const positions = exportWorldPositions(position, object.matrixWorld, worldBounds);
+            const normals = normal ? exportWorldNormals(normal, object.matrixWorld) : undefined;
             const indices = object.geometry.index
               ? Uint32Array.from(object.geometry.index.array as ArrayLike<number>)
               : (() => {
@@ -7220,7 +7275,7 @@ export const setupModel = async (): Promise<void> => {
               ? [material.color.r, material.color.g, material.color.b]
               : [0.52, 0.71, 0.62];
             meshes.push({
-              positions: positions.buffer,
+              positions: positions.buffer as ArrayBuffer,
               normals: normals?.buffer as ArrayBuffer | undefined,
               indices: indices.buffer,
               color,
@@ -7228,6 +7283,10 @@ export const setupModel = async (): Promise<void> => {
               metalness: material instanceof THREE.MeshStandardMaterial ? material.metalness : undefined,
             });
           });
+          const worldSize = worldBounds.getSize(new THREE.Vector3());
+          stage.dataset.modelWorldBounds = [worldSize.x, worldSize.y, worldSize.z]
+            .map((size) => size.toFixed(4))
+            .join(",");
           const triangleCount = meshes.reduce((total, mesh) => total + mesh.indices.byteLength / Uint32Array.BYTES_PER_ELEMENT / 3, 0);
           const asset = gltf.asset as { extras?: { sourceModelSpanMm?: number; sourceModelCenterMm?: number[] } };
           if (!meshes.length || !triangleCount) throw new Error("GLB contains no renderable meshes");
