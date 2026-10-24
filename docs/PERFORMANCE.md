@@ -4,7 +4,7 @@
 
 ## 当前边界
 
-- 中文首页 `/` 和英文首页 `/en/` 首屏使用 WebP 产品截图与 CSS 空间效果，不请求 STEP 或 OpenCascade/WASM；滚动接近转换叙事时，才按需加载约 2.19 MB 的 Meshopt GLB 和 Three.js 渲染代码。
+- 中文首页 `/` 和英文首页 `/en/` 先显示 WebP 产品预览；当转换场景进入视口上下 420px 的观察范围时，才加载约 2.19 MB 的 Meshopt GLB 和 Three.js 渲染代码。当前布局会让该场景出现在 390×844、768×1024、1440×900 和 1920×1080 的初始视口内，因此这些尺寸通常会在首次访问时请求 GLB。首页仍不请求 STEP 或 OpenCascade/WASM；静态 WebP 会在模型就绪前及 WebGL 不可用时提供画面。
 - 3D Lab `/lab/` 与 `/en/lab/` 按视口默认加载约 9.6 MB 桌面 GLB 或约 8.1 MB 移动 GLB；GLB 缺失时才回退到约 11 MB STEP、约 7.3 MB WASM 的解析路径，这是实验资源，不是首页基线。
 - 首页首屏资源使用 `public/assets/showcase/*.webp`；原始 PNG、STEP 和 WASM 仍保留用于溯源或实验室，尚未从发布目录迁移。
 - `src/js/app.ts` 处理可见性、视口尺寸和运行时 `prefers-reduced-motion` 变化；3D 零件只随滚动在“组合→分解→组合”间变化，减少动态效果时固定为装配态并停止连续动画。
@@ -27,6 +27,10 @@ pnpm run test:browser
 
 STEP 是实验室的工程源资产，基础 GLB 由 `tools/prepare_model_asset.py` 离线生成；首页叙事 GLB 由 `pnpm run assets:story-model` 进一步以 Meshopt 压缩，保留 303 个网格和 278,784 个三角面，交付上限为 2.5 MB / 300,000 个三角面。首页不进行浏览器 CAD 三角化；模型资源或 WebGL 不可用时使用静态 WebP 回退。
 
-## Chromium 生产观测
+## 本地 Chromium 性能采样
+
+2026-10-25 在本地静态预览以 Chromium、390×844 视口采样。未限速时，LCP 为 380ms，最大内容元素是静态 WebP；约 2.2 秒时资源计时累计传输约 3.31 MB，其中故事 GLB 为 2,190,156 字节。使用 4× CPU 限速、150ms 延迟和 200,000 字节/秒下行速率时，LCP 为 964ms；9.98 秒时累计传输约 0.90 MB，GLB 仍在加载，观察到 164ms 与 94ms 两个长任务。两组都是单次本地浏览器模拟，不代表线上 SLA 或真机表现。
+
+## 历史 Chromium 生产观测（2026-10-11）
 
 2026-10-11 在生产站点使用桌面 Chromium 与 390px 移动视口模拟：首页传输约 175 KB，且未请求 GLB/WASM；Lab 的原始 GLB 大小约为 9.99 MB 和 8.43 MB，启用 gzip 后实际响应体采样约为 4.03 MB 和 3.27 MB。启用压缩后的单次模型就绪采样约为 7.5 秒和 9.1 秒；网络与 SwiftShader/CAD 场景初始化会造成明显波动。这是浏览器模拟结果，不是真机 SLA；移动端仍需真实设备测量。
