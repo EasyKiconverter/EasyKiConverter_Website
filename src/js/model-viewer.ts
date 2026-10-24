@@ -105,6 +105,7 @@ export const setupModel = async (): Promise<void> => {
 
   const THREE = await import("three");
   const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
+  const { MeshoptDecoder } = await import("three/addons/libs/meshopt_decoder.module.js");
   const canvas = document.querySelector<HTMLCanvasElement>("#model-canvas");
   const atlasCanvas = stage?.querySelector<HTMLCanvasElement>("[data-mesh-atlas]");
   const atlasContext = atlasCanvas?.getContext("2d") ?? null;
@@ -7202,8 +7203,44 @@ export const setupModel = async (): Promise<void> => {
     });
   };
 
+  const exportWorldPositions = (
+    attribute: THREE.BufferAttribute,
+    matrixWorld: THREE.Matrix4,
+    worldBounds: THREE.Box3,
+  ): Float32Array => {
+    const values = new Float32Array(attribute.count * 3);
+    const point = new THREE.Vector3();
+    for (let index = 0; index < attribute.count; index += 1) {
+      point.set(attribute.getX(index), attribute.getY(index), attribute.getZ(index)).applyMatrix4(matrixWorld);
+      worldBounds.expandByPoint(point);
+      const offset = index * 3;
+      values[offset] = point.x;
+      values[offset + 1] = point.y;
+      values[offset + 2] = point.z;
+    }
+    return values;
+  };
+
+  const exportWorldNormals = (
+    attribute: THREE.BufferAttribute,
+    matrixWorld: THREE.Matrix4,
+  ): Float32Array => {
+    const values = new Float32Array(attribute.count * 3);
+    const normalMatrix = new THREE.Matrix3().getNormalMatrix(matrixWorld);
+    const normal = new THREE.Vector3();
+    for (let index = 0; index < attribute.count; index += 1) {
+      normal.set(attribute.getX(index), attribute.getY(index), attribute.getZ(index)).applyNormalMatrix(normalMatrix);
+      const offset = index * 3;
+      values[offset] = normal.x;
+      values[offset + 1] = normal.y;
+      values[offset + 2] = normal.z;
+    }
+    return values;
+  };
+
   const loadGlb = (): void => {
     const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
     const mobileAsset = stage.clientWidth < 520 || window.matchMedia("(max-width: 760px)").matches;
     const modelAsset = mobileAsset
       ? "assets/model/Easykiconverter_展示模型-mobile.glb"
@@ -7214,13 +7251,18 @@ export const setupModel = async (): Promise<void> => {
       (gltf) => {
         try {
           const meshes: NonNullable<MeshMessage["meshes"]> = [];
+          const worldBounds = new THREE.Box3().makeEmpty();
+          gltf.scene.updateMatrixWorld(true);
           gltf.scene.traverse((object) => {
             if (!(object instanceof THREE.Mesh)) return;
             const position = object.geometry.getAttribute("position");
             if (!position) return;
             const normal = object.geometry.getAttribute("normal");
-            const positions = Float32Array.from(position.array as ArrayLike<number>);
-            const normals = normal ? Float32Array.from(normal.array as ArrayLike<number>) : undefined;
+            // Quantization stores part of the geometry transform on the glTF
+            // node. Export world-space positions and normals before flattening
+            // meshes into the STEP-compatible worker message format.
+            const positions = exportWorldPositions(position, object.matrixWorld, worldBounds);
+            const normals = normal ? exportWorldNormals(normal, object.matrixWorld) : undefined;
             const indices = object.geometry.index
               ? Uint32Array.from(object.geometry.index.array as ArrayLike<number>)
               : (() => {
@@ -7233,7 +7275,7 @@ export const setupModel = async (): Promise<void> => {
               ? [material.color.r, material.color.g, material.color.b]
               : [0.52, 0.71, 0.62];
             meshes.push({
-              positions: positions.buffer,
+              positions: positions.buffer as ArrayBuffer,
               normals: normals?.buffer as ArrayBuffer | undefined,
               indices: indices.buffer,
               color,
@@ -7241,6 +7283,10 @@ export const setupModel = async (): Promise<void> => {
               metalness: material instanceof THREE.MeshStandardMaterial ? material.metalness : undefined,
             });
           });
+          const worldSize = worldBounds.getSize(new THREE.Vector3());
+          stage.dataset.modelWorldBounds = [worldSize.x, worldSize.y, worldSize.z]
+            .map((size) => size.toFixed(4))
+            .join(",");
           const triangleCount = meshes.reduce((total, mesh) => total + mesh.indices.byteLength / Uint32Array.BYTES_PER_ELEMENT / 3, 0);
           const asset = gltf.asset as { extras?: { sourceModelSpanMm?: number; sourceModelCenterMm?: number[] } };
           if (!meshes.length || !triangleCount) throw new Error("GLB contains no renderable meshes");

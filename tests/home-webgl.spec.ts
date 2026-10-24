@@ -18,6 +18,12 @@ const storyScrollTarget = (page: import('@playwright/test').Page, progress: numb
 
 test('homepage renders and scroll-assembles the real multipart model with reduced-motion and fallback paths', async ({ page }) => {
   const modelRequests: string[] = [];
+  const geometryErrors: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error' && /BufferGeometry\.(computeBoundingBox|computeBoundingSphere).*NaN/.test(message.text())) {
+      geometryErrors.push(message.text());
+    }
+  });
   page.on('request', (request) => {
     if (request.url().endsWith('easyki-conversion-story.glb')) modelRequests.push(request.url());
   });
@@ -36,6 +42,7 @@ test('homepage renders and scroll-assembles the real multipart model with reduce
   await expect(viewport).toHaveAttribute('data-part-count', '303');
   await expect(viewport).toHaveAttribute('data-moving-part-count', '302');
   await expect(viewport).toHaveAttribute('data-protagonist-contact-count', '56');
+  expect(geometryErrors).toEqual([]);
   const physicalProtagonistScale = await viewport.evaluate((element) => Number(element.dataset.protagonistScale) * Number(element.dataset.modelSourceSpanMm));
   expect(physicalProtagonistScale).toBeCloseTo(2.3, 2);
   expect(Number(await viewport.getAttribute('data-camera-zoom'))).toBeCloseTo(7 / 54.077, 3);
