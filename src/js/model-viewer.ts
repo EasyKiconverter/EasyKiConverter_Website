@@ -7204,20 +7204,13 @@ export const setupModel = async (): Promise<void> => {
   };
 
   const toFloat32Attribute = (attribute: THREE.BufferAttribute): Float32Array => {
-    const values = Float32Array.from(attribute.array as ArrayLike<number>);
-    if (!attribute.normalized) return values;
-    const source = attribute.array;
-    const signed = source instanceof Int8Array || source instanceof Int16Array || source instanceof Int32Array;
-    const divisor = source instanceof Int8Array ? 127
-      : source instanceof Uint8Array || source instanceof Uint8ClampedArray ? 255
-        : source instanceof Int16Array ? 32767
-          : source instanceof Uint16Array ? 65535
-            : source instanceof Int32Array ? 2147483647
-              : source instanceof Uint32Array ? 4294967295
-                : 1;
-    for (let index = 0; index < values.length; index += 1) {
-      const value = values[index] / divisor;
-      values[index] = signed ? Math.max(value, -1) : value;
+    const values = new Float32Array(attribute.count * attribute.itemSize);
+    for (let index = 0; index < attribute.count; index += 1) {
+      const offset = index * attribute.itemSize;
+      values[offset] = attribute.getX(index);
+      if (attribute.itemSize > 1) values[offset + 1] = attribute.getY(index);
+      if (attribute.itemSize > 2) values[offset + 2] = attribute.getZ(index);
+      if (attribute.itemSize > 3) values[offset + 3] = attribute.getW(index);
     }
     return values;
   };
@@ -7241,8 +7234,8 @@ export const setupModel = async (): Promise<void> => {
             if (!position) return;
             const normal = object.geometry.getAttribute("normal");
             // Meshopt quantizes accessors to normalized integer attributes.
-            // Expand their scalar arrays before copying into the Float32 worker
-            // message format; the typed-array loop avoids per-component method calls.
+            // Expand normalized values before copying into the Float32 worker
+            // message format; BufferAttribute accessors apply glTF normalization.
             const positions = toFloat32Attribute(position);
             const normals = normal ? toFloat32Attribute(normal) : undefined;
             const indices = object.geometry.index
