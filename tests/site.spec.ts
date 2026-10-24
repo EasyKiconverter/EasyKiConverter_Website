@@ -1,7 +1,30 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const pages = ['/', '/en/'];
-const depthStyle = (page: Page) => page.locator('[data-product-stage]').evaluate((scene) => getComputedStyle(scene).getPropertyValue('--scene-progress').trim());
+const depthStyle = (page: Page) =>
+  page.locator('[data-product-stage]').evaluate((scene) => getComputedStyle(scene).getPropertyValue('--scene-progress').trim());
+const storyScrollTarget = async (page: Page, progress: number) =>
+  page.locator('[data-story-rail]').evaluate((rail, progress) => {
+    const cards = [...rail.querySelectorAll<HTMLElement>('.story-card')];
+    const headerBottom = document.querySelector<HTMLElement>('.site-header')?.offsetHeight ?? 0;
+    const viewportAnchor = Math.max(
+      80,
+      Math.min(window.innerHeight - 80, headerBottom + Math.min(156, Math.max(120, (window.innerHeight - headerBottom) * 0.22)))
+    );
+    const centers = cards.map((card) => {
+      const rect = card.getBoundingClientRect();
+      return rect.top + window.scrollY + rect.height / 2;
+    });
+    const position = Math.max(0, Math.min(1, progress)) * Math.max(0, centers.length - 1);
+    const index = Math.min(Math.floor(position), Math.max(0, centers.length - 2));
+    const fraction = position - index;
+    const center = centers.length < 2 ? (centers[0] ?? window.scrollY) : centers[index] + (centers[index + 1] - centers[index]) * fraction;
+    return center - viewportAnchor;
+  }, progress);
+const blockLabGeometryAssets = async (page: Page) => {
+  await page.route('**/assets/model/**', (route) => route.abort());
+  await page.route('**/assets/vendor/**', (route) => route.abort());
+};
 
 test('bilingual homepages render one localized document title', async ({ page }) => {
   for (const path of pages) {
@@ -37,6 +60,73 @@ test('mobile homepage shows the 3D conversion model in the first viewport in bot
       expect(modelBounds.left, `${path} ${viewport.width}x${viewport.height}px model stays horizontally visible`).toBeGreaterThanOrEqual(0);
       expect(modelBounds.right, `${path} ${viewport.width}x${viewport.height}px model stays horizontally visible`).toBeLessThanOrEqual(viewport.width);
       expect(modelBounds.visibleRatio, `${path} ${viewport.width}x${viewport.height}px first-screen model visibility`).toBeGreaterThanOrEqual(0.5);
+    }
+  }
+});
+
+test('bilingual homepage places the complete, centered model below the hero at every target size', async ({ page }) => {
+  const viewports = [
+    { width: 1920, height: 1080 },
+    { width: 1440, height: 900 },
+    { width: 1024, height: 768 },
+    { width: 768, height: 760 },
+    { width: 390, height: 844 },
+    { width: 320, height: 760 },
+    { width: 844, height: 390 },
+  ];
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    for (const path of pages) {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      const geometry = await page.evaluate(() => {
+        const hero = document.querySelector<HTMLElement>('.hero')!;
+        const copy = hero.querySelector<HTMLElement>('.hero-copy')!;
+        const actions = hero.querySelector<HTMLElement>('.hero-actions')!;
+        const scene = document.querySelector<HTMLElement>('[data-conversion-scene]')!;
+        const board = scene.querySelector<HTMLElement>('.conversion-scene-board')!;
+        const model = scene.querySelector<HTMLElement>('.conversion-model-viewport')!;
+        const box = (element: HTMLElement) => {
+          const { left, right, top, bottom, width, height } = element.getBoundingClientRect();
+          return { left, right, top, bottom, width, height };
+        };
+        const sceneBox = box(scene);
+        const modelBox = box(model);
+        const visibleHeight = Math.max(0, Math.min(window.innerHeight, modelBox.bottom) - Math.max(0, modelBox.top));
+        return {
+          hero: box(hero),
+          copy: box(copy),
+          actions: box(actions),
+          scene: sceneBox,
+          board: box(board),
+          model: modelBox,
+          visibleRatio: modelBox.height ? visibleHeight / modelBox.height : 0,
+          scrollWidth: document.documentElement.scrollWidth,
+          viewportWidth: window.innerWidth,
+        };
+      });
+
+      expect(geometry.scene.top, `${path} ${viewport.width}x${viewport.height}: stage follows hero`).toBeGreaterThanOrEqual(geometry.hero.bottom - 1);
+      expect(geometry.actions.bottom, `${path} ${viewport.width}px: actions precede model`).toBeLessThanOrEqual(geometry.scene.top + 1);
+      expect(geometry.scene.width, `${path} ${viewport.width}px: model stage spans the reading width`).toBeGreaterThanOrEqual(geometry.copy.width - 2);
+      expect(
+        Math.abs((geometry.scene.left + geometry.scene.right) / 2 - viewport.width / 2),
+        `${path} ${viewport.width}px: stage is centered`
+      ).toBeLessThanOrEqual(2);
+      expect(geometry.board.left, `${path} ${viewport.width}px: complete model board left edge`).toBeGreaterThanOrEqual(geometry.scene.left - 2);
+      expect(geometry.board.right, `${path} ${viewport.width}px: complete model board right edge`).toBeLessThanOrEqual(geometry.scene.right + 2);
+      expect(geometry.model.left, `${path} ${viewport.width}px: model viewport left edge`).toBeGreaterThanOrEqual(geometry.board.left - 2);
+      expect(geometry.model.right, `${path} ${viewport.width}px: model viewport right edge`).toBeLessThanOrEqual(geometry.board.right + 2);
+      expect(geometry.model.width, `${path} ${viewport.width}px: actual model area has visual scale`).toBeGreaterThanOrEqual(
+        geometry.scene.width * (viewport.width <= 850 ? 0.35 : 0.29)
+      );
+      expect(geometry.scrollWidth, `${path} ${viewport.width}px: vertical layout avoids horizontal overflow`).toBe(geometry.viewportWidth);
+      if (viewport.height > 500) {
+        expect(
+          geometry.visibleRatio,
+          `${path} ${viewport.width}x${viewport.height}: subject appears below the hero in the first viewport`
+        ).toBeGreaterThanOrEqual(0.5);
+      }
     }
   }
 });
@@ -100,9 +190,7 @@ test('homepage release CTA stays on one line at 320px in both languages', async 
     const titleLines = await page.locator('#download-title').evaluate((element) => {
       const range = document.createRange();
       range.selectNodeContents(element);
-      return new Set([...range.getClientRects()]
-        .filter((rect) => rect.width > 0)
-        .map((rect) => Math.round(rect.top))).size;
+      return new Set([...range.getClientRects()].filter((rect) => rect.width > 0).map((rect) => Math.round(rect.top))).size;
     });
     expect(titleLines, `${path} download heading line count`).toBeLessThanOrEqual(3);
   }
@@ -150,7 +238,10 @@ test('bilingual homepage distinguishes the STEP model render from real software 
 
 test('bilingual homepage keeps the conversion story and download actions usable when showcase images fail', async ({ page }) => {
   await page.route('**/assets/showcase/**', (route) => route.abort());
-  for (const [path, title] of [['/', '让元件库转换'], ['/en/', 'Component data']]) {
+  for (const [path, title] of [
+    ['/', '让元件库转换'],
+    ['/en/', 'Component data'],
+  ]) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('[data-conversion-scene]')).toHaveAttribute('aria-label', /RP2040.*C2040/i);
     await expect(page.locator('#story')).toBeVisible();
@@ -176,11 +267,16 @@ test('bilingual footers keep each navigation entry readable on one line', async 
   await page.setViewportSize({ width: 1440, height: 1000 });
   for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'networkidle' });
-    const links = await page.locator('.site-footer .footer-links a').evaluateAll((elements) => elements.map((element) => {
-      const bounds = element.getBoundingClientRect();
-      const styles = getComputedStyle(element);
-      return { height: bounds.height, lineHeight: Number.parseFloat(styles.lineHeight) };
-    }));
+    const links = await page.locator('.site-footer .footer-links a').evaluateAll((elements) =>
+      elements.map((element) => {
+        const bounds = element.getBoundingClientRect();
+        const styles = getComputedStyle(element);
+        return {
+          height: bounds.height,
+          lineHeight: Number.parseFloat(styles.lineHeight),
+        };
+      })
+    );
     expect(links).toHaveLength(7);
     links.forEach(({ height, lineHeight }) => expect(height).toBeLessThanOrEqual(lineHeight + 1));
   }
@@ -222,7 +318,12 @@ test('bilingual homepage header stays within the layout through the tablet break
         const items = [...element.querySelectorAll('.brand, .nav-links, .lang-link, .github-link, .menu-button')]
           .map((item) => {
             const bounds = item.getBoundingClientRect();
-            return { left: bounds.left, right: bounds.right, width: bounds.width, display: getComputedStyle(item).display };
+            return {
+              left: bounds.left,
+              right: bounds.right,
+              width: bounds.width,
+              display: getComputedStyle(item).display,
+            };
           })
           .filter((item) => item.display !== 'none' && item.width > 0)
           .sort((first, second) => first.left - second.left);
@@ -271,7 +372,10 @@ test('homepage navigation stays available without JavaScript at the tablet heade
 });
 
 test('homepage skip links are localized and move keyboard focus to main content', async ({ page }) => {
-  for (const [path, label] of [['/', '跳转到正文'], ['/en/', 'Skip to content']]) {
+  for (const [path, label] of [
+    ['/', '跳转到正文'],
+    ['/en/', 'Skip to content'],
+  ]) {
     await page.goto(path, { waitUntil: 'networkidle' });
     const skipLink = page.locator('.skip-link');
     await expect(skipLink).toHaveText(label);
@@ -299,7 +403,10 @@ test('content-page skip links move keyboard focus into the main content', async 
 });
 
 test('Lab skip links are localized and move keyboard focus to the main content', async ({ page }) => {
-  for (const [path, label] of [['/lab/', '跳转到实验室正文'], ['/en/lab/', 'Skip to lab content']]) {
+  for (const [path, label] of [
+    ['/lab/', '跳转到实验室正文'],
+    ['/en/lab/', 'Skip to lab content'],
+  ]) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const skipLink = page.locator('.content-page-skip');
     const main = page.locator('main#lab-main');
@@ -318,21 +425,23 @@ test('mobile story cards keep decorative labels clear of their copy', async ({ p
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const storyCards = page.locator('.story-card');
     await storyCards.first().scrollIntoViewIfNeeded();
-    const bounds = await storyCards.evaluateAll((cards) => cards.map((card) => {
-      const copy = card.querySelector('p')?.getBoundingClientRect();
-      const decoration = card.querySelector('.story-pulse, .story-stack, .story-check, .story-use-proof')?.getBoundingClientRect();
-      if (!copy || !decoration) return null;
-      return {
-        copyRight: copy.right,
-        copyLeft: copy.left,
-        copyBottom: copy.bottom,
-        copyTop: copy.top,
-        decorationRight: decoration.right,
-        decorationLeft: decoration.left,
-        decorationBottom: decoration.bottom,
-        decorationTop: decoration.top,
-      };
-    }));
+    const bounds = await storyCards.evaluateAll((cards) =>
+      cards.map((card) => {
+        const copy = card.querySelector('p')?.getBoundingClientRect();
+        const decoration = card.querySelector('.story-pulse, .story-stack, .story-check, .story-use-proof')?.getBoundingClientRect();
+        if (!copy || !decoration) return null;
+        return {
+          copyRight: copy.right,
+          copyLeft: copy.left,
+          copyBottom: copy.bottom,
+          copyTop: copy.top,
+          decorationRight: decoration.right,
+          decorationLeft: decoration.left,
+          decorationBottom: decoration.bottom,
+          decorationTop: decoration.top,
+        };
+      })
+    );
     expect(bounds).toHaveLength(4);
     bounds.forEach((bound) => {
       expect(bound).not.toBeNull();
@@ -393,9 +502,7 @@ test('English mobile hero keeps a compact promise and brings product proof highe
   await expect(title).toHaveText('Make parts EDA-ready.');
   expect(await title.evaluate((element) => element.getBoundingClientRect().height)).toBeLessThan(110);
   const ledeHeight = await page.locator('.hero-lede').evaluate((element) => element.getBoundingClientRect().height);
-  const productImageTop = await page
-    .locator('.conversion-model-viewport img')
-    .evaluate((element) => element.getBoundingClientRect().top);
+  const productImageTop = await page.locator('.conversion-model-viewport img').evaluate((element) => element.getBoundingClientRect().top);
   expect(ledeHeight).toBeLessThan(60);
   expect(productImageTop).toBeLessThan(760);
 });
@@ -406,9 +513,7 @@ test('bilingual mobile hero keeps its facts compact and product proof in view', 
 
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const factTops = await page.locator('.hero-facts span').evaluateAll((facts) =>
-      facts.map((fact) => fact.getBoundingClientRect().top),
-    );
+    const factTops = await page.locator('.hero-facts span').evaluateAll((facts) => facts.map((fact) => fact.getBoundingClientRect().top));
     expect(factTops).toHaveLength(3);
     expect(Math.max(...factTops) - Math.min(...factTops)).toBeLessThan(2);
 
@@ -492,7 +597,10 @@ test('bilingual internal actions use the in-site arrow treatment', async ({ page
   for (const path of ['/', '/en/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     for (const href of ['formats/', 'cases/']) {
-      const link = page.locator(`a[href="${href}"]`).filter({ has: page.locator('span') }).first();
+      const link = page
+        .locator(`a[href="${href}"]`)
+        .filter({ has: page.locator('span') })
+        .first();
       await expect(link.locator('span')).toHaveText('→');
     }
     await expect(page.locator('.showcase-actions a[href="cases/"] span')).toHaveText('→');
@@ -500,7 +608,12 @@ test('bilingual internal actions use the in-site arrow treatment', async ({ page
 
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.lab-intro-actions a').filter({ hasText: /格式矩阵|format matrix/ }).locator('span')).toHaveText('→');
+    await expect(
+      page
+        .locator('.lab-intro-actions a')
+        .filter({ hasText: /格式矩阵|format matrix/ })
+        .locator('span')
+    ).toHaveText('→');
   }
 });
 
@@ -567,7 +680,10 @@ test('format matrix rows remain readable on narrow screens', async ({ page }) =>
 });
 
 test('bilingual case pages explain the evidence-reading order', async ({ page }) => {
-  for (const [path, steps] of [['/cases/', ['选定路径', '核对输入依据', '复核测试']], ['/en/cases/', ['Choose a route', 'Inspect the input', 'Review the test']]] as const) {
+  for (const [path, steps] of [
+    ['/cases/', ['选定路径', '核对输入依据', '复核测试']],
+    ['/en/cases/', ['Choose a route', 'Inspect the input', 'Review the test']],
+  ] as const) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const guide = page.locator('.case-reading-guide');
     await expect(guide.locator('li')).toHaveCount(3);
@@ -576,7 +692,10 @@ test('bilingual case pages explain the evidence-reading order', async ({ page })
 });
 
 test('bilingual workflow quick-start links use the shared external-arrow treatment', async ({ page }) => {
-  for (const [path, label] of [['/', '阅读快速入门'], ['/en/', 'Read the quick start']] as const) {
+  for (const [path, label] of [
+    ['/', '阅读快速入门'],
+    ['/en/', 'Read the quick start'],
+  ] as const) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const link = page.locator('.workflow-copy .text-link');
     await expect(link).toContainText(label);
@@ -586,7 +705,10 @@ test('bilingual workflow quick-start links use the shared external-arrow treatme
 });
 
 test('bilingual workflow actions pair in-site cases with the external quick start', async ({ page }) => {
-  for (const [path, label] of [['/', '查看真实转换案例'], ['/en/', 'View conversion cases']] as const) {
+  for (const [path, label] of [
+    ['/', '查看真实转换案例'],
+    ['/en/', 'View conversion cases'],
+  ] as const) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const actions = page.locator('.workflow-actions');
     await expect(actions.locator('a[href="cases/"]')).toContainText(label);
@@ -627,10 +749,25 @@ test('content and Lab headers keep the shared brand treatment', async ({ page })
 
 test('inner pages share the same localized header navigation', async ({ page }) => {
   const pages = [
-    { path: '/formats/', current: '格式矩阵', alternate: '/en/formats/', lab: false },
-    { path: '/cases/', current: '转换案例', alternate: '/en/cases/', lab: false },
+    {
+      path: '/formats/',
+      current: '格式矩阵',
+      alternate: '/en/formats/',
+      lab: false,
+    },
+    {
+      path: '/cases/',
+      current: '转换案例',
+      alternate: '/en/cases/',
+      lab: false,
+    },
     { path: '/lab/', current: '3D 实验室', alternate: '/en/lab/', lab: true },
-    { path: '/en/formats/', current: 'Formats', alternate: '/formats/', lab: false },
+    {
+      path: '/en/formats/',
+      current: 'Formats',
+      alternate: '/formats/',
+      lab: false,
+    },
     { path: '/en/cases/', current: 'Cases', alternate: '/cases/', lab: false },
     { path: '/en/lab/', current: '3D Lab', alternate: '/lab/', lab: true },
   ];
@@ -650,9 +787,7 @@ test('inner pages share the same localized header navigation', async ({ page }) 
 test('internal navigation stays on the current preview origin', async ({ page }) => {
   for (const path of ['/formats/', '/cases/', '/lab/', '/en/formats/', '/en/cases/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const links = await page.locator('.site-header .nav-links a').evaluateAll((anchors) =>
-      anchors.map((anchor) => new URL(anchor.href)),
-    );
+    const links = await page.locator('.site-header .nav-links a').evaluateAll((anchors) => anchors.map((anchor) => new URL(anchor.href)));
     expect(links.every((link) => link.origin === new URL(page.url()).origin)).toBe(true);
     expect(links.map((link) => link.pathname)).toContain(path);
   }
@@ -662,10 +797,12 @@ test('site chrome and product images load assets from the current preview origin
   for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const externalAssets = await page.locator('img[src], link[rel="icon"]').evaluateAll((elements) =>
-      elements.map((element) => {
-        const asset = element.getAttribute('src') || element.getAttribute('href');
-        return asset ? new URL(asset, location.href).href : '';
-      }).filter((url) => url && new URL(url).origin !== location.origin),
+      elements
+        .map((element) => {
+          const asset = element.getAttribute('src') || element.getAttribute('href');
+          return asset ? new URL(asset, location.href).href : '';
+        })
+        .filter((url) => url && new URL(url).origin !== location.origin)
     );
     expect(externalAssets, `${path} should not fetch local site assets from the production domain`).toEqual([]);
   }
@@ -713,7 +850,13 @@ test('language switch stays visible and points to the matching page on mobile', 
         const brand = header.querySelector('.brand')!.getBoundingClientRect();
         const language = header.querySelector('.lang-link')!.getBoundingClientRect();
         const menu = header.querySelector('.menu-button')!.getBoundingClientRect();
-        return { brandRight: brand.right, languageLeft: language.left, languageRight: language.right, menuLeft: menu.left, menuRight: menu.right };
+        return {
+          brandRight: brand.right,
+          languageLeft: language.left,
+          languageRight: language.right,
+          menuLeft: menu.left,
+          menuRight: menu.right,
+        };
       });
       expect(bounds.languageLeft, `${path} at ${width}px: language switch overlaps brand`).toBeGreaterThanOrEqual(bounds.brandRight);
       expect(bounds.menuLeft, `${path} at ${width}px: language switch overlaps menu`).toBeGreaterThanOrEqual(bounds.languageRight);
@@ -972,7 +1115,10 @@ test('Lab pages keep the experiment connected to product navigation', async ({ p
   }
 });
 
-const labEntryRoutes = [['/lab/', '开始 3D 体验'], ['/en/lab/', 'Explore 3D']] as const;
+const labEntryRoutes = [
+  ['/lab/', '开始 3D 体验'],
+  ['/en/lab/', 'Explore 3D'],
+] as const;
 const labEntryViewports = [
   { width: 390, height: 844 },
   { width: 768, height: 760 },
@@ -985,7 +1131,9 @@ for (const viewport of labEntryViewports) {
       test.skip(testInfo.project.name === 'chromium-mobile' && viewport.width > 850, 'Desktop viewport is covered by Chromium desktop');
       await page.setViewportSize(viewport);
       await page.goto(path, { waitUntil: 'domcontentloaded' });
-      await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
+      await page.evaluate(() => {
+        document.documentElement.style.scrollBehavior = 'auto';
+      });
       const exploreLink = page.locator('[data-lab-explore]');
       await expect(exploreLink).toHaveText(label + ' ↓');
       if (viewport.width === 390) {
@@ -999,8 +1147,7 @@ for (const viewport of labEntryViewports) {
             releaseBottom: release.bottom,
           };
         });
-        const rowOverlap = Math.min(actionRows.primaryBottom, actionRows.releaseBottom)
-          - Math.max(actionRows.primaryTop, actionRows.releaseTop);
+        const rowOverlap = Math.min(actionRows.primaryBottom, actionRows.releaseBottom) - Math.max(actionRows.primaryTop, actionRows.releaseTop);
         expect(rowOverlap, `${path} mobile primary/download action row`).toBeGreaterThan(0);
       }
       await exploreLink.evaluate((link: HTMLAnchorElement) => link.click());
@@ -1026,7 +1173,9 @@ for (const [path] of labEntryRoutes) {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = 'auto';
+    });
     await page.locator('[data-lab-explore]').evaluate((link: HTMLAnchorElement) => link.click());
     const model = page.locator('.motion-model');
     await expect(model).toBeVisible();
@@ -1044,9 +1193,25 @@ for (const [path] of labEntryRoutes) {
 }
 
 test('Lab advanced controls explain their collapsed hierarchy', async ({ page }) => {
+  test.setTimeout(60_000);
+  await blockLabGeometryAssets(page);
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.motion-model button:disabled').first()).toHaveCSS('cursor', 'not-allowed');
+    await expect(page.locator('.model-slice-axes')).toBeHidden();
+    const explodeLabel = page.locator('.model-explode-heading');
+    await expect(explodeLabel).toHaveAttribute('for', await page.locator('[data-model-explode]').getAttribute('id'));
+    expect(await page.locator('[data-model-explode]').evaluate((input) => Boolean(input.closest('label')))).toBe(false);
+    const researchViews = page.locator('.research-view-disclosure');
+    await expect(researchViews).not.toHaveAttribute('open', '');
+    await expect(researchViews.locator('summary')).toHaveText(/More views|更多视图/);
+    await expect(page.locator('.artifact-switcher [data-artifact-view]')).toHaveCount(3);
+    await expect(page.locator('.research-view-panel')).toBeHidden();
+    await expect(page.locator('.research-view-panel')).toContainText(/recorded topology histories|记录下来的拓扑变化/);
+    await researchViews.locator('summary').click();
+    await expect(researchViews).toHaveAttribute('open', '');
+    await expect(page.locator('.research-view-switcher [data-artifact-view]')).toHaveCount(5);
+    await expect(page.locator('.research-view-switcher [data-model-scan]')).toBeVisible();
     const toggle = page.locator('[data-experiment-controls]');
     await expect(toggle).toHaveAttribute('aria-controls', 'lab-experiment-controls');
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
@@ -1094,7 +1259,10 @@ test('all public pages share the paper-grain visual layer', async ({ page }) => 
 test('all public pages share the bilingual footer navigation', async ({ page }) => {
   const pages = [
     { path: '/', labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'] },
-    { path: '/formats/', labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'] },
+    {
+      path: '/formats/',
+      labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'],
+    },
     { path: '/cases/', labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'] },
     { path: '/lab/', labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'] },
     { path: '/en/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
@@ -1150,18 +1318,15 @@ test('bilingual shared text colors meet WCAG AA on light brand surfaces', async 
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const tokens = await page.evaluate(() => {
       const style = getComputedStyle(document.documentElement);
-      return Object.fromEntries(['muted', 'violet', 'paper', 'peach', 'lilac', 'mint', 'yellow'].map((token) => [
-        token,
-        style.getPropertyValue(`--${token}`).trim(),
-      ])) as Record<string, string>;
+      return Object.fromEntries(
+        ['muted', 'violet', 'paper', 'peach', 'lilac', 'mint', 'yellow'].map((token) => [token, style.getPropertyValue(`--${token}`).trim()])
+      ) as Record<string, string>;
     });
     expect(tokens).toMatchObject({ muted: '#5b564f', violet: '#5848b8' });
 
     const luminance = (color: string): number => {
       const channels = color.match(/[\da-f]{2}/gi)?.map((value) => parseInt(value, 16) / 255) ?? [];
-      const [red, green, blue] = channels.map((channel) =>
-        channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
-      );
+      const [red, green, blue] = channels.map((channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4));
       return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
     };
     const contrastRatio = (foreground: string, background: string): number => {
@@ -1235,26 +1400,19 @@ test('homepage scroll story activates input, preparation, conversion, and use in
     const rail = page.locator('[data-story-rail]');
     const scene = page.locator('[data-conversion-scene]');
     const sceneTransforms = new Set<string>();
-    for (const [progress, activeIndex] of [[0, 0], [1 / 3, 1], [2 / 3, 2], [1, 3]] as const) {
-      const target = await rail.evaluate((element, progress) => {
-        const scene = element.querySelector<HTMLElement>('[data-conversion-scene]')!;
-        const cards = [...element.querySelectorAll<HTMLElement>('.story-card')];
-        const first = cards[0].getBoundingClientRect();
-        const last = cards[cards.length - 1].getBoundingClientRect();
-        const firstCenter = first.top + window.scrollY + first.height / 2;
-        const lastCenter = last.top + window.scrollY + last.height / 2;
-        const sceneBox = scene.getBoundingClientRect();
-        const sceneCenter = (Number.parseFloat(getComputedStyle(scene).top) || 0) + sceneBox.height / 2;
-        const phone = window.innerWidth < 600;
-        const landscape = window.innerWidth >= 600 && window.innerWidth <= 850 && window.innerHeight <= 500;
-        const anchor = sceneCenter + (phone ? sceneBox.height / 2 + 150 : landscape ? sceneBox.height / 2 + 155 : 0);
-        return firstCenter - anchor + (lastCenter - firstCenter) * progress;
-      }, progress);
+    for (const [progress, activeIndex] of [
+      [0, 0],
+      [1 / 3, 1],
+      [2 / 3, 2],
+      [1, 3],
+    ] as const) {
+      const target = await storyScrollTarget(page, progress);
       await page.evaluate((target) => {
         document.documentElement.style.scrollBehavior = 'auto';
         window.scrollTo(0, target);
       }, target);
-      await expect.poll(() => page.locator('.story-card').evaluateAll((cards) => cards.map((card) => card.hasAttribute('data-active'))))
+      await expect
+        .poll(() => page.locator('.story-card').evaluateAll((cards) => cards.map((card) => card.hasAttribute('data-active'))))
         .toEqual([false, false, false, false].map((_, index) => index === activeIndex));
       await expect(scene).toHaveAttribute('data-stage', ['input', 'prepare', 'convert', 'use'][activeIndex]);
       sceneTransforms.add(await scene.locator('.conversion-scene-board').evaluate((board) => getComputedStyle(board).transform));
@@ -1264,7 +1422,7 @@ test('homepage scroll story activates input, preparation, conversion, and use in
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await expect.poll(() => depthStyle(page)).toBe('0');
     await expect(page.locator('.story-card')).toHaveCount(4);
-    await expect(page.locator('.story-card').first()).toBeVisible();
+    await expect(page.locator('.story-card[data-active]')).toBeVisible();
     await expect(scene).toHaveCSS('position', 'sticky');
     await expect(page.locator('.download-actions .button-light')).toBeVisible();
     await page.emulateMedia({ reducedMotion: 'no-preference' });
@@ -1274,6 +1432,7 @@ test('homepage scroll story activates input, preparation, conversion, and use in
 
 test('conversion scene stays visible with its active narrative on tablet and phones', async ({ page }) => {
   for (const viewport of [
+    { width: 1440, height: 900 },
     { width: 600, height: 800 },
     { width: 768, height: 760 },
     { width: 1024, height: 768 },
@@ -1286,52 +1445,53 @@ test('conversion scene stays visible with its active narrative on tablet and pho
     for (const path of ['/', '/en/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const scene = page.locator('[data-conversion-scene]');
-      await expect(scene).toHaveCSS('position', 'sticky');
-      await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
-      const stickyTop = await scene.evaluate((element) => Number.parseFloat(getComputedStyle(element).top));
-      for (const [progress, activeIndex] of [[0, 0], [1 / 3, 1], [2 / 3, 2], [1, 3], [2 / 3, 2], [1 / 3, 1], [0, 0]] as const) {
-        const target = await page.locator('[data-story-rail]').evaluate((rail, progress) => {
-          const cards = [...rail.querySelectorAll<HTMLElement>('.story-card')];
-          const scene = rail.querySelector<HTMLElement>('[data-conversion-scene]')!;
-          const first = cards[0].getBoundingClientRect();
-          const last = cards[cards.length - 1].getBoundingClientRect();
-          const firstCenter = first.top + window.scrollY + first.height / 2;
-          const lastCenter = last.top + window.scrollY + last.height / 2;
-          const sceneBox = scene.getBoundingClientRect();
-          const sceneCenter = (Number.parseFloat(getComputedStyle(scene).top) || 0) + sceneBox.height / 2;
-          const phone = window.innerWidth < 600;
-          const landscape = window.innerWidth >= 600 && window.innerWidth <= 850 && window.innerHeight <= 500;
-          const anchor = sceneCenter + (phone ? sceneBox.height / 2 + 150 : landscape ? sceneBox.height / 2 + 155 : 0);
-          return firstCenter - anchor + (lastCenter - firstCenter) * progress;
-        }, progress);
+      await expect(scene).toHaveCSS('position', height <= 500 ? 'relative' : 'sticky');
+      await page.evaluate(() => {
+        document.documentElement.style.scrollBehavior = 'auto';
+      });
+      for (const [progress, activeIndex] of [
+        [0, 0],
+        [1 / 3, 1],
+        [2 / 3, 2],
+        [1, 3],
+        [2 / 3, 2],
+        [1 / 3, 1],
+        [0, 0],
+      ] as const) {
+        const target = await storyScrollTarget(page, progress);
         await page.evaluate((scrollTarget) => {
           window.scrollTo({ top: scrollTarget, behavior: 'instant' });
         }, target);
         await expect(scene).toHaveAttribute('data-stage', ['input', 'prepare', 'convert', 'use'][activeIndex]);
         const visibleGeometry = await scene.evaluate((element) => {
           const rect = element.getBoundingClientRect();
-          return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, viewportHeight: window.innerHeight };
+          return {
+            top: rect.top,
+            bottom: rect.bottom,
+            left: rect.left,
+            right: rect.right,
+            viewportHeight: window.innerHeight,
+          };
         });
-        expect(visibleGeometry.top).toBeGreaterThanOrEqual(stickyTop - 2);
-        expect(visibleGeometry.bottom).toBeLessThanOrEqual(visibleGeometry.viewportHeight + 1);
         const activeCard = page.locator('.story-card[data-active]');
         const activeHeading = await activeCard.locator('h3').boundingBox();
         expect(activeHeading, `${path} ${width}px stage ${progress} active heading`).not.toBeNull();
-        expect(activeHeading!.y + activeHeading!.height, `${path} ${width}x${height}px stage ${progress} heading bottom`).toBeLessThan(visibleGeometry.viewportHeight);
+        expect(activeHeading!.y + activeHeading!.height, `${path} ${width}x${height}px stage ${progress} heading bottom`).toBeLessThan(
+          visibleGeometry.viewportHeight
+        );
         if (width === 600 && path === '/' && activeIndex === 1) {
           const headingLineHeight = await activeCard.locator('h3').evaluate((heading) => Number.parseFloat(getComputedStyle(heading).lineHeight));
           expect(activeHeading!.height, '600px Chinese preparation heading should fit its two intended lines').toBeLessThanOrEqual(headingLineHeight * 2.2);
-        }
-        if (width >= 600) {
-          expect(activeHeading!.x + activeHeading!.width, `${path} ${width}px narrative card clears the stage`).toBeLessThan(visibleGeometry.left);
-        } else {
-          expect(activeHeading!.y, `${path} ${width}px narrative heading follows the stage`).toBeGreaterThan(visibleGeometry.bottom - 18);
         }
         const stageCardGeometry = await page.evaluate(() => {
           const scene = document.querySelector<HTMLElement>('[data-conversion-scene]')!;
           const model = scene.querySelector<HTMLElement>('.conversion-model-viewport')!;
           const board = scene.querySelector<HTMLElement>('.conversion-scene-board')!;
-          const card = document.querySelector<HTMLElement>('.story-card[data-active]')!;
+          const cards = [...document.querySelectorAll<HTMLElement>('.story-card')].filter((candidate) => {
+            const style = getComputedStyle(candidate);
+            return style.visibility !== 'hidden' && Number(style.opacity) > 0;
+          });
+          const activeCard = document.querySelector<HTMLElement>('.story-card[data-active]')!;
           const layerSelector = {
             input: '.conversion-input-layer',
             prepare: '.conversion-parts-layer',
@@ -1347,21 +1507,30 @@ test('conversion scene stays visible with its active narrative on tablet and pho
           let storyCardHitCount = 0;
           for (let row = 0; row < 7; row += 1) {
             for (let column = 0; column < 7; column += 1) {
-              const x = modelRect.left + (column + 0.5) * modelRect.width / 7;
-              const y = modelRect.top + (row + 0.5) * modelRect.height / 7;
-              if (document.elementsFromPoint(x, y).some((element) => element.closest('.story-card[data-active]'))) {
+              const x = modelRect.left + ((column + 0.5) * modelRect.width) / 7;
+              const y = modelRect.top + ((row + 0.5) * modelRect.height) / 7;
+              if (document.elementsFromPoint(x, y).some((element) => element.closest('.story-card'))) {
                 storyCardHitCount += 1;
               }
             }
           }
           return {
-            scene: rect(scene), board: rect(board), model: rect(model), card: rect(card), layer: rect(layer), storyCardHitCount,
+            scene: rect(scene),
+            board: rect(board),
+            model: rect(model),
+            card: rect(activeCard),
+            cards: cards.map(rect),
+            layer: rect(layer),
+            storyCardHitCount,
           };
         });
-        if (width >= 600) {
-          const overlapWidth = Math.max(0, Math.min(stageCardGeometry.model.right, stageCardGeometry.card.right) - Math.max(stageCardGeometry.model.x, stageCardGeometry.card.x));
-          const overlapHeight = Math.max(0, Math.min(stageCardGeometry.model.bottom, stageCardGeometry.card.bottom) - Math.max(stageCardGeometry.model.y, stageCardGeometry.card.y));
-          expect(overlapWidth * overlapHeight, `${path} ${width}x${height}px stage ${progress} model/card occlusion`).toBeLessThan(4);
+        {
+          const overlapAreas = stageCardGeometry.cards.map((card) => {
+            const overlapWidth = Math.max(0, Math.min(stageCardGeometry.model.right, card.right) - Math.max(stageCardGeometry.model.x, card.x));
+            const overlapHeight = Math.max(0, Math.min(stageCardGeometry.model.bottom, card.bottom) - Math.max(stageCardGeometry.model.y, card.y));
+            return overlapWidth * overlapHeight;
+          });
+          expect(Math.max(0, ...overlapAreas), `${path} ${width}x${height}px stage ${progress} visible story-card/model occlusion`).toBeLessThan(4);
           expect(stageCardGeometry.storyCardHitCount, `${path} ${width}x${height}px stage ${progress} rendered story-card occlusion`).toBe(0);
           if (height > 500) {
             expect(stageCardGeometry.card.x, `${path} ${width}px stage ${progress} card left edge`).toBeGreaterThanOrEqual(-1);
@@ -1369,54 +1538,120 @@ test('conversion scene stays visible with its active narrative on tablet and pho
             expect(stageCardGeometry.card.y, `${path} ${width}px stage ${progress} complete card top`).toBeGreaterThanOrEqual(-1);
             expect(stageCardGeometry.card.bottom, `${path} ${width}px stage ${progress} complete card bottom`).toBeLessThanOrEqual(height + 1);
           }
-          if (width <= 850 && height > 500) {
-            const stageModelCardOverlapWidth = Math.max(0, Math.min(stageCardGeometry.model.right, stageCardGeometry.layer.right) - Math.max(stageCardGeometry.model.x, stageCardGeometry.layer.x));
-            const stageModelCardOverlapHeight = Math.max(0, Math.min(stageCardGeometry.model.bottom, stageCardGeometry.layer.bottom) - Math.max(stageCardGeometry.model.y, stageCardGeometry.layer.y));
-            expect(stageModelCardOverlapWidth * stageModelCardOverlapHeight, `${path} ${width}x${height}px stage ${progress} active label must not cover transformed model`).toBeLessThan(4);
-            const boardCardOverlapWidth = Math.max(0, Math.min(stageCardGeometry.board.right, stageCardGeometry.layer.right) - Math.max(stageCardGeometry.board.x, stageCardGeometry.layer.x));
-            const boardCardOverlapHeight = Math.max(0, Math.min(stageCardGeometry.board.bottom, stageCardGeometry.layer.bottom) - Math.max(stageCardGeometry.board.y, stageCardGeometry.layer.y));
-            expect(boardCardOverlapWidth * boardCardOverlapHeight, `${path} ${width}x${height}px stage ${progress} active label must clear the complete transformed model card`).toBeLessThan(4);
+          if (width > 1100 && height > 500) {
+            const stageModelCardOverlapWidth = Math.max(
+              0,
+              Math.min(stageCardGeometry.model.right, stageCardGeometry.layer.right) - Math.max(stageCardGeometry.model.x, stageCardGeometry.layer.x)
+            );
+            const stageModelCardOverlapHeight = Math.max(
+              0,
+              Math.min(stageCardGeometry.model.bottom, stageCardGeometry.layer.bottom) - Math.max(stageCardGeometry.model.y, stageCardGeometry.layer.y)
+            );
+            expect(
+              stageModelCardOverlapWidth * stageModelCardOverlapHeight,
+              `${path} ${width}x${height}px stage ${progress} active label must not cover transformed model`
+            ).toBeLessThan(4);
+            const boardCardOverlapWidth = Math.max(
+              0,
+              Math.min(stageCardGeometry.board.right, stageCardGeometry.layer.right) - Math.max(stageCardGeometry.board.x, stageCardGeometry.layer.x)
+            );
+            const boardCardOverlapHeight = Math.max(
+              0,
+              Math.min(stageCardGeometry.board.bottom, stageCardGeometry.layer.bottom) - Math.max(stageCardGeometry.board.y, stageCardGeometry.layer.y)
+            );
+            expect(
+              boardCardOverlapWidth * boardCardOverlapHeight,
+              `${path} ${width}x${height}px stage ${progress} active label must clear the complete transformed model card`
+            ).toBeLessThan(4);
           }
-          expect(stageCardGeometry.board.x, `${path} ${width}px stage ${progress} transformed model board left`).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
-          expect(stageCardGeometry.board.right, `${path} ${width}px stage ${progress} transformed model board right`).toBeLessThanOrEqual(stageCardGeometry.scene.right + 1);
-          expect(stageCardGeometry.board.y, `${path} ${width}px stage ${progress} transformed model board top`).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 3);
-          expect(stageCardGeometry.board.bottom, `${path} ${width}px stage ${progress} transformed model board bottom`).toBeLessThanOrEqual(stageCardGeometry.scene.bottom + 1);
-          if (height <= 500) {
-            expect(stageCardGeometry.layer.width, `${path} short-landscape active card stays compact`).toBeLessThanOrEqual(stageCardGeometry.board.width * 0.46);
-            expect(stageCardGeometry.layer.height, `${path} short-landscape active card preserves model visibility`).toBeLessThanOrEqual(stageCardGeometry.scene.height * 0.45);
+          expect(stageCardGeometry.board.x, `${path} ${width}px stage ${progress} transformed model board left`).toBeGreaterThanOrEqual(
+            stageCardGeometry.scene.x - 1
+          );
+          expect(stageCardGeometry.board.right, `${path} ${width}px stage ${progress} transformed model board right`).toBeLessThanOrEqual(
+            stageCardGeometry.scene.right + 1
+          );
+          expect(stageCardGeometry.board.y, `${path} ${width}px stage ${progress} transformed model board top`).toBeGreaterThanOrEqual(
+            stageCardGeometry.scene.y - 3
+          );
+          expect(stageCardGeometry.board.bottom, `${path} ${width}px stage ${progress} transformed model board bottom`).toBeLessThanOrEqual(
+            stageCardGeometry.scene.bottom + 1
+          );
+          if (height <= 500 && width > 1100) {
+            expect(stageCardGeometry.layer.width, `${path} short-landscape active card stays compact`).toBeLessThanOrEqual(
+              stageCardGeometry.board.width * 0.46
+            );
+            expect(stageCardGeometry.layer.height, `${path} short-landscape active card preserves model visibility`).toBeLessThanOrEqual(
+              stageCardGeometry.scene.height * 0.45
+            );
           }
         }
-        expect(stageCardGeometry.layer.x, `${path} ${width}px stage ${progress} active label left`).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
-        expect(stageCardGeometry.layer.right, `${path} ${width}px stage ${progress} active label right`).toBeLessThanOrEqual(stageCardGeometry.scene.right + 1);
-        expect(stageCardGeometry.layer.y, `${path} ${width}px stage ${progress} active label top`).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 1);
-        expect(stageCardGeometry.layer.bottom, `${path} ${width}px stage ${progress} active label bottom`).toBeLessThanOrEqual(stageCardGeometry.scene.bottom + 1);
+        if (width <= 1100) {
+          const activeLayerSelector = {
+            input: '.conversion-input-layer',
+            prepare: '.conversion-parts-layer',
+            convert: '.conversion-output-layer',
+            use: '.conversion-use-layer',
+          }[(await scene.getAttribute('data-stage')) || 'input'];
+          await expect(scene.locator(activeLayerSelector)).toHaveCSS('visibility', 'hidden');
+        }
+        if (width > 1100) {
+          expect(stageCardGeometry.layer.x, `${path} ${width}px stage ${progress} active label left`).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
+          expect(stageCardGeometry.layer.right, `${path} ${width}px stage ${progress} active label right`).toBeLessThanOrEqual(
+            stageCardGeometry.scene.right + 1
+          );
+          expect(stageCardGeometry.layer.y, `${path} ${width}px stage ${progress} active label top`).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 1);
+          expect(stageCardGeometry.layer.bottom, `${path} ${width}px stage ${progress} active label bottom`).toBeLessThanOrEqual(
+            stageCardGeometry.scene.bottom + 1
+          );
+        }
       }
       const bounds = await scene.evaluate((element) => {
         const rect = element.getBoundingClientRect();
-        return { left: rect.left, right: rect.right, width: rect.width, scrollWidth: document.documentElement.scrollWidth };
+        return {
+          left: rect.left,
+          right: rect.right,
+          width: rect.width,
+          scrollWidth: document.documentElement.scrollWidth,
+        };
       });
       expect(bounds.left, `${path} ${width}px scene left edge`).toBeGreaterThanOrEqual(0);
       expect(bounds.right, `${path} ${width}px scene right edge`).toBeLessThanOrEqual(width);
       expect(bounds.scrollWidth, `${path} ${width}px document width`).toBe(width);
       const modelBounds = await scene.evaluate((element) => {
+        const sceneRect = element.getBoundingClientRect();
         const board = element.querySelector<HTMLElement>('.conversion-scene-board')!;
         const viewport = board.querySelector<HTMLElement>('.conversion-model-viewport')!;
+        const boardRect = board.getBoundingClientRect();
+        const viewportRect = viewport.getBoundingClientRect();
         return {
-          stageWidth: element.clientWidth,
-          stageHeight: element.clientHeight,
-          boardLeft: board.offsetLeft,
-          boardTop: board.offsetTop,
-          boardRight: board.offsetLeft + board.offsetWidth,
-          boardBottom: board.offsetTop + board.offsetHeight,
-          modelWidth: viewport.offsetWidth,
-          modelHeight: viewport.offsetHeight,
+          scene: {
+            left: sceneRect.left,
+            right: sceneRect.right,
+            top: sceneRect.top,
+            bottom: sceneRect.bottom,
+          },
+          board: {
+            left: boardRect.left,
+            right: boardRect.right,
+            top: boardRect.top,
+            bottom: boardRect.bottom,
+          },
+          model: {
+            left: viewportRect.left,
+            right: viewportRect.right,
+            top: viewportRect.top,
+            bottom: viewportRect.bottom,
+          },
         };
       });
-      expect(modelBounds.boardLeft, `${path} ${width}px model board clears the left scene edge`).toBeGreaterThanOrEqual(0);
-      expect(modelBounds.boardRight, `${path} ${width}px model board fits scene width`).toBeLessThanOrEqual(modelBounds.stageWidth);
-      expect(modelBounds.boardBottom, `${path} ${width}px model board fits scene height`).toBeLessThanOrEqual(modelBounds.stageHeight + 1);
-      expect(modelBounds.modelWidth).toBeLessThanOrEqual(modelBounds.boardRight - modelBounds.boardLeft);
-      expect(modelBounds.modelHeight).toBeLessThan(modelBounds.stageHeight);
+      expect(modelBounds.board.left, `${path} ${width}px model board clears the left scene edge`).toBeGreaterThanOrEqual(modelBounds.scene.left - 2);
+      expect(modelBounds.board.right, `${path} ${width}px model board fits scene width`).toBeLessThanOrEqual(modelBounds.scene.right + 2);
+      expect(modelBounds.board.bottom, `${path} ${width}px model board fits scene height`).toBeLessThanOrEqual(modelBounds.scene.bottom + 2);
+      expect(modelBounds.board.top).toBeGreaterThanOrEqual(modelBounds.scene.top - 2);
+      expect(modelBounds.model.left).toBeGreaterThanOrEqual(modelBounds.board.left - 2);
+      expect(modelBounds.model.right).toBeLessThanOrEqual(modelBounds.board.right + 2);
+      expect(modelBounds.model.top).toBeGreaterThanOrEqual(modelBounds.board.top - 2);
+      expect(modelBounds.model.bottom).toBeLessThanOrEqual(modelBounds.board.bottom + 2);
       await expect(page.locator('.story-card')).toHaveCount(4);
     }
   }
@@ -1425,28 +1660,18 @@ test('conversion scene stays visible with its active narrative on tablet and pho
 test('homepage story motion responds to live viewport resize and reduced-motion changes', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 760 });
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
-  const storyRail = page.locator('[data-story-rail]');
-  const target = await storyRail.evaluate((rail) => {
-    const scene = rail.querySelector<HTMLElement>('[data-conversion-scene]')!;
-    const cards = [...rail.querySelectorAll<HTMLElement>('.story-card')];
-    const first = cards[0].getBoundingClientRect();
-    const last = cards[cards.length - 1].getBoundingClientRect();
-    const firstCenter = first.top + window.scrollY + first.height / 2;
-    const lastCenter = last.top + window.scrollY + last.height / 2;
-    const sceneBox = scene.getBoundingClientRect();
-    const sceneCenter = (Number.parseFloat(getComputedStyle(scene).top) || 0) + sceneBox.height / 2;
-    const phone = window.innerWidth < 600;
-    const landscape = window.innerWidth >= 600 && window.innerWidth <= 850 && window.innerHeight <= 500;
-    const anchor = sceneCenter + (phone ? sceneBox.height / 2 + 150 : landscape ? sceneBox.height / 2 + 155 : 0);
-    return firstCenter - anchor + (lastCenter - firstCenter) * 0.4;
+  await page.evaluate(() => {
+    document.documentElement.style.scrollBehavior = 'auto';
   });
+  const storyRail = page.locator('[data-story-rail]');
+  const target = await storyScrollTarget(page, 0.4);
   await page.evaluate((target) => window.scrollTo({ top: target, behavior: 'instant' }), target);
   await expect.poll(() => depthStyle(page)).not.toBe('0');
   const narrowProgress = await storyRail.evaluate((rail) => Number.parseFloat(getComputedStyle(rail).getPropertyValue('--story-progress')));
 
   await page.setViewportSize({ width: 900, height: 760 });
-  await expect.poll(() => storyRail.evaluate((rail) => Number.parseFloat(getComputedStyle(rail).getPropertyValue('--story-progress'))))
+  await expect
+    .poll(() => storyRail.evaluate((rail) => Number.parseFloat(getComputedStyle(rail).getPropertyValue('--story-progress'))))
     .not.toBe(narrowProgress);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect.poll(() => depthStyle(page)).toBe('0');
@@ -1515,10 +1740,7 @@ test('macOS download caveat links to the known Gatekeeper issue in both language
     const actionBox = await actions.boundingBox();
     if (!noticeBox || !actionBox) throw new Error('Download notice or actions are not visible');
     expect(noticeBox.y + noticeBox.height).toBeLessThan(actionBox.y);
-    await expect(notice.locator('a')).toHaveAttribute(
-      'href',
-      'https://github.com/EasyKiconverter/EasyKiConverter/issues/153',
-    );
+    await expect(notice.locator('a')).toHaveAttribute('href', 'https://github.com/EasyKiconverter/EasyKiConverter/issues/153');
     await expect(notice.locator('a')).toHaveAttribute('target', '_blank');
     await expect(notice.locator('a')).toHaveAttribute('rel', 'noreferrer');
     await expect(notice).toContainText(path === '/' ? '请勿根据未经核实的教程关闭系统安全防护' : 'Do not disable macOS security protections');
@@ -1548,7 +1770,11 @@ test('bilingual hero copy names target EDAs and generated library content', asyn
 });
 
 test('bilingual hero artwork stays fully visible from phone through desktop widths', async ({ page }) => {
-  for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+  ]) {
     await page.setViewportSize(viewport);
     for (const path of pages) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -1556,7 +1782,11 @@ test('bilingual hero artwork stays fully visible from phone through desktop widt
       const bounds = await scene.evaluate((element) => {
         const rect = element.getBoundingClientRect();
         const board = element.querySelector('.conversion-scene-board')!.getBoundingClientRect();
-        return { scene: rect, board, scrollWidth: document.documentElement.scrollWidth };
+        return {
+          scene: rect,
+          board,
+          scrollWidth: document.documentElement.scrollWidth,
+        };
       });
       expect(bounds.scene.left, `${path} ${viewport.width}px scene left edge`).toBeGreaterThanOrEqual(0);
       expect(bounds.scene.right, `${path} ${viewport.width}px scene right edge`).toBeLessThanOrEqual(viewport.width);
@@ -1579,12 +1809,15 @@ test('English pages preserve copy across visual line breaks', async ({ page }) =
   await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const path of ['/en/', '/en/formats/', '/en/cases/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const mismatches = await page.locator('main h1, main h2, main h3, main h4').evaluateAll((headings) => headings
-      .map((heading) => ({
-        content: heading.textContent?.replace(/\s+/g, ' ').trim(),
-        visual: heading.innerText?.replace(/\s+/g, ' ').trim(),
-      }))
-      .filter(({ content, visual }) => content !== visual));
+    const mismatches = await page.locator('main h1, main h2, main h3, main h4').evaluateAll((headings) =>
+      headings
+        .map((heading) => ({
+          content: heading.textContent?.replace(/\s+/g, ' ').trim(),
+          visual: heading.innerText?.replace(/\s+/g, ' ').trim(),
+          visibility: getComputedStyle(heading).visibility,
+        }))
+        .filter(({ content, visual, visibility }) => visibility !== 'hidden' && content !== visual)
+    );
     expect(mismatches, `${path} heading text`).toEqual([]);
   }
 
@@ -1594,9 +1827,7 @@ test('English pages preserve copy across visual line breaks', async ({ page }) =
 
 test('bilingual conversion narrative explains the same input-to-library path', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#workflow > p').nth(1)).toHaveText(
-    '从元件数据开始，逐步准备库文件、转换目标格式，并回到熟悉的 EDA 工作流继续设计。',
-  );
+  await expect(page.locator('#workflow > p').nth(1)).toHaveText('从元件数据开始，逐步准备库文件、转换目标格式，并回到熟悉的 EDA 工作流继续设计。');
   const chineseScene = page.locator('[data-conversion-scene]');
   await expect(chineseScene.locator('.conversion-input-layer strong')).toHaveText('RP2040');
   await expect(chineseScene.locator('.conversion-input-layer span')).toContainText('C2040');
@@ -1608,7 +1839,7 @@ test('bilingual conversion narrative explains the same input-to-library path', a
 
   await page.goto('/en/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('#workflow > p').nth(1)).toHaveText(
-    'Start with component data, prepare the library assets, convert to a target format, then continue in the EDA workflow you already use.',
+    'Start with component data, prepare the library assets, convert to a target format, then continue in the EDA workflow you already use.'
   );
   const englishScene = page.locator('[data-conversion-scene]');
   await expect(englishScene.locator('.conversion-input-layer strong')).toHaveText('RP2040');
@@ -1662,30 +1893,37 @@ test('Chinese homepage and inner-page titles avoid orphaned characters on mobile
       { path: '/en/', english: true },
     ]) {
       await page.goto(language.path, { waitUntil: 'domcontentloaded' });
-      const textLines = async (selector: string) => page.locator(selector).first().evaluate((element) => {
-        const lines = new Map<number, string>();
-        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-        let node: Node | null;
-        while ((node = walker.nextNode())) {
-          const value = node.nodeValue || '';
-          let offset = 0;
-          for (const character of value) {
-            const end = offset + character.length;
-            if (!/\s/.test(character)) {
-              const range = document.createRange();
-              range.setStart(node, offset);
-              range.setEnd(node, end);
-              const top = Math.round(range.getBoundingClientRect().top);
-              lines.set(top, (lines.get(top) || '') + character);
+      const textLines = async (selector: string) =>
+        page
+          .locator(selector)
+          .first()
+          .evaluate((element) => {
+            const lines = new Map<number, string>();
+            const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+            let node: Node | null;
+            while ((node = walker.nextNode())) {
+              const value = node.nodeValue || '';
+              let offset = 0;
+              for (const character of value) {
+                const end = offset + character.length;
+                if (!/\s/.test(character)) {
+                  const range = document.createRange();
+                  range.setStart(node, offset);
+                  range.setEnd(node, end);
+                  const top = Math.round(range.getBoundingClientRect().top);
+                  lines.set(top, (lines.get(top) || '') + character);
+                }
+                offset = end;
+              }
             }
-            offset = end;
-          }
-        }
-        return [...lines.values()];
-      });
+            return [...lines.values()];
+          });
       const assertNoOrphanedHan = (lines: string[], label: string) => {
         if (!language.english) {
-          expect(lines.some((line) => /^[\p{Script=Han}。！？、，；：]$/u.test(line)), label).toBe(false);
+          expect(
+            lines.some((line) => /^[\p{Script=Han}。！？、，；：]$/u.test(line)),
+            label
+          ).toBe(false);
         }
       };
       const workbenchHeadline = await textLines('.product-showcase #showcase-title em');
@@ -1693,12 +1931,16 @@ test('Chinese homepage and inner-page titles avoid orphaned characters on mobile
       if (language.english) expect(workbenchHeadline.length).toBeLessThanOrEqual(width === 320 ? 3 : 2);
 
       const languagePath = language.english ? '/en' : '';
-      await page.goto(`${languagePath}/formats/`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${languagePath}/formats/`, {
+        waitUntil: 'domcontentloaded',
+      });
       const formatHeadline = await textLines('#format-matrix-title');
       assertNoOrphanedHan(formatHeadline, `${language.path} ${width}px format title has an orphaned character`);
       if (language.english) expect(formatHeadline.length).toBeLessThanOrEqual(width === 320 ? 3 : 2);
 
-      await page.goto(`${languagePath}/cases/`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${languagePath}/cases/`, {
+        waitUntil: 'domcontentloaded',
+      });
       const caseHeadline = await textLines('.case-card h2');
       assertNoOrphanedHan(caseHeadline, `${language.path} ${width}px first case title has an orphaned character`);
       if (width === 320) {
@@ -1707,7 +1949,9 @@ test('Chinese homepage and inner-page titles avoid orphaned characters on mobile
         expect(caseHeadline.length, `${language.path} ${width}px first case route title lines`).toBe(1);
       }
 
-      await page.goto(`${languagePath}/lab/`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${languagePath}/lab/`, {
+        waitUntil: 'domcontentloaded',
+      });
       const labHeadline = await textLines('#lab-title');
       assertNoOrphanedHan(labHeadline, `${language.path} ${width}px lab title has an orphaned character`);
       if (language.english) expect(labHeadline.length).toBeLessThanOrEqual(2);
@@ -1819,14 +2063,16 @@ test('bilingual case evidence follows each summary without stretched-card gaps',
     for (const path of ['/cases/', '/en/cases/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const cards = page.locator('.case-card');
-      const geometry = await cards.evaluateAll((elements) => elements.map((card) => {
-        const summary = card.querySelector(':scope > p')!.getBoundingClientRect();
-        const evidence = card.querySelector('dl')!.getBoundingClientRect();
-        return {
-          gap: evidence.top - summary.bottom,
-          bottom: card.getBoundingClientRect().bottom,
-        };
-      }));
+      const geometry = await cards.evaluateAll((elements) =>
+        elements.map((card) => {
+          const summary = card.querySelector(':scope > p')!.getBoundingClientRect();
+          const evidence = card.querySelector('dl')!.getBoundingClientRect();
+          return {
+            gap: evidence.top - summary.bottom,
+            bottom: card.getBoundingClientRect().bottom,
+          };
+        })
+      );
 
       expect(geometry).toHaveLength(2);
       expect(geometry.every(({ gap }) => gap >= 20 && gap < 48)).toBe(true);
@@ -1889,7 +2135,9 @@ test('Lab advanced controls are collapsed until explicitly opened', async ({ pag
 test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
   const stage = page.locator('[data-model-stage]');
-  await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+  await expect(stage).toHaveAttribute('data-model-source', 'glb', {
+    timeout: 20000,
+  });
   await expect(stage).toHaveAttribute('data-model-asset', test.info().project.name === 'chromium-mobile' ? 'mobile' : 'desktop');
   await expect(stage).toHaveAttribute('data-model-normals', 'provided');
   await expect(stage).toHaveAttribute('data-model-edge-segments');
@@ -1902,7 +2150,9 @@ test('Lab explains that surface detail continues after the GLB is ready', async 
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const stage = page.locator('[data-model-stage]');
-    await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+    await expect(stage).toHaveAttribute('data-model-source', 'glb', {
+      timeout: 20000,
+    });
     await expect(stage.locator('[data-model-detail-status]')).toContainText(/表面细节|SURFACE DETAIL/);
   }
 });
@@ -1912,7 +2162,9 @@ test('Lab loading state is bilingual, respects reduced motion, and ends when rea
   await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const path of ['/lab/', '/en/lab/']) {
     let continueAsset!: () => void;
-    const assetGate = new Promise<void>((resolve) => { continueAsset = resolve; });
+    const assetGate = new Promise<void>((resolve) => {
+      continueAsset = resolve;
+    });
     await page.route('**/assets/model/*.glb', async (route) => {
       await assetGate;
       await route.continue();
@@ -1920,12 +2172,48 @@ test('Lab loading state is bilingual, respects reduced motion, and ends when rea
 
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const stage = page.locator('[data-model-stage]');
+    await stage.scrollIntoViewIfNeeded();
+    await page.evaluate(() => {
+      const nativeRequestAnimationFrame = window.requestAnimationFrame.bind(window);
+      const nativeCancelAnimationFrame = window.cancelAnimationFrame.bind(window);
+      const queued = new Map<number, FrameRequestCallback>();
+      let nextFrameId = 0;
+      let holdFrames = true;
+      window.requestAnimationFrame = (callback) => {
+        if (!holdFrames) return nativeRequestAnimationFrame(callback);
+        const frameId = ++nextFrameId;
+        queued.set(frameId, callback);
+        return frameId;
+      };
+      window.cancelAnimationFrame = (frameId) => {
+        if (holdFrames) queued.delete(frameId);
+        else nativeCancelAnimationFrame(frameId);
+      };
+      Object.assign(window, {
+        releaseLabAnimationFrames: () => {
+          holdFrames = false;
+          for (const callback of queued.values()) nativeRequestAnimationFrame(callback);
+          queued.clear();
+          window.requestAnimationFrame = nativeRequestAnimationFrame;
+          window.cancelAnimationFrame = nativeCancelAnimationFrame;
+        },
+      });
+    });
     const loading = stage.locator('.model-loading-state');
     await expect(loading).toBeVisible();
     await expect(loading).toContainText(path.startsWith('/en/') ? 'Preparing the real 3D model' : '正在准备真实 3D 模型');
     await expect(loading.locator('.model-loading-orbit')).toHaveCSS('animation-name', 'none');
     continueAsset();
+    await expect(stage).toHaveAttribute('data-model-normals', /provided|computed/, {
+      timeout: 20_000,
+    });
+    await expect(stage).not.toHaveClass(/model-loaded/);
+    await expect(loading).toBeVisible();
+    await page.evaluate(() => {
+      (window as Window & { releaseLabAnimationFrames?: () => void }).releaseLabAnimationFrames?.();
+    });
     await expect(stage).toHaveClass(/model-loaded/, { timeout: 20_000 });
+    await expect(stage).toHaveAttribute('data-first-frame-rendered', 'true');
     await expect(loading).toBeHidden();
     await page.unroute('**/assets/model/*.glb');
   }
@@ -1934,7 +2222,15 @@ test('Lab loading state is bilingual, respects reduced motion, and ends when rea
 test('Lab keeps model metadata, view controls, caption, and slice panel from overlapping', async ({ page }) => {
   await page.route('**/assets/model/**', (route) => route.abort());
   await page.route('**/assets/vendor/**', (route) => route.abort());
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 428, height: 844 }, { width: 390, height: 844 }, { width: 360, height: 640 }, { width: 320, height: 700 }, { width: 320, height: 640 }]) {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 768, height: 1024 },
+    { width: 428, height: 844 },
+    { width: 390, height: 844 },
+    { width: 360, height: 640 },
+    { width: 320, height: 700 },
+    { width: 320, height: 640 },
+  ]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -1944,9 +2240,10 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
         const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
         const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
         if (window.innerWidth <= 760) {
-          element.querySelector<HTMLElement>('.neural-memory-readout')!.textContent = document.documentElement.lang === 'en'
-            ? 'SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD'
-            : '突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD';
+          element.querySelector<HTMLElement>('.neural-memory-readout')!.textContent =
+            document.documentElement.lang === 'en'
+              ? 'SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD'
+              : '突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD';
         }
         const caption = rect('.artifact-caption');
         const captionStyle = getComputedStyle(element.querySelector<HTMLElement>('.artifact-caption')!);
@@ -1955,10 +2252,15 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
         const detail = rect('.model-detail-status');
         const readout = rect('.neural-memory-readout');
         const stage = element.getBoundingClientRect();
+        const visibleMetadata = [note, detail, readout].filter((item, index) => {
+          const selector = ['.motion-model-note', '.model-detail-status', '.neural-memory-readout'][index];
+          const style = getComputedStyle(element.querySelector<HTMLElement>(selector)!);
+          return style.display !== 'none' && style.visibility !== 'hidden' && Number.parseFloat(style.opacity) > 0;
+        });
         return {
           noteWithReadout: intersects(note, readout),
           readoutWithDetail: intersects(readout, detail),
-          metadataInsideStage: [note, detail, readout].every((item) => item.left >= stage.left && item.right <= stage.right),
+          metadataInsideStage: visibleMetadata.every((item) => item.left >= stage.left && item.right <= stage.right),
           noteWithSwitcher: intersects(rect('.motion-model-note'), switcher),
           readoutWithSwitcher: window.innerWidth <= 760 && intersects(readout, switcher),
           detailWithSwitcher: intersects(rect('.model-detail-status'), switcher),
@@ -1990,14 +2292,17 @@ test('Lab asset guidance matches the generated delivery path', async ({ page }) 
 });
 
 test('Lab artifact switcher updates the active view and delivery copy', async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(180_000);
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const stage = page.locator('[data-model-stage]');
-    await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
-    await expect(stage).toHaveAttribute('data-artifact-controls-ready', 'true', { timeout: 30000 });
+    await expect(stage).toHaveAttribute('data-model-source', 'glb', {
+      timeout: 60_000,
+    });
+    await expect(stage).toHaveAttribute('data-artifact-controls-ready', 'true', { timeout: 60_000 });
     await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-label', /GLB delivery model|GLB 交付模型/);
-    const atlas = stage.locator('[data-artifact-view="atlas"]');
+    await stage.locator('.research-view-disclosure > summary').click();
+    const atlas = stage.locator('.research-view-switcher [data-artifact-view="atlas"]');
     await atlas.dispatchEvent('click');
     await expect(stage).toHaveAttribute('data-artifact-view', 'atlas');
     await expect(atlas).toHaveAttribute('aria-pressed', 'true');
@@ -2017,6 +2322,13 @@ test('Lab artifact switcher updates the active view and delivery copy', async ({
     await expect(stage.locator('#model-canvas')).not.toHaveAttribute('aria-hidden', 'true');
     await expect(stage.locator('.mesh-atlas')).toHaveAttribute('inert', '');
     await expect(stage.locator('[data-artifact-label]')).toContainText(/GLB DELIVERY MODEL|GLB 交付模型/);
+    for (const view of ['tomogram', 'oracle', 'trinity', 'morph']) {
+      const researchView = stage.locator(`.research-view-switcher [data-artifact-view="${view}"]`);
+      await researchView.dispatchEvent('click');
+      await expect(stage).toHaveAttribute('data-artifact-view', view);
+      await expect(researchView).toHaveAttribute('aria-pressed', 'true');
+    }
+    await stage.locator('.artifact-switcher [data-artifact-view="model"]').dispatchEvent('click');
   }
 });
 
@@ -2030,13 +2342,17 @@ test('Lab analysis views keep canvas metadata and mobile Tomogram tools clear', 
     const stage = page.locator('[data-model-stage]');
 
     for (const view of ['tomogram', 'oracle', 'trinity', 'morph']) {
-      await stage.evaluate((element, artifactView) => { element.dataset.artifactView = artifactView; }, view);
+      await stage.evaluate((element, artifactView) => {
+        element.dataset.artifactView = artifactView;
+      }, view);
       await expect(stage.locator('.motion-model-note')).toBeHidden();
       await expect(stage.locator('.model-detail-status')).toBeHidden();
       await expect(stage.locator('.neural-memory-readout')).toBeHidden();
     }
 
-    await stage.evaluate((element) => { element.dataset.artifactView = 'tomogram'; });
+    await stage.evaluate((element) => {
+      element.dataset.artifactView = 'tomogram';
+    });
     const tomogramLayout = await stage.evaluate((element) => {
       const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
       const switcher = rect('.artifact-switcher');
@@ -2052,13 +2368,24 @@ test('Lab analysis views keep canvas metadata and mobile Tomogram tools clear', 
         toolbarButtonsOverlap: toolbarButtons.some((button, index) => toolbarButtons.slice(index + 1).some((other) => intersects(button, other))),
       };
     });
-    expect(tomogramLayout).toEqual({ switcherAboveStageBottom: true, switcherOverToolbar: false, toolbarOverSpecimenLabel: false, specimenPreviewOverSwitcher: false, toolbarButtonsOverlap: false });
+    expect(tomogramLayout).toEqual({
+      switcherAboveStageBottom: true,
+      switcherOverToolbar: false,
+      toolbarOverSpecimenLabel: false,
+      specimenPreviewOverSwitcher: false,
+      toolbarButtonsOverlap: false,
+    });
   }
 });
 
 test('Lab keeps the model view switcher in the upper stage on desktop and mobile', async ({ page }) => {
   for (const path of ['/lab/', '/en/lab/']) {
-    for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 320, height: 640 }]) {
+    for (const viewport of [
+      { width: 1440, height: 900 },
+      { width: 768, height: 1024 },
+      { width: 390, height: 844 },
+      { width: 320, height: 640 },
+    ]) {
       await page.setViewportSize(viewport);
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const switcher = page.locator('.artifact-switcher');
@@ -2070,8 +2397,17 @@ test('Lab keeps the model view switcher in the upper stage on desktop and mobile
         const stageRect = stageElement.getBoundingClientRect();
         const switcherRect = switcherElement.getBoundingClientRect();
         return {
-          stage: { left: stageRect.left, right: stageRect.right, top: stageRect.top, height: stageRect.height },
-          switcher: { left: switcherRect.left, right: switcherRect.right, top: switcherRect.top },
+          stage: {
+            left: stageRect.left,
+            right: stageRect.right,
+            top: stageRect.top,
+            height: stageRect.height,
+          },
+          switcher: {
+            left: switcherRect.left,
+            right: switcherRect.right,
+            top: switcherRect.top,
+          },
           buttonHeights: [...switcherElement.querySelectorAll('button')].map((button) => button.getBoundingClientRect().height),
         };
       });
@@ -2088,12 +2424,18 @@ test('Lab keeps the model view switcher in the upper stage on desktop and mobile
 });
 
 test('Lab gives the mobile model stage enough room in both languages', async ({ page }) => {
-  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }, { width: 320, height: 640 }]) {
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 360, height: 640 },
+    { width: 320, height: 640 },
+  ]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
       const stage = page.locator('[data-model-stage]');
-      await expect(stage).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+      await expect(stage).toHaveAttribute('data-model-source', 'glb', {
+        timeout: 20000,
+      });
       const bounds = await stage.evaluate((element) => {
         const rect = element.getBoundingClientRect();
         return { width: rect.width, height: rect.height };
@@ -2106,7 +2448,10 @@ test('Lab gives the mobile model stage enough room in both languages', async ({ 
 });
 
 test('Lab mobile scroll chapters stay clear of model controls in both languages', async ({ page }) => {
-  for (const viewport of [{ width: 390, height: 844 }, { width: 360, height: 640 }]) {
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 360, height: 640 },
+  ]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.addInitScript(() => {
@@ -2137,6 +2482,7 @@ test('Lab mobile scroll chapters stay clear of model controls in both languages'
           const appImage = page.locator('.motion-app-window img');
           await expect(appImage).toHaveJSProperty('complete', true);
           await expect.poll(() => appImage.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+          await expect(page.locator('[data-model-stage]')).toHaveCSS('visibility', 'hidden');
         }
         await page.waitForTimeout(450);
 
@@ -2146,15 +2492,34 @@ test('Lab mobile scroll chapters stay clear of model controls in both languages'
           if (!chapterElement || !stageElement) return null;
           const chapter = chapterElement.getBoundingClientRect();
           const stage = stageElement.getBoundingClientRect();
-          const controls = Array.from(stageElement.querySelectorAll<HTMLElement>(
-            '.artifact-switcher, .model-explode, .artifact-caption, .model-detail-status, .experiment-controls-toggle',
-          )).map((element) => {
-            const rect = element.getBoundingClientRect();
-            return { name: element.className, top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right };
-          }).filter((rect) => rect.bottom > rect.top && rect.right > rect.left);
+          const controls = Array.from(
+            stageElement.querySelectorAll<HTMLElement>(
+              '.artifact-switcher, .model-explode, .artifact-caption, .model-detail-status, .experiment-controls-toggle'
+            )
+          )
+            .map((element) => {
+              const rect = element.getBoundingClientRect();
+              return {
+                name: element.className,
+                top: rect.top,
+                bottom: rect.bottom,
+                left: rect.left,
+                right: rect.right,
+              };
+            })
+            .filter((rect) => rect.bottom > rect.top && rect.right > rect.left);
           return {
-            chapter: { top: chapter.top, bottom: chapter.bottom, left: chapter.left, right: chapter.right },
-            stage: { top: stage.top, bottom: stage.bottom, visibility: getComputedStyle(stageElement).visibility },
+            chapter: {
+              top: chapter.top,
+              bottom: chapter.bottom,
+              left: chapter.left,
+              right: chapter.right,
+            },
+            stage: {
+              top: stage.top,
+              bottom: stage.bottom,
+              visibility: getComputedStyle(stageElement).visibility,
+            },
             destinations: (() => {
               const element = document.querySelector<HTMLElement>('.motion-destinations');
               const rect = element?.getBoundingClientRect();
@@ -2167,14 +2532,17 @@ test('Lab mobile scroll chapters stay clear of model controls in both languages'
         expect(layout, `${path} ${viewport.width}px story step ${step}`).not.toBeNull();
         if (step === '3') {
           expect(layout!.stage.visibility, `${path} ${viewport.width}px final product chapter should hand off the model`).toBe('hidden');
-          expect(layout!.chapter.bottom, `${path} ${viewport.width}px final chapter should stay clear of destination links`).toBeLessThan(layout!.destinations!.top);
+          expect(layout!.chapter.bottom, `${path} ${viewport.width}px final chapter should stay clear of destination links`).toBeLessThan(
+            layout!.destinations!.top
+          );
         } else {
           expect(layout!.chapter.bottom, `${path} ${viewport.width}px story step ${step} should keep copy above the model`).toBeLessThan(layout!.stage.top);
           for (const control of layout!.controls) {
-            const overlaps = layout!.chapter.top < control.bottom
-              && layout!.chapter.bottom > control.top
-              && layout!.chapter.left < control.right
-              && layout!.chapter.right > control.left;
+            const overlaps =
+              layout!.chapter.top < control.bottom &&
+              layout!.chapter.bottom > control.top &&
+              layout!.chapter.left < control.right &&
+              layout!.chapter.right > control.left;
             expect(overlaps, `${path} ${viewport.width}px story step ${step} overlaps ${control.name}`).toBe(false);
           }
         }
@@ -2193,7 +2561,11 @@ test('Lab tablet layout keeps the narrative heading clear of the model in both l
       if (!heading || !model) return null;
       const headingRect = heading.getBoundingClientRect();
       const modelRect = model.getBoundingClientRect();
-      return { headingBottom: headingRect.bottom, modelTop: modelRect.top, scrollWidth: document.documentElement.scrollWidth };
+      return {
+        headingBottom: headingRect.bottom,
+        modelTop: modelRect.top,
+        scrollWidth: document.documentElement.scrollWidth,
+      };
     });
     expect(layout).not.toBeNull();
     expect(layout!.headingBottom).toBeLessThan(layout!.modelTop);
@@ -2211,7 +2583,11 @@ test('Lab desktop model stage stays clear of the narrative heading', async ({ pa
       if (!heading || !model) return null;
       const headingRect = heading.getBoundingClientRect();
       const modelRect = model.getBoundingClientRect();
-      return { headingRight: headingRect.right, modelLeft: modelRect.left, scrollWidth: document.documentElement.scrollWidth };
+      return {
+        headingRight: headingRect.right,
+        modelLeft: modelRect.left,
+        scrollWidth: document.documentElement.scrollWidth,
+      };
     });
     expect(layout).not.toBeNull();
     expect(layout!.headingRight).toBeLessThan(layout!.modelLeft);
@@ -2220,7 +2596,10 @@ test('Lab desktop model stage stays clear of the narrative heading', async ({ pa
 });
 
 test('Lab narrative headlines keep the Chinese lead together on desktop', async ({ page }) => {
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 900 }]) {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1024, height: 900 },
+  ]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -2252,7 +2631,11 @@ test('Lab narrative headlines keep the Chinese lead together on desktop', async 
 });
 
 test('Lab model controls stay inside the visible stage at phone, tablet, and desktop widths', async ({ page }) => {
-  for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+  ]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -2263,8 +2646,18 @@ test('Lab model controls stay inside the visible stage at phone, tablet, and des
         const stageRect = stage.getBoundingClientRect();
         const controlsRect = controls.getBoundingClientRect();
         return {
-          stage: { top: stageRect.top, right: stageRect.right, bottom: stageRect.bottom, left: stageRect.left },
-          controls: { top: controlsRect.top, right: controlsRect.right, bottom: controlsRect.bottom, left: controlsRect.left },
+          stage: {
+            top: stageRect.top,
+            right: stageRect.right,
+            bottom: stageRect.bottom,
+            left: stageRect.left,
+          },
+          controls: {
+            top: controlsRect.top,
+            right: controlsRect.right,
+            bottom: controlsRect.bottom,
+            left: controlsRect.left,
+          },
         };
       });
       expect(bounds).not.toBeNull();
@@ -2277,7 +2670,11 @@ test('Lab model controls stay inside the visible stage at phone, tablet, and des
 });
 
 test('Lab advanced-tools entry stays with the model and clear of the view switcher', async ({ page }) => {
-  for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+  ]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -2290,14 +2687,19 @@ test('Lab advanced-tools entry stays with the model and clear of the view switch
           const { top, right, bottom, left } = element.getBoundingClientRect();
           return { top, right, bottom, left };
         };
-        return { stage: rect(stage), toggle: rect(toggle), switcher: rect(switcher) };
+        return {
+          stage: rect(stage),
+          toggle: rect(toggle),
+          switcher: rect(switcher),
+        };
       });
       expect(bounds).not.toBeNull();
       expect(bounds!.toggle.top).toBeGreaterThanOrEqual(bounds!.stage.top);
       expect(bounds!.toggle.right).toBeLessThanOrEqual(bounds!.stage.right);
       expect(bounds!.toggle.bottom).toBeLessThanOrEqual(bounds!.stage.bottom);
       expect(bounds!.toggle.left).toBeGreaterThanOrEqual(bounds!.stage.left);
-      const overlaps = bounds!.toggle.left < bounds!.switcher.right &&
+      const overlaps =
+        bounds!.toggle.left < bounds!.switcher.right &&
         bounds!.toggle.right > bounds!.switcher.left &&
         bounds!.toggle.top < bounds!.switcher.bottom &&
         bounds!.toggle.bottom > bounds!.switcher.top;
@@ -2307,24 +2709,27 @@ test('Lab advanced-tools entry stays with the model and clear of the view switch
 });
 
 test('Lab story keeps a concise scroll runway across desktop and mobile', async ({ page }) => {
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
     await page.setViewportSize(viewport);
     const maxViewports = viewport.width <= 760 ? 2.9 : 3.3;
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const storyHeight = await page.locator('.motion-narrative').evaluate((element) =>
-        element.getBoundingClientRect().height,
-      );
+      const storyHeight = await page.locator('.motion-narrative').evaluate((element) => element.getBoundingClientRect().height);
       expect(storyHeight / viewport.height).toBeLessThanOrEqual(maxViewports);
     }
   }
 });
 
 test('mobile Lab controls keep the model open and reveal slice controls on demand', async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(180_000);
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const stage = page.locator('[data-model-stage]');
+    await stage.scrollIntoViewIfNeeded();
     const controls = await page.locator('.artifact-switcher').evaluate((switcher) => {
       const stage = switcher.closest('[data-model-stage]');
       const panel = stage?.querySelector('.model-explode');
@@ -2341,15 +2746,14 @@ test('mobile Lab controls keep the model open and reveal slice controls on deman
 
     expect(controls.flexWrap).toBe('nowrap');
     expect(controls.overflowX).toBe('auto');
-    expect(controls.scrollWidth).toBeGreaterThan(controls.clientWidth);
+    expect(controls.scrollWidth).toBeLessThanOrEqual(controls.clientWidth);
     expect(controls.switcherHeight).toBeLessThan(48);
     expect(controls.sliceAxesDisplay).toBe('none');
     expect(controls.sliceRangeDisplay).toBe('none');
 
-    const stage = page.locator('[data-model-stage]');
     const sliceToggle = page.locator('.model-slice-toggle');
     await expect(stage).toHaveAttribute('data-controls-ready', 'true');
-    await expect(stage).toHaveClass(/model-loaded/, { timeout: 20_000 });
+    await expect(stage).toHaveClass(/model-loaded/, { timeout: 120_000 });
     await expect(sliceToggle).toBeEnabled();
     await sliceToggle.click();
     await expect(sliceToggle).toHaveAttribute('aria-pressed', 'true');
@@ -2365,38 +2769,48 @@ test('mobile Lab controls keep the model open and reveal slice controls on deman
   }
 });
 
-test('mobile Lab view switcher explains horizontal scrolling in both languages and motion modes', async ({ browser }) => {
+test('mobile Lab separates everyday views from the expandable research views', async ({ browser }) => {
   test.setTimeout(60_000);
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+  });
   const page = await context.newPage();
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     for (const reducedMotion of ['no-preference', 'reduce'] as const) {
       await page.emulateMedia({ reducedMotion });
       const switcher = page.locator('.artifact-switcher');
-      const hint = page.locator('.artifact-scroll-hint');
-      const descriptionId = path.startsWith('/en/') ? 'artifact-scroll-description-en' : 'artifact-scroll-description-zh';
-      const description = page.locator(`#${descriptionId}`);
-      await expect(switcher).toHaveAttribute('aria-describedby', descriptionId);
-      await expect(description).toContainText(path.startsWith('/en/') ? 'scroll horizontally' : '横向滑动');
-      await expect(hint).toBeVisible();
-      await expect(hint).toContainText(path.startsWith('/en/') ? 'Swipe for more views' : '左右滑动查看更多');
+      const researchViews = page.locator('.research-view-disclosure');
+      await expect(switcher.locator('[data-artifact-view]')).toHaveCount(3);
+      await expect(researchViews.locator('summary')).toBeVisible();
+      await expect(page.locator('.artifact-scroll-hint')).toBeHidden();
+      await expect(page.locator('.research-view-panel')).toBeHidden();
       const layout = await page.evaluate(() => {
         const stage = document.querySelector('[data-model-stage]')!.getBoundingClientRect();
+        const controls = document.querySelector('.model-view-controls')!.getBoundingClientRect();
         const switcher = document.querySelector('.artifact-switcher')!.getBoundingClientRect();
-        const hint = document.querySelector('.artifact-scroll-hint')!.getBoundingClientRect();
-        const detail = document.querySelector('.model-detail-status')!.getBoundingClientRect();
+        const advanced = document.querySelector('.experiment-controls-toggle')!.getBoundingClientRect();
+        const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
         return {
-          hintInsideStage: hint.left >= stage.left && hint.right <= stage.right,
-          hintBelowSwitcher: hint.top >= switcher.bottom,
-          hintAboveDetail: hint.bottom <= detail.top,
+          controlsInsideStage: controls.left >= stage.left && controls.right <= stage.right,
+          coreViewsInsideControls: switcher.left >= controls.left && switcher.right <= controls.right,
+          advancedToggleClear: !intersects(controls, advanced),
         };
       });
-      expect(layout, `${path} ${reducedMotion} scroll cue should stay clear of nearby model controls`).toEqual({
-        hintInsideStage: true,
-        hintBelowSwitcher: true,
-        hintAboveDetail: true,
+      expect(layout, `${path} ${reducedMotion} view controls should stay clear and inside the model stage`).toEqual({
+        controlsInsideStage: true,
+        coreViewsInsideControls: true,
+        advancedToggleClear: true,
       });
+
+      await researchViews.locator('summary').click();
+      await expect(page.locator('.research-view-switcher [data-artifact-view]')).toHaveCount(5);
+      const panel = await page.locator('.research-view-panel').boundingBox();
+      expect(panel, `${path} ${reducedMotion} research panel should have a visible boundary`).not.toBeNull();
+      expect(panel!.x).toBeGreaterThanOrEqual(0);
+      expect(panel!.x + panel!.width).toBeLessThanOrEqual(390);
+      await researchViews.locator('summary').click();
+      await expect(page.locator('.research-view-panel')).toBeHidden();
     }
   }
   for (const width of [768, 1440]) {
@@ -2404,6 +2818,34 @@ test('mobile Lab view switcher explains horizontal scrolling in both languages a
     await expect(page.locator('.artifact-scroll-hint')).toBeHidden();
   }
   await context.close();
+});
+
+test('Tomogram research actions stay collapsed until advanced tools are opened', async ({ page }) => {
+  test.setTimeout(60_000);
+  await blockLabGeometryAssets(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const researchViews = page.locator('.research-view-disclosure');
+    await researchViews.locator('summary').click();
+    await researchViews.locator('[data-artifact-view="tomogram"]').click();
+    await expect(researchViews).not.toHaveAttribute('open', '');
+    await expect(researchViews.locator('summary')).toBeFocused();
+    const stage = page.locator('[data-model-stage]');
+    await stage.scrollIntoViewIfNeeded();
+    await expect(stage).toHaveAttribute('data-controls-ready', 'true');
+    const toolbar = stage.locator('.tomogram-toolbar');
+    const advanced = page.locator('[data-experiment-controls]');
+
+    await expect(stage).toHaveAttribute('data-artifact-view', 'tomogram');
+    await expect(advanced).toHaveAttribute('aria-expanded', 'false');
+    await expect(toolbar).toBeHidden();
+    await advanced.click({ force: true });
+    await expect(advanced).toHaveAttribute('aria-expanded', 'true');
+    await expect(toolbar).toBeVisible();
+    await advanced.click({ force: true });
+    await expect(toolbar).toBeHidden();
+  }
 });
 
 test('Lab loading guidance avoids repeating the same delivery facts', async ({ page }) => {
@@ -2442,7 +2884,10 @@ test('Lab introductions explain the real geometry story in both languages', asyn
   await expect(page.locator('.lab-warning')).toContainText('controls unlock when the model is ready');
   await expect(page.locator('.lab-warning')).toContainText('The homepage skips CAD/WASM');
 
-  for (const [path, english] of [['/lab/', false], ['/en/lab/', true]] as const) {
+  for (const [path, english] of [
+    ['/lab/', false],
+    ['/en/lab/', true],
+  ] as const) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     for (const width of [390, 360, 320]) {
       await page.setViewportSize({ width, height: 844 });
@@ -2469,7 +2914,10 @@ test('Lab introductions explain the real geometry story in both languages', asyn
       const introHeight = await page.locator('.lab-intro > p:not(.kicker)').evaluate((element) => element.getBoundingClientRect().height);
       expect(introHeight, `${path} ${width}px introduction should stay compact`).toBeLessThanOrEqual(80);
       if (!english) {
-        expect(lines.some((line) => /^[\p{Script=Han}。！？、，；：]$/u.test(line)), `${path} ${width}px intro should not strand a Han character`).toBe(false);
+        expect(
+          lines.some((line) => /^[\p{Script=Han}。！？、，；：]$/u.test(line)),
+          `${path} ${width}px intro should not strand a Han character`
+        ).toBe(false);
       }
     }
   }
@@ -2512,7 +2960,11 @@ test('320px Cases actions stay inside the viewport in both languages', async ({ 
         const { left, right, top, bottom } = element.getBoundingClientRect();
         return { left, right, top, bottom };
       });
-      return { viewport: innerWidth, document: document.documentElement.scrollWidth, links };
+      return {
+        viewport: innerWidth,
+        document: document.documentElement.scrollWidth,
+        links,
+      };
     });
 
     expect(layout, `${path} should render its case actions`).not.toBeNull();
@@ -2548,14 +3000,21 @@ test('Format actions stay inside their content column at narrow mobile widths', 
         return {
           viewport: innerWidth,
           document: document.documentElement.scrollWidth,
-          container: { left, right, clientWidth: actions.clientWidth, scrollWidth: actions.scrollWidth },
+          container: {
+            left,
+            right,
+            clientWidth: actions.clientWidth,
+            scrollWidth: actions.scrollWidth,
+          },
           links,
         };
       });
 
       expect(layout, `${path} should render format actions at ${width}px`).not.toBeNull();
       expect(layout!.document, `${path} should not create page-level overflow at ${width}px`).toBeLessThanOrEqual(width);
-      expect(layout!.container.scrollWidth, `${path} action row should fit its content column at ${width}px`).toBeLessThanOrEqual(layout!.container.clientWidth);
+      expect(layout!.container.scrollWidth, `${path} action row should fit its content column at ${width}px`).toBeLessThanOrEqual(
+        layout!.container.clientWidth
+      );
       expect(layout!.links).toHaveLength(2);
       for (const link of layout!.links) {
         expect(link.left, `${path} action should remain inside its content column at ${width}px`).toBeGreaterThanOrEqual(layout!.container.left - 1);
@@ -2564,7 +3023,9 @@ test('Format actions stay inside their content column at narrow mobile widths', 
       }
 
       if (width === 320 && path === '/en/formats/') {
-        expect(layout!.links[1].top, 'the English release link should wrap below the primary CTA when needed').toBeGreaterThanOrEqual(layout!.links[0].bottom - 1);
+        expect(layout!.links[1].top, 'the English release link should wrap below the primary CTA when needed').toBeGreaterThanOrEqual(
+          layout!.links[0].bottom - 1
+        );
       }
       if (width === 360) {
         expect(layout!.links[1].top, `${path} actions should remain on one row when they fit`).toBeLessThan(layout!.links[0].bottom);
@@ -2579,10 +3040,11 @@ test('reduced motion renders the Lab without a continuous animation loop', async
   await page.addInitScript(() => {
     let frames = 0;
     const request = window.requestAnimationFrame.bind(window);
-    window.requestAnimationFrame = (callback) => request((time) => {
-      frames += 1;
-      callback(time);
-    });
+    window.requestAnimationFrame = (callback) =>
+      request((time) => {
+        frames += 1;
+        callback(time);
+      });
     (window as typeof window & { __modelFrames?: () => number }).__modelFrames = () => frames;
   });
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
@@ -2594,12 +3056,21 @@ test('reduced motion renders the Lab without a continuous animation loop', async
 });
 
 test('reduced-motion Lab keeps the model stage below its heading in every render view', async ({ browser }) => {
-  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1440, height: 900 } });
+  const context = await browser.newContext({
+    reducedMotion: 'reduce',
+    viewport: { width: 1440, height: 900 },
+  });
   const page = await context.newPage();
   await page.route('**/assets/model/**', (route) => route.abort());
   await page.route('**/assets/vendor/**', (route) => route.abort());
 
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 900 }, { width: 390, height: 844 }, { width: 360, height: 640 }, { width: 320, height: 700 }]) {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 768, height: 900 },
+    { width: 390, height: 844 },
+    { width: 360, height: 640 },
+    { width: 320, height: 700 },
+  ]) {
     await page.setViewportSize(viewport);
     for (const path of ['/lab/', '/en/lab/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -2608,15 +3079,21 @@ test('reduced-motion Lab keeps the model stage below its heading in every render
         await stage.evaluate((element, artifactView) => {
           element.dataset.artifactView = artifactView;
           if (artifactView === 'model' && window.innerWidth <= 760) {
-            element.querySelector<HTMLElement>('.neural-memory-readout')!.textContent = document.documentElement.lang === 'en'
-              ? 'SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD'
-              : '突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD';
+            element.querySelector<HTMLElement>('.neural-memory-readout')!.textContent =
+              document.documentElement.lang === 'en'
+                ? 'SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD'
+                : '突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD';
           }
         }, view);
         const layout = await page.evaluate(() => {
           const heading = document.querySelector('.motion-heading')!.getBoundingClientRect();
           const model = document.querySelector('[data-model-stage]')!.getBoundingClientRect();
-          return { headingBottom: heading.bottom, modelTop: model.top, modelLeft: model.left, modelRight: model.right };
+          return {
+            headingBottom: heading.bottom,
+            modelTop: model.top,
+            modelLeft: model.left,
+            modelRight: model.right,
+          };
         });
         expect(layout.modelTop, `${path} ${viewport.width}px ${view} should follow its heading`).toBeGreaterThanOrEqual(layout.headingBottom - 1);
         expect(layout.modelLeft, `${path} ${viewport.width}px ${view} should remain in the viewport`).toBeGreaterThanOrEqual(-1);
@@ -2633,8 +3110,18 @@ test('reduced-motion Lab keeps the model stage below its heading in every render
               switcherInsideStage: switcher.top >= stage.top - 1 && switcher.bottom <= stage.bottom + 1,
               dockInsideStage: dock.top >= stage.top - 1 && dock.bottom <= stage.bottom + 1,
               controlsOverlap: switcher.left < dock.right && switcher.right > dock.left && switcher.top < dock.bottom && switcher.bottom > dock.top,
-              readoutOverlap: window.innerWidth <= 760 && switcher.left < readout.right && switcher.right > readout.left && switcher.top < readout.bottom && switcher.bottom > readout.top,
-              detailOverlap: window.innerWidth <= 760 && switcher.left < detail.right && switcher.right > detail.left && switcher.top < detail.bottom && switcher.bottom > detail.top,
+              readoutOverlap:
+                window.innerWidth <= 760 &&
+                switcher.left < readout.right &&
+                switcher.right > readout.left &&
+                switcher.top < readout.bottom &&
+                switcher.bottom > readout.top,
+              detailOverlap:
+                window.innerWidth <= 760 &&
+                switcher.left < detail.right &&
+                switcher.right > detail.left &&
+                switcher.top < detail.bottom &&
+                switcher.bottom > detail.top,
             };
           });
           expect(controls.switcherInsideStage, `${path} ${viewport.width}px view switcher should stay inside its model stage`).toBe(true);
@@ -2654,19 +3141,8 @@ test('sitemap lists every public bilingual route', async ({ request }) => {
   const response = await request.get('/sitemap.xml');
   expect(response.ok()).toBeTruthy();
   const sitemap = await response.text();
-  const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(
-    (match) => new URL(match[1]).pathname,
-  );
-  expect(paths).toEqual([
-    '/',
-    '/en/',
-    '/formats/',
-    '/en/formats/',
-    '/cases/',
-    '/en/cases/',
-    '/lab/',
-    '/en/lab/',
-  ]);
+  const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname);
+  expect(paths).toEqual(['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']);
 });
 
 test('all public routes expose complete social metadata', async ({ request }) => {

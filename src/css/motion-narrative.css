@@ -3377,6 +3377,224 @@ body:has(.motion-narrative) .product-showcase {
   }
 }
 
+/* Keep everyday component views easy to scan; research modes open on demand. */
+.model-view-controls {
+  position: absolute;
+  z-index: 5;
+  top: calc(13% + 20px);
+  left: 50%;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  width: max-content;
+  max-width: calc(100% - 28px);
+  transform: translateX(-50%);
+}
+
+.motion-model[data-artifact-view] .model-view-controls .artifact-switcher {
+  position: relative;
+  inset: auto;
+  width: max-content;
+  max-width: 100%;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  transform: none;
+}
+
+.research-view-disclosure {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.research-view-disclosure > summary {
+  display: block;
+  padding: 15px 14px;
+  border: 1px solid #2928241c;
+  border-radius: 999px;
+  background: #fffdf8e8;
+  box-shadow: 0 10px 35px #29282412;
+  color: var(--muted, #746f66);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  list-style: none;
+  backdrop-filter: blur(12px);
+}
+
+.research-view-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.research-view-disclosure > summary::after {
+  content: "+";
+  margin-left: 7px;
+  color: var(--violet, #6254c8);
+}
+
+.research-view-disclosure[open] > summary::after {
+  content: "−";
+}
+
+.research-view-disclosure > summary:hover,
+.research-view-disclosure > summary:focus-visible {
+  color: var(--ink, #292824);
+  outline: 2px solid var(--violet, #6254c8);
+  outline-offset: 3px;
+}
+
+.research-view-panel {
+  position: absolute;
+  z-index: 8;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(54vh, 420px);
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid #29282420;
+  border-radius: 18px;
+  background: #fffdf8f2;
+  box-shadow: 0 18px 48px #29282426;
+  color: var(--ink, #292824);
+  backdrop-filter: blur(16px);
+}
+
+.research-view-disclosure:not([open]) > .research-view-panel {
+  display: none;
+}
+
+.research-view-panel > p {
+  margin: 0 0 12px;
+  color: var(--muted, #746f66);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.research-view-switcher {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.research-view-switcher button {
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #29282418;
+  border-radius: 11px;
+  background: #f6f2eb;
+  color: var(--muted, #625d55);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.research-view-switcher button:hover,
+.research-view-switcher button[aria-pressed="true"] {
+  border-color: #6254c866;
+  background: #ece8ff;
+  color: #5145a8;
+}
+
+.research-view-switcher button:focus-visible {
+  outline: 2px solid var(--violet, #6254c8);
+  outline-offset: 2px;
+}
+
+.research-view-switcher .model-scan-toggle {
+  grid-column: 1 / -1;
+  background: #f3e7de;
+}
+
+.research-view-switcher .model-scan-toggle:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.motion-model:not([data-controls-open="true"]) .neural-memory-readout,
+.motion-model:not([data-controls-open="true"]) .swarm-lineage-readout,
+.motion-model:not([data-controls-open="true"]) .swarm-lineage-picker {
+  display: none;
+}
+
+.motion-model:not([data-controls-open="true"]) .experiment-controls-toggle {
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
+.model-explode:not(:has(.model-slice-toggle[aria-pressed="true"]))
+  .model-slice-heading,
+.model-explode:not(:has(.model-slice-toggle[aria-pressed="true"]))
+  .model-slice-axes,
+.model-explode:not(:has(.model-slice-toggle[aria-pressed="true"]))
+  .model-slice-range,
+.model-explode:not(:has(.model-slice-toggle[aria-pressed="true"]))
+  .model-slice-value {
+  display: none;
+}
+
+.motion-model .artifact-scroll-hint {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .model-view-controls {
+    top: calc(13% + 18px);
+    right: 14px;
+    left: 14px;
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
+
+  .motion-model[data-artifact-view] .model-view-controls .artifact-switcher {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    padding: 4px;
+    gap: 2px;
+  }
+
+  .model-view-controls .artifact-switcher button {
+    padding: 10px clamp(7px, 2.2vw, 11px);
+    font-size: 10px;
+  }
+
+  .research-view-disclosure > summary {
+    padding: 15px 10px;
+    font-size: 10px;
+  }
+
+  .research-view-panel {
+    right: 0;
+    width: min(320px, calc(100vw - 28px));
+    max-height: min(56vh, 360px);
+    padding: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .model-view-controls {
+    right: 8px;
+    left: 8px;
+    gap: 4px;
+  }
+
+  .model-view-controls .artifact-switcher button {
+    padding-inline: 6px;
+    font-size: 9px;
+  }
+
+  .research-view-disclosure > summary {
+    padding-inline: 8px;
+    font-size: 9px;
+  }
+}
+
 /* Analytical canvases carry their own titles; keep the view switcher clear of Tomogram tools. */
 @media (max-width: 760px) {
   .motion-model[data-artifact-view="tomogram"] .artifact-switcher {
@@ -3586,6 +3804,10 @@ body:has(.motion-narrative) .product-showcase {
 .motion-model:not([data-controls-open="true"]) [class*=" morph-"] {
   display: none !important;
 }
+.motion-model:not([data-controls-open="true"])[data-artifact-view="tomogram"]
+  .tomogram-toolbar {
+  display: none;
+}
 @media (max-width: 760px) {
   .experiment-controls-toggle {
     top: calc(13% + 92px);
@@ -3739,5 +3961,89 @@ body:has(.motion-narrative) .product-showcase {
     top: 75%;
     height: 50svh;
     min-height: 320px;
+  }
+}
+
+/* Final control layout: three familiar views first, research tools on demand. */
+.motion-model[data-artifact-view] .model-view-controls {
+  position: absolute;
+  z-index: 7;
+  top: calc(13% + 20px);
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  width: max-content;
+  max-width: calc(100% - 28px);
+  transform: translateX(-50%);
+}
+
+.motion-model[data-artifact-view] .model-view-controls .artifact-switcher {
+  position: relative;
+  inset: auto;
+  flex-wrap: nowrap;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  justify-content: flex-start;
+  transform: none;
+}
+
+.motion-model[data-artifact-view] .artifact-scroll-hint {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .motion-model[data-artifact-view] .model-view-controls {
+    top: calc(13% + 18px);
+    right: 14px;
+    left: 14px;
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
+
+  .motion-model[data-artifact-view] .model-view-controls .artifact-switcher {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    padding: 4px;
+    gap: 2px;
+  }
+
+  .motion-model[data-artifact-view]
+    .model-view-controls
+    .artifact-switcher
+    button {
+    padding: 10px clamp(7px, 2.2vw, 11px);
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .motion-model[data-artifact-view] .model-view-controls {
+    right: 8px;
+    left: 8px;
+    gap: 4px;
+  }
+
+  .motion-model[data-artifact-view]
+    .model-view-controls
+    .artifact-switcher
+    button {
+    padding-inline: 6px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 760px) {
+  .motion-model[data-artifact-view="tomogram"] .model-view-controls {
+    top: 218px;
+    right: 14px;
+    left: 14px;
+    width: auto;
+    max-width: none;
   }
 }

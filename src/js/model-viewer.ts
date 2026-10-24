@@ -1133,6 +1133,7 @@ export const setupModel = async (): Promise<void> => {
   let neuralDecisionRole: SectionLoop["role"] = "outer";
   let rendering = false;
   let reducedMotionRenderPending = true;
+  let modelUploaded = false;
   const neuralMemory = stage.querySelector<HTMLElement>("[data-neural-memory]");
   const synapticStorageKey = "easyki-synaptic-memory-v1";
   const persistedSynapses = new Map<string, { weight: number; lastSeen: number }>();
@@ -3130,7 +3131,16 @@ export const setupModel = async (): Promise<void> => {
     if (caption && artifactCaption) artifactCaption.textContent = caption;
     if (requestFrame) wake();
   };
-  artifactButtons.forEach((button) => button.addEventListener("click", () => syncArtifactView(button)));
+  artifactButtons.forEach((button) =>
+    button.addEventListener("click", () => {
+      syncArtifactView(button);
+      if (!button.closest(".research-view-switcher")) return;
+      const disclosure = button.closest(".research-view-disclosure");
+      if (!(disclosure instanceof HTMLDetailsElement)) return;
+      disclosure.open = false;
+      disclosure.querySelector("summary")?.focus({ preventScroll: true });
+    }),
+  );
   const initialArtifactButton = artifactButtons.find((button) => button.dataset.artifactView === stage.dataset.artifactView) ?? artifactButtons[0];
   if (initialArtifactButton) syncArtifactView(initialArtifactButton, false);
   stage.dataset.artifactControlsReady = "true";
@@ -4335,6 +4345,10 @@ export const setupModel = async (): Promise<void> => {
     applyExplode();
     updateSectionPlane();
     renderer.render(scene, camera);
+    if (modelUploaded && stage.dataset.firstFrameRendered !== "true") {
+      stage.dataset.firstFrameRendered = "true";
+      stage.classList.add("model-loaded");
+    }
     if (stage.dataset.artifactView === "atlas" || stage.dataset.artifactView === "tomogram") drawAtlas();
     if (stage.dataset.artifactView === "oracle") drawOracle();
     if (stage.dataset.artifactView === "trinity") drawTrinity();
@@ -4359,6 +4373,7 @@ export const setupModel = async (): Promise<void> => {
     spanMm: number,
     centerMm: number[],
   ): void => {
+    modelUploaded = true;
     modelSpanMm = spanMm;
     modelCenterMm = centerMm.length === 3 ? centerMm : [0, 0, 0];
     const materials = new Map<string, THREE.MeshStandardMaterial>();
@@ -7149,7 +7164,6 @@ export const setupModel = async (): Promise<void> => {
       wake();
     });
     syncNeuralMemory();
-    stage.classList.add("model-loaded");
     if (pendingGenomeIndex !== null && swarmArchive[pendingGenomeIndex]) {
       const index = pendingGenomeIndex;
       pendingGenomeIndex = null;
