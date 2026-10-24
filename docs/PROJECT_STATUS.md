@@ -2,7 +2,7 @@
 
 [English](PROJECT_STATUS_en.md)
 
-最后核对：2026-10-17。本文根据当前仓库、GitHub PR/CI、Release API 和线上只读检查更新；外部状态可能变化，执行前须重新核实。
+最后核对：2026-10-18。本文根据当前仓库、GitHub PR/CI 和正式站只读检查更新；未执行部署，真机状态未核实。
 
 ## 项目目标
 
@@ -10,7 +10,19 @@
 
 ## 当前阶段
 
-项目处于 V0.0.1 稳定维护与用户体验持续改进阶段。PR #393 修正首页流程卡片的双语下载 CTA，经 PR #394 晋级 `master`（merge `92a20a2`）；master push Site Quality `38982780264` 通过（238 passed、4 skipped）。为使后续晋级 PR 与 master 历史一致，PR #395 将 master 祖先历史同步回版本分支（merge `4d9735f`，无文件差异）；PR 与合并后 Site Quality 检查均通过。源码未部署生产；线上首页重复 `<title>` 仍待获准部署后复验。真实手机与网络性能仍未验证。Release API 仍可能返回 HTTP 403，仓库核对过的回退版本为 `v3.1.13`。
+项目处于 V0.0.1 稳定维护与用户体验持续改进阶段。截至 2026-10-18，`version/V0.0.1` 为 `ee58d16`，`master` 为 `d7596a6`。PR #406（`feature/lab-viewer-entry-cta`）已由 Feng083 独立审评并合入版本分支（merge `dc20c3c`）；PR Site Quality `39131893571` 通过（258 passed、4 skipped），Dependency Review `39131893478` 通过。该改动将中英文 3D Lab 主操作改为直接进入交互模型，Release 下载保留为次级外链；移动端 CTA 同排并覆盖 390/768/1440px 与 reduced-motion。合并后回归发现部分 CTA 测试在 CI runner 超时；PR #407 拆分语言/视口/动态偏好用例后，由 Feng083 独立审评并合入（merge `ee58d16`），PR Site Quality `39133965985` 通过（268 passed、6 skipped，其中移动项目跳过两项桌面视口重复检查），Dependency Review `39133965987` 通过；合并后 Site Quality `39134484986` 通过（268 passed、6 skipped）。PR #404（`fix/mobile-homepage-3d-first-fold`）已由 Feng083 独立审评并合入版本分支；PR Site Quality 与 Dependency Review 均通过，合并后 Site Quality `39121400170` 通过（254 passed、4 skipped）。该改动将 390×844 中英文首屏真实 WebGL 模型视口从约 39% 可见提升至完整可见，320–428px、760/844px 双语首屏回归通过。PR #402 的平板叙事场景遮挡修复仍有效：当前 768×760 中英文四阶段浏览器回归通过；整理阶段截图为 `.github/pr-evidence/homepage-3d-story-{zh,en}-768-prepare-after-overlap.png`，现有几何/遮挡回归覆盖各叙事阶段。本地构建、Astro（37 文件、0 诊断）、8 页校验、模型资产检查、6 项 Python 单测和 CSS 格式检查通过；Release API 返回 HTTP 403 时本地构建使用已核对的 `v3.1.13` 回退数据。生产部署、真机和网络性能仍未验收；生产 2026-10-18 只读检查发现两种首页仍有重复 `<title>`，详情见 WEB-02。
+
+本轮 Lab 手机视图切换栏审查发现 9 个选项虽可横向滚动，但隐藏滚动条且没有提示，导致后续视图不易发现。已增加中英文屏幕提示与辅助技术说明；390px 窄屏普通/减少动态模式专项回归通过，768/1440px 不显示多余提示；完整 Playwright（240 passed、4 skipped）、构建、8 路由和模型资产检查均通过。PR #398 由 Feng083 独立审评通过；Site Quality run `38985998641`（240 passed、4 skipped）及 Dependency Review `38985998628` 均通过。变更尚未部署生产或验证真机。
+
+### 2026-10-18 追补审计（PR #408 之后）
+
+PR #408 为文档同步 PR，已合并至 `version/V0.0.1`，合并提交 `8b13839`；其中记录的 `ee58d16` 是 PR #407 后的功能代码基线。PR #408 的合并后 Site Quality run `39135450332` 成功。当前版本分支重新构建通过：Astro 37 个文件、0 诊断，生成 8 个页面；`python3 tools/validate_site.py` 与 `pnpm run assets:check` 均通过。本地 `dist/index.html` 与 `dist/en/index.html` 各含一个 `<title>`。Release API 返回 HTTP 403，本地构建使用已核对的 `v3.1.13` 回退数据。
+
+正式站只读复核发现 `/` 与 `/en/` 各返回两个完全相同的本地化 `<title>`；`/lab/` 与 `/en/lab/` 各返回一个。首页响应 `Last-Modified` 为 `Tue, 13 Oct 2026 00:20:00 GMT`，`CF-Cache-Status: DYNAMIC`。这表明线上内容与当前版本构建不同，不能归因于 Cloudflare 静态缓存。当前版本构建本身标题检查通过，但尚未部署；按审批门禁，部署整个版本分支仍需本次操作的明确批准。
+
+平板遮挡与减少动态效果也在当前检出分支复测：`pnpm exec playwright test tests/site.spec.ts -g "conversion scene stays visible with its active narrative on tablet and phones"` 为 2 passed；筛选首页动态偏好用例为 4 passed（Chromium 与 Chromium Mobile）。实际手机/网络性能仍未验证；当前环境没有 `adb`，故无法进行设备级检查。
+
+继续 WEB-04 时，双语 390px 和 1440px Lab 滚动截图都显示“构建元件库 / Build the library”节点的板卡模型接近 95° 侧视，器件细节难以辨认。实测 390px 视口下舞台宽 359px，1440px 视口下舞台宽 700px；移动舞台角度行程从完整关键帧变化的 50% 平滑降到 30%，并把该节点关键帧目标从 3.1rad 调至 2.2rad。模型现在分别约为手机 46°、桌面 69°，板面与主要器件更清楚。中英文 390px 与中文 1440px 真实 GLB 前后截图、姿态单测均已补充。`pnpm run check`、构建、完整 Playwright（242 passed、4 skipped）、8 路由校验、模型资产检查、6 项 Python 单测均通过。Feng083 独立审评后，PR #399 合入 `version/V0.0.1`（merge `4bf7257`）；PR Site Quality `38990293629`、Dependency Review `38990293643` 均通过，合并后 Site Quality `38990624444` 通过（242 passed、4 skipped）。未部署生产或验证真机。
 
 随后 PR #345 经 Feng083 独立审评并合入 `version/V0.0.1`（merge `74f8437`），修复 reduced-motion 下 Lab 标题/模型舞台重叠及控件定位；PR Site Quality、Dependency Review 和合并后 Site Quality run `38756881636` 均通过。生产未部署。
 
@@ -63,14 +75,14 @@ PR #347 将 3D Lab 的环境光、补光和正面光强度调低，以改善板�
 | ID / 优先级 | 目标、范围与交付 | 依赖、步骤与验收 | 状态 |
 | --- | --- | --- | --- |
 | WEB-01 / P1 | 修正首页双语品牌大小写、格式支持说明和下载引导。 | 双语文案/样式回归；构建、站点校验、完整 Playwright；PR #285/#286。 | 已完成并晋级 `master`；未部署生产 |
-| WEB-02 / P1 | 将已在 `master` 的首页唯一标题修复同步至正式站，并验证 8 路由及首页标题。 | 先核对远端备份/回滚与当前版本；仅在项目所有者明确批准此次生产部署后执行；逐路由检查 HTTP、标题数、语言互链、资源和浏览器冒烟。 | 源码已修复；部署脚本会校验构建产物、发布后的 8 路由和 SEO 元数据，并在验证失败时回滚。2026-10-17 线上 GET 复查：中英文首页 HTTP 200，但各有两个 `<title>`，`Last-Modified` 为 2026-10-13 00:20 UTC；生产部署仍需针对本次操作明确批准 |
+| WEB-02 / P1 | 将唯一标题的当前版本构建发布到正式站，并验证 8 路由及首页标题。 | 先核对远端备份/回滚与当前版本；仅在项目所有者明确批准此次生产部署后执行；逐路由检查 HTTP、标题数、语言互链、资源和浏览器冒烟。 | 当前 `version/V0.0.1` 构建的首页各有一个 `<title>`，8 页构建/校验通过。正式站首页仍各返回两个完全相同的标题（最新只读响应 `Last-Modified: Tue, 13 Oct 2026 00:20:00 GMT`、`CF-Cache-Status: DYNAMIC`）；部署整个版本分支仍待明确批准。部署脚本具有发布后校验及失败回滚 |
 | WEB-03 / P2 | 测量真实手机和不同网络环境下的加载、缓存与交互性能，形成可复现记录。 | 收集设备/网络型号、浏览器、缓存状态和测试步骤；测首屏/模型加载、下载与交互，记录原始数据。 | 等待真实设备及可控网络；未验证 |
-| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | 延续 PR #291–#393 的文案、响应式、可访问性、截图隐私与模型展示改进；新变更需双语回归、构建、路由/资产检查、完整 Playwright 和独立审评。 | PR #393 将“开始下载 / Start downloading”更正为准确描述页内跳转的“查看下载项 / View downloads”，补充双语回归及桌面/移动截图；独立审评、PR/合并后检查通过。PR #394 已晋级 `master`（238 passed、4 skipped）。源码未部署生产；真机未验证。继续证据驱动的用户可见内容与风格一致性改进。 |
+| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | 新变更需双语回归、构建、路由/资产检查、完整 Playwright 和独立审评。 | PR #398 提升 Lab 手机视图切换器可发现性；#399 调整叙事姿态；#400、#403 同步验证与状态记录；#402 建立首页 3D 转换故事并修复阶段卡片/模型遮挡；#404 将移动端 3D 模型带入首屏；#406 将 Lab 首要 CTA 改为进入交互模型并明确区分 Release 外链；#407 稳定 CTA 视口回归。上述 PR 均已独立审评并合入 `version/V0.0.1`。#404 的 390×844 中英文前后截图见 `.github/pr-evidence/home-first-fold-{before,after}-{zh,en}-390.png`，双语首屏回归覆盖 320–428px；#406 的 Lab 前后截图见 `.github/pr-evidence/lab-viewer-entry-{before,after}-*`，并覆盖 390/768/1440px、双语与 reduced-motion；PR Site Quality 通过（258 passed、4 skipped）。#407 将相关回归拆为小型独立用例，桌面 1440px 仅由桌面项目执行；PR Site Quality 通过（268 passed、6 skipped）。平板“整理”阶段 768×760 中英文截图见 `.github/pr-evidence/homepage-3d-story-{zh,en}-768-prepare-after-overlap.png`；当前场景几何与遮挡回归覆盖各阶段，聚焦浏览器测试通过。视口截图不替代真机验证；源码未部署生产。 |
 | WEB-05 / P1 | 让格式矩阵每个目标链接到准确的专属验证依据，并准确描述自动测试和人工规程的覆盖边界。 | 11 行双语链接回归；构建、站点校验、资产检查、完整 Playwright；PR #287/#288 CI 和独立审查。 | 已完成并晋级 `master` |
 
 ## 关键风险与控制
 
-1. **生产与源码不同步。** 2026-10-15 线上只读复查中 8 路由均 HTTP 200、canonical 正确，但两个首页各有两个 `<title>`；响应 `Last-Modified` 为 2026-10-13 00:20 UTC。版本分支/`master` CI 通过不等于已部署；部署仍需明确批准。
+1. **生产与源码不同步。** 最新只读检查确认首页仍有重复标题，而当前版本构建各只有一个；响应为 Cloudflare `DYNAMIC`。版本分支/`master` CI 通过不等于已部署；生产部署仍需针对本次操作明确批准。
 2. **实机证据缺失。** Chromium Mobile 和视口截图不能代替真实手机、受限网络、缓存和设备性能测试；WEB-03 保持未验证。
 3. **Release API 受限。** 本地构建可能退回 `v3.1.13` 快照；CI 设置 `RELEASE_SYNC_REQUIRED=1` 并负责验证实时 Release 同步。不得把本地快照当成 Release 已更新。
 
