@@ -9,6 +9,7 @@ import MotionNarrative from "../../../components/MotionNarrative.astro";
 import SeoHead from "../../../components/SeoHead.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
 import { latestRelease } from "../../../data/release";
+import { labModelSizes } from "../../../data/lab-model-sizes";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
 const pageUrl = new URL("en/lab/", siteBase);
@@ -40,8 +41,8 @@ const chineseUrl = new URL("lab/", siteBase);
         <div class="lab-warning" aria-label="Lab loading guidance">
           <div class="lab-warning-heading"><span>Loading plan</span><strong>GLB first</strong></div>
           <div class="lab-warning-metrics">
-            <span><b>10.0 MB</b><small>desktop GLB</small></span>
-            <span><b>8.4 MB</b><small>mobile GLB</small></span>
+            <span><b data-model-size="desktop">{labModelSizes.desktop} MB</b><small>desktop GLB</small></span>
+            <span><b data-model-size="mobile">{labModelSizes.mobile} MB</b><small>mobile GLB</small></span>
           </div>
           <p>The homepage skips CAD/WASM; controls unlock when the model is ready. STEP/WASM is a fallback if GLB loading fails. Use a desktop browser for technical validation; download the stable release below.</p>
         </div>

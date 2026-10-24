@@ -25,7 +25,7 @@ pnpm run test:browser
 
 ## 资产决策
 
-STEP 是实验室的工程源资产，未压缩的桌面/移动源 GLB 保存在 `src/assets/source/model/`，由 `tools/prepare_model_asset.py` 离线生成；`pnpm run assets:lab-models` 为 Lab 生成 Meshopt 交付 GLB，`pnpm run assets:story-model` 为首页生成对应压缩资产。Lab 桌面/移动压缩产物保留 303 个网格和分别 278,784 / 228,004 个三角面，文件大小约 2.19 / 1.87 MB；几何计数和体积由 `pnpm run assets:check` 检查。首页不进行浏览器 CAD 三角化；模型资源或 WebGL 不可用时使用静态 WebP 回退。
+STEP 是实验室的工程源资产，未压缩的桌面/移动源 GLB 保存在 `src/assets/source/model/`，由 `tools/prepare_model_asset.py` 离线生成；`pnpm run assets:lab-models` 为 Lab 生成 Meshopt 交付 GLB 并更新 `src/data/lab-model-sizes.json`，`pnpm run assets:story-model` 为首页生成对应压缩资产。Lab 桌面/移动压缩产物保留 303 个网格和分别 278,784 / 228,004 个三角面，文件大小约 2.19 / 1.87 MB；页面显示的体积来自该清单，`pnpm run assets:check` 会核对清单与交付文件的实际字节数。首页不进行浏览器 CAD 三角化；模型资源或 WebGL 不可用时使用静态 WebP 回退。
 
 ## 本地 Chromium 性能采样
 
