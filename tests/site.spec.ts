@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
 const pages = ['/', '/en/'];
 const depthStyle = (page: Page) =>
@@ -24,6 +24,19 @@ const storyScrollTarget = async (page: Page, progress: number) =>
 const blockLabGeometryAssets = async (page: Page) => {
   await page.route('**/assets/model/**', (route) => route.abort());
   await page.route('**/assets/vendor/**', (route) => route.abort());
+};
+const labModelFiles = [
+  ['desktop', 'Easykiconverter_展示模型.glb'],
+  ['mobile', 'Easykiconverter_展示模型-mobile.glb'],
+] as const;
+const expectLabModelSizesMatchFiles = async (page: Page, request: APIRequestContext) => {
+  for (const [variant, fileName] of labModelFiles) {
+    const response = await request.get(`/assets/model/${encodeURIComponent(fileName)}`);
+    expect(response.ok(), `${variant} GLB response`).toBeTruthy();
+    const bytes = Number(response.headers()['content-length']);
+    expect(Number.isInteger(bytes), `${variant} GLB content length`).toBeTruthy();
+    await expect(page.locator(`[data-model-size="${variant}"]`)).toHaveText(`${(bytes / 1_000_000).toFixed(2)} MB`);
+  }
 };
 
 test('bilingual homepages render one localized document title', async ({ page }) => {
@@ -727,7 +740,7 @@ test('desktop Chinese case title avoids an orphan line', async ({ page }) => {
   expect(box!.height).toBeLessThan(lineHeight * 1.4);
 });
 
-test('content and Lab headers keep the shared brand treatment', async ({ page }) => {
+test('content and Lab headers keep the shared brand treatment', async ({ page, request }) => {
   await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.content-page-header .brand img')).toHaveAttribute('src', /easyki-icon\.svg/);
   if (test.info().project.name === 'chromium') {
@@ -740,8 +753,7 @@ test('content and Lab headers keep the shared brand treatment', async ({ page })
   await expect(page.locator('.lab-header a[aria-current="page"]')).toHaveText('3D 实验室');
   await expect(page.locator('.lab-header .github-link span')).toHaveText('↗');
   await expect(page.locator('.content-page-skip')).toHaveAttribute('href', '#lab-main');
-  await expect(page.locator('.lab-warning')).toContainText('10.0 MB');
-  await expect(page.locator('.lab-warning')).toContainText('8.4 MB');
+  await expectLabModelSizesMatchFiles(page, request);
   await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.lab-header a[aria-current="page"]')).toHaveText('3D Lab');
   await expect(page.locator('.content-page-skip')).toHaveText('Skip to lab content');
@@ -1167,6 +1179,13 @@ for (const viewport of labEntryViewports) {
     });
   }
 }
+
+test('bilingual Lab model-size labels match the delivered GLB files', async ({ page, request }) => {
+  for (const path of ['/lab/', '/en/lab/']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await expectLabModelSizesMatchFiles(page, request);
+  }
+});
 
 for (const [path] of labEntryRoutes) {
   test(`reduced-motion Lab primary action keeps ${path} model visible`, async ({ page }) => {
@@ -2299,10 +2318,9 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
   }
 });
 
-test('Lab asset guidance matches the generated delivery path', async ({ page }) => {
+test('Lab asset guidance matches the generated delivery path', async ({ page, request }) => {
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-warning')).toContainText('10.0 MB');
-  await expect(page.locator('.lab-warning')).toContainText('8.4 MB');
+  await expectLabModelSizesMatchFiles(page, request);
   await expect(page.locator('.lab-warning')).toContainText('STEP/WASM');
 });
 
@@ -2873,13 +2891,13 @@ test('Lab loading guidance avoids repeating the same delivery facts', async ({ p
   }
 });
 
-test('Lab loading guidance separates delivery sizes from fallback copy', async ({ page }) => {
+test('Lab loading guidance separates delivery sizes from fallback copy', async ({ page, request }) => {
   for (const path of ['/lab/', '/en/lab/']) {
     await page.goto(path, { waitUntil: 'domcontentloaded' });
     const warning = page.locator('.lab-warning');
     await expect(warning.locator('.lab-warning-heading strong')).toHaveText(/GLB 优先|GLB first/);
     await expect(warning.locator('.lab-warning-metrics')).toHaveCount(1);
-    await expect(warning.locator('.lab-warning-metrics b')).toHaveText(['10.0 MB', '8.4 MB']);
+    await expectLabModelSizesMatchFiles(page, request);
     await expect(warning.locator('p')).toContainText(/STEP\/WASM/);
   }
 });

@@ -25,7 +25,7 @@ Older STEP/WASM, Worker, Lighthouse 100 and TBT 0 ms observations describe the f
 
 ## Asset decision
 
-STEP remains the Lab's engineering source asset. Uncompressed desktop/mobile source GLBs live in `src/assets/source/model/` and are generated offline by `tools/prepare_model_asset.py`; `pnpm run assets:lab-models` creates the Lab's Meshopt delivery files, and `pnpm run assets:story-model` creates the corresponding homepage asset. The Lab's compressed desktop/mobile outputs preserve 303 meshes and 278,784 / 228,004 triangles in about 2.19 / 1.87 MB; `pnpm run assets:check` checks geometry counts and size budgets. The homepage does no browser-side CAD triangulation and falls back to the static WebP if its model or WebGL is unavailable.
+STEP remains the Lab's engineering source asset. Uncompressed desktop/mobile source GLBs live in `src/assets/source/model/` and are generated offline by `tools/prepare_model_asset.py`; `pnpm run assets:lab-models` creates the Lab's Meshopt delivery files and updates `src/data/lab-model-sizes.json`, and `pnpm run assets:story-model` creates the corresponding homepage asset. The Lab's compressed desktop/mobile outputs preserve 303 meshes and 278,784 / 228,004 triangles in about 2.19 / 1.87 MB. The page labels read from this manifest, and `pnpm run assets:check` verifies its byte counts against the delivered files. The homepage does no browser-side CAD triangulation and falls back to the static WebP if its model or WebGL is unavailable.
 
 ## Local Chromium performance sample
 

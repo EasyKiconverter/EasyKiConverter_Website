@@ -2,6 +2,7 @@
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
     "allowJs": false,
+    "resolveJsonModule": true,
     "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
     "skipLibCheck": true

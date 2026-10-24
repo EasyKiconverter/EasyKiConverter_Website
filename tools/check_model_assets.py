@@ -23,6 +23,7 @@ ASSETS = {
     "mobile": MODEL_ROOT / "Easykiconverter_展示模型-mobile.glb",
     "story": ROOT / "public/assets/showcase/easyki-conversion-story.glb",
 }
+SIZE_MANIFEST = ROOT / "src/data/lab-model-sizes.json"
 GLB_MAGIC = 0x46546C67
 JSON_CHUNK = 0x4E4F534A
 BIN_CHUNK = 0x004E4942
@@ -143,6 +144,17 @@ def main() -> int:
             reports.append(inspect_asset(name, path, require_meshopt=True))
         except (OSError, ValueError, KeyError, IndexError, json.JSONDecodeError) as error:
             errors.append(str(error))
+    try:
+        size_manifest = json.loads(SIZE_MANIFEST.read_text(encoding="utf-8"))
+        for name in ("desktop", "mobile"):
+            report = next((item for item in reports if item.name == name), None)
+            if report is not None and size_manifest.get(name) != report.bytes:
+                errors.append(
+                    f"{name}: size manifest has {size_manifest.get(name)!r} bytes, "
+                    f"but the delivery GLB has {report.bytes:,} bytes"
+                )
+    except (OSError, json.JSONDecodeError) as error:
+        errors.append(f"invalid Lab model size manifest {SIZE_MANIFEST.relative_to(ROOT)}: {error}")
     limits = {"desktop": args.max_desktop_triangles, "mobile": args.max_mobile_triangles, "story": args.max_story_triangles}
     byte_limits = {"desktop": args.max_desktop_bytes, "mobile": args.max_mobile_bytes, "story": args.max_story_bytes}
     for report in reports:

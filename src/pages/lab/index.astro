@@ -9,6 +9,7 @@ import MotionNarrative from "../../components/MotionNarrative.astro";
 import SeoHead from "../../components/SeoHead.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import { latestRelease } from "../../data/release";
+import { labModelSizes } from "../../data/lab-model-sizes";
 const siteRoot = new URL(import.meta.env.SITE);
 const siteBase = new URL(import.meta.env.BASE_URL, siteRoot);
 const pageUrl = new URL("lab/", siteBase);
@@ -40,8 +41,8 @@ const englishUrl = new URL("en/lab/", siteBase);
         <div class="lab-warning" aria-label="实验室加载说明">
           <div class="lab-warning-heading"><span>加载说明</span><strong>GLB 优先</strong></div>
           <div class="lab-warning-metrics">
-            <span><b>10.0 MB</b><small>桌面 GLB</small></span>
-            <span><b>8.4 MB</b><small>移动 GLB</small></span>
+            <span><b data-model-size="desktop">{labModelSizes.desktop} MB</b><small>桌面 GLB</small></span>
+            <span><b data-model-size="mobile">{labModelSizes.mobile} MB</b><small>移动 GLB</small></span>
           </div>
           <p>首页不加载 CAD/WASM；模型就绪后开放实验控件。GLB 加载失败时才回退到 STEP/WASM。技术验证建议使用桌面浏览器；下载请使用下方稳定版入口。</p>
         </div>
