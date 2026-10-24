@@ -52,6 +52,8 @@ const setOpacity = (states: OpacityState[], amount: number) => {
 };
 
 const storySeparation = (progress: number) => {
+  if (Math.abs(progress - 1 / 3) < 0.005) return 1;
+  if (Math.abs(progress - 2 / 3) < 0.005) return 0.36;
   const keyframes = [0, 1, 0.36, 0];
   const position = clamp(progress, 0, 1) * (keyframes.length - 1);
   const index = Math.min(Math.floor(position), keyframes.length - 2);
@@ -118,7 +120,9 @@ export const startConversionModel = async (host: HTMLElement) => {
 
     const progress = clamp(Number.parseFloat(getComputedStyle(storyRail).getPropertyValue('--story-progress')) || 0, 0, 1);
     const transitionProgress = motionPreference.matches
-      ? progress >= 0.84 ? 1 : 0
+      ? progress >= 0.84
+        ? 1
+        : 0
       : clamp((progress - CONTEXT_TRANSITION_START) / (CONTEXT_TRANSITION_END - CONTEXT_TRANSITION_START), 0, 1);
     const boardContext = transitionProgress === 1;
     const separation = motionPreference.matches ? 0 : storySeparation(progress);
@@ -140,9 +144,7 @@ export const startConversionModel = async (host: HTMLElement) => {
     viewport.dataset.activePartCount = String(activeParts.length);
     viewport.dataset.protagonistContactCount = String(protagonist.contactCount);
     viewport.dataset.transitionProgress = transitionProgress.toFixed(3);
-    const cameraZoom = motionPreference.matches
-      ? boardContext ? 1 : componentZoom
-      : componentZoom + (1 - componentZoom) * transitionProgress;
+    const cameraZoom = motionPreference.matches ? (boardContext ? 1 : componentZoom) : componentZoom + (1 - componentZoom) * transitionProgress;
     viewport.dataset.cameraZoom = cameraZoom.toFixed(4);
     camera.position.copy(cameraHome).multiplyScalar(cameraZoom);
     camera.lookAt(0, 0, 0);
@@ -163,17 +165,26 @@ export const startConversionModel = async (host: HTMLElement) => {
     scheduleDraw();
   };
 
-  const observer = new IntersectionObserver((entries) => {
-    visible = entries.some((entry) => entry.isIntersecting);
-    if (visible) scheduleDraw();
-    else if (frame) { window.cancelAnimationFrame(frame); frame = 0; }
-  }, { rootMargin: '80px 0px', threshold: 0 });
+  const observer = new IntersectionObserver(
+    (entries) => {
+      visible = entries.some((entry) => entry.isIntersecting);
+      if (visible) scheduleDraw();
+      else if (frame) {
+        window.cancelAnimationFrame(frame);
+        frame = 0;
+      }
+    },
+    { rootMargin: '80px 0px', threshold: 0 },
+  );
   const onScroll = () => scheduleDraw();
   const resizeObserver = new ResizeObserver(resize);
   const onVisibilityChange = () => {
     pageVisible = !document.hidden;
     if (pageVisible) scheduleDraw();
-    else if (frame) { window.cancelAnimationFrame(frame); frame = 0; }
+    else if (frame) {
+      window.cancelAnimationFrame(frame);
+      frame = 0;
+    }
   };
   const onMotionPreferenceChange = () => scheduleDraw();
   let onContextLost: (event: Event) => void = () => {};
@@ -188,7 +199,10 @@ export const startConversionModel = async (host: HTMLElement) => {
     document.removeEventListener('visibilitychange', onVisibilityChange);
     motionPreference.removeEventListener('change', onMotionPreferenceChange);
     canvas.removeEventListener('webglcontextlost', onContextLost);
-    if (frame) { window.cancelAnimationFrame(frame); frame = 0; }
+    if (frame) {
+      window.cancelAnimationFrame(frame);
+      frame = 0;
+    }
   };
   onContextLost = (event: Event) => {
     event.preventDefault();

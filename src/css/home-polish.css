@@ -1497,6 +1497,211 @@
   }
 }
 
+/* The home story is a vertical product stage at every breakpoint. */
+.product-journey {
+  max-width: 1440px;
+  padding: 0 clamp(16px, 4vw, 56px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 3vw, 38px);
+}
+
+.product-journey > .hero {
+  order: 0;
+  width: 100%;
+  min-height: 0;
+  padding: clamp(24px, 3svh, 40px) 0 0;
+  justify-content: center;
+  text-align: center;
+}
+
+.product-journey .hero-copy {
+  width: min(100%, 900px);
+  margin-inline: auto;
+}
+
+.product-journey .hero-lede {
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.product-journey .hero-actions,
+.product-journey .hero-facts {
+  justify-content: center;
+}
+
+.product-journey .scroll-cue {
+  display: none;
+}
+
+.product-journey > .conversion-scene {
+  order: 1;
+  position: sticky;
+  top: clamp(430px, 55svh, 520px);
+  align-self: center;
+  width: 100%;
+  height: clamp(360px, 65svh, 720px);
+  min-height: 0;
+  max-height: 720px;
+  overflow: hidden;
+  container-type: size;
+}
+
+.product-journey > .conversion-scene .conversion-scene-board {
+  top: 50%;
+  left: 50%;
+  width: min(88%, calc(130cqh - 32px));
+  transform: translate(-50%, -50%) perspective(1500px)
+    rotateX(
+      calc(4deg + var(--story-progress) * 5deg - var(--scene-y, 0) * 1deg)
+    )
+    rotateY(
+      calc(-7deg + var(--story-progress) * 16deg + var(--scene-x, 0) * 3deg)
+    )
+    rotateZ(calc(-2deg + var(--story-progress) * 3deg))
+    scale(calc(0.94 + var(--story-progress) * 0.04));
+  transform-origin: center;
+}
+
+.product-journey > .conversion-scene .conversion-input-layer {
+  top: 8%;
+  left: 6%;
+  width: min(34%, 300px);
+}
+
+.product-journey > .conversion-scene .conversion-parts-layer {
+  top: 8%;
+  right: 5%;
+  width: min(34%, 300px);
+}
+
+.product-journey > .conversion-scene .conversion-output-layer {
+  right: 5%;
+  bottom: 7%;
+  width: min(24%, 260px);
+}
+
+.product-journey > .conversion-scene .conversion-use-layer {
+  left: 5%;
+  bottom: 7%;
+  width: min(30%, 300px);
+}
+
+.product-journey > .story {
+  order: 2;
+  width: 100%;
+  padding: 12px 0 clamp(500px, 58svh, 560px);
+}
+
+.product-journey .story-rail {
+  margin-top: clamp(24px, 4vw, 52px);
+}
+
+.product-journey .story-card,
+.product-journey .story-card-b {
+  min-height: clamp(300px, 45svh, 430px);
+  padding: clamp(28px, 5vw, 52px) clamp(12px, 4vw, 40px) 64px;
+}
+
+@media (max-width: 850px) {
+  .product-journey {
+    gap: 24px;
+    padding-inline: clamp(16px, 4vw, 32px);
+  }
+
+  .product-journey > .hero {
+    padding-top: clamp(28px, 5svh, 48px);
+  }
+
+  .product-journey > .conversion-scene {
+    width: 100%;
+    height: clamp(340px, 56svh, 520px);
+    max-height: 520px;
+    border-radius: 26px;
+  }
+
+  .product-journey > .conversion-scene .conversion-scene-board {
+    width: min(92%, calc(120cqh - 44px));
+    padding: clamp(6px, 1.5vw, 12px);
+  }
+
+  .product-journey > .story {
+    padding-top: 8px;
+  }
+
+  .product-journey .story-card,
+  .product-journey .story-card-b {
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 599px) {
+  .product-journey {
+    padding-inline: 16px;
+  }
+
+  .product-journey > .hero {
+    padding-top: 28px;
+  }
+
+  .product-journey > .conversion-scene {
+    height: clamp(320px, 48svh, 400px);
+    border-radius: 22px;
+  }
+
+  .product-journey > .conversion-scene .conversion-scene-board {
+    width: min(94%, calc(120cqh - 44px));
+  }
+
+  .product-journey .hero-facts {
+    flex-wrap: wrap;
+  }
+
+  .product-journey .story-card,
+  .product-journey .story-card-b {
+    min-height: 300px;
+    padding-inline: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .product-journey > .conversion-scene .conversion-scene-board {
+    width: 92%;
+  }
+
+  .product-journey > .hero h1 {
+    font-size: clamp(40px, 13vw, 46px);
+    margin-block: 10px 12px;
+  }
+
+  .product-journey .hero-lede {
+    margin-bottom: 14px;
+  }
+
+  .product-journey .hero-facts {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 850px) and (max-height: 500px) {
+  .product-journey > .conversion-scene {
+    height: 420px;
+  }
+
+  .product-journey > .conversion-scene .conversion-scene-board {
+    width: min(86%, calc(96cqh - 28px));
+  }
+}
+
+@media (min-width: 851px) and (max-width: 1100px) {
+  .product-journey > .conversion-scene .conversion-input-layer,
+  .product-journey > .conversion-scene .conversion-parts-layer,
+  .product-journey > .conversion-scene .conversion-output-layer,
+  .product-journey > .conversion-scene .conversion-use-layer {
+    visibility: hidden;
+  }
+}
+
 @media (max-width: 850px) {
   .section h2 em,
   .download h2 em {
@@ -1867,5 +2072,317 @@
   .product-journey .story-card-b:hover {
     transform: none;
     transition: none;
+  }
+}
+
+/* Final homepage layout overrides keep legacy component styles from reintroducing the old split hero. */
+.product-journey {
+  max-width: 1440px;
+  padding: 0 clamp(16px, 4vw, 56px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 3vw, 38px);
+}
+
+.product-journey > .hero {
+  order: 0;
+  width: 100%;
+  min-height: 0;
+  padding: clamp(24px, 3svh, 40px) 0 0;
+  justify-content: center;
+  text-align: center;
+}
+
+.product-journey .hero-copy {
+  width: min(100%, 900px);
+  margin-inline: auto;
+}
+
+.product-journey .hero-lede {
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.product-journey .hero-actions,
+.product-journey .hero-facts {
+  justify-content: center;
+}
+
+.product-journey .scroll-cue {
+  display: none;
+}
+
+.product-journey > .conversion-scene {
+  order: 1;
+  position: sticky;
+  top: clamp(430px, 55svh, 520px);
+  align-self: center;
+  width: 100%;
+  height: clamp(300px, 42svh, 460px);
+  min-height: 0;
+  max-height: 460px;
+  overflow: hidden;
+  container-type: size;
+}
+
+.product-journey > .conversion-scene .conversion-scene-board {
+  top: 50%;
+  left: 50%;
+  width: min(88%, calc(130cqh - 32px));
+  transform: translate(-50%, -50%) perspective(1500px)
+    rotateX(
+      calc(4deg + var(--story-progress) * 5deg - var(--scene-y, 0) * 1deg)
+    )
+    rotateY(
+      calc(-7deg + var(--story-progress) * 16deg + var(--scene-x, 0) * 3deg)
+    )
+    rotateZ(calc(-2deg + var(--story-progress) * 3deg))
+    scale(calc(0.94 + var(--story-progress) * 0.04));
+  transform-origin: center;
+}
+
+.product-journey > .conversion-scene .conversion-input-layer {
+  top: 8%;
+  left: 6%;
+  width: min(34%, 300px);
+}
+
+.product-journey > .conversion-scene .conversion-parts-layer {
+  top: 8%;
+  right: 5%;
+  width: min(34%, 300px);
+}
+
+.product-journey > .conversion-scene .conversion-output-layer {
+  right: 5%;
+  bottom: 7%;
+  width: min(24%, 260px);
+}
+
+.product-journey > .conversion-scene .conversion-use-layer {
+  left: 5%;
+  bottom: 7%;
+  width: min(30%, 300px);
+}
+
+.product-journey > .story {
+  order: 2;
+  width: 100%;
+  padding: 12px 0 clamp(500px, 58svh, 560px);
+}
+
+.product-journey .story-rail {
+  margin-top: clamp(24px, 4vw, 52px);
+}
+
+.product-journey .story-card,
+.product-journey .story-card-b {
+  min-height: clamp(300px, 36svh, 380px);
+  padding: clamp(28px, 5vw, 52px) clamp(12px, 4vw, 40px) 64px;
+}
+
+.js-ready .product-journey .story-card:not([data-active]) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.js-ready .product-journey .story-card:not([data-active]):focus-within {
+  z-index: 8;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (max-width: 850px) {
+  .product-journey {
+    gap: 24px;
+    padding-inline: clamp(16px, 4vw, 32px);
+  }
+
+  .product-journey > .hero {
+    padding-top: clamp(28px, 5svh, 48px);
+  }
+
+  .product-journey > .conversion-scene {
+    top: clamp(430px, 58svh, 455px);
+    width: 100%;
+    height: clamp(300px, 42svh, 360px);
+    max-height: 360px;
+    border-radius: 26px;
+  }
+
+  .product-journey > .conversion-scene .conversion-scene-board {
+    width: min(90%, calc(118cqh - 24px));
+    padding: clamp(6px, 1.5vw, 12px);
+  }
+
+  .product-journey > .conversion-scene .conversion-input-layer,
+  .product-journey > .conversion-scene .conversion-parts-layer,
+  .product-journey > .conversion-scene .conversion-output-layer,
+  .product-journey > .conversion-scene .conversion-use-layer {
+    gap: 3px;
+    padding: 7px 9px;
+  }
+
+  .product-journey > .conversion-scene .conversion-input-layer small,
+  .product-journey > .conversion-scene .conversion-parts-layer small,
+  .product-journey > .conversion-scene .conversion-output-layer small,
+  .product-journey > .conversion-scene .conversion-use-layer small,
+  .product-journey > .conversion-scene .conversion-input-layer span,
+  .product-journey > .conversion-scene .conversion-output-layer span,
+  .product-journey > .conversion-scene .conversion-use-layer span {
+    display: none;
+  }
+
+  .product-journey > .conversion-scene .conversion-input-layer,
+  .product-journey > .conversion-scene .conversion-parts-layer,
+  .product-journey > .conversion-scene .conversion-output-layer,
+  .product-journey > .conversion-scene .conversion-use-layer {
+    visibility: hidden;
+  }
+
+  .product-journey > .story {
+    padding-top: 8px;
+  }
+
+  .product-journey .story-card,
+  .product-journey .story-card-b {
+    min-height: 320px;
+  }
+
+  .product-journey .story-pulse,
+  .product-journey .story-stack,
+  .product-journey .story-check,
+  .product-journey .story-use-proof {
+    display: none;
+  }
+}
+
+@media (max-width: 599px) {
+  .product-journey {
+    padding-inline: 16px;
+  }
+
+  .product-journey > .hero {
+    padding-top: 28px;
+  }
+
+  .product-journey > .conversion-scene {
+    left: -16px;
+    top: clamp(430px, 58svh, 470px);
+    width: calc(100% + 32px);
+    height: clamp(300px, 42svh, 360px);
+    border-radius: 22px;
+  }
+
+  .product-journey > .conversion-scene .conversion-scene-board {
+    box-sizing: border-box;
+    width: min(100%, calc(120cqh - 16px));
+    padding: 4px;
+  }
+
+  .product-journey .hero-facts {
+    flex-wrap: wrap;
+  }
+
+  .product-journey .story-card,
+  .product-journey .story-card-b {
+    min-height: 300px;
+    padding-inline: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .product-journey > .conversion-scene .conversion-scene-board {
+    width: 90%;
+  }
+
+  .product-journey > .hero h1 {
+    font-size: clamp(40px, 13vw, 46px);
+    margin-block: 10px 12px;
+  }
+
+  .product-journey .hero-lede {
+    margin-bottom: 14px;
+  }
+
+  .product-journey .hero-facts {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 850px) and (max-height: 500px) {
+  .product-journey > .hero {
+    padding-top: 16px;
+  }
+
+  .product-journey > .hero h1 {
+    margin-block: 8px;
+    font-size: clamp(38px, 8vw, 56px);
+  }
+
+  .product-journey .hero-lede {
+    margin: 8px auto 12px;
+    font-size: 14px;
+  }
+
+  .product-journey .hero-facts {
+    display: none;
+  }
+
+  .product-journey > .conversion-scene {
+    position: relative;
+    top: auto;
+    height: 420px;
+  }
+
+  .product-journey > .conversion-scene .conversion-scene-board {
+    width: min(86%, calc(96cqh - 28px));
+  }
+}
+
+@media (min-width: 600px) and (max-width: 850px) and (min-height: 640px) {
+  .product-journey > .conversion-scene {
+    top: 424px;
+    height: min(42svh, calc(100svh - 432px));
+    max-height: none;
+  }
+
+  .product-journey > .conversion-scene .conversion-scene-board figcaption {
+    align-items: flex-start;
+  }
+
+  .product-journey
+    > .conversion-scene
+    .conversion-scene-board
+    figcaption
+    span:first-child {
+    flex: 1 1 52%;
+    min-width: 0;
+  }
+
+  .product-journey
+    > .conversion-scene
+    .conversion-scene-board
+    figcaption
+    span:last-child {
+    display: block;
+    flex: 0 1 44%;
+    min-width: 0;
+    text-align: right;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .product-journey > .conversion-scene .conversion-input-layer,
+  .product-journey > .conversion-scene .conversion-parts-layer,
+  .product-journey > .conversion-scene .conversion-output-layer,
+  .product-journey > .conversion-scene .conversion-use-layer {
+    display: none;
+  }
+}
+
+@media (max-width: 850px) and (max-height: 500px) {
+  .product-journey > .hero {
+    padding-bottom: 12px;
   }
 }

@@ -175,24 +175,34 @@ const appImage = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-mai
       <span class="artifact-scroll-description" id={`artifact-scroll-description-${en ? 'en' : 'zh'}`}>
         {en ? 'On narrow screens, scroll horizontally to see all component views.' : '窄屏下可横向滑动，查看全部元件视图。'}
       </span>
-      <div class="artifact-switcher" role="group" aria-label={en ? 'Choose a component view' : '选择元件视图'} aria-describedby={`artifact-scroll-description-${en ? 'en' : 'zh'}`}>
+      <div class="model-view-controls">
+      <div class="artifact-switcher" role="group" aria-label={en ? 'Choose a component view' : '选择元件视图'}>
         <button type="button" data-artifact-view="model" data-label-zh="GLB 交付模型" data-label-en="GLB DELIVERY MODEL" data-caption-zh="由 STEP 几何生成的 GLB · 随滚动进入产品叙事" data-caption-en="GLB generated from STEP geometry · connected to the scroll story" aria-pressed="true">{en ? '3D solid' : '3D 实体'}</button>
-        <button type="button" data-artifact-view="atlas" data-label-zh="网格空间星图" data-label-en="MESH CONSTELLATION" data-caption-zh="每个节点对应真实 STEP 网格；点击节点可定位回实体" data-caption-en="Every node is a real STEP mesh · select one to inspect it in 3D" aria-pressed="false">{en ? 'Atlas' : '星图'}</button>
-        <button type="button" data-artifact-view="tomogram" data-label-zh="剖面断层地形" data-label-en="SECTION TOMOGRAM" data-caption-zh="扫描经过的真实 STEP 剖面 · 亮度表示截面占据宽度" data-caption-en="Real STEP sections accumulated across the scan · brightness maps section width" aria-pressed="false">{en ? 'Tomo' : '断层'}</button>
-        <button type="button" data-artifact-view="oracle" data-label-zh="拓扑 DNA 预言图" data-label-en="TOPOLOGY DNA ORACLE" data-caption-zh="真实截面历史的双螺旋 · 事件改变螺旋的节奏" data-caption-en="A double helix of real section history · events change its rhythm" aria-pressed="false">{en ? 'Oracle' : '预言'}</button>
-        <button type="button" data-artifact-view="trinity" data-label-zh="三体时间线" data-label-en="TIMELINE TRINITY" data-caption-zh="父线 A · 父线 B · A→B→A 重组线" data-caption-en="Parent A · Parent B · A→B→A recombination" aria-pressed="false">{en ? 'Trinity' : '三体'}</button>
-        <button type="button" data-artifact-view="morph" data-label-zh="拓扑形变场" data-label-en="TOPOLOGY MORPH FIELD" data-caption-zh="真实截面历史的相空间 · 拖动以穿越形变" data-caption-en="Phase space of real section history · drag to travel through the morph" aria-pressed="false">{en ? 'Morph' : '形变'}</button>
         <button type="button" data-artifact-view="symbol" data-label-zh="原理图符号示意" data-label-en="SCHEMATIC SYMBOL STUDY" data-caption-zh="原理图符号 · 视觉示意，并非导出的 CAD 数据" data-caption-en="Schematic symbol · visual study, not exported CAD data" aria-pressed="false">{en ? 'Symbol' : '符号'}</button>
         <button type="button" data-artifact-view="footprint" data-label-zh="PCB 封装示意" data-label-en="PCB FOOTPRINT STUDY" data-caption-zh="PCB 封装 · 视觉示意，并非导出的 CAD 数据" data-caption-en="PCB footprint · visual study, not exported CAD data" aria-pressed="false">{en ? 'Footprint' : '封装'}</button>
-        <button type="button" class="model-scan-toggle" data-model-scan aria-label={en ? 'Play a CT scan through the STEP model' : '播放穿过 STEP 模型的 CT 扫描'} aria-pressed="false" disabled>{en ? 'CT Scan' : 'CT 扫描'}</button>
+      </div>
+      <details class="research-view-disclosure">
+        <summary>{en ? 'More views' : '更多视图'}</summary>
+        <div class="research-view-panel">
+          <p>{en ? 'Explore mesh structure, real cross-sections, and recorded topology histories.' : '查看网格结构、真实截面与记录下来的拓扑变化。'}</p>
+          <div class="research-view-switcher" role="group" aria-label={en ? 'Research and analysis views' : '研究与分析视图'}>
+            <button type="button" data-artifact-view="atlas" data-label-zh="网格空间星图" data-label-en="MESH CONSTELLATION" data-caption-zh="每个节点对应真实 STEP 网格；点击节点可定位回实体" data-caption-en="Every node is a real STEP mesh · select one to inspect it in 3D" aria-pressed="false">{en ? 'Mesh atlas' : '网格星图'}</button>
+            <button type="button" data-artifact-view="tomogram" data-label-zh="剖面断层地形" data-label-en="SECTION TOMOGRAM" data-caption-zh="扫描经过的真实 STEP 剖面 · 亮度表示截面占据宽度" data-caption-en="Real STEP sections accumulated across the scan · brightness maps section width" aria-pressed="false">{en ? 'Section scan' : '剖面扫描'}</button>
+            <button type="button" data-artifact-view="oracle" data-label-zh="拓扑 DNA 预言图" data-label-en="TOPOLOGY DNA ORACLE" data-caption-zh="真实截面历史的双螺旋 · 事件改变螺旋的节奏" data-caption-en="A double helix of real section history · events change its rhythm" aria-pressed="false">{en ? 'Topology helix' : '拓扑螺旋'}</button>
+            <button type="button" data-artifact-view="trinity" data-label-zh="三体时间线" data-label-en="TIMELINE TRINITY" data-caption-zh="父线 A · 父线 B · A→B→A 重组线" data-caption-en="Parent A · Parent B · A→B→A recombination" aria-pressed="false">{en ? 'History compare' : '历史对照'}</button>
+            <button type="button" data-artifact-view="morph" data-label-zh="拓扑形变场" data-label-en="TOPOLOGY MORPH FIELD" data-caption-zh="真实截面历史的相空间 · 拖动以穿越形变" data-caption-en="Phase space of real section history · drag to travel through the morph" aria-pressed="false">{en ? 'Shape field' : '形变场'}</button>
+            <button type="button" class="model-scan-toggle" data-model-scan aria-label={en ? 'Play a CT scan through the STEP model' : '播放穿过 STEP 模型的 CT 扫描'} aria-pressed="false" disabled>{en ? 'Run CT scan' : '开始 CT 扫描'}</button>
+          </div>
+        </div>
+      </details>
       </div>
       <span class="artifact-scroll-hint" aria-hidden="true">{en ? 'Swipe for more views →' : '左右滑动查看更多 →'}</span>
       <div class="model-controls-dock">
         <p class="artifact-caption" aria-live="polite">{en ? 'GLB generated from STEP geometry · connected to the scroll story' : '由 STEP 几何生成的 GLB · 随滚动进入产品叙事'}</p>
-        <label class="model-explode" data-model-explode-control>
-          <span class="model-explode-heading">{en ? 'EXPLODE · X-RAY FOCUS' : '爆炸视图 · X 光聚焦'}</span>
-          <input type="range" min="0" max="100" value="0" step="1" data-model-explode aria-label={en ? 'Explode the STEP mesh parts' : '拆解 STEP 网格零件'} disabled />
-          <output data-model-explode-value>0%</output>
+        <div class="model-explode" data-model-explode-control>
+          <label class="model-explode-heading" for={`model-explode-${en ? 'en' : 'zh'}`}>{en ? 'EXPLODE · X-RAY FOCUS' : '爆炸视图 · X 光聚焦'}</label>
+          <input id={`model-explode-${en ? 'en' : 'zh'}`} type="range" min="0" max="100" value="0" step="1" data-model-explode aria-label={en ? 'Explode the STEP mesh parts' : '拆解 STEP 网格零件'} disabled />
+          <output for={`model-explode-${en ? 'en' : 'zh'}`} data-model-explode-value>0%</output>
           <small data-model-explode-stats>{en ? 'Waiting for STEP mesh…' : '等待 STEP 网格…'}</small>
           <span class="model-slice-heading">{en ? 'LIVE SECTION PLANE' : '实时剖切平面'}</span>
           <button class="model-slice-toggle" type="button" data-model-slice-toggle aria-pressed="false" disabled>{en ? 'CUT' : '剖切'}</button>
@@ -203,7 +213,7 @@ const appImage = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-mai
           </div>
           <input class="model-slice-range" type="range" min="0" max="100" value="50" step="1" data-model-slice aria-label={en ? 'Move the live section plane through the model' : '移动剖切平面穿过模型'} disabled />
           <output class="model-slice-value" data-model-slice-value>50%</output>
-        </label>
+        </div>
       </div>
       <div class="model-fallback-copy" role="status">{en ? '3D preview is unavailable. The page and download links remain usable.' : '3D 预览暂不可用，页面内容和下载入口仍可正常使用。'}</div>
       <span class="motion-model-tag">{en ? 'SCROLL TO TRANSFORM' : '向下滚动，继续转化'}</span>
