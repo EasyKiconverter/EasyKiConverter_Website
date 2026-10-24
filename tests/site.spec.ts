@@ -2133,6 +2133,12 @@ test('Lab advanced controls are collapsed until explicitly opened', async ({ pag
 });
 
 test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
+  const geometryErrors: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error' && /BufferGeometry\.(computeBoundingBox|computeBoundingSphere).*NaN/.test(message.text())) {
+      geometryErrors.push(message.text());
+    }
+  });
   await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
   const stage = page.locator('[data-model-stage]');
   await expect(stage).toHaveAttribute('data-model-source', 'glb', {
@@ -2141,9 +2147,13 @@ test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
   await expect(stage).toHaveAttribute('data-model-asset', test.info().project.name === 'chromium-mobile' ? 'mobile' : 'desktop');
   await expect(stage).toHaveAttribute('data-model-normals', 'provided');
   await expect(stage).toHaveAttribute('data-model-edge-segments');
+  if (test.info().project.name === 'chromium') {
+    await expect(stage).toHaveAttribute('data-first-frame-rendered', 'true', { timeout: 20000 });
+  }
   const edgeMeshes = Number(await stage.getAttribute('data-model-edge-meshes'));
   expect(edgeMeshes).toBeGreaterThan(64);
   await expect(stage).not.toHaveClass(/model-fallback/);
+  expect(geometryErrors).toEqual([]);
 });
 
 test('Lab explains that surface detail continues after the GLB is ready', async ({ page }) => {

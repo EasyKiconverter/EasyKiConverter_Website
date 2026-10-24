@@ -5,7 +5,7 @@
 ## Current boundaries
 
 - The Chinese homepage `/` and English homepage `/en/` show a WebP product preview first. The approximately 2.19 MB Meshopt GLB and Three.js renderer load when the conversion scene enters a 420px viewport margin. The current layout places that scene inside the initial viewport at 390×844, 768×1024, 1440×900, and 1920×1080, so those sizes generally request the GLB on the first visit. The homepage still does not request STEP or OpenCascade/WASM; the static WebP remains visible until the model is ready and when WebGL is unavailable.
-- The 3D Lab at `/lab/` and `/en/lab/` selects about 9.6 MB of desktop GLB or about 8.1 MB of mobile GLB by viewport; it falls back to about 11 MB of STEP and about 7.3 MB of WASM only when the GLB path fails. These experimental assets are not part of the homepage baseline.
+- The 3D Lab at `/lab/` and `/en/lab/` selects about 2.19 MB of desktop GLB or about 1.87 MB of mobile GLB by viewport, both decoded with Meshopt; it falls back to about 11 MB of STEP and about 7.3 MB of WASM only when the GLB path fails. These experimental assets are not part of the homepage baseline. This optimization is only on the current development branch; production has not yet been verified or updated.
 - Homepage delivery uses `public/assets/showcase/*.webp`; original PNG, STEP and WASM files remain for provenance or the lab and have not yet been moved out of the published asset tree.
 - `src/js/app.ts` handles visibility, viewport-size and live `prefers-reduced-motion` changes. The actual 3D parts move through assembled → separated → assembled states only with scroll; reduced-motion fixes the model in its assembled state and stops continuous animation.
 
@@ -25,11 +25,11 @@ Older STEP/WASM, Worker, Lighthouse 100 and TBT 0 ms observations describe the f
 
 ## Asset decision
 
-STEP remains the Lab's engineering source asset, while `tools/prepare_model_asset.py` generates the base GLB. The homepage story GLB is further Meshopt-compressed by `pnpm run assets:story-model`, preserving 303 meshes and 278,784 triangles under a 2.5 MB / 300,000-triangle delivery budget. The homepage does no browser-side CAD triangulation and falls back to the static WebP if its model or WebGL is unavailable.
+STEP remains the Lab's engineering source asset. Uncompressed desktop/mobile source GLBs live in `src/assets/source/model/` and are generated offline by `tools/prepare_model_asset.py`; `pnpm run assets:lab-models` creates the Lab's Meshopt delivery files, and `pnpm run assets:story-model` creates the corresponding homepage asset. The Lab's compressed desktop/mobile outputs preserve 303 meshes and 278,784 / 228,004 triangles in about 2.19 / 1.87 MB; `pnpm run assets:check` checks geometry counts and size budgets. The homepage does no browser-side CAD triangulation and falls back to the static WebP if its model or WebGL is unavailable.
 
 ## Local Chromium performance sample
 
-On 2026-10-25, Chromium was measured against the local static preview at 390×844. Without throttling, LCP was 380ms and the static WebP was the largest-contentful element; cumulative Resource Timing transfer size was about 3.31 MB after 2.2 seconds, including 2,190,156 bytes for the story GLB. With 4× CPU throttling, 150ms latency, and 200,000 bytes/second downstream throughput, LCP was 964ms; after 9.98 seconds, cumulative transfer size was about 0.90 MB and the GLB was still loading. Two long tasks of 164ms and 94ms were observed. Both are single local browser-emulation samples, not a production SLA or real-device result.
+On 2026-10-25, before Lab asset compression, Chromium was measured against the local static preview at 390×844. Without throttling, LCP was 380ms and the static WebP was the largest-contentful element; cumulative Resource Timing transfer size was about 3.31 MB after 2.2 seconds, including 2,190,156 bytes for the story GLB. With 4× CPU throttling, 150ms latency, and 200,000 bytes/second downstream throughput, LCP was 964ms; after 9.98 seconds, cumulative transfer size was about 0.90 MB and the GLB was still loading. Two long tasks of 164ms and 94ms were observed. Both are single local browser-emulation samples, not a production SLA or real-device result.
 
 ## Historical production Chromium observation (2026-10-11)
 

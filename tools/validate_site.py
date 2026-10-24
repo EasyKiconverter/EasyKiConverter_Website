@@ -179,6 +179,9 @@ else:
 for required in ("assets/model/README.md", "assets/model/README_zh.md", "assets/model/Easykiconverter_展示模型.step", "assets/model/Easykiconverter_展示模型.glb", "assets/model/Easykiconverter_展示模型-mobile.glb", "assets/vendor/occt-import-js.js", "assets/vendor/occt-import-js.wasm"):
     if not (ROOT / "public" / required).exists():
         errors.append(f"missing required file: {required}")
+for required in ("src/assets/source/model/Easykiconverter_展示模型.glb", "src/assets/source/model/Easykiconverter_展示模型-mobile.glb"):
+    if not (ROOT / required).is_file():
+        errors.append(f"missing source model: {required}")
 for required in ("assets/showcase/easykiconverter-main-public.webp", "assets/showcase/easykiconverter-export.webp"):
     if not (ROOT / "public" / required).is_file():
         errors.append(f"missing required public screenshot: {required}")

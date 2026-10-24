@@ -105,6 +105,7 @@ export const setupModel = async (): Promise<void> => {
 
   const THREE = await import("three");
   const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
+  const { MeshoptDecoder } = await import("three/addons/libs/meshopt_decoder.module.js");
   const canvas = document.querySelector<HTMLCanvasElement>("#model-canvas");
   const atlasCanvas = stage?.querySelector<HTMLCanvasElement>("[data-mesh-atlas]");
   const atlasContext = atlasCanvas?.getContext("2d") ?? null;
@@ -7202,8 +7203,28 @@ export const setupModel = async (): Promise<void> => {
     });
   };
 
+  const toFloat32Attribute = (attribute: THREE.BufferAttribute): Float32Array => {
+    const values = Float32Array.from(attribute.array as ArrayLike<number>);
+    if (!attribute.normalized) return values;
+    const source = attribute.array;
+    const signed = source instanceof Int8Array || source instanceof Int16Array || source instanceof Int32Array;
+    const divisor = source instanceof Int8Array ? 127
+      : source instanceof Uint8Array || source instanceof Uint8ClampedArray ? 255
+        : source instanceof Int16Array ? 32767
+          : source instanceof Uint16Array ? 65535
+            : source instanceof Int32Array ? 2147483647
+              : source instanceof Uint32Array ? 4294967295
+                : 1;
+    for (let index = 0; index < values.length; index += 1) {
+      const value = values[index] / divisor;
+      values[index] = signed ? Math.max(value, -1) : value;
+    }
+    return values;
+  };
+
   const loadGlb = (): void => {
     const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
     const mobileAsset = stage.clientWidth < 520 || window.matchMedia("(max-width: 760px)").matches;
     const modelAsset = mobileAsset
       ? "assets/model/Easykiconverter_展示模型-mobile.glb"
@@ -7219,8 +7240,11 @@ export const setupModel = async (): Promise<void> => {
             const position = object.geometry.getAttribute("position");
             if (!position) return;
             const normal = object.geometry.getAttribute("normal");
-            const positions = Float32Array.from(position.array as ArrayLike<number>);
-            const normals = normal ? Float32Array.from(normal.array as ArrayLike<number>) : undefined;
+            // Meshopt quantizes accessors to normalized integer attributes.
+            // Expand their scalar arrays before copying into the Float32 worker
+            // message format; the typed-array loop avoids per-component method calls.
+            const positions = toFloat32Attribute(position);
+            const normals = normal ? toFloat32Attribute(normal) : undefined;
             const indices = object.geometry.index
               ? Uint32Array.from(object.geometry.index.array as ArrayLike<number>)
               : (() => {
@@ -7233,7 +7257,7 @@ export const setupModel = async (): Promise<void> => {
               ? [material.color.r, material.color.g, material.color.b]
               : [0.52, 0.71, 0.62];
             meshes.push({
-              positions: positions.buffer,
+              positions: positions.buffer as ArrayBuffer,
               normals: normals?.buffer as ArrayBuffer | undefined,
               indices: indices.buffer,
               color,
