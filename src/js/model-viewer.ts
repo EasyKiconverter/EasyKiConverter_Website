@@ -312,6 +312,7 @@ export const setupModel = async (): Promise<void> => {
 
   const scene = new THREE.Scene();
   let studioEnvironmentScheduled = false;
+  let studioEnvironmentAttempted = false;
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
   camera.position.set(0, 0, 4);
 
@@ -2003,6 +2004,7 @@ export const setupModel = async (): Promise<void> => {
   const scheduleStudioEnvironment = (): void => {
     if (
       studioEnvironmentScheduled ||
+      studioEnvironmentAttempted ||
       scene.environment ||
       !modelUploaded ||
       !state.visible ||
@@ -2023,6 +2025,7 @@ export const setupModel = async (): Promise<void> => {
           !stage.isConnected
         )
           return;
+        studioEnvironmentAttempted = true;
         const { RoomEnvironment } = await import(
           "three/addons/environments/RoomEnvironment.js"
         );
@@ -2032,8 +2035,10 @@ export const setupModel = async (): Promise<void> => {
           document.hidden ||
           !canvas.isConnected ||
           !stage.isConnected
-        )
+        ) {
+          studioEnvironmentAttempted = false;
           return;
+        }
         studioEnvironment = new RoomEnvironment();
         pmremGenerator = new THREE.PMREMGenerator(renderer);
         // Build the procedural studio map after the model is visible and the main thread is idle.

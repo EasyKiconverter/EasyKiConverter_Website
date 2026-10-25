@@ -3750,13 +3750,17 @@ test("Lab loading state is bilingual, respects reduced motion, and ends when rea
   await expect
     .poll(() => posterImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0))
     .toBe(true);
-  expect(await posterImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain(
-    "easyki-lab-model-poster-mobile.webp",
-  );
+  await expect
+    .poll(() =>
+      posterImage.evaluate((image: HTMLImageElement) => image.currentSrc),
+    )
+    .toContain("easyki-lab-model-poster-mobile.webp");
   await page.setViewportSize({ width: 1280, height: 900 });
-  expect(await posterImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain(
-    "easyki-lab-model-poster.webp",
-  );
+  await expect
+    .poll(() =>
+      posterImage.evaluate((image: HTMLImageElement) => image.currentSrc),
+    )
+    .toContain("easyki-lab-model-poster.webp");
   for (const path of ["/lab/", "/en/lab/"]) {
     let continueAsset!: () => void;
     const assetGate = new Promise<void>((resolve) => {
@@ -4389,6 +4393,7 @@ test("Lab desktop model stage stays clear of the narrative heading", async ({
 test("Lab narrative headlines keep the Chinese lead together on desktop", async ({
   page,
 }) => {
+  await blockLabGeometryAssets(page);
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 1024, height: 900 },
@@ -4605,6 +4610,7 @@ test("mobile Lab separates everyday views from the expandable research views", a
     viewport: { width: 390, height: 844 },
   });
   const page = await context.newPage();
+  await blockLabGeometryAssets(page);
   for (const path of ["/lab/", "/en/lab/"]) {
     await page.goto(path, { waitUntil: "domcontentloaded" });
     for (const reducedMotion of ["no-preference", "reduce"] as const) {
