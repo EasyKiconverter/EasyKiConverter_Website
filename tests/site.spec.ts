@@ -1165,7 +1165,9 @@ test('homepage scroll story activates input, preparation, and delivery in order'
 
 test('conversion scene stays visible with its active narrative on tablet and phones', async ({ page }) => {
   for (const viewport of [
+    { width: 600, height: 800 },
     { width: 768, height: 760 },
+    { width: 768, height: 1024 },
     { width: 390, height: 760 },
     { width: 320, height: 760 },
     { width: 844, height: 390 },
@@ -1201,6 +1203,90 @@ test('conversion scene stays visible with its active narrative on tablet and pho
         const activeHeading = await page.locator('.story-card[data-active] h3').boundingBox();
         expect(activeHeading, `${path} ${width}px stage ${progress} active heading`).not.toBeNull();
         expect(activeHeading!.y + activeHeading!.height).toBeLessThan(visibleGeometry.viewportHeight);
+        if (width >= 600 && width <= 850 && height >= 640) {
+          await expect
+            .poll(() =>
+              page.evaluate(() => {
+                const scene = document.querySelector<HTMLElement>('[data-conversion-scene]')!;
+                const card = document.querySelector<HTMLElement>('.story-card[data-active]')!;
+                return card.getBoundingClientRect().top - scene.getBoundingClientRect().bottom;
+              }),
+            )
+            .toBeGreaterThanOrEqual(-1);
+          const renderedGeometry = await page.evaluate(() => {
+            const scene = document.querySelector<HTMLElement>('[data-conversion-scene]')!;
+            const board = scene.querySelector<HTMLElement>('.conversion-scene-board')!;
+            const model = board.querySelector<HTMLElement>('.conversion-model-viewport')!;
+            const card = document.querySelector<HTMLElement>('.story-card[data-active]')!;
+            const layerSelector = {
+              input: '.conversion-input-layer',
+              prepare: '.conversion-parts-layer',
+              deliver: '.conversion-output-layer',
+            }[scene.dataset.stage || 'input'];
+            const layer = scene.querySelector<HTMLElement>(layerSelector)!;
+            const rect = (element: HTMLElement) => {
+              const { left, top, right, bottom } = element.getBoundingClientRect();
+              return { left, top, right, bottom };
+            };
+            const modelRect = model.getBoundingClientRect();
+            const decorations = [...card.querySelectorAll<HTMLElement>('.story-stack b, .story-pulse, .story-check')].map((element) => ({
+              ...rect(element),
+              text: element.textContent?.trim() ?? '',
+            }));
+            let cardPaintedOverModel = 0;
+            for (let row = 0; row < 11; row += 1) {
+              for (let column = 0; column < 11; column += 1) {
+                const x = modelRect.left + modelRect.width * (0.12 + ((column + 0.5) / 11) * 0.76);
+                const y = modelRect.top + modelRect.height * (0.12 + ((row + 0.5) / 11) * 0.76);
+                if (document.elementFromPoint(x, y)?.closest('.story-card')) cardPaintedOverModel += 1;
+              }
+            }
+            return {
+              scene: rect(scene),
+              board: rect(board),
+              model: rect(model),
+              card: rect(card),
+              decorations,
+              layer: rect(layer),
+              cardPaintedOverModel,
+            };
+          });
+          const { scene, board, model, card, layer } = renderedGeometry;
+          expect(board.left, `${path} ${width}x${height}px ${progress} transformed board left`).toBeGreaterThanOrEqual(scene.left - 1);
+          expect(board.right, `${path} ${width}x${height}px ${progress} transformed board right`).toBeLessThanOrEqual(scene.right + 1);
+          expect(board.top, `${path} ${width}x${height}px ${progress} transformed board top`).toBeGreaterThanOrEqual(scene.top - 1);
+          expect(board.bottom, `${path} ${width}x${height}px ${progress} transformed board bottom`).toBeLessThanOrEqual(scene.bottom + 1);
+          expect(model.left, `${path} ${width}x${height}px ${progress} transformed model left`).toBeGreaterThanOrEqual(scene.left - 1);
+          expect(model.right, `${path} ${width}x${height}px ${progress} transformed model right`).toBeLessThanOrEqual(scene.right + 1);
+          expect(model.top, `${path} ${width}x${height}px ${progress} transformed model top`).toBeGreaterThanOrEqual(scene.top - 1);
+          expect(model.bottom, `${path} ${width}x${height}px ${progress} transformed model bottom`).toBeLessThanOrEqual(scene.bottom + 1);
+          expect(card.left, `${path} ${width}x${height}px ${progress} complete card left`).toBeGreaterThanOrEqual(-1);
+          expect(card.right, `${path} ${width}x${height}px ${progress} complete card right`).toBeLessThanOrEqual(width + 1);
+          expect(card.top, `${path} ${width}x${height}px ${progress} complete card top`).toBeGreaterThanOrEqual(-1);
+          expect(card.bottom, `${path} ${width}x${height}px ${progress} complete card bottom`).toBeLessThanOrEqual(height + 1);
+          expect(card.top, `${path} ${width}x${height}px ${progress} complete card clears the model scene`).toBeGreaterThanOrEqual(scene.bottom - 1);
+          for (const [decorationIndex, decoration] of renderedGeometry.decorations.entries()) {
+            expect(decoration.text, `${path} ${width}x${height}px ${progress} card decoration ${decorationIndex} has text`).not.toBe('');
+            expect(decoration.left, `${path} ${width}x${height}px ${progress} card decoration ${decorationIndex} stays inside the card`).toBeGreaterThanOrEqual(card.left - 1);
+            expect(decoration.right, `${path} ${width}x${height}px ${progress} card decoration ${decorationIndex} stays inside the card`).toBeLessThanOrEqual(card.right + 1);
+            expect(decoration.top, `${path} ${width}x${height}px ${progress} card decoration ${decorationIndex} stays inside the card`).toBeGreaterThanOrEqual(card.top - 1);
+            expect(decoration.bottom, `${path} ${width}x${height}px ${progress} card decoration ${decorationIndex} stays inside the card`).toBeLessThanOrEqual(card.bottom + 1);
+          }
+          expect(layer.left, `${path} ${width}x${height}px ${progress} complete stage label left`).toBeGreaterThanOrEqual(scene.left - 1);
+          expect(layer.right, `${path} ${width}x${height}px ${progress} complete stage label right`).toBeLessThanOrEqual(scene.right + 1);
+          expect(layer.top, `${path} ${width}x${height}px ${progress} complete stage label top`).toBeGreaterThanOrEqual(scene.top - 1);
+          expect(layer.bottom, `${path} ${width}x${height}px ${progress} complete stage label bottom`).toBeLessThanOrEqual(scene.bottom + 1);
+          const labelModelOverlapWidth = Math.max(0, Math.min(layer.right, model.right) - Math.max(layer.left, model.left));
+          const labelModelOverlapHeight = Math.max(0, Math.min(layer.bottom, model.bottom) - Math.max(layer.top, model.top));
+          expect(
+            labelModelOverlapWidth * labelModelOverlapHeight,
+            `${path} ${width}x${height}px ${progress} complete stage label clears the transformed model`,
+          ).toBeLessThan(4);
+          expect(
+            renderedGeometry.cardPaintedOverModel,
+            `${path} ${width}x${height}px ${progress} step card must not paint over the transformed model`,
+          ).toBe(0);
+        }
         if (height <= 500 && width > 600) {
           const sceneBounds = await scene.boundingBox();
           expect(sceneBounds).not.toBeNull();
