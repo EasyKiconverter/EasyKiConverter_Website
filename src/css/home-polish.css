@@ -2087,6 +2087,10 @@
 }
 
 @media (max-width: 360px) {
+  .product-journey > .conversion-scene {
+    height: clamp(270px, calc(100svh - 486px), 300px);
+  }
+
   .product-journey > .conversion-scene .conversion-scene-board {
     width: 90%;
   }
