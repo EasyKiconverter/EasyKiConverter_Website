@@ -2928,6 +2928,34 @@ test("bilingual hero copy names target EDAs and generated library content", asyn
   );
 });
 
+test("bilingual homepage value and download action never wait for reveal JavaScript", async ({
+  page,
+}) => {
+  for (const viewport of [
+    { width: 320, height: 760 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    for (const path of pages) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const heroCopy = page.locator(".hero-copy");
+      const download = page.locator(".hero-actions [data-release-link]");
+      await expect(heroCopy).not.toHaveClass(/reveal/);
+      await expect(heroCopy).toHaveCSS("opacity", "1");
+      await expect(download).toBeVisible();
+      const bounds = await download.boundingBox();
+      expect(
+        bounds,
+        `${path} ${viewport.width}px primary download action`,
+      ).not.toBeNull();
+      expect(
+        bounds!.y + bounds!.height,
+        `${path} ${viewport.width}px primary download action remains in the first viewport`,
+      ).toBeLessThan(viewport.height);
+    }
+  }
+});
+
 test("bilingual hero artwork stays fully visible from phone through desktop widths", async ({
   page,
 }) => {
