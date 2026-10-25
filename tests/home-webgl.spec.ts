@@ -175,10 +175,39 @@ test('tablet story stages keep the transformed model clear of complete cards and
           return { left, right, top, bottom, width, height };
         };
         const canvasRect = rect(canvas);
+        const modelQuad = (
+          canvas as HTMLCanvasElement & {
+            getBoxQuads?: () => Array<{
+              p1: { x: number; y: number };
+              p2: { x: number; y: number };
+              p3: { x: number; y: number };
+              p4: { x: number; y: number };
+            }>;
+          }
+        ).getBoxQuads?.()[0];
+        const projectedModelCorners = modelQuad
+          ? [modelQuad.p1, modelQuad.p2, modelQuad.p3, modelQuad.p4]
+          : [
+              { x: canvasRect.left, y: canvasRect.top },
+              { x: canvasRect.right, y: canvasRect.top },
+              { x: canvasRect.right, y: canvasRect.bottom },
+              { x: canvasRect.left, y: canvasRect.bottom },
+            ];
+        const [topLeft, topRight, bottomRight, bottomLeft] = projectedModelCorners;
         const hitSamples = Array.from({ length: 13 }, (_, row) =>
           Array.from({ length: 13 }, (_, column) => {
-            const x = canvasRect.left + ((column + 0.5) * canvasRect.width) / 13;
-            const y = canvasRect.top + ((row + 0.5) * canvasRect.height) / 13;
+            const u = (column + 0.5) / 13;
+            const v = (row + 0.5) / 13;
+            const x =
+              (1 - u) * (1 - v) * topLeft.x +
+              u * (1 - v) * topRight.x +
+              u * v * bottomRight.x +
+              (1 - u) * v * bottomLeft.x;
+            const y =
+              (1 - u) * (1 - v) * topLeft.y +
+              u * (1 - v) * topRight.y +
+              u * v * bottomRight.y +
+              (1 - u) * v * bottomLeft.y;
             const hit = document.elementFromPoint(x, y);
             return !hit?.closest('.story-card');
           }),
@@ -212,6 +241,7 @@ test('tablet story stages keep the transformed model clear of complete cards and
       expect(layout.card.left, `${path} ${stages[index]} full story card stays inside the viewport`).toBeGreaterThanOrEqual(0);
       expect(layout.card.right, `${path} ${stages[index]} full story card stays inside the viewport`).toBeLessThanOrEqual(layout.viewport.width);
       expect(layout.card.top, `${path} ${stages[index]} full story card stays inside the viewport`).toBeGreaterThanOrEqual(0);
+      expect(layout.card.bottom, `${path} ${stages[index]} full story card stays inside the viewport`).toBeLessThanOrEqual(layout.viewport.height);
       expect(layout.card.bottom, `${path} ${stages[index]} story card clears the sticky stage`).toBeLessThanOrEqual(layout.scene.top);
       expect(layout.scene.top, `${path} ${stages[index]} sticky stage starts within the viewport`).toBeGreaterThanOrEqual(0);
       expect(layout.scene.bottom, `${path} ${stages[index]} sticky stage leaves a bottom safety margin`).toBeLessThanOrEqual(layout.viewport.height - 8);

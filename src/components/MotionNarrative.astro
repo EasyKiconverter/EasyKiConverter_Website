@@ -29,28 +29,7 @@ const appImage = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-mai
       <canvas class="model-oracle" data-model-oracle tabindex="0" inert aria-hidden="true" role="img" aria-label={en ? 'Topology DNA oracle generated from recorded real STEP section frames. Drag horizontally to scrub frames and vertically to mutate the helix.' : '由真实 STEP 截面帧生成的拓扑 DNA 预言图。横向拖动浏览帧，纵向拖动改变螺旋突变强度。'}></canvas>
       <canvas class="model-trinity" data-model-trinity tabindex="0" inert aria-hidden="true" role="img" aria-label={en ? 'Three-track comparison of topology parent A, parent B, and the recombined timeline. Click a position to jump to that real section.' : '拓扑父时间线 A、父时间线 B 与重组时间线的三轨对照图。点击位置可跳转到真实截面。'}></canvas>
       <canvas class="model-morph" data-model-morph tabindex="0" inert aria-hidden="true" role="img" aria-label={en ? 'Interactive topology morph field. Drag across the field to scrub real STEP section history.' : '交互式拓扑形变场。拖动形变场以浏览真实 STEP 截面历史。'}></canvas>
-      <button type="button" class="morph-gravity" data-morph-gravity aria-pressed="true" aria-label={en ? 'Toggle topology gravity deformation' : '切换拓扑引力形变'}>{en ? 'GRAVITY ◉' : '引力 ◉'}</button>
-      <button type="button" class="morph-fork" data-morph-fork aria-label={en ? 'Export the gravity-warped topology branch' : '导出引力扭曲后的拓扑分支'}>{en ? 'FORK ↗' : '分支 ↗'}</button>
-      <button type="button" class="morph-collision" data-morph-collision aria-label={en ? 'Collide two imported topology branches' : '碰撞两条导入的拓扑分支'}>{en ? 'COLLIDE ☄' : '碰撞 ☄'}</button>
-      <button type="button" class="morph-antimatter" data-morph-antimatter aria-pressed="false" aria-label={en ? 'Invert topology roles into antimatter mode' : '将拓扑角色反转为反物质模式'}>{en ? 'ANTIMATTER ◇' : '反物质 ◇'}</button>
-      <button type="button" class="morph-annihilate" data-morph-annihilate aria-pressed="false" aria-label={en ? 'Reveal topology annihilation field' : '显示拓扑湮灭场'}>{en ? 'ANNIHILATE ◌' : '湮灭 ◌'}</button>
-      <button type="button" class="morph-horizon" data-causal-horizon aria-pressed="false" aria-label={en ? 'Collapse the current model into a causal event horizon' : '将当前模型坍缩为因果事件视界'}>{en ? 'HORIZON ◉' : '视界 ◉'}</button>
-      <button type="button" class="morph-orbit-export" data-causal-orbit-export disabled aria-label={en ? 'Export the observer orbit capsule' : '导出观察者轨道胶囊'}>{en ? 'ORBIT ↓' : '轨道 ↓'}</button>
-      <button type="button" class="morph-orbit-import" data-causal-orbit-import aria-label={en ? 'Import an observer orbit capsule' : '导入观察者轨道胶囊'}>{en ? 'ORBIT ↥' : '导入轨道 ↥'}</button>
-      <button type="button" class="morph-orbit-replay" data-causal-orbit-replay disabled aria-label={en ? 'Replay the observer orbit capsule' : '重放观察者轨道胶囊'}>{en ? 'REPLAY ↺' : '回放 ↺'}</button>
-      <button type="button" class="morph-entangle" data-causal-entangle aria-pressed="false" aria-label={en ? 'Entangle this observer with other open EasyKiConverter tabs' : '将当前观察者与其他打开的 EasyKiConverter 页面纠缠'}>{en ? 'ENTANGLE ∞' : '纠缠 ∞'}</button>
-      <button type="button" class="morph-resonance" data-morph-resonance aria-pressed="false" aria-label={en ? 'Open a resonance chamber made from the real STEP meshes' : '打开由真实 STEP 网格构成的拓扑共振舱'}>{en ? 'RESONATE ◇' : '共振 ◇'}</button>
-      <button type="button" class="morph-mutate" data-morph-mutate aria-label={en ? 'Mutate the shared topology gene' : '突变共享拓扑基因'}>{en ? 'MUTATE 🧬' : '突变 🧬'}</button>
-      <button type="button" class="morph-crossbreed" data-morph-crossbreed aria-label={en ? 'Crossbreed local and peer topology genes' : '交叉重组本地与远程拓扑基因'}>{en ? 'CROSSBREED ⚗' : '重组 ⚗'}</button>
-      <button type="button" class="morph-evolve" data-morph-evolve aria-label={en ? 'Run a topology gene survival tournament' : '运行拓扑基因生存竞技'}>{en ? 'EVOLVE ⚔' : '进化 ⚔'}</button>
-      <button type="button" class="morph-archive" data-morph-archive aria-label={en ? 'Archive this topology champion across sessions' : '跨会话归档当前拓扑冠军'}>{en ? 'ARCHIVE ∞' : '归档 ∞'}</button>
-      <button type="button" class="morph-genome-share" data-morph-genome-share disabled aria-label={en ? 'Share a deep link to the latest topology genome' : '分享最新拓扑基因深链接'}>{en ? 'GENOME ↗' : '基因 ↗'}</button>
-      <button type="button" class="morph-genome-passport" data-morph-genome-passport disabled aria-label={en ? 'Download a visual passport for the latest topology genome' : '下载最新拓扑基因的视觉护照'}>{en ? 'PASSPORT ✦' : '护照 ✦'}</button>
-      <button type="button" class="morph-genome-inject" data-morph-genome-inject aria-label={en ? 'Inject a topology genome passport SVG' : '注入拓扑基因护照 SVG'}>{en ? 'INJECT ↥' : '注入 ↥'}</button>
-      <button type="button" class="morph-genome-duel" data-genome-duel disabled aria-label={en ? 'Open a 3D duel between the latest two topology genomes' : '打开最近两个拓扑基因的三维决斗场'}>{en ? 'DUEL ⚡' : '对决 ⚡'}</button>
-      <button type="button" class="morph-genome-spawn" data-genome-spawn disabled aria-label={en ? 'Spawn a new topology genome from the duel' : '从基因决斗中生成新的拓扑基因'}>{en ? 'SPAWN ∴' : '生成 ∴'}</button>
-      <button type="button" class="morph-genome-spectate" data-genome-spectate aria-pressed="false" aria-label={en ? 'Watch topology duels from another EasyKiConverter tab' : '观战其他 EasyKiConverter 标签页的拓扑决斗'}>{en ? 'SPECTATE ◉' : '观战 ◉'}</button>
-      <button type="button" class="morph-genome-arena" data-genome-arena aria-pressed="false" aria-label={en ? 'Toggle the shared topology arena scoreboard' : '切换共享拓扑竞技榜'}>{en ? 'ARENA ▣' : '竞技场 ▣'}</button>
+
       <div class="genome-arena-board" data-genome-arena-board hidden aria-live="polite">
         <span>{en ? 'TOPOLOGY ARENA' : '拓扑竞技场'}</span><b data-genome-arena-seats>{en ? '0 SEATS' : '0 席位'}</b>
         <ol data-genome-arena-list></ol>
@@ -222,12 +201,38 @@ const appImage = `${import.meta.env.BASE_URL}assets/showcase/easykiconverter-mai
         class="experiment-controls-toggle"
         data-experiment-controls
         aria-expanded="false"
-        aria-controls="lab-experiment-controls"
-        aria-describedby="lab-experiment-controls"
+        aria-controls="lab-advanced-panel"
+        aria-describedby="lab-experiment-controls-note"
       >{en ? 'ADVANCED +' : '高级工具 +'}</button>
-      <div id="lab-experiment-controls" class="lab-experiment-controls" aria-live="polite">
-        <span>{en ? 'Open for experimental controls; some unlock after model data, scanning or imports are available.' : '打开实验控件；部分工具需先加载模型、完成扫描或导入数据后才会解锁。'}</span>
+      <div id="lab-experiment-controls-note" class="lab-experiment-controls">
+        <span>{en ? 'Swipe sideways to explore. Some controls unlock after model data, scans or imports are available.' : '横向滑动浏览工具；部分功能需先加载模型、完成扫描或导入数据。'}</span>
       </div>
+    </div>
+
+    <div class="lab-advanced-panel" id="lab-advanced-panel" role="group" aria-label={en ? 'Advanced model experiments' : '高级模型实验'}>
+      <span class="lab-advanced-hint" aria-hidden="true">{en ? 'SWIPE →' : '横向滑动 →'}</span>
+      <button type="button" class="morph-gravity" data-morph-gravity aria-pressed="true" aria-label={en ? 'Toggle topology gravity deformation' : '切换拓扑引力形变'}>{en ? 'GRAVITY ◉' : '引力 ◉'}</button>
+      <button type="button" class="morph-fork" data-morph-fork aria-label={en ? 'Export the gravity-warped topology branch' : '导出引力扭曲后的拓扑分支'}>{en ? 'FORK ↗' : '分支 ↗'}</button>
+      <button type="button" class="morph-collision" data-morph-collision aria-label={en ? 'Collide two imported topology branches' : '碰撞两条导入的拓扑分支'}>{en ? 'COLLIDE ☄' : '碰撞 ☄'}</button>
+      <button type="button" class="morph-antimatter" data-morph-antimatter aria-pressed="false" aria-label={en ? 'Invert topology roles into antimatter mode' : '将拓扑角色反转为反物质模式'}>{en ? 'ANTIMATTER ◇' : '反物质 ◇'}</button>
+      <button type="button" class="morph-annihilate" data-morph-annihilate aria-pressed="false" aria-label={en ? 'Reveal topology annihilation field' : '显示拓扑湮灭场'}>{en ? 'ANNIHILATE ◌' : '湮灭 ◌'}</button>
+      <button type="button" class="morph-horizon" data-causal-horizon aria-pressed="false" aria-label={en ? 'Collapse the current model into a causal event horizon' : '将当前模型坍缩为因果事件视界'}>{en ? 'HORIZON ◉' : '视界 ◉'}</button>
+      <button type="button" class="morph-orbit-export" data-causal-orbit-export disabled aria-label={en ? 'Export the observer orbit capsule' : '导出观察者轨道胶囊'}>{en ? 'ORBIT ↓' : '轨道 ↓'}</button>
+      <button type="button" class="morph-orbit-import" data-causal-orbit-import aria-label={en ? 'Import an observer orbit capsule' : '导入观察者轨道胶囊'}>{en ? 'ORBIT ↥' : '导入轨道 ↥'}</button>
+      <button type="button" class="morph-orbit-replay" data-causal-orbit-replay disabled aria-label={en ? 'Replay the observer orbit capsule' : '重放观察者轨道胶囊'}>{en ? 'REPLAY ↺' : '回放 ↺'}</button>
+      <button type="button" class="morph-entangle" data-causal-entangle aria-pressed="false" aria-label={en ? 'Entangle this observer with other open EasyKiConverter tabs' : '将当前观察者与其他打开的 EasyKiConverter 页面纠缠'}>{en ? 'ENTANGLE ∞' : '纠缠 ∞'}</button>
+      <button type="button" class="morph-resonance" data-morph-resonance aria-pressed="false" aria-label={en ? 'Open a resonance chamber made from the real STEP meshes' : '打开由真实 STEP 网格构成的拓扑共振舱'}>{en ? 'RESONATE ◇' : '共振 ◇'}</button>
+      <button type="button" class="morph-mutate" data-morph-mutate aria-label={en ? 'Mutate the shared topology gene' : '突变共享拓扑基因'}>{en ? 'MUTATE 🧬' : '突变 🧬'}</button>
+      <button type="button" class="morph-crossbreed" data-morph-crossbreed aria-label={en ? 'Crossbreed local and peer topology genes' : '交叉重组本地与远程拓扑基因'}>{en ? 'CROSSBREED ⚗' : '重组 ⚗'}</button>
+      <button type="button" class="morph-evolve" data-morph-evolve aria-label={en ? 'Run a topology gene survival tournament' : '运行拓扑基因生存竞技'}>{en ? 'EVOLVE ⚔' : '进化 ⚔'}</button>
+      <button type="button" class="morph-archive" data-morph-archive aria-label={en ? 'Archive this topology champion across sessions' : '跨会话归档当前拓扑冠军'}>{en ? 'ARCHIVE ∞' : '归档 ∞'}</button>
+      <button type="button" class="morph-genome-share" data-morph-genome-share disabled aria-label={en ? 'Share a deep link to the latest topology genome' : '分享最新拓扑基因深链接'}>{en ? 'GENOME ↗' : '基因 ↗'}</button>
+      <button type="button" class="morph-genome-passport" data-morph-genome-passport disabled aria-label={en ? 'Download a visual passport for the latest topology genome' : '下载最新拓扑基因的视觉护照'}>{en ? 'PASSPORT ✦' : '护照 ✦'}</button>
+      <button type="button" class="morph-genome-inject" data-morph-genome-inject aria-label={en ? 'Inject a topology genome passport SVG' : '注入拓扑基因护照 SVG'}>{en ? 'INJECT ↥' : '注入 ↥'}</button>
+      <button type="button" class="morph-genome-duel" data-genome-duel disabled aria-label={en ? 'Open a 3D duel between the latest two topology genomes' : '打开最近两个拓扑基因的三维决斗场'}>{en ? 'DUEL ⚡' : '对决 ⚡'}</button>
+      <button type="button" class="morph-genome-spawn" data-genome-spawn disabled aria-label={en ? 'Spawn a new topology genome from the duel' : '从基因决斗中生成新的拓扑基因'}>{en ? 'SPAWN ∴' : '生成 ∴'}</button>
+      <button type="button" class="morph-genome-spectate" data-genome-spectate aria-pressed="false" aria-label={en ? 'Watch topology duels from another EasyKiConverter tab' : '观战其他 EasyKiConverter 标签页的拓扑决斗'}>{en ? 'SPECTATE ◉' : '观战 ◉'}</button>
+      <button type="button" class="morph-genome-arena" data-genome-arena aria-pressed="false" aria-label={en ? 'Toggle the shared topology arena scoreboard' : '切换共享拓扑竞技榜'}>{en ? 'ARENA ▣' : '竞技场 ▣'}</button>
     </div>
 
     <div class="motion-progress" aria-hidden="true"><span></span></div>

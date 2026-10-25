@@ -1,54 +1,95 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import {
+  expect,
+  test,
+  type APIRequestContext,
+  type Page,
+} from "@playwright/test";
 
-const pages = ['/', '/en/'];
+const pages = ["/", "/en/"];
 const depthStyle = (page: Page) =>
-  page.locator('[data-product-stage]').evaluate((scene) => getComputedStyle(scene).getPropertyValue('--scene-progress').trim());
+  page
+    .locator("[data-product-stage]")
+    .evaluate((scene) =>
+      getComputedStyle(scene).getPropertyValue("--scene-progress").trim(),
+    );
 const storyScrollTarget = async (page: Page, progress: number) =>
-  page.locator('[data-story-rail]').evaluate((rail, progress) => {
-    const cards = [...rail.querySelectorAll<HTMLElement>('.story-card')];
-    const headerBottom = document.querySelector<HTMLElement>('.site-header')?.offsetHeight ?? 0;
+  page.locator("[data-story-rail]").evaluate((rail, progress) => {
+    const cards = [...rail.querySelectorAll<HTMLElement>(".story-card")];
+    const headerBottom =
+      document.querySelector<HTMLElement>(".site-header")?.offsetHeight ?? 0;
     const viewportAnchor = Math.max(
       80,
-      Math.min(window.innerHeight - 80, headerBottom + Math.min(156, Math.max(120, (window.innerHeight - headerBottom) * 0.22)))
+      Math.min(
+        window.innerHeight - 80,
+        headerBottom +
+          Math.min(
+            156,
+            Math.max(120, (window.innerHeight - headerBottom) * 0.22),
+          ),
+      ),
     );
     const centers = cards.map((card) => {
       const rect = card.getBoundingClientRect();
       return rect.top + window.scrollY + rect.height / 2;
     });
-    const position = Math.max(0, Math.min(1, progress)) * Math.max(0, centers.length - 1);
-    const index = Math.min(Math.floor(position), Math.max(0, centers.length - 2));
+    const position =
+      Math.max(0, Math.min(1, progress)) * Math.max(0, centers.length - 1);
+    const index = Math.min(
+      Math.floor(position),
+      Math.max(0, centers.length - 2),
+    );
     const fraction = position - index;
-    const center = centers.length < 2 ? (centers[0] ?? window.scrollY) : centers[index] + (centers[index + 1] - centers[index]) * fraction;
+    const center =
+      centers.length < 2
+        ? (centers[0] ?? window.scrollY)
+        : centers[index] + (centers[index + 1] - centers[index]) * fraction;
     return center - viewportAnchor;
   }, progress);
 const blockLabGeometryAssets = async (page: Page) => {
-  await page.route('**/assets/model/**', (route) => route.abort());
-  await page.route('**/assets/vendor/**', (route) => route.abort());
+  await page.route("**/assets/model/**", (route) => route.abort());
+  await page.route("**/assets/vendor/**", (route) => route.abort());
 };
 const labModelFiles = [
-  ['desktop', 'Easykiconverter_展示模型.glb'],
-  ['mobile', 'Easykiconverter_展示模型-mobile.glb'],
+  ["desktop", "Easykiconverter_展示模型.glb"],
+  ["mobile", "Easykiconverter_展示模型-mobile.glb"],
 ] as const;
-const expectLabModelSizesMatchFiles = async (page: Page, request: APIRequestContext) => {
+const expectLabModelSizesMatchFiles = async (
+  page: Page,
+  request: APIRequestContext,
+) => {
   for (const [variant, fileName] of labModelFiles) {
-    const response = await request.get(`/assets/model/${encodeURIComponent(fileName)}`);
+    const response = await request.get(
+      `/assets/model/${encodeURIComponent(fileName)}`,
+    );
     expect(response.ok(), `${variant} GLB response`).toBeTruthy();
-    const bytes = Number(response.headers()['content-length']);
-    expect(Number.isInteger(bytes), `${variant} GLB content length`).toBeTruthy();
-    await expect(page.locator(`[data-model-size="${variant}"]`)).toHaveText(`${(bytes / 1_000_000).toFixed(2)} MB`);
+    const bytes = Number(response.headers()["content-length"]);
+    expect(
+      Number.isInteger(bytes),
+      `${variant} GLB content length`,
+    ).toBeTruthy();
+    await expect(page.locator(`[data-model-size="${variant}"]`)).toHaveText(
+      `${(bytes / 1_000_000).toFixed(2)} MB`,
+    );
   }
 };
 
-test('bilingual homepages render one localized document title', async ({ page }) => {
+test("bilingual homepages render one localized document title", async ({
+  page,
+}) => {
   for (const path of pages) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('head title')).toHaveCount(1);
-    const expectedTitle = path === '/' ? 'EasyKiConverter · 让元件库转换顺手一点' : 'EasyKiConverter · Make parts EDA-ready';
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("head title")).toHaveCount(1);
+    const expectedTitle =
+      path === "/"
+        ? "EasyKiConverter · 让元件库转换顺手一点"
+        : "EasyKiConverter · Make parts EDA-ready";
     await expect(page).toHaveTitle(expectedTitle);
   }
 });
 
-test('mobile homepage shows the 3D conversion model in the first viewport in both languages', async ({ page }) => {
+test("mobile homepage shows the 3D conversion model in the first viewport in both languages", async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 320, height: 760 },
     { width: 320, height: 844 },
@@ -59,25 +100,41 @@ test('mobile homepage shows the 3D conversion model in the first viewport in bot
   ]) {
     await page.setViewportSize(viewport);
     for (const path of pages) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const modelBounds = await page.locator('.conversion-model-viewport').evaluate((element) => {
-        const rect = element.getBoundingClientRect();
-        const visibleHeight = Math.max(0, Math.min(window.innerHeight, rect.bottom) - Math.max(0, rect.top));
-        return {
-          left: rect.left,
-          right: rect.right,
-          height: rect.height,
-          visibleRatio: visibleHeight / rect.height,
-        };
-      });
-      expect(modelBounds.left, `${path} ${viewport.width}x${viewport.height}px model stays horizontally visible`).toBeGreaterThanOrEqual(0);
-      expect(modelBounds.right, `${path} ${viewport.width}x${viewport.height}px model stays horizontally visible`).toBeLessThanOrEqual(viewport.width);
-      expect(modelBounds.visibleRatio, `${path} ${viewport.width}x${viewport.height}px first-screen model visibility`).toBeGreaterThanOrEqual(0.5);
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const modelBounds = await page
+        .locator(".conversion-model-viewport")
+        .evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          const visibleHeight = Math.max(
+            0,
+            Math.min(window.innerHeight, rect.bottom) - Math.max(0, rect.top),
+          );
+          return {
+            left: rect.left,
+            right: rect.right,
+            height: rect.height,
+            visibleRatio: visibleHeight / rect.height,
+          };
+        });
+      expect(
+        modelBounds.left,
+        `${path} ${viewport.width}x${viewport.height}px model stays horizontally visible`,
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        modelBounds.right,
+        `${path} ${viewport.width}x${viewport.height}px model stays horizontally visible`,
+      ).toBeLessThanOrEqual(viewport.width);
+      expect(
+        modelBounds.visibleRatio,
+        `${path} ${viewport.width}x${viewport.height}px first-screen model visibility`,
+      ).toBeGreaterThanOrEqual(0.5);
     }
   }
 });
 
-test('bilingual homepage places the complete, centered model below the hero at every target size', async ({ page }) => {
+test("bilingual homepage places the complete, centered model below the hero at every target size", async ({
+  page,
+}) => {
   const viewports = [
     { width: 1920, height: 1080 },
     { width: 1440, height: 900 },
@@ -91,21 +148,32 @@ test('bilingual homepage places the complete, centered model below the hero at e
   for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     for (const path of pages) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await page.goto(path, { waitUntil: "domcontentloaded" });
       const geometry = await page.evaluate(() => {
-        const hero = document.querySelector<HTMLElement>('.hero')!;
-        const copy = hero.querySelector<HTMLElement>('.hero-copy')!;
-        const actions = hero.querySelector<HTMLElement>('.hero-actions')!;
-        const scene = document.querySelector<HTMLElement>('[data-conversion-scene]')!;
-        const board = scene.querySelector<HTMLElement>('.conversion-scene-board')!;
-        const model = scene.querySelector<HTMLElement>('.conversion-model-viewport')!;
+        const hero = document.querySelector<HTMLElement>(".hero")!;
+        const copy = hero.querySelector<HTMLElement>(".hero-copy")!;
+        const actions = hero.querySelector<HTMLElement>(".hero-actions")!;
+        const scene = document.querySelector<HTMLElement>(
+          "[data-conversion-scene]",
+        )!;
+        const board = scene.querySelector<HTMLElement>(
+          ".conversion-scene-board",
+        )!;
+        const model = scene.querySelector<HTMLElement>(
+          ".conversion-model-viewport",
+        )!;
         const box = (element: HTMLElement) => {
-          const { left, right, top, bottom, width, height } = element.getBoundingClientRect();
+          const { left, right, top, bottom, width, height } =
+            element.getBoundingClientRect();
           return { left, right, top, bottom, width, height };
         };
         const sceneBox = box(scene);
         const modelBox = box(model);
-        const visibleHeight = Math.max(0, Math.min(window.innerHeight, modelBox.bottom) - Math.max(0, modelBox.top));
+        const visibleHeight = Math.max(
+          0,
+          Math.min(window.innerHeight, modelBox.bottom) -
+            Math.max(0, modelBox.top),
+        );
         return {
           hero: box(hero),
           copy: box(copy),
@@ -119,25 +187,54 @@ test('bilingual homepage places the complete, centered model below the hero at e
         };
       });
 
-      expect(geometry.scene.top, `${path} ${viewport.width}x${viewport.height}: stage follows hero`).toBeGreaterThanOrEqual(geometry.hero.bottom - 1);
-      expect(geometry.actions.bottom, `${path} ${viewport.width}px: actions precede model`).toBeLessThanOrEqual(geometry.scene.top + 1);
-      expect(geometry.scene.width, `${path} ${viewport.width}px: model stage spans the reading width`).toBeGreaterThanOrEqual(geometry.copy.width - 2);
       expect(
-        Math.abs((geometry.scene.left + geometry.scene.right) / 2 - viewport.width / 2),
-        `${path} ${viewport.width}px: stage is centered`
+        geometry.scene.top,
+        `${path} ${viewport.width}x${viewport.height}: stage follows hero`,
+      ).toBeGreaterThanOrEqual(geometry.hero.bottom - 1);
+      expect(
+        geometry.actions.bottom,
+        `${path} ${viewport.width}px: actions precede model`,
+      ).toBeLessThanOrEqual(geometry.scene.top + 1);
+      expect(
+        geometry.scene.width,
+        `${path} ${viewport.width}px: model stage spans the reading width`,
+      ).toBeGreaterThanOrEqual(geometry.copy.width - 2);
+      expect(
+        Math.abs(
+          (geometry.scene.left + geometry.scene.right) / 2 - viewport.width / 2,
+        ),
+        `${path} ${viewport.width}px: stage is centered`,
       ).toBeLessThanOrEqual(2);
-      expect(geometry.board.left, `${path} ${viewport.width}px: complete model board left edge`).toBeGreaterThanOrEqual(geometry.scene.left - 2);
-      expect(geometry.board.right, `${path} ${viewport.width}px: complete model board right edge`).toBeLessThanOrEqual(geometry.scene.right + 2);
-      expect(geometry.model.left, `${path} ${viewport.width}px: model viewport left edge`).toBeGreaterThanOrEqual(geometry.board.left - 2);
-      expect(geometry.model.right, `${path} ${viewport.width}px: model viewport right edge`).toBeLessThanOrEqual(geometry.board.right + 2);
-      expect(geometry.model.width, `${path} ${viewport.width}px: actual model area has visual scale`).toBeGreaterThanOrEqual(
-        geometry.scene.width * (viewport.width <= 850 ? 0.35 : 0.29)
+      expect(
+        geometry.board.left,
+        `${path} ${viewport.width}px: complete model board left edge`,
+      ).toBeGreaterThanOrEqual(geometry.scene.left - 2);
+      expect(
+        geometry.board.right,
+        `${path} ${viewport.width}px: complete model board right edge`,
+      ).toBeLessThanOrEqual(geometry.scene.right + 2);
+      expect(
+        geometry.model.left,
+        `${path} ${viewport.width}px: model viewport left edge`,
+      ).toBeGreaterThanOrEqual(geometry.board.left - 2);
+      expect(
+        geometry.model.right,
+        `${path} ${viewport.width}px: model viewport right edge`,
+      ).toBeLessThanOrEqual(geometry.board.right + 2);
+      expect(
+        geometry.model.width,
+        `${path} ${viewport.width}px: actual model area has visual scale`,
+      ).toBeGreaterThanOrEqual(
+        geometry.scene.width * (viewport.width <= 850 ? 0.35 : 0.29),
       );
-      expect(geometry.scrollWidth, `${path} ${viewport.width}px: vertical layout avoids horizontal overflow`).toBe(geometry.viewportWidth);
+      expect(
+        geometry.scrollWidth,
+        `${path} ${viewport.width}px: vertical layout avoids horizontal overflow`,
+      ).toBe(geometry.viewportWidth);
       if (viewport.height > 500) {
         expect(
           geometry.visibleRatio,
-          `${path} ${viewport.width}x${viewport.height}: subject appears below the hero in the first viewport`
+          `${path} ${viewport.width}x${viewport.height}: subject appears below the hero in the first viewport`,
         ).toBeGreaterThanOrEqual(0.5);
       }
     }
@@ -147,22 +244,35 @@ test('bilingual homepage places the complete, centered model below the hero at e
 for (const path of pages) {
   test(`${path} serves the release-backed static page`, async ({ page }) => {
     const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
-    page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(message.text());
+    page.on("pageerror", (error) => errors.push(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
     });
 
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('main')).toBeVisible();
-    await expect(page.locator('[data-release-version]').first()).toHaveText('v3.1.13');
-    await expect(page.locator('[data-release-link]').first()).toHaveAttribute('href', /v3\.1\.13/);
-    await expect(page.locator('.hero-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
-    await expect(page.locator('.download-actions [data-release-link]')).toHaveAttribute('href', /v3\.1\.13/);
-    await expect(page.locator('.hero-actions [data-release-link]')).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
-    await expect(page.locator('.download-actions [data-release-link]')).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
-    await expect(page.locator('h1')).toBeVisible();
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("main")).toBeVisible();
+    await expect(page.locator("[data-release-version]").first()).toHaveText(
+      "v3.1.13",
+    );
+    await expect(page.locator("[data-release-link]").first()).toHaveAttribute(
+      "href",
+      /v3\.1\.13/,
+    );
+    await expect(
+      page.locator(".hero-actions [data-release-link]"),
+    ).toHaveAttribute("href", /v3\.1\.13/);
+    await expect(
+      page.locator(".download-actions [data-release-link]"),
+    ).toHaveAttribute("href", /v3\.1\.13/);
+    await expect(
+      page.locator(".hero-actions [data-release-link]"),
+    ).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
+    await expect(
+      page.locator(".download-actions [data-release-link]"),
+    ).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
+    await expect(page.locator("h1")).toBeVisible();
 
-    const duplicateIds = await page.locator('[id]').evaluateAll((elements) => {
+    const duplicateIds = await page.locator("[id]").evaluateAll((elements) => {
       const ids = elements.map((element) => element.id);
       return ids.filter((id, index) => ids.indexOf(id) !== index);
     });
@@ -171,26 +281,42 @@ for (const path of pages) {
   });
 }
 
-test('release refresh stays same-origin and keeps the static fallback path', async ({ page }) => {
+test("release refresh stays same-origin and keeps the static fallback path", async ({
+  page,
+}) => {
   const releaseRequests: string[] = [];
-  page.on('request', (request) => {
-    if (request.url().includes('latest-release.json') || request.url().includes('api.github.com/repos/EasyKiconverter/EasyKiConverter/releases/latest')) {
+  page.on("request", (request) => {
+    if (
+      request.url().includes("latest-release.json") ||
+      request
+        .url()
+        .includes(
+          "api.github.com/repos/EasyKiconverter/EasyKiConverter/releases/latest",
+        )
+    ) {
       releaseRequests.push(request.url());
     }
   });
 
-  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.goto("/", { waitUntil: "networkidle" });
   expect(releaseRequests).toHaveLength(1);
   expect(new URL(releaseRequests[0]).origin).toBe(new URL(page.url()).origin);
-  expect(releaseRequests[0]).toContain('/data/latest-release.json');
-  await expect(page.locator('[data-release-version]').first()).toHaveText('v3.1.13');
+  expect(releaseRequests[0]).toContain("/data/latest-release.json");
+  await expect(page.locator("[data-release-version]").first()).toHaveText(
+    "v3.1.13",
+  );
 });
 
-test('homepage release CTA stays on one line at 320px in both languages', async ({ page }) => {
+test("homepage release CTA stays on one line at 320px in both languages", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 320, height: 844 });
   for (const path of pages) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    for (const selector of ['.hero-actions [data-release-link]', '.download-actions [data-release-link]']) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    for (const selector of [
+      ".hero-actions [data-release-link]",
+      ".download-actions [data-release-link]",
+    ]) {
       const link = page.locator(selector);
       const labelLines = await link.evaluate((element) => {
         const range = document.createRange();
@@ -200,43 +326,71 @@ test('homepage release CTA stays on one line at 320px in both languages', async 
       expect(labelLines, `${path} ${selector} label line count`).toBe(1);
     }
 
-    const titleLines = await page.locator('#download-title').evaluate((element) => {
-      const range = document.createRange();
-      range.selectNodeContents(element);
-      return new Set([...range.getClientRects()].filter((rect) => rect.width > 0).map((rect) => Math.round(rect.top))).size;
-    });
-    expect(titleLines, `${path} download heading line count`).toBeLessThanOrEqual(3);
+    const titleLines = await page
+      .locator("#download-title")
+      .evaluate((element) => {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        return new Set(
+          [...range.getClientRects()]
+            .filter((rect) => rect.width > 0)
+            .map((rect) => Math.round(rect.top)),
+        ).size;
+      });
+    expect(
+      titleLines,
+      `${path} download heading line count`,
+    ).toBeLessThanOrEqual(3);
   }
 });
 
-test('bilingual homepage distinguishes the STEP model render from real software screenshots', async ({ page }) => {
+test("bilingual homepage distinguishes the STEP model render from real software screenshots", async ({
+  page,
+}) => {
   for (const [path, disclosure] of [
-    ['/', '本机输出路径已隐藏'],
-    ['/en/', 'Local output path hidden'],
+    ["/", "本机输出路径已隐藏"],
+    ["/en/", "Local output path hidden"],
   ]) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const heroImage = page.locator('.conversion-model-viewport img');
-    const showcaseImage = page.locator('.app-window > img');
-    const heroSource = await heroImage.getAttribute('src');
-    const showcaseSource = await showcaseImage.getAttribute('src');
-    expect(heroSource).toContain('easyki-real-model-hero.webp');
-    expect(showcaseSource).toContain('easykiconverter-export.webp');
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const heroImage = page.locator(".conversion-model-viewport img");
+    const showcaseImage = page.locator(".app-window > img");
+    const heroSource = await heroImage.getAttribute("src");
+    const showcaseSource = await showcaseImage.getAttribute("src");
+    expect(heroSource).toContain("easyki-real-model-hero.webp");
+    expect(showcaseSource).toContain("easykiconverter-export.webp");
     expect(showcaseSource).not.toBe(heroSource);
-    await expect(page.locator('[data-conversion-scene]')).toHaveAttribute('aria-label', /RP2040.*C2040/i);
-    await expect(page.locator('[data-conversion-scene]')).toHaveAttribute('aria-label', /illustrative|示意/i);
-    await expect(showcaseImage).toHaveAttribute('alt', new RegExp(disclosure, 'i'));
-    await expect(page.locator('.conversion-use-layer')).toContainText(path === '/' ? '21 项全成功 · 含 C2040' : '21/21 succeeded · C2040 included');
-    await expect(page.locator('.app-window .showcase-source')).toContainText(disclosure);
-    const fullSizeLink = page.locator('.app-window .showcase-source a');
-    await expect(fullSizeLink).toHaveAttribute('href', showcaseSource || '');
-    await expect(fullSizeLink).toHaveAttribute('target', '_blank');
-    await expect(fullSizeLink).toHaveAttribute('rel', 'noreferrer');
+    await expect(page.locator("[data-conversion-scene]")).toHaveAttribute(
+      "aria-label",
+      /RP2040.*C2040/i,
+    );
+    await expect(page.locator("[data-conversion-scene]")).toHaveAttribute(
+      "aria-label",
+      /illustrative|示意/i,
+    );
+    await expect(showcaseImage).toHaveAttribute(
+      "alt",
+      new RegExp(disclosure, "i"),
+    );
+    await expect(page.locator(".conversion-use-layer")).toContainText(
+      path === "/"
+        ? "21 项全成功 · 含 C2040"
+        : "21/21 succeeded · C2040 included",
+    );
+    await expect(page.locator(".app-window .showcase-source")).toContainText(
+      disclosure,
+    );
+    const fullSizeLink = page.locator(".app-window .showcase-source a");
+    await expect(fullSizeLink).toHaveAttribute("href", showcaseSource || "");
+    await expect(fullSizeLink).toHaveAttribute("target", "_blank");
+    await expect(fullSizeLink).toHaveAttribute("rel", "noreferrer");
     await expect(fullSizeLink).toContainText(/full-size capture|完整原图/i);
-    await expect(page.locator('.app-window .showcase-proof-items')).toContainText(/progress|进度/i);
+    await expect(
+      page.locator(".app-window .showcase-proof-items"),
+    ).toContainText(/progress|进度/i);
     for (const image of [heroImage, showcaseImage]) {
       await image.evaluate(async (element) => {
         const image = element as HTMLImageElement;
-        image.loading = 'eager';
+        image.loading = "eager";
         await image.decode();
       });
       const dimensions = await image.evaluate((element) => {
@@ -249,86 +403,135 @@ test('bilingual homepage distinguishes the STEP model render from real software 
   }
 });
 
-test('bilingual homepage keeps the conversion story and download actions usable when showcase images fail', async ({ page }) => {
-  await page.route('**/assets/showcase/**', (route) => route.abort());
+test("bilingual homepage keeps the conversion story and download actions usable when showcase images fail", async ({
+  page,
+}) => {
+  await page.route("**/assets/showcase/**", (route) => route.abort());
   for (const [path, title] of [
-    ['/', '让元件库转换'],
-    ['/en/', 'Component data'],
+    ["/", "让元件库转换"],
+    ["/en/", "Component data"],
   ]) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('[data-conversion-scene]')).toHaveAttribute('aria-label', /RP2040.*C2040/i);
-    await expect(page.locator('#story')).toBeVisible();
-    await expect(page.locator('#download')).toBeVisible();
-    await expect(page.locator('.hero-actions a').first()).toBeVisible();
-    await expect(page.locator('.download-actions a').first()).toBeVisible();
-    await expect(page.locator('main')).toContainText(title);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("[data-conversion-scene]")).toHaveAttribute(
+      "aria-label",
+      /RP2040.*C2040/i,
+    );
+    await expect(page.locator("#story")).toBeVisible();
+    await expect(page.locator("#download")).toBeVisible();
+    await expect(page.locator(".hero-actions a").first()).toBeVisible();
+    await expect(page.locator(".download-actions a").first()).toBeVisible();
+    await expect(page.locator("main")).toContainText(title);
   }
 });
 
-test('all social previews use the sanitized product screenshot', async ({ page }) => {
-  for (const path of ['/', '/en/', '/lab/', '/en/lab/', '/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /easykiconverter-main-public\.webp/);
-    if (path.includes('/lab/')) {
-      await expect(page.locator('.motion-app-window img')).toHaveAttribute('src', /easykiconverter-main-public\.webp/);
-      await expect(page.locator('.motion-app-window figcaption')).toContainText(/LOCAL PATH HIDDEN|本机路径已隐藏/);
+test("all social previews use the sanitized product screenshot", async ({
+  page,
+}) => {
+  for (const path of [
+    "/",
+    "/en/",
+    "/lab/",
+    "/en/lab/",
+    "/formats/",
+    "/en/formats/",
+    "/cases/",
+    "/en/cases/",
+  ]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      "content",
+      /easykiconverter-main-public\.webp/,
+    );
+    if (path.includes("/lab/")) {
+      await expect(page.locator(".motion-app-window img")).toHaveAttribute(
+        "src",
+        /easykiconverter-main-public\.webp/,
+      );
+      await expect(page.locator(".motion-app-window figcaption")).toContainText(
+        /LOCAL PATH HIDDEN|本机路径已隐藏/,
+      );
     }
   }
 });
 
-test('bilingual footers keep each navigation entry readable on one line', async ({ page }) => {
+test("bilingual footers keep each navigation entry readable on one line", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'networkidle' });
-    const links = await page.locator('.site-footer .footer-links a').evaluateAll((elements) =>
-      elements.map((element) => {
-        const bounds = element.getBoundingClientRect();
-        const styles = getComputedStyle(element);
-        return {
-          height: bounds.height,
-          lineHeight: Number.parseFloat(styles.lineHeight),
-        };
-      })
-    );
+  for (const path of [
+    "/",
+    "/en/",
+    "/formats/",
+    "/en/formats/",
+    "/cases/",
+    "/en/cases/",
+    "/lab/",
+    "/en/lab/",
+  ]) {
+    await page.goto(path, { waitUntil: "networkidle" });
+    const links = await page
+      .locator(".site-footer .footer-links a")
+      .evaluateAll((elements) =>
+        elements.map((element) => {
+          const bounds = element.getBoundingClientRect();
+          const styles = getComputedStyle(element);
+          return {
+            height: bounds.height,
+            lineHeight: Number.parseFloat(styles.lineHeight),
+          };
+        }),
+      );
     expect(links).toHaveLength(7);
-    links.forEach(({ height, lineHeight }) => expect(height).toBeLessThanOrEqual(lineHeight + 1));
+    links.forEach(({ height, lineHeight }) =>
+      expect(height).toBeLessThanOrEqual(lineHeight + 1),
+    );
   }
 });
 
-test('mobile navigation opens, closes, and restores focus', async ({ page }) => {
+test("mobile navigation opens, closes, and restores focus", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/', { waitUntil: 'networkidle' });
-  const menu = page.locator('.menu-button');
-  const mobileNav = page.locator('.mobile-nav');
+  await page.goto("/", { waitUntil: "networkidle" });
+  const menu = page.locator(".menu-button");
+  const mobileNav = page.locator(".mobile-nav");
   await menu.click();
-  await expect(menu).toHaveAttribute('aria-expanded', 'true');
+  await expect(menu).toHaveAttribute("aria-expanded", "true");
   await expect(mobileNav).toHaveClass(/is-open/);
-  await page.keyboard.press('Escape');
-  await expect(menu).toHaveAttribute('aria-expanded', 'false');
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveAttribute("aria-expanded", "false");
   await expect(menu).toBeFocused();
 });
 
-test('bilingual homepage header stays within the layout through the tablet breakpoint', async ({ page }) => {
+test("bilingual homepage header stays within the layout through the tablet breakpoint", async ({
+  page,
+}) => {
   for (const width of [850, 851, 900, 920, 921, 980, 981, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const path of ['/', '/en/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const header = page.locator('.site-header');
+    for (const path of ["/", "/en/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const header = page.locator(".site-header");
       const collapsed = width <= 980;
       if (collapsed) {
-        await expect(header.locator('.nav-links')).toBeHidden();
-        await expect(header.locator('.menu-button')).toBeVisible();
+        await expect(header.locator(".nav-links")).toBeHidden();
+        await expect(header.locator(".menu-button")).toBeVisible();
       } else {
-        await expect(header.locator('.nav-links')).toBeVisible();
-        await expect(header.locator('.menu-button')).toBeHidden();
+        await expect(header.locator(".nav-links")).toBeVisible();
+        await expect(header.locator(".menu-button")).toBeHidden();
       }
 
       const layout = await header.evaluate((element) => {
         const headerBounds = element.getBoundingClientRect();
         const styles = getComputedStyle(element);
-        const leftLimit = headerBounds.left + Number.parseFloat(styles.paddingLeft);
-        const rightLimit = headerBounds.right - Number.parseFloat(styles.paddingRight);
-        const items = [...element.querySelectorAll('.brand, .nav-links, .lang-link, .github-link, .menu-button')]
+        const leftLimit =
+          headerBounds.left + Number.parseFloat(styles.paddingLeft);
+        const rightLimit =
+          headerBounds.right - Number.parseFloat(styles.paddingRight);
+        const items = [
+          ...element.querySelectorAll(
+            ".brand, .nav-links, .lang-link, .github-link, .menu-button",
+          ),
+        ]
           .map((item) => {
             const bounds = item.getBoundingClientRect();
             return {
@@ -338,32 +541,43 @@ test('bilingual homepage header stays within the layout through the tablet break
               display: getComputedStyle(item).display,
             };
           })
-          .filter((item) => item.display !== 'none' && item.width > 0)
+          .filter((item) => item.display !== "none" && item.width > 0)
           .sort((first, second) => first.left - second.left);
         return { leftLimit, rightLimit, items };
       });
       layout.items.forEach((item, index) => {
-        expect(item.left, `${path} at ${width}px: header item starts outside the shell`).toBeGreaterThanOrEqual(layout.leftLimit - 1);
-        expect(item.right, `${path} at ${width}px: header item ends outside the shell`).toBeLessThanOrEqual(layout.rightLimit + 1);
+        expect(
+          item.left,
+          `${path} at ${width}px: header item starts outside the shell`,
+        ).toBeGreaterThanOrEqual(layout.leftLimit - 1);
+        expect(
+          item.right,
+          `${path} at ${width}px: header item ends outside the shell`,
+        ).toBeLessThanOrEqual(layout.rightLimit + 1);
         if (index > 0) {
-          expect(item.left, `${path} at ${width}px: header items overlap`).toBeGreaterThanOrEqual(layout.items[index - 1].right - 1);
+          expect(
+            item.left,
+            `${path} at ${width}px: header items overlap`,
+          ).toBeGreaterThanOrEqual(layout.items[index - 1].right - 1);
         }
       });
 
       if (width >= 851 && width <= 980) {
-        await expect(page.locator('.hero')).toHaveCSS('display', 'flex');
-        const menu = header.locator('.menu-button');
+        await expect(page.locator(".hero")).toHaveCSS("display", "flex");
+        const menu = header.locator(".menu-button");
         await menu.click();
-        await expect(page.locator('.mobile-nav')).toHaveClass(/is-open/);
-        await expect(page.locator('.mobile-nav')).toBeVisible();
-        await page.keyboard.press('Escape');
+        await expect(page.locator(".mobile-nav")).toHaveClass(/is-open/);
+        await expect(page.locator(".mobile-nav")).toBeVisible();
+        await page.keyboard.press("Escape");
         await expect(menu).toBeFocused();
       }
     }
   }
 });
 
-test('homepage navigation stays available without JavaScript at the tablet header breakpoint', async ({ browser }) => {
+test("homepage navigation stays available without JavaScript at the tablet header breakpoint", async ({
+  browser,
+}) => {
   const context = await browser.newContext({
     javaScriptEnabled: false,
     viewport: { width: 390, height: 900 },
@@ -372,76 +586,91 @@ test('homepage navigation stays available without JavaScript at the tablet heade
 
   for (const width of [390, 851, 920, 980]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const path of ['/', '/en/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const mobileNav = page.locator('.mobile-nav');
+    for (const path of ["/", "/en/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const mobileNav = page.locator(".mobile-nav");
       await expect(mobileNav).toBeVisible();
-      await expect(mobileNav.locator('a').first()).toHaveAttribute('href', '#story');
-      await expect(page.locator('.header-actions .lang-link')).toBeVisible();
+      await expect(mobileNav.locator("a").first()).toHaveAttribute(
+        "href",
+        "#story",
+      );
+      await expect(page.locator(".header-actions .lang-link")).toBeVisible();
     }
   }
 
   await context.close();
 });
 
-test('homepage skip links are localized and move keyboard focus to main content', async ({ page }) => {
+test("homepage skip links are localized and move keyboard focus to main content", async ({
+  page,
+}) => {
   for (const [path, label] of [
-    ['/', '跳转到正文'],
-    ['/en/', 'Skip to content'],
+    ["/", "跳转到正文"],
+    ["/en/", "Skip to content"],
   ]) {
-    await page.goto(path, { waitUntil: 'networkidle' });
-    const skipLink = page.locator('.skip-link');
+    await page.goto(path, { waitUntil: "networkidle" });
+    const skipLink = page.locator(".skip-link");
     await expect(skipLink).toHaveText(label);
-    await page.keyboard.press('Tab');
+    await page.keyboard.press("Tab");
     await expect(skipLink).toBeFocused();
     await expect(skipLink).toBeInViewport();
-    await page.keyboard.press('Enter');
-    await expect(page.locator('main#top')).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("main#top")).toBeFocused();
     await expect(page).toHaveURL(/#top$/);
   }
 });
 
-test('content-page skip links move keyboard focus into the main content', async ({ page }) => {
-  for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const skipLink = page.locator('.content-page-skip');
-    const main = page.locator('main#content-page-main');
-    await page.keyboard.press('Tab');
+test("content-page skip links move keyboard focus into the main content", async ({
+  page,
+}) => {
+  for (const path of ["/formats/", "/en/formats/", "/cases/", "/en/cases/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const skipLink = page.locator(".content-page-skip");
+    const main = page.locator("main#content-page-main");
+    await page.keyboard.press("Tab");
     await expect(skipLink).toBeFocused();
     await expect(skipLink).toBeInViewport();
-    await page.keyboard.press('Enter');
+    await page.keyboard.press("Enter");
     await expect(main).toBeFocused();
     await expect(page).toHaveURL(/#content-page-main$/);
   }
 });
 
-test('Lab skip links are localized and move keyboard focus to the main content', async ({ page }) => {
+test("Lab skip links are localized and move keyboard focus to the main content", async ({
+  page,
+}) => {
   for (const [path, label] of [
-    ['/lab/', '跳转到实验室正文'],
-    ['/en/lab/', 'Skip to lab content'],
+    ["/lab/", "跳转到实验室正文"],
+    ["/en/lab/", "Skip to lab content"],
   ]) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const skipLink = page.locator('.content-page-skip');
-    const main = page.locator('main#lab-main');
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const skipLink = page.locator(".content-page-skip");
+    const main = page.locator("main#lab-main");
     await expect(skipLink).toHaveText(label);
-    await page.keyboard.press('Tab');
+    await page.keyboard.press("Tab");
     await expect(skipLink).toBeFocused();
-    await page.keyboard.press('Enter');
+    await page.keyboard.press("Enter");
     await expect(main).toBeFocused();
     await expect(page).toHaveURL(/#lab-main$/);
   }
 });
 
-test('mobile story cards keep decorative labels clear of their copy', async ({ page }) => {
+test("mobile story cards keep decorative labels clear of their copy", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const storyCards = page.locator('.story-card');
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const storyCards = page.locator(".story-card");
     await storyCards.first().scrollIntoViewIfNeeded();
     const bounds = await storyCards.evaluateAll((cards) =>
       cards.map((card) => {
-        const copy = card.querySelector('p')?.getBoundingClientRect();
-        const decoration = card.querySelector('.story-pulse, .story-stack, .story-check, .story-use-proof')?.getBoundingClientRect();
+        const copy = card.querySelector("p")?.getBoundingClientRect();
+        const decoration = card
+          .querySelector(
+            ".story-pulse, .story-stack, .story-check, .story-use-proof",
+          )
+          ?.getBoundingClientRect();
         if (!copy || !decoration) return null;
         return {
           copyRight: copy.right,
@@ -453,47 +682,65 @@ test('mobile story cards keep decorative labels clear of their copy', async ({ p
           decorationBottom: decoration.bottom,
           decorationTop: decoration.top,
         };
-      })
+      }),
     );
     expect(bounds).toHaveLength(4);
     bounds.forEach((bound) => {
       expect(bound).not.toBeNull();
-      const horizontalGap = bound!.copyRight <= bound!.decorationLeft + 1 || bound!.decorationRight <= bound!.copyLeft + 1;
-      const verticalGap = bound!.copyBottom <= bound!.decorationTop + 1 || bound!.decorationBottom <= bound!.copyTop + 1;
+      const horizontalGap =
+        bound!.copyRight <= bound!.decorationLeft + 1 ||
+        bound!.decorationRight <= bound!.copyLeft + 1;
+      const verticalGap =
+        bound!.copyBottom <= bound!.decorationTop + 1 ||
+        bound!.decorationBottom <= bound!.copyTop + 1;
       expect(horizontalGap || verticalGap).toBe(true);
     });
   }
 });
 
-test('bilingual homepages do not overflow horizontally on narrow screens', async ({ page }) => {
+test("bilingual homepages do not overflow horizontally on narrow screens", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'networkidle' });
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "networkidle" });
     const dimensions = await page.evaluate(() => ({
       documentWidth: document.documentElement.scrollWidth,
       viewportWidth: window.innerWidth,
     }));
-    expect(dimensions.documentWidth).toBeLessThanOrEqual(dimensions.viewportWidth);
+    expect(dimensions.documentWidth).toBeLessThanOrEqual(
+      dimensions.viewportWidth,
+    );
   }
 });
 
-test('mobile homepage keeps the STEP-derived model render readable', async ({ page }) => {
-  test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const image = page.locator('.conversion-model-viewport img');
-    await expect(image).toHaveCSS('object-fit', 'contain');
+test("mobile homepage keeps the STEP-derived model render readable", async ({
+  page,
+}) => {
+  test.skip(
+    test.info().project.name !== "chromium-mobile",
+    "Mobile-specific visual contract",
+  );
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const image = page.locator(".conversion-model-viewport img");
+    await expect(image).toHaveCSS("object-fit", "contain");
     const box = await image.boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(220);
   }
 });
 
-test('Chinese mobile hero keeps the conversion phrase together', async ({ page }) => {
-  test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
+test("Chinese mobile hero keeps the conversion phrase together", async ({
+  page,
+}) => {
+  test.skip(
+    test.info().project.name !== "chromium-mobile",
+    "Mobile-specific visual contract",
+  );
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
 
-  const phrase = page.locator('.hero-title-conversion');
+  const phrase = page.locator(".hero-title-conversion");
   const lineCount = await phrase.evaluate((element) => {
     const range = document.createRange();
     range.selectNodeContents(element);
@@ -501,367 +748,565 @@ test('Chinese mobile hero keeps the conversion phrase together', async ({ page }
   });
 
   expect(lineCount).toBe(1);
-  const titleHeight = await page.locator('#hero-title').evaluate((element) => element.getBoundingClientRect().height);
+  const titleHeight = await page
+    .locator("#hero-title")
+    .evaluate((element) => element.getBoundingClientRect().height);
   expect(titleHeight).toBeLessThan(125);
 });
 
-test('English mobile hero keeps a compact promise and brings product proof higher', async ({ page }) => {
-  test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
-  await page.emulateMedia({ reducedMotion: 'reduce' });
+test("English mobile hero keeps a compact promise and brings product proof higher", async ({
+  page,
+}) => {
+  test.skip(
+    test.info().project.name !== "chromium-mobile",
+    "Mobile-specific visual contract",
+  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
 
-  const title = page.locator('#hero-title');
-  await expect(title).toHaveText('Make parts EDA-ready.');
-  expect(await title.evaluate((element) => element.getBoundingClientRect().height)).toBeLessThan(110);
-  const ledeHeight = await page.locator('.hero-lede').evaluate((element) => element.getBoundingClientRect().height);
-  const productImageTop = await page.locator('.conversion-model-viewport img').evaluate((element) => element.getBoundingClientRect().top);
+  const title = page.locator("#hero-title");
+  await expect(title).toHaveText("Make parts EDA-ready.");
+  expect(
+    await title.evaluate((element) => element.getBoundingClientRect().height),
+  ).toBeLessThan(110);
+  const ledeHeight = await page
+    .locator(".hero-lede")
+    .evaluate((element) => element.getBoundingClientRect().height);
+  const productImageTop = await page
+    .locator(".conversion-model-viewport img")
+    .evaluate((element) => element.getBoundingClientRect().top);
   expect(ledeHeight).toBeLessThan(60);
   expect(productImageTop).toBeLessThan(760);
 });
 
-test('bilingual mobile hero keeps its facts compact and product proof in view', async ({ page }) => {
-  test.skip(test.info().project.name !== 'chromium-mobile', 'Mobile-specific visual contract');
+test("bilingual mobile hero keeps its facts compact and product proof in view", async ({
+  page,
+}) => {
+  test.skip(
+    test.info().project.name !== "chromium-mobile",
+    "Mobile-specific visual contract",
+  );
   await page.setViewportSize({ width: 390, height: 844 });
 
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const factTops = await page.locator('.hero-facts span').evaluateAll((facts) => facts.map((fact) => fact.getBoundingClientRect().top));
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const factTops = await page
+      .locator(".hero-facts span")
+      .evaluateAll((facts) =>
+        facts.map((fact) => fact.getBoundingClientRect().top),
+      );
     expect(factTops).toHaveLength(3);
     expect(Math.max(...factTops) - Math.min(...factTops)).toBeLessThan(2);
 
-    const scene = page.locator('[data-conversion-scene]');
+    const scene = page.locator("[data-conversion-scene]");
     await scene.scrollIntoViewIfNeeded();
-    const productHeight = await page.locator('.conversion-model-viewport img').evaluate((image) => image.getBoundingClientRect().height);
+    const productHeight = await page
+      .locator(".conversion-model-viewport img")
+      .evaluate((image) => image.getBoundingClientRect().height);
     expect(productHeight).toBeGreaterThanOrEqual(140);
   }
 });
 
-test('bilingual secondary pages do not overflow horizontally on narrow screens', async ({ page }) => {
+test("bilingual secondary pages do not overflow horizontally on narrow screens", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'networkidle' });
+  for (const path of [
+    "/formats/",
+    "/en/formats/",
+    "/cases/",
+    "/en/cases/",
+    "/lab/",
+    "/en/lab/",
+  ]) {
+    await page.goto(path, { waitUntil: "networkidle" });
     const dimensions = await page.evaluate(() => ({
       documentWidth: document.documentElement.scrollWidth,
       viewportWidth: window.innerWidth,
     }));
-    expect(dimensions.documentWidth).toBeLessThanOrEqual(dimensions.viewportWidth);
+    expect(dimensions.documentWidth).toBeLessThanOrEqual(
+      dimensions.viewportWidth,
+    );
   }
 });
 
-test('homepage format summary matches the capability matrix data', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const summary = page.locator('[data-format-summary]');
-    await expect(summary).toContainText('KiCad');
-    await expect(summary).toContainText('Altium Designer');
-    await expect(summary).toContainText(path === '/' ? '+ 9 个其他目标' : '+ 9 additional targets');
-    await expect(summary).not.toContainText('3D');
+test("homepage format summary matches the capability matrix data", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const summary = page.locator("[data-format-summary]");
+    await expect(summary).toContainText("KiCad");
+    await expect(summary).toContainText("Altium Designer");
+    await expect(summary).toContainText(
+      path === "/" ? "+ 9 个其他目标" : "+ 9 additional targets",
+    );
+    await expect(summary).not.toContainText("3D");
   }
 });
 
-test('homepage format summary explains version-scoped support', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#formats')).toContainText('其他目标格式的具体支持范围');
-  await expect(page.locator('#formats')).not.toContainText('主项目还注册了');
+test("homepage format summary explains version-scoped support", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#formats")).toContainText(
+    "其他目标格式的具体支持范围",
+  );
+  await expect(page.locator("#formats")).not.toContainText("主项目还注册了");
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#formats')).toContainText('confirm current support');
-  await expect(page.locator('#formats')).not.toContainText('the main project also registers');
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#formats")).toContainText(
+    "confirm current support",
+  );
+  await expect(page.locator("#formats")).not.toContainText(
+    "the main project also registers",
+  );
 });
 
-test('Chinese pages keep release guidance localized', async ({ page }) => {
-  for (const path of ['/', '/formats/', '/cases/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('main')).not.toContainText('Release');
+test("Chinese pages keep release guidance localized", async ({ page }) => {
+  for (const path of ["/", "/formats/", "/cases/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("main")).not.toContainText("Release");
   }
-  await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.format-matrix-actions .text-link')).toHaveText(/当前发布/);
-  await expect(page.locator('.format-legend-registered')).toHaveText(/按发布版本验证/);
+  await page.goto("/formats/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".format-matrix-actions .text-link")).toHaveText(
+    /当前发布/,
+  );
+  await expect(page.locator(".format-legend-registered")).toHaveText(
+    /按发布版本验证/,
+  );
 });
 
-test('homepage format and case actions have a clear primary hierarchy', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const actions = page.locator('#formats .feature-links');
+test("homepage format and case actions have a clear primary hierarchy", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const actions = page.locator("#formats .feature-links");
     await expect(actions).toHaveCount(1);
-    await expect(actions.locator('.feature-link-primary')).toHaveAttribute('href', /formats\/$/);
-    await expect(actions.locator('.feature-link-secondary')).toHaveAttribute('href', /cases\/$/);
+    await expect(actions.locator(".feature-link-primary")).toHaveAttribute(
+      "href",
+      /formats\/$/,
+    );
+    await expect(actions.locator(".feature-link-secondary")).toHaveAttribute(
+      "href",
+      /cases\/$/,
+    );
   }
 });
 
-test('homepage workbench evidence offers bilingual next steps', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  const chineseActions = page.locator('.showcase-actions');
-  await expect(chineseActions).toContainText('先从真实界面确认工作方式');
-  await expect(chineseActions).toContainText('查看转换案例');
-  await expect(chineseActions).toContainText('打开 3D 实验室');
-  await expect(chineseActions.locator('a[href="cases/"]')).toHaveClass(/showcase-action-primary/);
+test("homepage workbench evidence offers bilingual next steps", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const chineseActions = page.locator(".showcase-actions");
+  await expect(chineseActions).toContainText("先从真实界面确认工作方式");
+  await expect(chineseActions).toContainText("查看转换案例");
+  await expect(chineseActions).toContainText("打开 3D 实验室");
+  await expect(chineseActions.locator('a[href="cases/"]')).toHaveClass(
+    /showcase-action-primary/,
+  );
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  const englishActions = page.locator('.showcase-actions');
-  await expect(englishActions).toContainText('Start from the real interface');
-  await expect(englishActions).toContainText('View conversion cases');
-  await expect(englishActions).toContainText('Open the 3D Lab');
-  await expect(englishActions.locator('a[href="cases/"]')).toHaveClass(/showcase-action-primary/);
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  const englishActions = page.locator(".showcase-actions");
+  await expect(englishActions).toContainText("Start from the real interface");
+  await expect(englishActions).toContainText("View conversion cases");
+  await expect(englishActions).toContainText("Open the 3D Lab");
+  await expect(englishActions.locator('a[href="cases/"]')).toHaveClass(
+    /showcase-action-primary/,
+  );
 });
 
-test('bilingual internal actions use the in-site arrow treatment', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    for (const href of ['formats/', 'cases/']) {
+test("bilingual internal actions use the in-site arrow treatment", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    for (const href of ["formats/", "cases/"]) {
       const link = page
         .locator(`a[href="${href}"]`)
-        .filter({ has: page.locator('span') })
+        .filter({ has: page.locator("span") })
         .first();
-      await expect(link.locator('span')).toHaveText('→');
+      await expect(link.locator("span")).toHaveText("→");
     }
-    await expect(page.locator('.showcase-actions a[href="cases/"] span')).toHaveText('→');
+    await expect(
+      page.locator('.showcase-actions a[href="cases/"] span'),
+    ).toHaveText("→");
   }
 
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     await expect(
       page
-        .locator('.lab-intro-actions a')
+        .locator(".lab-intro-actions a")
         .filter({ hasText: /格式矩阵|format matrix/ })
-        .locator('span')
-    ).toHaveText('→');
+        .locator("span"),
+    ).toHaveText("→");
   }
 });
 
-test('bilingual hero story links keep the animated downward cue', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
+test("bilingual hero story links keep the animated downward cue", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     const link = page.locator('.hero-actions a[href="#story"]');
     await expect(link).toHaveClass(/text-link-down/);
-    await expect(link.locator('span')).toHaveText('↓');
+    await expect(link.locator("span")).toHaveText("↓");
   }
 });
 
-test('text-link hover directions match their navigation semantics', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.showcase-actions .text-link-internal')).toHaveClass(/text-link-internal/);
-  await expect(page.locator('.workflow-copy .text-link-external')).toHaveClass(/text-link-external/);
-  await expect(page.locator('.platform-intro-link')).toHaveClass(/text-link-down/);
+test("text-link hover directions match their navigation semantics", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(
+    page.locator(".showcase-actions .text-link-internal"),
+  ).toHaveClass(/text-link-internal/);
+  await expect(page.locator(".workflow-copy .text-link-external")).toHaveClass(
+    /text-link-external/,
+  );
+  await expect(page.locator(".platform-intro-link")).toHaveClass(
+    /text-link-down/,
+  );
 
-  await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.format-matrix-actions .text-link')).toHaveClass(/text-link-external/);
-  await page.locator('.format-matrix-actions .text-link').hover();
-  const externalTransform = await page.locator('.format-matrix-actions .text-link span').evaluate((element) => getComputedStyle(element).transform);
-  expect(externalTransform).not.toBe('none');
+  await page.goto("/formats/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".format-matrix-actions .text-link")).toHaveClass(
+    /text-link-external/,
+  );
+  await page.locator(".format-matrix-actions .text-link").hover();
+  const externalTransform = await page
+    .locator(".format-matrix-actions .text-link span")
+    .evaluate((element) => getComputedStyle(element).transform);
+  expect(externalTransform).not.toBe("none");
 
-  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-intro-actions .text-link-internal')).toHaveCount(2);
+  await page.goto("/lab/", { waitUntil: "domcontentloaded" });
+  await expect(
+    page.locator(".lab-intro-actions .text-link-internal"),
+  ).toHaveCount(2);
 });
 
-test('homepage feature actions keep internal-arrow motion horizontal', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.showcase-actions .showcase-action-internal')).toHaveClass(/showcase-action-internal/);
-    await expect(page.locator('.feature-link-internal')).toHaveCount(2);
+test("homepage feature actions keep internal-arrow motion horizontal", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(
+      page.locator(".showcase-actions .showcase-action-internal"),
+    ).toHaveClass(/showcase-action-internal/);
+    await expect(page.locator(".feature-link-internal")).toHaveCount(2);
   }
 });
 
-test('bilingual download cards mark the all-releases exit as external', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const link = page.locator('.download-link-external');
-    await expect(link).toHaveAttribute('target', '_blank');
-    await expect(link.locator('span')).toHaveText('↗');
+test("bilingual download cards mark the all-releases exit as external", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const link = page.locator(".download-link-external");
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link.locator("span")).toHaveText("↗");
   }
 });
 
-test('content pages keep navigation reachable on narrow screens', async ({ page }) => {
+test("content pages keep navigation reachable on narrow screens", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/en/formats/', { waitUntil: 'networkidle' });
-  const menu = page.locator('.menu-button');
+  await page.goto("/en/formats/", { waitUntil: "networkidle" });
+  const menu = page.locator(".menu-button");
   await menu.click();
-  await expect(page.locator('.mobile-nav')).toHaveClass(/is-open/);
-  await expect(page.locator('.mobile-nav a[aria-current="page"]')).toHaveText('Formats');
-  await expect(page.locator('.content-page-skip')).toHaveAttribute('href', '#content-page-main');
-  await page.keyboard.press('Escape');
+  await expect(page.locator(".mobile-nav")).toHaveClass(/is-open/);
+  await expect(page.locator('.mobile-nav a[aria-current="page"]')).toHaveText(
+    "Formats",
+  );
+  await expect(page.locator(".content-page-skip")).toHaveAttribute(
+    "href",
+    "#content-page-main",
+  );
+  await page.keyboard.press("Escape");
   await expect(menu).toBeFocused();
 });
 
-test('format matrix rows remain readable on narrow screens', async ({ page }) => {
+test("format matrix rows remain readable on narrow screens", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.format-table-wrap table')).toHaveCSS('min-width', '0px');
-  await expect(page.locator('.format-table-wrap tbody tr').first()).toBeVisible();
-  await expect(page.locator('.format-table-wrap tbody tr').first().locator('td[data-label="版本状态"]')).toBeVisible();
+  await page.goto("/formats/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".format-table-wrap table")).toHaveCSS(
+    "min-width",
+    "0px",
+  );
+  await expect(
+    page.locator(".format-table-wrap tbody tr").first(),
+  ).toBeVisible();
+  await expect(
+    page
+      .locator(".format-table-wrap tbody tr")
+      .first()
+      .locator('td[data-label="版本状态"]'),
+  ).toBeVisible();
 });
 
-test('bilingual case pages explain the evidence-reading order', async ({ page }) => {
+test("bilingual case pages explain the evidence-reading order", async ({
+  page,
+}) => {
   for (const [path, steps] of [
-    ['/cases/', ['选定路径', '核对输入依据', '复核测试']],
-    ['/en/cases/', ['Choose a route', 'Inspect the input', 'Review the test']],
+    ["/cases/", ["选定路径", "核对输入依据", "复核测试"]],
+    ["/en/cases/", ["Choose a route", "Inspect the input", "Review the test"]],
   ] as const) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const guide = page.locator('.case-reading-guide');
-    await expect(guide.locator('li')).toHaveCount(3);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const guide = page.locator(".case-reading-guide");
+    await expect(guide.locator("li")).toHaveCount(3);
     for (const step of steps) await expect(guide).toContainText(step);
   }
 });
 
-test('bilingual workflow quick-start links use the shared external-arrow treatment', async ({ page }) => {
+test("bilingual workflow quick-start links use the shared external-arrow treatment", async ({
+  page,
+}) => {
   for (const [path, label] of [
-    ['/', '阅读快速入门'],
-    ['/en/', 'Read the quick start'],
+    ["/", "阅读快速入门"],
+    ["/en/", "Read the quick start"],
   ] as const) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const link = page.locator('.workflow-copy .text-link');
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const link = page.locator(".workflow-copy .text-link");
     await expect(link).toContainText(label);
-    await expect(link.locator('span')).toHaveText('↗');
-    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link.locator("span")).toHaveText("↗");
+    await expect(link).toHaveAttribute("target", "_blank");
   }
 });
 
-test('bilingual workflow actions pair in-site cases with the external quick start', async ({ page }) => {
+test("bilingual workflow actions pair in-site cases with the external quick start", async ({
+  page,
+}) => {
   for (const [path, label] of [
-    ['/', '查看真实转换案例'],
-    ['/en/', 'View conversion cases'],
+    ["/", "查看真实转换案例"],
+    ["/en/", "View conversion cases"],
   ] as const) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const actions = page.locator('.workflow-actions');
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const actions = page.locator(".workflow-actions");
     await expect(actions.locator('a[href="cases/"]')).toContainText(label);
-    await expect(actions.locator('.text-link-external')).toHaveAttribute('target', '_blank');
-    await expect(actions.locator('.text-link-external span')).toHaveText('↗');
+    await expect(actions.locator(".text-link-external")).toHaveAttribute(
+      "target",
+      "_blank",
+    );
+    await expect(actions.locator(".text-link-external span")).toHaveText("↗");
   }
 });
 
-test('desktop Chinese case title avoids an orphan line', async ({ page }) => {
+test("desktop Chinese case title avoids an orphan line", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
-  const title = page.locator('#case-studies-title');
+  await page.goto("/cases/", { waitUntil: "domcontentloaded" });
+  const title = page.locator("#case-studies-title");
   const box = await title.boundingBox();
-  const lineHeight = await title.evaluate((element) => Number.parseFloat(getComputedStyle(element).lineHeight));
+  const lineHeight = await title.evaluate((element) =>
+    Number.parseFloat(getComputedStyle(element).lineHeight),
+  );
   expect(box).not.toBeNull();
   expect(box!.height).toBeLessThan(lineHeight * 1.4);
 });
 
-test('content and Lab headers keep the shared brand treatment', async ({ page, request }) => {
-  await page.goto('/formats/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.content-page-header .brand img')).toHaveAttribute('src', /easyki-icon\.svg/);
-  if (test.info().project.name === 'chromium') {
-    await expect(page.locator('.content-page-header .github-link')).toBeVisible();
+test("content and Lab headers keep the shared brand treatment", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/formats/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".content-page-header .brand img")).toHaveAttribute(
+    "src",
+    /easyki-icon\.svg/,
+  );
+  if (test.info().project.name === "chromium") {
+    await expect(
+      page.locator(".content-page-header .github-link"),
+    ).toBeVisible();
   } else {
-    await expect(page.locator('.content-page-header .github-link')).toBeHidden();
+    await expect(
+      page.locator(".content-page-header .github-link"),
+    ).toBeHidden();
   }
-  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-header .brand img')).toHaveAttribute('src', /easyki-icon\.svg/);
-  await expect(page.locator('.lab-header a[aria-current="page"]')).toHaveText('3D 实验室');
-  await expect(page.locator('.lab-header .github-link span')).toHaveText('↗');
-  await expect(page.locator('.content-page-skip')).toHaveAttribute('href', '#lab-main');
+  await page.goto("/lab/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".lab-header .brand img")).toHaveAttribute(
+    "src",
+    /easyki-icon\.svg/,
+  );
+  await expect(page.locator('.lab-header a[aria-current="page"]')).toHaveText(
+    "3D 实验室",
+  );
+  await expect(page.locator(".lab-header .github-link span")).toHaveText("↗");
+  await expect(page.locator(".content-page-skip")).toHaveAttribute(
+    "href",
+    "#lab-main",
+  );
   await expectLabModelSizesMatchFiles(page, request);
-  await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-header a[aria-current="page"]')).toHaveText('3D Lab');
-  await expect(page.locator('.content-page-skip')).toHaveText('Skip to lab content');
+  await page.goto("/en/lab/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('.lab-header a[aria-current="page"]')).toHaveText(
+    "3D Lab",
+  );
+  await expect(page.locator(".content-page-skip")).toHaveText(
+    "Skip to lab content",
+  );
 });
 
-test('inner pages share the same localized header navigation', async ({ page }) => {
+test("inner pages share the same localized header navigation", async ({
+  page,
+}) => {
   const pages = [
     {
-      path: '/formats/',
-      current: '格式矩阵',
-      alternate: '/en/formats/',
+      path: "/formats/",
+      current: "格式矩阵",
+      alternate: "/en/formats/",
       lab: false,
     },
     {
-      path: '/cases/',
-      current: '转换案例',
-      alternate: '/en/cases/',
+      path: "/cases/",
+      current: "转换案例",
+      alternate: "/en/cases/",
       lab: false,
     },
-    { path: '/lab/', current: '3D 实验室', alternate: '/en/lab/', lab: true },
+    { path: "/lab/", current: "3D 实验室", alternate: "/en/lab/", lab: true },
     {
-      path: '/en/formats/',
-      current: 'Formats',
-      alternate: '/formats/',
+      path: "/en/formats/",
+      current: "Formats",
+      alternate: "/formats/",
       lab: false,
     },
-    { path: '/en/cases/', current: 'Cases', alternate: '/cases/', lab: false },
-    { path: '/en/lab/', current: '3D Lab', alternate: '/lab/', lab: true },
+    { path: "/en/cases/", current: "Cases", alternate: "/cases/", lab: false },
+    { path: "/en/lab/", current: "3D Lab", alternate: "/lab/", lab: true },
   ];
   for (const { path, current, alternate, lab } of pages) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const header = page.locator('.content-page-header');
-    await expect(header.locator('.nav-links a')).toHaveCount(4);
-    await expect(header.locator('.nav-links a[aria-current="page"]')).toHaveText(current);
-    await expect(page.locator('.header-actions .lang-link')).toHaveText(path.startsWith('/en/') ? '中文' : 'EN');
-    await expect(page.locator('.header-actions .lang-link')).toHaveAttribute('href', alternate);
-    await expect(page.locator('.mobile-nav a')).toHaveCount(5);
-    if (lab) await expect(header.locator('.brand')).toContainText(path.startsWith('/en/') ? '/ Lab' : '/ 实验室');
-    else await expect(header.locator('.brand')).not.toContainText('/ Lab');
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const header = page.locator(".content-page-header");
+    await expect(header.locator(".nav-links a")).toHaveCount(4);
+    await expect(
+      header.locator('.nav-links a[aria-current="page"]'),
+    ).toHaveText(current);
+    await expect(page.locator(".header-actions .lang-link")).toHaveText(
+      path.startsWith("/en/") ? "中文" : "EN",
+    );
+    await expect(page.locator(".header-actions .lang-link")).toHaveAttribute(
+      "href",
+      alternate,
+    );
+    await expect(page.locator(".mobile-nav a")).toHaveCount(5);
+    if (lab)
+      await expect(header.locator(".brand")).toContainText(
+        path.startsWith("/en/") ? "/ Lab" : "/ 实验室",
+      );
+    else await expect(header.locator(".brand")).not.toContainText("/ Lab");
   }
 });
 
-test('internal navigation stays on the current preview origin', async ({ page }) => {
-  for (const path of ['/formats/', '/cases/', '/lab/', '/en/formats/', '/en/cases/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const links = await page.locator('.site-header .nav-links a').evaluateAll((anchors) => anchors.map((anchor) => new URL(anchor.href)));
-    expect(links.every((link) => link.origin === new URL(page.url()).origin)).toBe(true);
+test("internal navigation stays on the current preview origin", async ({
+  page,
+}) => {
+  for (const path of [
+    "/formats/",
+    "/cases/",
+    "/lab/",
+    "/en/formats/",
+    "/en/cases/",
+    "/en/lab/",
+  ]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const links = await page
+      .locator(".site-header .nav-links a")
+      .evaluateAll((anchors) => anchors.map((anchor) => new URL(anchor.href)));
+    expect(
+      links.every((link) => link.origin === new URL(page.url()).origin),
+    ).toBe(true);
     expect(links.map((link) => link.pathname)).toContain(path);
   }
 });
 
-test('site chrome and product images load assets from the current preview origin', async ({ page }) => {
-  for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const externalAssets = await page.locator('img[src], link[rel="icon"]').evaluateAll((elements) =>
-      elements
-        .map((element) => {
-          const asset = element.getAttribute('src') || element.getAttribute('href');
-          return asset ? new URL(asset, location.href).href : '';
-        })
-        .filter((url) => url && new URL(url).origin !== location.origin)
-    );
-    expect(externalAssets, `${path} should not fetch local site assets from the production domain`).toEqual([]);
+test("site chrome and product images load assets from the current preview origin", async ({
+  page,
+}) => {
+  for (const path of [
+    "/",
+    "/en/",
+    "/formats/",
+    "/en/formats/",
+    "/cases/",
+    "/en/cases/",
+    "/lab/",
+    "/en/lab/",
+  ]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const externalAssets = await page
+      .locator('img[src], link[rel="icon"]')
+      .evaluateAll((elements) =>
+        elements
+          .map((element) => {
+            const asset =
+              element.getAttribute("src") || element.getAttribute("href");
+            return asset ? new URL(asset, location.href).href : "";
+          })
+          .filter((url) => url && new URL(url).origin !== location.origin),
+      );
+    expect(
+      externalAssets,
+      `${path} should not fetch local site assets from the production domain`,
+    ).toEqual([]);
   }
 });
 
-test('inner mobile navigation marks the current page in both languages', async ({ page }) => {
+test("inner mobile navigation marks the current page in both languages", async ({
+  page,
+}) => {
   const pages = [
-    { path: '/formats/', current: '格式矩阵' },
-    { path: '/cases/', current: '转换案例' },
-    { path: '/lab/', current: '3D 实验室' },
-    { path: '/en/formats/', current: 'Formats' },
-    { path: '/en/cases/', current: 'Cases' },
-    { path: '/en/lab/', current: '3D Lab' },
+    { path: "/formats/", current: "格式矩阵" },
+    { path: "/cases/", current: "转换案例" },
+    { path: "/lab/", current: "3D 实验室" },
+    { path: "/en/formats/", current: "Formats" },
+    { path: "/en/cases/", current: "Cases" },
+    { path: "/en/lab/", current: "3D Lab" },
   ];
   for (const { path, current } of pages) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     const currentLink = page.locator('.mobile-nav a[aria-current="page"]');
     await expect(currentLink).toHaveText(current);
-    await expect(currentLink).toHaveCSS('font-weight', '800');
-    await expect(currentLink).toHaveCSS('background-color', 'rgb(217, 210, 255)');
+    await expect(currentLink).toHaveCSS("font-weight", "800");
+    await expect(currentLink).toHaveCSS(
+      "background-color",
+      "rgb(217, 210, 255)",
+    );
   }
 });
 
-test('language switch stays visible and points to the matching page on mobile', async ({ page }) => {
+test("language switch stays visible and points to the matching page on mobile", async ({
+  page,
+}) => {
   const pages = [
-    { path: '/', alternate: '/en/' },
-    { path: '/en/', alternate: '/' },
-    { path: '/formats/', alternate: '/en/formats/' },
-    { path: '/en/formats/', alternate: '/formats/' },
-    { path: '/cases/', alternate: '/en/cases/' },
-    { path: '/en/cases/', alternate: '/cases/' },
-    { path: '/lab/', alternate: '/en/lab/' },
-    { path: '/en/lab/', alternate: '/lab/' },
+    { path: "/", alternate: "/en/" },
+    { path: "/en/", alternate: "/" },
+    { path: "/formats/", alternate: "/en/formats/" },
+    { path: "/en/formats/", alternate: "/formats/" },
+    { path: "/cases/", alternate: "/en/cases/" },
+    { path: "/en/cases/", alternate: "/cases/" },
+    { path: "/lab/", alternate: "/en/lab/" },
+    { path: "/en/lab/", alternate: "/lab/" },
   ];
 
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 });
     for (const { path, alternate } of pages) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const languageSwitch = page.locator('.header-actions .lang-link');
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const languageSwitch = page.locator(".header-actions .lang-link");
       await expect(languageSwitch).toBeVisible();
-      await expect(languageSwitch).toHaveAttribute('href', alternate);
-      await expect(page.locator(`.mobile-nav a[href="${alternate}"]`)).toHaveCount(0);
-      const bounds = await page.locator('.site-header').evaluate((header) => {
-        const brand = header.querySelector('.brand')!.getBoundingClientRect();
-        const language = header.querySelector('.lang-link')!.getBoundingClientRect();
-        const menu = header.querySelector('.menu-button')!.getBoundingClientRect();
+      await expect(languageSwitch).toHaveAttribute("href", alternate);
+      await expect(
+        page.locator(`.mobile-nav a[href="${alternate}"]`),
+      ).toHaveCount(0);
+      const bounds = await page.locator(".site-header").evaluate((header) => {
+        const brand = header.querySelector(".brand")!.getBoundingClientRect();
+        const language = header
+          .querySelector(".lang-link")!
+          .getBoundingClientRect();
+        const menu = header
+          .querySelector(".menu-button")!
+          .getBoundingClientRect();
         return {
           brandRight: brand.right,
           languageLeft: language.left,
@@ -870,67 +1315,104 @@ test('language switch stays visible and points to the matching page on mobile', 
           menuRight: menu.right,
         };
       });
-      expect(bounds.languageLeft, `${path} at ${width}px: language switch overlaps brand`).toBeGreaterThanOrEqual(bounds.brandRight);
-      expect(bounds.menuLeft, `${path} at ${width}px: language switch overlaps menu`).toBeGreaterThanOrEqual(bounds.languageRight);
-      expect(bounds.menuRight, `${path} at ${width}px: menu exceeds viewport`).toBeLessThanOrEqual(width);
+      expect(
+        bounds.languageLeft,
+        `${path} at ${width}px: language switch overlaps brand`,
+      ).toBeGreaterThanOrEqual(bounds.brandRight);
+      expect(
+        bounds.menuLeft,
+        `${path} at ${width}px: language switch overlaps menu`,
+      ).toBeGreaterThanOrEqual(bounds.languageRight);
+      expect(
+        bounds.menuRight,
+        `${path} at ${width}px: menu exceeds viewport`,
+      ).toBeLessThanOrEqual(width);
     }
   }
 });
 
-test('Lab pages use the shared mobile navigation behavior', async ({ page }) => {
+test("Lab pages use the shared mobile navigation behavior", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const menu = page.locator('.menu-button');
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const menu = page.locator(".menu-button");
     await menu.click();
-    await expect(page.locator('.mobile-nav')).toHaveClass(/is-open/);
-    await page.keyboard.press('Escape');
+    await expect(page.locator(".mobile-nav")).toHaveClass(/is-open/);
+    await page.keyboard.press("Escape");
     await expect(menu).toBeFocused();
   }
 });
 
-test('content pages offer a bilingual next-step release CTA', async ({ page }) => {
-  for (const path of ['/formats/', '/en/formats/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const cta = page.locator('.content-page-cta');
+test("content pages offer a bilingual next-step release CTA", async ({
+  page,
+}) => {
+  for (const path of ["/formats/", "/en/formats/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const cta = page.locator(".content-page-cta");
     await expect(cta).toBeVisible();
-    await expect(cta.locator('[data-release-link]')).toHaveAttribute('href', /releases/);
-    await expect(cta.locator('[data-release-link]')).toHaveClass(/button-light/);
+    await expect(cta.locator("[data-release-link]")).toHaveAttribute(
+      "href",
+      /releases/,
+    );
+    await expect(cta.locator("[data-release-link]")).toHaveClass(
+      /button-light/,
+    );
     const colors = await cta.evaluate((element) => ({
       background: getComputedStyle(element).backgroundColor,
-      buttonBackground: getComputedStyle(element.querySelector('[data-release-link]') as HTMLElement).backgroundColor,
+      buttonBackground: getComputedStyle(
+        element.querySelector("[data-release-link]") as HTMLElement,
+      ).backgroundColor,
     }));
     expect(colors.buttonBackground).not.toBe(colors.background);
-    await expect(cta.locator('.text-link')).toHaveAttribute('href', /^(\/|https?:)/);
-    await expect(cta.locator('h2')).toBeVisible();
+    await expect(cta.locator(".text-link")).toHaveAttribute(
+      "href",
+      /^(\/|https?:)/,
+    );
+    await expect(cta.locator("h2")).toBeVisible();
     await expect(cta).toContainText(/选定一个目标|CHOOSE A TARGET/);
   }
-  for (const path of ['/cases/', '/en/cases/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const cta = page.locator('.content-page-cta');
+  for (const path of ["/cases/", "/en/cases/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const cta = page.locator(".content-page-cta");
     await expect(cta).toBeVisible();
-    await expect(cta.locator('[data-release-link]')).toHaveAttribute('href', /releases/);
-    await expect(cta.locator('[data-release-link]')).toHaveClass(/button-light/);
+    await expect(cta.locator("[data-release-link]")).toHaveAttribute(
+      "href",
+      /releases/,
+    );
+    await expect(cta.locator("[data-release-link]")).toHaveClass(
+      /button-light/,
+    );
     const colors = await cta.evaluate((element) => ({
       background: getComputedStyle(element).backgroundColor,
-      buttonBackground: getComputedStyle(element.querySelector('[data-release-link]') as HTMLElement).backgroundColor,
+      buttonBackground: getComputedStyle(
+        element.querySelector("[data-release-link]") as HTMLElement,
+      ).backgroundColor,
     }));
     expect(colors.buttonBackground).not.toBe(colors.background);
-    await expect(cta.locator('.text-link')).toHaveAttribute('href', /^(\/|https?:)/);
-    await expect(cta.locator('h2')).toBeVisible();
+    await expect(cta.locator(".text-link")).toHaveAttribute(
+      "href",
+      /^(\/|https?:)/,
+    );
+    await expect(cta.locator("h2")).toBeVisible();
     await expect(cta).toContainText(/下一步，验证|NEXT, VERIFY/);
   }
 });
 
-test('mobile content CTAs keep the title and primary action readable', async ({ page }) => {
+test("mobile content CTAs keep the title and primary action readable", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const cta = page.locator('.content-page-cta');
+  for (const path of ["/formats/", "/en/formats/", "/cases/", "/en/cases/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const cta = page.locator(".content-page-cta");
     await cta.scrollIntoViewIfNeeded();
     const layout = await cta.evaluate((element) => {
-      const title = element.querySelector('h2')?.getBoundingClientRect();
-      const button = element.querySelector('[data-release-link]')?.getBoundingClientRect();
+      const title = element.querySelector("h2")?.getBoundingClientRect();
+      const button = element
+        .querySelector("[data-release-link]")
+        ?.getBoundingClientRect();
       return {
         titleBottom: title?.bottom ?? 0,
         buttonTop: button?.top ?? 0,
@@ -942,194 +1424,322 @@ test('mobile content CTAs keep the title and primary action readable', async ({ 
   }
 });
 
-test('format matrix offers evidence and release next steps in both languages', async ({ page }) => {
-  for (const path of ['/formats/', '/en/formats/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const casesLink = page.locator('.format-matrix-actions .button-dark');
-    const releaseLink = page.locator('.format-matrix-actions .text-link');
-    await expect(casesLink).toHaveAttribute('href', /cases/);
+test("format matrix offers evidence and release next steps in both languages", async ({
+  page,
+}) => {
+  for (const path of ["/formats/", "/en/formats/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const casesLink = page.locator(".format-matrix-actions .button-dark");
+    const releaseLink = page.locator(".format-matrix-actions .text-link");
+    await expect(casesLink).toHaveAttribute("href", /cases/);
     await expect(casesLink).toContainText(/查看测试案例|Test cases/);
-    await expect(releaseLink).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
+    await expect(releaseLink).toHaveAttribute(
+      "href",
+      /releases\/tag\/v3\.1\.13/,
+    );
     await expect(releaseLink).toContainText(/当前发布|Latest Release/);
-    const summary = page.locator('.format-matrix .evidence-summary');
-    await expect(summary).toContainText('v3.1.13');
+    const summary = page.locator(".format-matrix .evidence-summary");
+    await expect(summary).toContainText("v3.1.13");
     await expect(summary).toContainText(/2/);
     await expect(summary).toContainText(/9/);
-    await expect(page.locator('.format-summary')).toHaveCount(0);
-    await expect(page.locator('thead th').nth(2)).toHaveText(/Release status|版本状态/);
-    await expect(page.locator('.format-legend')).toBeVisible();
-    await expect(page.locator('.format-status-primary')).toHaveCount(2);
-    await expect(page.locator('.format-status-registered')).toHaveCount(9);
-    await expect(page.locator('.format-artifacts-cell')).toHaveCount(11);
-    await expect(page.locator('.format-artifacts-cell a')).toHaveCount(11);
+    await expect(page.locator(".format-summary")).toHaveCount(0);
+    await expect(page.locator("thead th").nth(2)).toHaveText(
+      /Release status|版本状态/,
+    );
+    await expect(page.locator(".format-legend")).toBeVisible();
+    await expect(page.locator(".format-status-primary")).toHaveCount(2);
+    await expect(page.locator(".format-status-registered")).toHaveCount(9);
+    await expect(page.locator(".format-artifacts-cell")).toHaveCount(11);
+    await expect(page.locator(".format-artifacts-cell a")).toHaveCount(11);
   }
 });
 
-test('bilingual evidence-page actions stay compact and wrap only when needed', async ({ page }) => {
+test("bilingual evidence-page actions stay compact and wrap only when needed", async ({
+  page,
+}) => {
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 });
     for (const [path, selector] of [
-      ['/formats/', '.format-matrix-actions'],
-      ['/en/formats/', '.format-matrix-actions'],
-      ['/cases/', '.case-studies-actions'],
-      ['/en/cases/', '.case-studies-actions'],
+      ["/formats/", ".format-matrix-actions"],
+      ["/en/formats/", ".format-matrix-actions"],
+      ["/cases/", ".case-studies-actions"],
+      ["/en/cases/", ".case-studies-actions"],
     ]) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const centerOffset = await page.locator(selector).evaluate((container) => {
-        const [primary, secondary] = Array.from(container.children);
-        const first = primary.getBoundingClientRect();
-        const second = secondary.getBoundingClientRect();
-        return Math.abs(first.top + first.height / 2 - second.top - second.height / 2);
-      });
-      const needsWrap = (path === '/en/cases/' || path === '/en/formats/') && width === 320;
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const centerOffset = await page
+        .locator(selector)
+        .evaluate((container) => {
+          const [primary, secondary] = Array.from(container.children);
+          const first = primary.getBoundingClientRect();
+          const second = secondary.getBoundingClientRect();
+          return Math.abs(
+            first.top + first.height / 2 - second.top - second.height / 2,
+          );
+        });
+      const needsWrap =
+        (path === "/en/cases/" || path === "/en/formats/") && width === 320;
       if (needsWrap) {
-        expect(centerOffset, `${path} at ${width}px should wrap the secondary action`).toBeGreaterThan(2);
+        expect(
+          centerOffset,
+          `${path} at ${width}px should wrap the secondary action`,
+        ).toBeGreaterThan(2);
       } else {
-        expect(centerOffset, `${path} at ${width}px should keep both actions on one row`).toBeLessThan(2);
+        expect(
+          centerOffset,
+          `${path} at ${width}px should keep both actions on one row`,
+        ).toBeLessThan(2);
       }
     }
   }
 });
 
-test('English evidence-page introductions stay concise on mobile', async ({ page }) => {
+test("English evidence-page introductions stay concise on mobile", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const [path, selector, maxHeight] of [
-    ['/en/formats/', '.format-matrix-heading > p:not(.kicker)', 106],
-    ['/en/cases/', '.case-studies-heading > p:not(.kicker)', 106],
+    ["/en/formats/", ".format-matrix-heading > p:not(.kicker)", 106],
+    ["/en/cases/", ".case-studies-heading > p:not(.kicker)", 106],
   ] as const) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const height = await page.locator(selector).evaluate((element) => element.getBoundingClientRect().height);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const height = await page
+      .locator(selector)
+      .evaluate((element) => element.getBoundingClientRect().height);
     expect(height).toBeLessThanOrEqual(maxHeight);
   }
 
-  await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#lab-title')).toHaveText('Explore real geometry.');
-  expect(await page.locator('#lab-title').evaluate((element) => element.getBoundingClientRect().height)).toBeLessThan(110);
-  expect(await page.locator('.lab-intro > p:not(.kicker)').evaluate((element) => element.getBoundingClientRect().height)).toBeLessThanOrEqual(80);
-  expect(await page.locator('.lab-warning').evaluate((element) => element.getBoundingClientRect().top)).toBeLessThan(380);
+  await page.goto("/en/lab/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#lab-title")).toHaveText("Explore real geometry.");
+  expect(
+    await page
+      .locator("#lab-title")
+      .evaluate((element) => element.getBoundingClientRect().height),
+  ).toBeLessThan(110);
+  expect(
+    await page
+      .locator(".lab-intro > p:not(.kicker)")
+      .evaluate((element) => element.getBoundingClientRect().height),
+  ).toBeLessThanOrEqual(80);
+  expect(
+    await page
+      .locator(".lab-warning")
+      .evaluate((element) => element.getBoundingClientRect().top),
+  ).toBeLessThan(380);
 });
 
-test('format matrix rows use concise bilingual status labels with full accessible meaning', async ({ page }) => {
+test("format matrix rows use concise bilingual status labels with full accessible meaning", async ({
+  page,
+}) => {
   for (const [path, shortLabels, fullLabel] of [
-    ['/formats/', ['稳定版目标', '按发布验证'], '已注册导出目标，按发布版本验证'],
-    ['/en/formats/', ['Stable target', 'Verify per Release'], 'Registered target; verify per Release'],
+    [
+      "/formats/",
+      ["稳定版目标", "按发布验证"],
+      "已注册导出目标，按发布版本验证",
+    ],
+    [
+      "/en/formats/",
+      ["Stable target", "Verify per Release"],
+      "Registered target; verify per Release",
+    ],
   ] as const) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const statuses = page.locator('.format-status');
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const statuses = page.locator(".format-status");
     await expect(statuses).toHaveCount(11);
     await expect(statuses.filter({ hasText: shortLabels[0] })).toHaveCount(2);
     await expect(statuses.filter({ hasText: shortLabels[1] })).toHaveCount(9);
-    await expect(statuses.nth(2)).toHaveAttribute('aria-label', fullLabel);
+    await expect(statuses.nth(2)).toHaveAttribute("aria-label", fullLabel);
   }
 });
 
-test('format summary counts distinguish the additional tier from all configured targets', async ({ page }) => {
+test("format summary counts distinguish the additional tier from all configured targets", async ({
+  page,
+}) => {
   for (const [path, additionalLabel, totalLabel] of [
-    ['/formats/', '其他目标', '全部 11 个已配置目标与对应验证依据'],
-    ['/en/formats/', 'additional targets', 'All 11 configured targets and linked evidence'],
+    ["/formats/", "其他目标", "全部 11 个已配置目标与对应验证依据"],
+    [
+      "/en/formats/",
+      "additional targets",
+      "All 11 configured targets and linked evidence",
+    ],
   ] as const) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const counts = page.locator('.evidence-summary > span');
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const counts = page.locator(".evidence-summary > span");
     await expect(counts).toHaveCount(3);
-    await expect(counts.nth(1).locator('b')).toHaveText('2');
-    await expect(counts.nth(2).locator('b')).toHaveText('9');
+    await expect(counts.nth(1).locator("b")).toHaveText("2");
+    await expect(counts.nth(2).locator("b")).toHaveText("9");
     await expect(counts.nth(2)).toContainText(additionalLabel);
-    await expect(page.locator('tbody tr')).toHaveCount(11);
-    await expect(page.locator('caption')).toHaveText(totalLabel);
+    await expect(page.locator("tbody tr")).toHaveCount(11);
+    await expect(page.locator("caption")).toHaveText(totalLabel);
   }
 });
 
-test('format matrix describes evidence scope and links each target to relevant repository evidence', async ({ page }) => {
+test("format matrix describes evidence scope and links each target to relevant repository evidence", async ({
+  page,
+}) => {
   const evidencePaths = [
-    'tests/unit/test_kicad_exporter_golden.cpp',
-    'tests/manual/ALTIUM_EXPORT_MANUAL_TEST.md',
-    'tests/unit/test_xpedition_exporter.cpp',
-    'tests/unit/test_allegro_exporter.cpp',
-    'tests/unit/test_pads_exporter.cpp',
-    'tests/unit/test_eagle_exporter.cpp',
-    'tests/unit/test_pcad_exporter.cpp',
-    'tests/unit/test_cadstar_exporter.cpp',
-    'tests/unit/test_orcad_exporter.cpp',
-    'tests/unit/test_librepcb_exporter.cpp',
-    'tests/unit/test_horizon_exporter.cpp',
+    "tests/unit/test_kicad_exporter_golden.cpp",
+    "tests/manual/ALTIUM_EXPORT_MANUAL_TEST.md",
+    "tests/unit/test_xpedition_exporter.cpp",
+    "tests/unit/test_allegro_exporter.cpp",
+    "tests/unit/test_pads_exporter.cpp",
+    "tests/unit/test_eagle_exporter.cpp",
+    "tests/unit/test_pcad_exporter.cpp",
+    "tests/unit/test_cadstar_exporter.cpp",
+    "tests/unit/test_orcad_exporter.cpp",
+    "tests/unit/test_librepcb_exporter.cpp",
+    "tests/unit/test_horizon_exporter.cpp",
   ];
   for (const [path, outputs, linkLabel] of [
-    ['/formats/', ['.kicad_sym', 'SchLib + PcbLib', 'XML 符号库', '.lplib', '.pool 符号数据'], '查看仓库验证依据'],
-    ['/en/formats/', ['.kicad_sym', 'SchLib + PcbLib', 'XML symbol library', '.lplib', '.pool symbol data'], 'Open repository evidence'],
+    [
+      "/formats/",
+      [
+        ".kicad_sym",
+        "SchLib + PcbLib",
+        "XML 符号库",
+        ".lplib",
+        ".pool 符号数据",
+      ],
+      "查看仓库验证依据",
+    ],
+    [
+      "/en/formats/",
+      [
+        ".kicad_sym",
+        "SchLib + PcbLib",
+        "XML symbol library",
+        ".lplib",
+        ".pool symbol data",
+      ],
+      "Open repository evidence",
+    ],
   ] as const) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const artifacts = page.locator('.format-artifacts-cell');
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const artifacts = page.locator(".format-artifacts-cell");
     await expect(artifacts).toHaveCount(11);
-    for (const output of outputs) await expect(page.locator('.format-table-wrap')).toContainText(output);
-    await expect(page.locator('thead th').nth(3)).toHaveText(/Evidence scope|验证依据涉及的产物/);
-    await expect(artifacts.first().locator('a')).toContainText(linkLabel);
+    for (const output of outputs)
+      await expect(page.locator(".format-table-wrap")).toContainText(output);
+    await expect(page.locator("thead th").nth(3)).toHaveText(
+      /Evidence scope|验证依据涉及的产物/,
+    );
+    await expect(artifacts.first().locator("a")).toContainText(linkLabel);
     for (const [index, evidencePath] of evidencePaths.entries()) {
-      await expect(artifacts.nth(index).locator('a')).toHaveAttribute('href', new RegExp(`${evidencePath.replaceAll('.', '\\.')}$`));
+      await expect(artifacts.nth(index).locator("a")).toHaveAttribute(
+        "href",
+        new RegExp(`${evidencePath.replaceAll(".", "\\.")}$`),
+      );
     }
-    await expect(page.locator('.format-matrix-note')).toContainText(/人工验证流程|manual procedure/);
-    await expect(page.locator('#format-matrix-title').locator('..')).toContainText(/不等同于已在目标桌面软件中验收|desktop-app validation/);
+    await expect(page.locator(".format-matrix-note")).toContainText(
+      /人工验证流程|manual procedure/,
+    );
+    await expect(
+      page.locator("#format-matrix-title").locator(".."),
+    ).toContainText(/不等同于已在目标桌面软件中验收|desktop-app validation/);
   }
 });
 
-test('case studies expose their evidence scope and next-step paths', async ({ page }) => {
-  for (const path of ['/cases/', '/en/cases/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.case-studies-actions .button-dark')).toHaveAttribute('href', /formats/);
-    await expect(page.locator('.case-studies-actions .text-link')).toHaveAttribute('href', /github\.com\/EasyKiconverter\/EasyKiConverter$/);
-    await expect(page.locator('.evidence-summary')).toContainText('v3.1.13');
-    await expect(page.locator('.evidence-summary')).toContainText('2');
-    await expect(page.locator('.case-proof')).toHaveCount(2);
-    await expect(page.locator('.case-evidence-action')).toHaveCount(4);
-    await expect(page.locator('.case-evidence-action').first()).toContainText(/打开测试样本|Open fixture/);
+test("case studies expose their evidence scope and next-step paths", async ({
+  page,
+}) => {
+  for (const path of ["/cases/", "/en/cases/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(
+      page.locator(".case-studies-actions .button-dark"),
+    ).toHaveAttribute("href", /formats/);
+    await expect(
+      page.locator(".case-studies-actions .text-link"),
+    ).toHaveAttribute("href", /github\.com\/EasyKiconverter\/EasyKiConverter$/);
+    await expect(page.locator(".evidence-summary")).toContainText("v3.1.13");
+    await expect(page.locator(".evidence-summary")).toContainText("2");
+    await expect(page.locator(".case-proof")).toHaveCount(2);
+    await expect(page.locator(".case-evidence-action")).toHaveCount(4);
+    await expect(page.locator(".case-evidence-action").first()).toContainText(
+      /打开测试样本|Open fixture/,
+    );
   }
 });
 
-test('case-study introductions keep the evidence-first promise aligned in both languages', async ({ page }) => {
+test("case-study introductions keep the evidence-first promise aligned in both languages", async ({
+  page,
+}) => {
   for (const [path, title, evidenceCopy, manualCopy] of [
-    ['/cases/', '先核对证据，再看路径。', '关联集成测试实际验证的内容', '仍需人工检查'],
-    ['/en/cases/', 'Check the evidence, then trace each route.', 'only what linked tests verify', 'checks remain manual'],
+    [
+      "/cases/",
+      "先核对证据，再看路径。",
+      "关联集成测试实际验证的内容",
+      "仍需人工检查",
+    ],
+    [
+      "/en/cases/",
+      "Check the evidence, then trace each route.",
+      "only what linked tests verify",
+      "checks remain manual",
+    ],
   ]) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('#case-studies-title')).toHaveText(title);
-    const summary = page.locator('.case-studies-heading > p').nth(1);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#case-studies-title")).toHaveText(title);
+    const summary = page.locator(".case-studies-heading > p").nth(1);
     await expect(summary).toContainText(evidenceCopy);
     await expect(summary).toContainText(manualCopy);
   }
 });
 
-test('case studies expose bilingual input and output routes', async ({ page }) => {
-  await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
-  const chineseRoutes = page.locator('.case-route');
+test("case studies expose bilingual input and output routes", async ({
+  page,
+}) => {
+  await page.goto("/cases/", { waitUntil: "domcontentloaded" });
+  const chineseRoutes = page.locator(".case-route");
   await expect(chineseRoutes).toHaveCount(2);
-  await expect(chineseRoutes.first()).toContainText('输入');
-  await expect(chineseRoutes.first()).toContainText('符号与封装样本');
-  await expect(chineseRoutes.first()).toContainText('KiCad 符号库 + 封装');
+  await expect(chineseRoutes.first()).toContainText("输入");
+  await expect(chineseRoutes.first()).toContainText("符号与封装样本");
+  await expect(chineseRoutes.first()).toContainText("KiCad 符号库 + 封装");
 
-  await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
-  const englishRoutes = page.locator('.case-route');
+  await page.goto("/en/cases/", { waitUntil: "domcontentloaded" });
+  const englishRoutes = page.locator(".case-route");
   await expect(englishRoutes).toHaveCount(2);
-  await expect(englishRoutes.first()).toContainText('INPUT');
-  await expect(englishRoutes.first()).toContainText('Symbol and footprint fixtures');
-  await expect(englishRoutes.first()).toContainText('KiCad symbol library + footprint');
+  await expect(englishRoutes.first()).toContainText("INPUT");
+  await expect(englishRoutes.first()).toContainText(
+    "Symbol and footprint fixtures",
+  );
+  await expect(englishRoutes.first()).toContainText(
+    "KiCad symbol library + footprint",
+  );
 });
 
-test('Lab pages keep the experiment connected to product navigation', async ({ page }) => {
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const actions = page.locator('.lab-intro-actions');
+test("Lab pages keep the experiment connected to product navigation", async ({
+  page,
+}) => {
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const actions = page.locator(".lab-intro-actions");
     await expect(actions).toBeVisible();
-    await expect(actions.locator('[data-lab-explore]')).toHaveAttribute('href', '#story');
-    await expect(actions.locator('[data-lab-explore]')).toHaveClass(/button-dark/);
-    await expect(actions.locator('[data-release-link]')).toHaveAttribute('target', '_blank');
-    await expect(actions.locator('[data-release-link]')).toHaveAttribute('rel', 'noreferrer');
-    await expect(actions.locator('[data-release-link]')).toHaveClass(/text-link-external/);
-    await expect(actions.locator('a[href*="formats"]')).toHaveAttribute('href', /formats/);
+    await expect(actions.locator("[data-lab-explore]")).toHaveAttribute(
+      "href",
+      "#story",
+    );
+    await expect(actions.locator("[data-lab-explore]")).toHaveClass(
+      /button-dark/,
+    );
+    await expect(actions.locator("[data-release-link]")).toHaveAttribute(
+      "target",
+      "_blank",
+    );
+    await expect(actions.locator("[data-release-link]")).toHaveAttribute(
+      "rel",
+      "noreferrer",
+    );
+    await expect(actions.locator("[data-release-link]")).toHaveClass(
+      /text-link-external/,
+    );
+    await expect(actions.locator('a[href*="formats"]')).toHaveAttribute(
+      "href",
+      /formats/,
+    );
   }
 });
 
 const labEntryRoutes = [
-  ['/lab/', '开始 3D 体验'],
-  ['/en/lab/', 'Explore 3D'],
+  ["/lab/", "开始 3D 体验"],
+  ["/en/lab/", "Explore 3D"],
 ] as const;
 const labEntryViewports = [
   { width: 390, height: 844 },
@@ -1139,285 +1749,496 @@ const labEntryViewports = [
 
 for (const viewport of labEntryViewports) {
   for (const [path, label] of labEntryRoutes) {
-    test(`Lab primary action brings the ${path} model into view at ${viewport.width}px`, async ({ page }, testInfo) => {
-      test.skip(testInfo.project.name === 'chromium-mobile' && viewport.width > 850, 'Desktop viewport is covered by Chromium desktop');
+    test(`Lab primary action brings the ${path} model into view at ${viewport.width}px`, async ({
+      page,
+    }, testInfo) => {
+      test.skip(
+        testInfo.project.name === "chromium-mobile" && viewport.width > 850,
+        "Desktop viewport is covered by Chromium desktop",
+      );
       await page.setViewportSize(viewport);
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await page.goto(path, { waitUntil: "domcontentloaded" });
       await page.evaluate(() => {
-        document.documentElement.style.scrollBehavior = 'auto';
+        document.documentElement.style.scrollBehavior = "auto";
       });
-      const exploreLink = page.locator('[data-lab-explore]');
-      await expect(exploreLink).toHaveText(label + ' ↓');
+      const exploreLink = page.locator("[data-lab-explore]");
+      await expect(exploreLink).toHaveText(label + " ↓");
       if (viewport.width === 390) {
-        const actionRows = await page.locator('.lab-intro-actions').evaluate((actions) => {
-          const primary = actions.querySelector<HTMLElement>('[data-lab-explore]')!.getBoundingClientRect();
-          const release = actions.querySelector<HTMLElement>('[data-release-link]')!.getBoundingClientRect();
-          return {
-            primaryTop: primary.top,
-            primaryBottom: primary.bottom,
-            releaseTop: release.top,
-            releaseBottom: release.bottom,
-          };
-        });
-        const rowOverlap = Math.min(actionRows.primaryBottom, actionRows.releaseBottom) - Math.max(actionRows.primaryTop, actionRows.releaseTop);
-        expect(rowOverlap, `${path} mobile primary/download action row`).toBeGreaterThan(0);
+        const actionRows = await page
+          .locator(".lab-intro-actions")
+          .evaluate((actions) => {
+            const primary = actions
+              .querySelector<HTMLElement>("[data-lab-explore]")!
+              .getBoundingClientRect();
+            const release = actions
+              .querySelector<HTMLElement>("[data-release-link]")!
+              .getBoundingClientRect();
+            return {
+              primaryTop: primary.top,
+              primaryBottom: primary.bottom,
+              releaseTop: release.top,
+              releaseBottom: release.bottom,
+            };
+          });
+        const rowOverlap =
+          Math.min(actionRows.primaryBottom, actionRows.releaseBottom) -
+          Math.max(actionRows.primaryTop, actionRows.releaseTop);
+        expect(
+          rowOverlap,
+          `${path} mobile primary/download action row`,
+        ).toBeGreaterThan(0);
       }
       await exploreLink.evaluate((link: HTMLAnchorElement) => link.click());
       await expect(page).toHaveURL(/#story$/);
-      const model = page.locator('.motion-model');
+      const model = page.locator(".motion-model");
       await expect(model).toBeVisible();
       const modelBounds = await page.evaluate(() => {
-        const element = document.querySelector<HTMLElement>('.motion-model');
+        const element = document.querySelector<HTMLElement>(".motion-model");
         if (!element) return null;
         const { top, bottom } = element.getBoundingClientRect();
         return { top, bottom };
       });
       expect(modelBounds, `${path} ${viewport.width}px model`).not.toBeNull();
       if (!modelBounds) return;
-      expect(modelBounds.top, `${path} ${viewport.width}px model top`).toBeGreaterThanOrEqual(0);
-      expect(modelBounds.bottom, `${path} ${viewport.width}px model bottom`).toBeLessThanOrEqual(viewport.height);
+      expect(
+        modelBounds.top,
+        `${path} ${viewport.width}px model top`,
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        modelBounds.bottom,
+        `${path} ${viewport.width}px model bottom`,
+      ).toBeLessThanOrEqual(viewport.height);
     });
   }
 }
 
-test('bilingual Lab model-size labels match the delivered GLB files', async ({ page, request }) => {
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
+test("bilingual Lab model-size labels match the delivered GLB files", async ({
+  page,
+  request,
+}) => {
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     await expectLabModelSizesMatchFiles(page, request);
   }
 });
 
 for (const [path] of labEntryRoutes) {
-  test(`reduced-motion Lab primary action keeps ${path} model visible`, async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
+  test(`reduced-motion Lab primary action keeps ${path} model visible`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     await page.evaluate(() => {
-      document.documentElement.style.scrollBehavior = 'auto';
+      document.documentElement.style.scrollBehavior = "auto";
     });
-    await page.locator('[data-lab-explore]').evaluate((link: HTMLAnchorElement) => link.click());
-    const model = page.locator('.motion-model');
+    await page
+      .locator("[data-lab-explore]")
+      .evaluate((link: HTMLAnchorElement) => link.click());
+    const model = page.locator(".motion-model");
     await expect(model).toBeVisible();
     const modelBounds = await page.evaluate(() => {
-      const element = document.querySelector<HTMLElement>('.motion-model');
+      const element = document.querySelector<HTMLElement>(".motion-model");
       if (!element) return null;
       const { top, bottom, height } = element.getBoundingClientRect();
       return { top, bottom, height };
     });
     expect(modelBounds, `${path} reduced-motion model`).not.toBeNull();
     if (!modelBounds) return;
-    const visibleHeight = Math.max(0, Math.min(modelBounds.bottom, 844) - Math.max(modelBounds.top, 0));
-    expect(visibleHeight / modelBounds.height, `${path} reduced-motion model visibility`).toBeGreaterThan(0.9);
+    const visibleHeight = Math.max(
+      0,
+      Math.min(modelBounds.bottom, 844) - Math.max(modelBounds.top, 0),
+    );
+    expect(
+      visibleHeight / modelBounds.height,
+      `${path} reduced-motion model visibility`,
+    ).toBeGreaterThan(0.9);
   });
 }
 
-test('Lab advanced controls explain their collapsed hierarchy', async ({ page }) => {
+test("Lab advanced controls explain their collapsed hierarchy", async ({
+  page,
+}) => {
   test.setTimeout(60_000);
   await blockLabGeometryAssets(page);
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.motion-model button:disabled').first()).toHaveCSS('cursor', 'not-allowed');
-    await expect(page.locator('.model-slice-axes')).toBeHidden();
-    const explodeLabel = page.locator('.model-explode-heading');
-    await expect(explodeLabel).toHaveAttribute('for', await page.locator('[data-model-explode]').getAttribute('id'));
-    expect(await page.locator('[data-model-explode]').evaluate((input) => Boolean(input.closest('label')))).toBe(false);
-    const researchViews = page.locator('.research-view-disclosure');
-    await expect(researchViews).not.toHaveAttribute('open', '');
-    await expect(researchViews.locator('summary')).toHaveText(/More views|更多视图/);
-    await expect(page.locator('.artifact-switcher [data-artifact-view]')).toHaveCount(3);
-    await expect(page.locator('.research-view-panel')).toBeHidden();
-    await expect(page.locator('.research-view-panel')).toContainText(/recorded topology histories|记录下来的拓扑变化/);
-    await researchViews.locator('summary').click();
-    await expect(researchViews).toHaveAttribute('open', '');
-    await expect(page.locator('.research-view-switcher [data-artifact-view]')).toHaveCount(5);
-    await expect(page.locator('.research-view-switcher [data-model-scan]')).toBeVisible();
-    const toggle = page.locator('[data-experiment-controls]');
-    await expect(toggle).toHaveAttribute('aria-controls', 'lab-experiment-controls');
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    await expect(page.locator('#lab-experiment-controls')).toContainText(/some unlock after model data|加载模型、完成扫描或导入数据/);
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(
+      page.locator(".motion-model button:disabled").first(),
+    ).toHaveCSS("cursor", "not-allowed");
+    await expect(page.locator(".model-slice-axes")).toBeHidden();
+    const explodeLabel = page.locator(".model-explode-heading");
+    await expect(explodeLabel).toHaveAttribute(
+      "for",
+      await page.locator("[data-model-explode]").getAttribute("id"),
+    );
+    expect(
+      await page
+        .locator("[data-model-explode]")
+        .evaluate((input) => Boolean(input.closest("label"))),
+    ).toBe(false);
+    const researchViews = page.locator(".research-view-disclosure");
+    await expect(researchViews).not.toHaveAttribute("open", "");
+    await expect(researchViews.locator("summary")).toHaveText(
+      /More views|更多视图/,
+    );
+    await expect(
+      page.locator(".artifact-switcher [data-artifact-view]"),
+    ).toHaveCount(3);
+    await expect(page.locator(".research-view-panel")).toBeHidden();
+    await expect(page.locator(".research-view-panel")).toContainText(
+      /recorded topology histories|记录下来的拓扑变化/,
+    );
+    const stage = page.locator("[data-model-stage]");
+    await stage.scrollIntoViewIfNeeded();
+    await page.locator(".motion-pin").evaluate((pin) => {
+      window.scrollTo(0, pin.getBoundingClientRect().top + window.scrollY);
+    });
+    await expect
+      .poll(() => page.locator(".motion-pin").evaluate((pin) => pin.getBoundingClientRect().top))
+      .toBe(0);
+    await expect(stage).toHaveAttribute("data-controls-ready", "true");
+    const toggle = page.locator("[data-experiment-controls]");
+    await expect(toggle).toHaveAttribute("aria-controls", "lab-advanced-panel");
+    await expect(toggle).toHaveAttribute(
+      "aria-describedby",
+      "lab-experiment-controls-note",
+    );
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(page.locator("#lab-experiment-controls-note")).toContainText(
+      /Swipe sideways|横向滑动浏览工具/,
+    );
+    const panel = page.locator("#lab-advanced-panel");
+    await expect(panel).toBeHidden();
     await toggle.click({ force: true });
     await expect(toggle).toHaveText(/ADVANCED|高级工具/);
+    await expect(stage).toHaveAttribute("data-controls-open", "true");
+    await expect(panel).toBeVisible();
+    await toggle.click({ force: true });
+    await expect(panel).toBeHidden();
+    await researchViews.locator("summary").click();
+    await expect(researchViews).toHaveAttribute("open", "");
+    await expect(
+      page.locator(".research-view-switcher [data-artifact-view]"),
+    ).toHaveCount(5);
+    await expect(
+      page.locator(".research-view-switcher [data-model-scan]"),
+    ).toBeVisible();
   }
 });
 
-test('reduced motion keeps content visible without marquee animation', async ({ browser }) => {
-  const context = await browser.newContext({ reducedMotion: 'reduce' });
+test("reduced motion keeps content visible without marquee animation", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ reducedMotion: "reduce" });
   const page = await context.newPage();
-  await page.goto('/', { waitUntil: 'networkidle' });
-  await expect(page.locator('html')).toHaveClass(/js-ready/);
-  await expect(page.locator('.reveal').first()).toHaveCSS('opacity', '1');
-  await expect(page.locator('.marquee').first()).toHaveCSS('animation-name', 'none');
+  await page.goto("/", { waitUntil: "networkidle" });
+  await expect(page.locator("html")).toHaveClass(/js-ready/);
+  await expect(page.locator(".reveal").first()).toHaveCSS("opacity", "1");
+  await expect(page.locator(".marquee").first()).toHaveCSS(
+    "animation-name",
+    "none",
+  );
   await context.close();
 });
 
-test('the heavy 3D runtime is isolated to the Lab route', async ({ request }) => {
-  for (const path of ['/lab/', '/en/lab/', '/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
+test("the heavy 3D runtime is isolated to the Lab route", async ({
+  request,
+}) => {
+  for (const path of [
+    "/lab/",
+    "/en/lab/",
+    "/formats/",
+    "/en/formats/",
+    "/cases/",
+    "/en/cases/",
+  ]) {
     const response = await request.get(path);
     expect(response.ok()).toBeTruthy();
     const html = await response.text();
-    if (path.includes('lab')) expect(html).toContain('model-canvas');
-    else if (path.includes('formats')) expect(html).toContain('format-matrix-title');
-    else expect(html).toContain('case-studies-title');
+    if (path.includes("lab")) expect(html).toContain("model-canvas");
+    else if (path.includes("formats"))
+      expect(html).toContain("format-matrix-title");
+    else expect(html).toContain("case-studies-title");
   }
-  for (const path of ['/', '/en/']) {
+  for (const path of ["/", "/en/"]) {
     const response = await request.get(path);
     const html = await response.text();
     expect(response.ok()).toBeTruthy();
-    expect(html).not.toContain('model-viewer');
-    expect(html).not.toContain('occt-import');
+    expect(html).not.toContain("model-viewer");
+    expect(html).not.toContain("occt-import");
   }
 });
 
-test('all public pages share the paper-grain visual layer', async ({ page }) => {
-  for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('body > .grain')).toHaveCount(1);
+test("all public pages share the paper-grain visual layer", async ({
+  page,
+}) => {
+  for (const path of [
+    "/",
+    "/en/",
+    "/formats/",
+    "/en/formats/",
+    "/cases/",
+    "/en/cases/",
+    "/lab/",
+    "/en/lab/",
+  ]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("body > .grain")).toHaveCount(1);
   }
 });
 
-test('all public pages share the bilingual footer navigation', async ({ page }) => {
+test("all public pages share the bilingual footer navigation", async ({
+  page,
+}) => {
   const pages = [
-    { path: '/', labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'] },
+    { path: "/", labels: ["格式矩阵", "转换案例", "3D 实验室", "文档"] },
     {
-      path: '/formats/',
-      labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'],
+      path: "/formats/",
+      labels: ["格式矩阵", "转换案例", "3D 实验室", "文档"],
     },
-    { path: '/cases/', labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'] },
-    { path: '/lab/', labels: ['格式矩阵', '转换案例', '3D 实验室', '文档'] },
-    { path: '/en/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
-    { path: '/en/formats/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
-    { path: '/en/cases/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
-    { path: '/en/lab/', labels: ['Formats', 'Cases', '3D Lab', 'Docs'] },
+    { path: "/cases/", labels: ["格式矩阵", "转换案例", "3D 实验室", "文档"] },
+    { path: "/lab/", labels: ["格式矩阵", "转换案例", "3D 实验室", "文档"] },
+    { path: "/en/", labels: ["Formats", "Cases", "3D Lab", "Docs"] },
+    { path: "/en/formats/", labels: ["Formats", "Cases", "3D Lab", "Docs"] },
+    { path: "/en/cases/", labels: ["Formats", "Cases", "3D Lab", "Docs"] },
+    { path: "/en/lab/", labels: ["Formats", "Cases", "3D Lab", "Docs"] },
   ];
   for (const { path, labels } of pages) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const footer = page.locator('.site-footer');
-    await expect(footer.locator('.brand')).toBeVisible();
-    await expect(footer.locator('.footer-links a')).toHaveCount(7);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const footer = page.locator(".site-footer");
+    await expect(footer.locator(".brand")).toBeVisible();
+    await expect(footer.locator(".footer-links a")).toHaveCount(7);
     for (const label of labels) await expect(footer).toContainText(label);
-    await expect(footer.locator('a[href*="EasyKiConverter/issues"]')).toContainText(path.startsWith('/en/') ? 'Issues' : '问题反馈');
+    await expect(
+      footer.locator('a[href*="EasyKiConverter/issues"]'),
+    ).toContainText(path.startsWith("/en/") ? "Issues" : "问题反馈");
   }
 });
 
-test('bilingual external navigation entries expose the exit cue', async ({ page }) => {
-  for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const externalLinks = page.locator('.site-footer .footer-link-external');
+test("bilingual external navigation entries expose the exit cue", async ({
+  page,
+}) => {
+  for (const path of [
+    "/",
+    "/en/",
+    "/formats/",
+    "/en/formats/",
+    "/cases/",
+    "/en/cases/",
+    "/lab/",
+    "/en/lab/",
+  ]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const externalLinks = page.locator(".site-footer .footer-link-external");
     await expect(externalLinks).toHaveCount(4);
-    await expect(externalLinks.locator('span[aria-hidden="true"]')).toHaveCount(4);
-    await expect(page.locator('.site-header .nav-link-external span[aria-hidden="true"]')).toHaveCount(path === '/' || path === '/en/' ? 1 : 0);
-    if (path === '/' || path === '/en/') {
-      await expect(page.locator('.mobile-nav .nav-link-external span[aria-hidden="true"]')).toHaveCount(1);
+    await expect(externalLinks.locator('span[aria-hidden="true"]')).toHaveCount(
+      4,
+    );
+    await expect(
+      page.locator('.site-header .nav-link-external span[aria-hidden="true"]'),
+    ).toHaveCount(path === "/" || path === "/en/" ? 1 : 0);
+    if (path === "/" || path === "/en/") {
+      await expect(
+        page.locator('.mobile-nav .nav-link-external span[aria-hidden="true"]'),
+      ).toHaveCount(1);
     }
   }
 });
 
-test('bilingual homepages keep the same interaction rhythm', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.hero-actions .button-dark')).toHaveClass(/magnetic/);
-    await expect(page.locator('.hero-actions .button-dark span')).toHaveText('↗');
-    await expect(page.locator('.story-card-b')).toHaveClass(/reveal-delay-1/);
-    await expect(page.locator('.story-card-c')).toHaveClass(/reveal-delay-2/);
-    await expect(page.locator('.feature-card-mint')).toHaveClass(/reveal-delay-1/);
-    await expect(page.locator('.feature-card-peach')).toHaveClass(/reveal-delay-2/);
-    await expect(page.locator('.feature-card-yellow')).toHaveClass(/reveal-delay-1/);
-    await expect(page.locator('.story-rail .story-card')).toHaveCount(4);
-    await expect(page.locator('#workflow .workflow-actions')).toBeVisible();
-    await expect(page.locator('.platform-list')).toHaveClass(/reveal-delay/);
-    await expect(page.locator('.download-actions .button-light')).toHaveClass(/magnetic/);
-    await expect(page.locator('.download-actions .button-light span')).toHaveText('↗');
-    await expect(page.locator('.github-link span')).toHaveText('↗');
-    await expect(page.locator('.scroll-cue')).toHaveAttribute('aria-label');
+test("bilingual homepages keep the same interaction rhythm", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(page.locator(".hero-actions .button-dark")).toHaveClass(
+      /magnetic/,
+    );
+    await expect(page.locator(".hero-actions .button-dark span")).toHaveText(
+      "↗",
+    );
+    await expect(page.locator(".story-card-b")).toHaveClass(/reveal-delay-1/);
+    await expect(page.locator(".story-card-c")).toHaveClass(/reveal-delay-2/);
+    await expect(page.locator(".feature-card-mint")).toHaveClass(
+      /reveal-delay-1/,
+    );
+    await expect(page.locator(".feature-card-peach")).toHaveClass(
+      /reveal-delay-2/,
+    );
+    await expect(page.locator(".feature-card-yellow")).toHaveClass(
+      /reveal-delay-1/,
+    );
+    await expect(page.locator(".story-rail .story-card")).toHaveCount(4);
+    await expect(page.locator("#workflow .workflow-actions")).toBeVisible();
+    await expect(page.locator(".platform-list")).toHaveClass(/reveal-delay/);
+    await expect(page.locator(".download-actions .button-light")).toHaveClass(
+      /magnetic/,
+    );
+    await expect(
+      page.locator(".download-actions .button-light span"),
+    ).toHaveText("↗");
+    await expect(page.locator(".github-link span")).toHaveText("↗");
+    await expect(page.locator(".scroll-cue")).toHaveAttribute("aria-label");
   }
 });
 
-test('bilingual shared text colors meet WCAG AA on light brand surfaces', async ({ page }) => {
-  for (const path of ['/', '/en/', '/formats/', '/en/formats/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
+test("bilingual shared text colors meet WCAG AA on light brand surfaces", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/", "/formats/", "/en/formats/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     const tokens = await page.evaluate(() => {
       const style = getComputedStyle(document.documentElement);
       return Object.fromEntries(
-        ['muted', 'violet', 'paper', 'peach', 'lilac', 'mint', 'yellow'].map((token) => [token, style.getPropertyValue(`--${token}`).trim()])
+        ["muted", "violet", "paper", "peach", "lilac", "mint", "yellow"].map(
+          (token) => [token, style.getPropertyValue(`--${token}`).trim()],
+        ),
       ) as Record<string, string>;
     });
-    expect(tokens).toMatchObject({ muted: '#5b564f', violet: '#5848b8' });
+    expect(tokens).toMatchObject({ muted: "#5b564f", violet: "#5848b8" });
 
     const luminance = (color: string): number => {
-      const channels = color.match(/[\da-f]{2}/gi)?.map((value) => parseInt(value, 16) / 255) ?? [];
-      const [red, green, blue] = channels.map((channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4));
+      const channels =
+        color
+          .match(/[\da-f]{2}/gi)
+          ?.map((value) => parseInt(value, 16) / 255) ?? [];
+      const [red, green, blue] = channels.map((channel) =>
+        channel <= 0.04045
+          ? channel / 12.92
+          : ((channel + 0.055) / 1.055) ** 2.4,
+      );
       return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
     };
     const contrastRatio = (foreground: string, background: string): number => {
-      const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+      const values = [luminance(foreground), luminance(background)].sort(
+        (a, b) => b - a,
+      );
       return (values[0] + 0.05) / (values[1] + 0.05);
     };
-    for (const surface of [tokens.paper, tokens.peach, tokens.lilac, tokens.mint, tokens.yellow]) {
+    for (const surface of [
+      tokens.paper,
+      tokens.peach,
+      tokens.lilac,
+      tokens.mint,
+      tokens.yellow,
+    ]) {
       expect(contrastRatio(tokens.muted, surface)).toBeGreaterThanOrEqual(4.5);
       expect(contrastRatio(tokens.violet, surface)).toBeGreaterThanOrEqual(4.5);
     }
   }
 });
 
-test('bilingual workbench captions describe export-stage product evidence', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /导出设置、处理进度和元件结果/);
-  await expect(page.locator('.showcase-source')).toHaveText('截取自桌面软件实际运行界面 · 本机输出路径已隐藏打开完整原图 ↗');
-  await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
-  await expect(page.locator('.showcase-proof-items')).toContainText('设置导出选项');
-  await expect(page.locator('.showcase-proof-items')).toContainText('核对导出结果');
+test("bilingual workbench captions describe export-stage product evidence", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".app-window > img")).toHaveAttribute(
+    "alt",
+    /导出设置、处理进度和元件结果/,
+  );
+  await expect(page.locator(".showcase-source")).toHaveText(
+    "截取自桌面软件实际运行界面 · 本机输出路径已隐藏打开完整原图 ↗",
+  );
+  await expect(page.locator(".app-window figcaption")).not.toContainText(
+    "resources/",
+  );
+  await expect(page.locator(".showcase-proof-items")).toContainText(
+    "设置导出选项",
+  );
+  await expect(page.locator(".showcase-proof-items")).toContainText(
+    "核对导出结果",
+  );
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.app-window > img')).toHaveAttribute('alt', /export settings, processing progress and component results/);
-  await expect(page.locator('.showcase-source')).toHaveText('Captured from the running desktop app · Local output path hiddenOpen full-size capture ↗');
-  await expect(page.locator('.app-window figcaption')).not.toContainText('resources/');
-  await expect(page.locator('.showcase-proof-items')).toContainText('Set export options');
-  await expect(page.locator('.showcase-proof-items')).toContainText('Review results');
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".app-window > img")).toHaveAttribute(
+    "alt",
+    /export settings, processing progress and component results/,
+  );
+  await expect(page.locator(".showcase-source")).toHaveText(
+    "Captured from the running desktop app · Local output path hiddenOpen full-size capture ↗",
+  );
+  await expect(page.locator(".app-window figcaption")).not.toContainText(
+    "resources/",
+  );
+  await expect(page.locator(".showcase-proof-items")).toContainText(
+    "Set export options",
+  );
+  await expect(page.locator(".showcase-proof-items")).toContainText(
+    "Review results",
+  );
 });
 
-test('bilingual homepages expose localized navigation destinations', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.nav-links a[href="#formats"]')).toHaveText('格式矩阵');
-  await expect(page.locator('.nav-links a[href="cases/"]')).toHaveText('转换案例');
-  await expect(page.locator('.mobile-nav a[href="cases/"]')).toHaveText('转换案例');
-  await expect(page.locator('.nav-links a').filter({ hasText: '3D 实验室' })).toHaveAttribute('href', /lab\/$/);
-  await expect(page.locator('.mobile-nav a[href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"]')).toContainText('文档');
+test("bilingual homepages expose localized navigation destinations", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('.nav-links a[href="#formats"]')).toHaveText(
+    "格式矩阵",
+  );
+  await expect(page.locator('.nav-links a[href="cases/"]')).toHaveText(
+    "转换案例",
+  );
+  await expect(page.locator('.mobile-nav a[href="cases/"]')).toHaveText(
+    "转换案例",
+  );
+  await expect(
+    page.locator(".nav-links a").filter({ hasText: "3D 实验室" }),
+  ).toHaveAttribute("href", /lab\/$/);
+  await expect(
+    page.locator(
+      '.mobile-nav a[href="https://github.com/EasyKiconverter/EasyKiConverter/tree/master/docs"]',
+    ),
+  ).toContainText("文档");
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.nav-links a[href="#download"]')).toHaveText('Download');
-  await expect(page.locator('.mobile-nav a[href="#download"]')).toHaveText('Download');
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('.nav-links a[href="#download"]')).toHaveText(
+    "Download",
+  );
+  await expect(page.locator('.mobile-nav a[href="#download"]')).toHaveText(
+    "Download",
+  );
 });
 
-test('homepage story navigation uses the descriptive story anchor', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('main#top #story')).toBeVisible();
+test("homepage story navigation uses the descriptive story anchor", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("main#top #story")).toBeVisible();
     await expect(page.locator('.nav-links a[href="#story"]')).toHaveCount(1);
     await expect(page.locator('.mobile-nav a[href="#story"]')).toHaveCount(1);
     await expect(page.locator('.hero-actions a[href="#story"]')).toHaveCount(1);
   }
 });
 
-test('homepage story cards connect the narrative to evidence and action', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const links = page.locator('.story-rail .story-link');
+test("homepage story cards connect the narrative to evidence and action", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const links = page.locator(".story-rail .story-link");
     await expect(links).toHaveCount(4);
-    await expect(links.nth(0)).toHaveAttribute('href', 'cases/');
-    await expect(links.nth(1)).toHaveAttribute('href', 'lab/');
-    await expect(links.nth(2)).toHaveAttribute('href', 'formats/');
-    await expect(links.nth(2)).toContainText(path === '/' ? '格式矩阵' : 'format matrix');
-    await expect(links.nth(3)).toHaveAttribute('href', '#showcase-title');
-    await expect(links.nth(3)).toContainText(path === '/' ? '真实软件界面' : 'real app');
+    await expect(links.nth(0)).toHaveAttribute("href", "cases/");
+    await expect(links.nth(1)).toHaveAttribute("href", "lab/");
+    await expect(links.nth(2)).toHaveAttribute("href", "formats/");
+    await expect(links.nth(2)).toContainText(
+      path === "/" ? "格式矩阵" : "format matrix",
+    );
+    await expect(links.nth(3)).toHaveAttribute("href", "#showcase-title");
+    await expect(links.nth(3)).toContainText(
+      path === "/" ? "真实软件界面" : "real app",
+    );
   }
 });
 
-test('homepage scroll story activates input, preparation, conversion, and use in order', async ({ page }) => {
+test("homepage scroll story activates input, preparation, conversion, and use in order", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const rail = page.locator('[data-story-rail]');
-    const scene = page.locator('[data-conversion-scene]');
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const rail = page.locator("[data-story-rail]");
+    const scene = page.locator("[data-conversion-scene]");
     const sceneTransforms = new Set<string>();
     for (const [progress, activeIndex] of [
       [0, 0],
@@ -1427,29 +2248,49 @@ test('homepage scroll story activates input, preparation, conversion, and use in
     ] as const) {
       const target = await storyScrollTarget(page, progress);
       await page.evaluate((target) => {
-        document.documentElement.style.scrollBehavior = 'auto';
+        document.documentElement.style.scrollBehavior = "auto";
         window.scrollTo(0, target);
       }, target);
       await expect
-        .poll(() => page.locator('.story-card').evaluateAll((cards) => cards.map((card) => card.hasAttribute('data-active'))))
-        .toEqual([false, false, false, false].map((_, index) => index === activeIndex));
-      await expect(scene).toHaveAttribute('data-stage', ['input', 'prepare', 'convert', 'use'][activeIndex]);
-      sceneTransforms.add(await scene.locator('.conversion-scene-board').evaluate((board) => getComputedStyle(board).transform));
+        .poll(() =>
+          page
+            .locator(".story-card")
+            .evaluateAll((cards) =>
+              cards.map((card) => card.hasAttribute("data-active")),
+            ),
+        )
+        .toEqual(
+          [false, false, false, false].map((_, index) => index === activeIndex),
+        );
+      await expect(scene).toHaveAttribute(
+        "data-stage",
+        ["input", "prepare", "convert", "use"][activeIndex],
+      );
+      sceneTransforms.add(
+        await scene
+          .locator(".conversion-scene-board")
+          .evaluate((board) => getComputedStyle(board).transform),
+      );
     }
-    expect(sceneTransforms.size, `${path} should change the real scene transform across scroll progress`).toBe(4);
+    expect(
+      sceneTransforms.size,
+      `${path} should change the real scene transform across scroll progress`,
+    ).toBe(4);
 
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await expect.poll(() => depthStyle(page)).toBe('0');
-    await expect(page.locator('.story-card')).toHaveCount(4);
-    await expect(page.locator('.story-card[data-active]')).toBeVisible();
-    await expect(scene).toHaveCSS('position', 'sticky');
-    await expect(page.locator('.download-actions .button-light')).toBeVisible();
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await expect.poll(() => depthStyle(page)).not.toBe('0');
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect.poll(() => depthStyle(page)).toBe("0");
+    await expect(page.locator(".story-card")).toHaveCount(4);
+    await expect(page.locator(".story-card[data-active]")).toBeVisible();
+    await expect(scene).toHaveCSS("position", "sticky");
+    await expect(page.locator(".download-actions .button-light")).toBeVisible();
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await expect.poll(() => depthStyle(page)).not.toBe("0");
   }
 });
 
-test('conversion scene stays visible with its active narrative on tablet and phones', async ({ page }) => {
+test("conversion scene stays visible with its active narrative on tablet and phones", async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 600, height: 800 },
@@ -1461,12 +2302,15 @@ test('conversion scene stays visible with its active narrative on tablet and pho
   ]) {
     const { width, height } = viewport;
     await page.setViewportSize(viewport);
-    for (const path of ['/', '/en/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const scene = page.locator('[data-conversion-scene]');
-      await expect(scene).toHaveCSS('position', height <= 500 ? 'relative' : 'sticky');
+    for (const path of ["/", "/en/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const scene = page.locator("[data-conversion-scene]");
+      await expect(scene).toHaveCSS(
+        "position",
+        height <= 500 ? "relative" : "sticky",
+      );
       await page.evaluate(() => {
-        document.documentElement.style.scrollBehavior = 'auto';
+        document.documentElement.style.scrollBehavior = "auto";
       });
       for (const [progress, activeIndex] of [
         [0, 0],
@@ -1479,9 +2323,12 @@ test('conversion scene stays visible with its active narrative on tablet and pho
       ] as const) {
         const target = await storyScrollTarget(page, progress);
         await page.evaluate((scrollTarget) => {
-          window.scrollTo({ top: scrollTarget, behavior: 'instant' });
+          window.scrollTo({ top: scrollTarget, behavior: "instant" });
         }, target);
-        await expect(scene).toHaveAttribute('data-stage', ['input', 'prepare', 'convert', 'use'][activeIndex]);
+        await expect(scene).toHaveAttribute(
+          "data-stage",
+          ["input", "prepare", "convert", "use"][activeIndex],
+        );
         const visibleGeometry = await scene.evaluate((element) => {
           const rect = element.getBoundingClientRect();
           return {
@@ -1492,43 +2339,99 @@ test('conversion scene stays visible with its active narrative on tablet and pho
             viewportHeight: window.innerHeight,
           };
         });
-        const activeCard = page.locator('.story-card[data-active]');
-        const activeHeading = await activeCard.locator('h3').boundingBox();
-        expect(activeHeading, `${path} ${width}px stage ${progress} active heading`).not.toBeNull();
-        expect(activeHeading!.y + activeHeading!.height, `${path} ${width}x${height}px stage ${progress} heading bottom`).toBeLessThan(
-          visibleGeometry.viewportHeight
-        );
-        if (width === 600 && path === '/' && activeIndex === 1) {
-          const headingLineHeight = await activeCard.locator('h3').evaluate((heading) => Number.parseFloat(getComputedStyle(heading).lineHeight));
-          expect(activeHeading!.height, '600px Chinese preparation heading should fit its two intended lines').toBeLessThanOrEqual(headingLineHeight * 2.2);
+        const activeCard = page.locator(".story-card[data-active]");
+        const activeHeading = await activeCard.locator("h3").boundingBox();
+        expect(
+          activeHeading,
+          `${path} ${width}px stage ${progress} active heading`,
+        ).not.toBeNull();
+        expect(
+          activeHeading!.y + activeHeading!.height,
+          `${path} ${width}x${height}px stage ${progress} heading bottom`,
+        ).toBeLessThan(visibleGeometry.viewportHeight);
+        if (width === 600 && path === "/" && activeIndex === 1) {
+          const headingLineHeight = await activeCard
+            .locator("h3")
+            .evaluate((heading) =>
+              Number.parseFloat(getComputedStyle(heading).lineHeight),
+            );
+          expect(
+            activeHeading!.height,
+            "600px Chinese preparation heading should fit its two intended lines",
+          ).toBeLessThanOrEqual(headingLineHeight * 2.2);
         }
         const stageCardGeometry = await page.evaluate(() => {
-          const scene = document.querySelector<HTMLElement>('[data-conversion-scene]')!;
-          const model = scene.querySelector<HTMLElement>('.conversion-model-viewport')!;
-          const board = scene.querySelector<HTMLElement>('.conversion-scene-board')!;
-          const cards = [...document.querySelectorAll<HTMLElement>('.story-card')].filter((candidate) => {
+          const scene = document.querySelector<HTMLElement>(
+            "[data-conversion-scene]",
+          )!;
+          const model = scene.querySelector<HTMLElement>(
+            ".conversion-model-viewport",
+          )!;
+          const board = scene.querySelector<HTMLElement>(
+            ".conversion-scene-board",
+          )!;
+          const cards = [
+            ...document.querySelectorAll<HTMLElement>(".story-card"),
+          ].filter((candidate) => {
             const style = getComputedStyle(candidate);
-            return style.visibility !== 'hidden' && Number(style.opacity) > 0;
+            return style.visibility !== "hidden" && Number(style.opacity) > 0;
           });
-          const activeCard = document.querySelector<HTMLElement>('.story-card[data-active]')!;
+          const activeCard = document.querySelector<HTMLElement>(
+            ".story-card[data-active]",
+          )!;
           const layerSelector = {
-            input: '.conversion-input-layer',
-            prepare: '.conversion-parts-layer',
-            convert: '.conversion-output-layer',
-            use: '.conversion-use-layer',
-          }[scene.dataset.stage || 'input'];
+            input: ".conversion-input-layer",
+            prepare: ".conversion-parts-layer",
+            convert: ".conversion-output-layer",
+            use: ".conversion-use-layer",
+          }[scene.dataset.stage || "input"];
           const layer = scene.querySelector<HTMLElement>(layerSelector)!;
           const rect = (element: HTMLElement) => {
-            const { x, y, right, bottom, width, height } = element.getBoundingClientRect();
+            const { x, y, right, bottom, width, height } =
+              element.getBoundingClientRect();
             return { x, y, right, bottom, width, height };
           };
           const modelRect = model.getBoundingClientRect();
+          const modelQuad = (
+            model as HTMLElement & {
+              getBoxQuads?: () => Array<{
+                p1: { x: number; y: number };
+                p2: { x: number; y: number };
+                p3: { x: number; y: number };
+                p4: { x: number; y: number };
+              }>;
+            }
+          ).getBoxQuads?.()[0];
+          const projectedModelCorners = modelQuad
+            ? [modelQuad.p1, modelQuad.p2, modelQuad.p3, modelQuad.p4]
+            : [
+                { x: modelRect.left, y: modelRect.top },
+                { x: modelRect.right, y: modelRect.top },
+                { x: modelRect.right, y: modelRect.bottom },
+                { x: modelRect.left, y: modelRect.bottom },
+              ];
           let storyCardHitCount = 0;
-          for (let row = 0; row < 7; row += 1) {
-            for (let column = 0; column < 7; column += 1) {
-              const x = modelRect.left + ((column + 0.5) * modelRect.width) / 7;
-              const y = modelRect.top + ((row + 0.5) * modelRect.height) / 7;
-              if (document.elementsFromPoint(x, y).some((element) => element.closest('.story-card'))) {
+          const [topLeft, topRight, bottomRight, bottomLeft] =
+            projectedModelCorners;
+          for (let row = 1; row <= 9; row += 1) {
+            for (let column = 1; column <= 9; column += 1) {
+              const u = column / 10;
+              const v = row / 10;
+              const x =
+                (1 - u) * (1 - v) * topLeft.x +
+                u * (1 - v) * topRight.x +
+                u * v * bottomRight.x +
+                (1 - u) * v * bottomLeft.x;
+              const y =
+                (1 - u) * (1 - v) * topLeft.y +
+                u * (1 - v) * topRight.y +
+                u * v * bottomRight.y +
+                (1 - u) * v * bottomLeft.y;
+              if (
+                document
+                  .elementsFromPoint(x, y)
+                  .some((element) => element.closest(".story-card"))
+              ) {
                 storyCardHitCount += 1;
               }
             }
@@ -1537,6 +2440,7 @@ test('conversion scene stays visible with its active narrative on tablet and pho
             scene: rect(scene),
             board: rect(board),
             model: rect(model),
+            projectedModelCorners,
             card: rect(activeCard),
             cards: cards.map(rect),
             layer: rect(layer),
@@ -1545,83 +2449,142 @@ test('conversion scene stays visible with its active narrative on tablet and pho
         });
         {
           const overlapAreas = stageCardGeometry.cards.map((card) => {
-            const overlapWidth = Math.max(0, Math.min(stageCardGeometry.model.right, card.right) - Math.max(stageCardGeometry.model.x, card.x));
-            const overlapHeight = Math.max(0, Math.min(stageCardGeometry.model.bottom, card.bottom) - Math.max(stageCardGeometry.model.y, card.y));
+            const overlapWidth = Math.max(
+              0,
+              Math.min(stageCardGeometry.model.right, card.right) -
+                Math.max(stageCardGeometry.model.x, card.x),
+            );
+            const overlapHeight = Math.max(
+              0,
+              Math.min(stageCardGeometry.model.bottom, card.bottom) -
+                Math.max(stageCardGeometry.model.y, card.y),
+            );
             return overlapWidth * overlapHeight;
           });
-          expect(Math.max(0, ...overlapAreas), `${path} ${width}x${height}px stage ${progress} visible story-card/model occlusion`).toBeLessThan(4);
-          expect(stageCardGeometry.storyCardHitCount, `${path} ${width}x${height}px stage ${progress} rendered story-card occlusion`).toBe(0);
+          expect(
+            Math.max(0, ...overlapAreas),
+            `${path} ${width}x${height}px stage ${progress} visible story-card/model occlusion`,
+          ).toBeLessThan(4);
+          expect(
+            stageCardGeometry.storyCardHitCount,
+            `${path} ${width}x${height}px stage ${progress} rendered story-card occlusion`,
+          ).toBe(0);
           if (height > 500) {
-            expect(stageCardGeometry.card.x, `${path} ${width}px stage ${progress} card left edge`).toBeGreaterThanOrEqual(-1);
-            expect(stageCardGeometry.card.right, `${path} ${width}px stage ${progress} card right edge`).toBeLessThanOrEqual(width + 1);
-            expect(stageCardGeometry.card.y, `${path} ${width}px stage ${progress} complete card top`).toBeGreaterThanOrEqual(-1);
-            expect(stageCardGeometry.card.bottom, `${path} ${width}px stage ${progress} complete card bottom`).toBeLessThanOrEqual(height + 1);
+            expect(
+              stageCardGeometry.card.x,
+              `${path} ${width}px stage ${progress} card left edge`,
+            ).toBeGreaterThanOrEqual(-1);
+            expect(
+              stageCardGeometry.card.right,
+              `${path} ${width}px stage ${progress} card right edge`,
+            ).toBeLessThanOrEqual(width + 1);
+            expect(
+              stageCardGeometry.card.y,
+              `${path} ${width}px stage ${progress} complete card top`,
+            ).toBeGreaterThanOrEqual(-1);
+            expect(
+              stageCardGeometry.card.bottom,
+              `${path} ${width}px stage ${progress} complete card bottom`,
+            ).toBeLessThanOrEqual(height + 1);
           }
           if (width > 1100 && height > 500) {
             const stageModelCardOverlapWidth = Math.max(
               0,
-              Math.min(stageCardGeometry.model.right, stageCardGeometry.layer.right) - Math.max(stageCardGeometry.model.x, stageCardGeometry.layer.x)
+              Math.min(
+                stageCardGeometry.model.right,
+                stageCardGeometry.layer.right,
+              ) -
+                Math.max(stageCardGeometry.model.x, stageCardGeometry.layer.x),
             );
             const stageModelCardOverlapHeight = Math.max(
               0,
-              Math.min(stageCardGeometry.model.bottom, stageCardGeometry.layer.bottom) - Math.max(stageCardGeometry.model.y, stageCardGeometry.layer.y)
+              Math.min(
+                stageCardGeometry.model.bottom,
+                stageCardGeometry.layer.bottom,
+              ) -
+                Math.max(stageCardGeometry.model.y, stageCardGeometry.layer.y),
             );
             expect(
               stageModelCardOverlapWidth * stageModelCardOverlapHeight,
-              `${path} ${width}x${height}px stage ${progress} active label must not cover transformed model`
+              `${path} ${width}x${height}px stage ${progress} active label must not cover transformed model`,
             ).toBeLessThan(4);
             const boardCardOverlapWidth = Math.max(
               0,
-              Math.min(stageCardGeometry.board.right, stageCardGeometry.layer.right) - Math.max(stageCardGeometry.board.x, stageCardGeometry.layer.x)
+              Math.min(
+                stageCardGeometry.board.right,
+                stageCardGeometry.layer.right,
+              ) -
+                Math.max(stageCardGeometry.board.x, stageCardGeometry.layer.x),
             );
             const boardCardOverlapHeight = Math.max(
               0,
-              Math.min(stageCardGeometry.board.bottom, stageCardGeometry.layer.bottom) - Math.max(stageCardGeometry.board.y, stageCardGeometry.layer.y)
+              Math.min(
+                stageCardGeometry.board.bottom,
+                stageCardGeometry.layer.bottom,
+              ) -
+                Math.max(stageCardGeometry.board.y, stageCardGeometry.layer.y),
             );
             expect(
               boardCardOverlapWidth * boardCardOverlapHeight,
-              `${path} ${width}x${height}px stage ${progress} active label must clear the complete transformed model card`
+              `${path} ${width}x${height}px stage ${progress} active label must clear the complete transformed model card`,
             ).toBeLessThan(4);
           }
-          expect(stageCardGeometry.board.x, `${path} ${width}px stage ${progress} transformed model board left`).toBeGreaterThanOrEqual(
-            stageCardGeometry.scene.x - 1
-          );
-          expect(stageCardGeometry.board.right, `${path} ${width}px stage ${progress} transformed model board right`).toBeLessThanOrEqual(
-            stageCardGeometry.scene.right + 1
-          );
-          expect(stageCardGeometry.board.y, `${path} ${width}px stage ${progress} transformed model board top`).toBeGreaterThanOrEqual(
-            stageCardGeometry.scene.y - 3
-          );
-          expect(stageCardGeometry.board.bottom, `${path} ${width}px stage ${progress} transformed model board bottom`).toBeLessThanOrEqual(
-            stageCardGeometry.scene.bottom + 1
-          );
+          expect(
+            stageCardGeometry.board.x,
+            `${path} ${width}px stage ${progress} transformed model board left`,
+          ).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
+          expect(
+            stageCardGeometry.board.right,
+            `${path} ${width}px stage ${progress} transformed model board right`,
+          ).toBeLessThanOrEqual(stageCardGeometry.scene.right + 1);
+          expect(
+            stageCardGeometry.board.y,
+            `${path} ${width}px stage ${progress} transformed model board top`,
+          ).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 3);
+          expect(
+            stageCardGeometry.board.bottom,
+            `${path} ${width}px stage ${progress} transformed model board bottom`,
+          ).toBeLessThanOrEqual(stageCardGeometry.scene.bottom + 1);
           if (height <= 500 && width > 1100) {
-            expect(stageCardGeometry.layer.width, `${path} short-landscape active card stays compact`).toBeLessThanOrEqual(
-              stageCardGeometry.board.width * 0.46
-            );
-            expect(stageCardGeometry.layer.height, `${path} short-landscape active card preserves model visibility`).toBeLessThanOrEqual(
-              stageCardGeometry.scene.height * 0.45
-            );
+            expect(
+              stageCardGeometry.layer.width,
+              `${path} short-landscape active card stays compact`,
+            ).toBeLessThanOrEqual(stageCardGeometry.board.width * 0.46);
+            expect(
+              stageCardGeometry.layer.height,
+              `${path} short-landscape active card preserves model visibility`,
+            ).toBeLessThanOrEqual(stageCardGeometry.scene.height * 0.45);
           }
         }
         if (width <= 1100) {
           const activeLayerSelector = {
-            input: '.conversion-input-layer',
-            prepare: '.conversion-parts-layer',
-            convert: '.conversion-output-layer',
-            use: '.conversion-use-layer',
-          }[(await scene.getAttribute('data-stage')) || 'input'];
-          await expect(scene.locator(activeLayerSelector)).toHaveCSS('visibility', 'hidden');
+            input: ".conversion-input-layer",
+            prepare: ".conversion-parts-layer",
+            convert: ".conversion-output-layer",
+            use: ".conversion-use-layer",
+          }[(await scene.getAttribute("data-stage")) || "input"];
+          await expect(scene.locator(activeLayerSelector)).toHaveCSS(
+            "visibility",
+            "hidden",
+          );
         }
         if (width > 1100) {
-          expect(stageCardGeometry.layer.x, `${path} ${width}px stage ${progress} active label left`).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
-          expect(stageCardGeometry.layer.right, `${path} ${width}px stage ${progress} active label right`).toBeLessThanOrEqual(
-            stageCardGeometry.scene.right + 1
-          );
-          expect(stageCardGeometry.layer.y, `${path} ${width}px stage ${progress} active label top`).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 1);
-          expect(stageCardGeometry.layer.bottom, `${path} ${width}px stage ${progress} active label bottom`).toBeLessThanOrEqual(
-            stageCardGeometry.scene.bottom + 1
-          );
+          expect(
+            stageCardGeometry.layer.x,
+            `${path} ${width}px stage ${progress} active label left`,
+          ).toBeGreaterThanOrEqual(stageCardGeometry.scene.x - 1);
+          expect(
+            stageCardGeometry.layer.right,
+            `${path} ${width}px stage ${progress} active label right`,
+          ).toBeLessThanOrEqual(stageCardGeometry.scene.right + 1);
+          expect(
+            stageCardGeometry.layer.y,
+            `${path} ${width}px stage ${progress} active label top`,
+          ).toBeGreaterThanOrEqual(stageCardGeometry.scene.y - 1);
+          expect(
+            stageCardGeometry.layer.bottom,
+            `${path} ${width}px stage ${progress} active label bottom`,
+          ).toBeLessThanOrEqual(stageCardGeometry.scene.bottom + 1);
         }
       }
       const bounds = await scene.evaluate((element) => {
@@ -1633,13 +2596,25 @@ test('conversion scene stays visible with its active narrative on tablet and pho
           scrollWidth: document.documentElement.scrollWidth,
         };
       });
-      expect(bounds.left, `${path} ${width}px scene left edge`).toBeGreaterThanOrEqual(0);
-      expect(bounds.right, `${path} ${width}px scene right edge`).toBeLessThanOrEqual(width);
-      expect(bounds.scrollWidth, `${path} ${width}px document width`).toBe(width);
+      expect(
+        bounds.left,
+        `${path} ${width}px scene left edge`,
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        bounds.right,
+        `${path} ${width}px scene right edge`,
+      ).toBeLessThanOrEqual(width);
+      expect(bounds.scrollWidth, `${path} ${width}px document width`).toBe(
+        width,
+      );
       const modelBounds = await scene.evaluate((element) => {
         const sceneRect = element.getBoundingClientRect();
-        const board = element.querySelector<HTMLElement>('.conversion-scene-board')!;
-        const viewport = board.querySelector<HTMLElement>('.conversion-model-viewport')!;
+        const board = element.querySelector<HTMLElement>(
+          ".conversion-scene-board",
+        )!;
+        const viewport = board.querySelector<HTMLElement>(
+          ".conversion-model-viewport",
+        )!;
         const boardRect = board.getBoundingClientRect();
         const viewportRect = viewport.getBoundingClientRect();
         return {
@@ -1663,132 +2638,246 @@ test('conversion scene stays visible with its active narrative on tablet and pho
           },
         };
       });
-      expect(modelBounds.board.left, `${path} ${width}px model board clears the left scene edge`).toBeGreaterThanOrEqual(modelBounds.scene.left - 2);
-      expect(modelBounds.board.right, `${path} ${width}px model board fits scene width`).toBeLessThanOrEqual(modelBounds.scene.right + 2);
-      expect(modelBounds.board.bottom, `${path} ${width}px model board fits scene height`).toBeLessThanOrEqual(modelBounds.scene.bottom + 2);
-      expect(modelBounds.board.top).toBeGreaterThanOrEqual(modelBounds.scene.top - 2);
-      expect(modelBounds.model.left).toBeGreaterThanOrEqual(modelBounds.board.left - 2);
-      expect(modelBounds.model.right).toBeLessThanOrEqual(modelBounds.board.right + 2);
-      expect(modelBounds.model.top).toBeGreaterThanOrEqual(modelBounds.board.top - 2);
-      expect(modelBounds.model.bottom).toBeLessThanOrEqual(modelBounds.board.bottom + 2);
-      await expect(page.locator('.story-card')).toHaveCount(4);
+      expect(
+        modelBounds.board.left,
+        `${path} ${width}px model board clears the left scene edge`,
+      ).toBeGreaterThanOrEqual(modelBounds.scene.left - 2);
+      expect(
+        modelBounds.board.right,
+        `${path} ${width}px model board fits scene width`,
+      ).toBeLessThanOrEqual(modelBounds.scene.right + 2);
+      expect(
+        modelBounds.board.bottom,
+        `${path} ${width}px model board fits scene height`,
+      ).toBeLessThanOrEqual(modelBounds.scene.bottom + 2);
+      expect(modelBounds.board.top).toBeGreaterThanOrEqual(
+        modelBounds.scene.top - 2,
+      );
+      expect(modelBounds.model.left).toBeGreaterThanOrEqual(
+        modelBounds.board.left - 2,
+      );
+      expect(modelBounds.model.right).toBeLessThanOrEqual(
+        modelBounds.board.right + 2,
+      );
+      expect(modelBounds.model.top).toBeGreaterThanOrEqual(
+        modelBounds.board.top - 2,
+      );
+      expect(modelBounds.model.bottom).toBeLessThanOrEqual(
+        modelBounds.board.bottom + 2,
+      );
+      await expect(page.locator(".story-card")).toHaveCount(4);
     }
   }
 });
 
-test('homepage story motion responds to live viewport resize and reduced-motion changes', async ({ page }) => {
+test("homepage story motion responds to live viewport resize and reduced-motion changes", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 760 });
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await page.evaluate(() => {
-    document.documentElement.style.scrollBehavior = 'auto';
+    document.documentElement.style.scrollBehavior = "auto";
   });
-  const storyRail = page.locator('[data-story-rail]');
+  const storyRail = page.locator("[data-story-rail]");
   const target = await storyScrollTarget(page, 0.4);
-  await page.evaluate((target) => window.scrollTo({ top: target, behavior: 'instant' }), target);
-  await expect.poll(() => depthStyle(page)).not.toBe('0');
-  const narrowProgress = await storyRail.evaluate((rail) => Number.parseFloat(getComputedStyle(rail).getPropertyValue('--story-progress')));
+  await page.evaluate(
+    (target) => window.scrollTo({ top: target, behavior: "instant" }),
+    target,
+  );
+  await expect.poll(() => depthStyle(page)).not.toBe("0");
+  const narrowProgress = await storyRail.evaluate((rail) =>
+    Number.parseFloat(
+      getComputedStyle(rail).getPropertyValue("--story-progress"),
+    ),
+  );
 
   await page.setViewportSize({ width: 900, height: 760 });
   await expect
-    .poll(() => storyRail.evaluate((rail) => Number.parseFloat(getComputedStyle(rail).getPropertyValue('--story-progress'))))
+    .poll(() =>
+      storyRail.evaluate((rail) =>
+        Number.parseFloat(
+          getComputedStyle(rail).getPropertyValue("--story-progress"),
+        ),
+      ),
+    )
     .not.toBe(narrowProgress);
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect.poll(() => depthStyle(page)).toBe('0');
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await expect.poll(() => depthStyle(page)).not.toBe('0');
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect.poll(() => depthStyle(page)).toBe("0");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await expect.poll(() => depthStyle(page)).not.toBe("0");
 });
 
-test('homepage platform summary mirrors the available Release assets', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const platforms = page.locator('.platform-list > div');
+test("homepage platform summary mirrors the available Release assets", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const platforms = page.locator(".platform-list > div");
     await expect(platforms).toHaveCount(3);
     await expect(platforms.nth(0)).toContainText(/Windows/);
     await expect(platforms.nth(0)).toContainText(/x86_64/);
     await expect(platforms.nth(0)).toContainText(/arm64/);
-    await expect(platforms.nth(0).locator('.platform-count')).toContainText(/2/);
+    await expect(platforms.nth(0).locator(".platform-count")).toContainText(
+      /2/,
+    );
     await expect(platforms.nth(1)).toContainText(/aarch64/);
-    await expect(platforms.nth(1).locator('.platform-count')).toContainText(/3/);
+    await expect(platforms.nth(1).locator(".platform-count")).toContainText(
+      /3/,
+    );
     await expect(platforms.nth(2)).toContainText(/Intel/);
-    await expect(platforms.nth(2)).toContainText(path === '/' ? 'Apple 芯片' : 'Apple Silicon');
-    await expect(platforms.nth(2).locator('.platform-count')).toContainText(/2/);
-    await expect(platforms.nth(0).locator('.platform-architecture')).toHaveCount(2);
-    await expect(platforms.nth(1).locator('.platform-architecture')).toHaveCount(3);
-    await expect(platforms.nth(2).locator('.platform-architecture')).toHaveCount(2);
+    await expect(platforms.nth(2)).toContainText(
+      path === "/" ? "Apple 芯片" : "Apple Silicon",
+    );
+    await expect(platforms.nth(2).locator(".platform-count")).toContainText(
+      /2/,
+    );
+    await expect(
+      platforms.nth(0).locator(".platform-architecture"),
+    ).toHaveCount(2);
+    await expect(
+      platforms.nth(1).locator(".platform-architecture"),
+    ).toHaveCount(3);
+    await expect(
+      platforms.nth(2).locator(".platform-architecture"),
+    ).toHaveCount(2);
   }
 });
 
-test('homepage platform copy speaks in user-facing download terms', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-summary')).toContainText('macOS 构建尚未完成维护者验收');
-  await expect(page.locator('.platform-summary')).toContainText('按设备架构选择对应下载项');
-  await expect(page.locator('.platform-list > div').first()).toContainText('2 个下载项');
-  await expect(page.locator('.download-links')).toHaveAttribute('aria-label', '平台下载入口');
-  await expect(page.locator('.download-copy')).not.toContainText('GitHub API');
+test("homepage platform copy speaks in user-facing download terms", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".platform-summary")).toContainText(
+    "macOS 构建尚未完成维护者验收",
+  );
+  await expect(page.locator(".platform-summary")).toContainText(
+    "按设备架构选择对应下载项",
+  );
+  await expect(page.locator(".platform-list > div").first()).toContainText(
+    "2 个下载项",
+  );
+  await expect(page.locator(".download-links")).toHaveAttribute(
+    "aria-label",
+    "平台下载入口",
+  );
+  await expect(page.locator(".download-copy")).not.toContainText("GitHub API");
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-summary')).toContainText('macOS builds have not completed maintainer validation');
-  await expect(page.locator('.platform-summary')).toContainText('Choose the download that matches your architecture');
-  await expect(page.locator('.platform-list > div').first()).toContainText('2 downloads');
-  await expect(page.locator('.download-links')).toHaveAttribute('aria-label', 'Platform download entries');
-  await expect(page.locator('.download-copy')).not.toContainText('GitHub API');
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".platform-summary")).toContainText(
+    "macOS builds have not completed maintainer validation",
+  );
+  await expect(page.locator(".platform-summary")).toContainText(
+    "Choose the download that matches your architecture",
+  );
+  await expect(page.locator(".platform-list > div").first()).toContainText(
+    "2 downloads",
+  );
+  await expect(page.locator(".download-links")).toHaveAttribute(
+    "aria-label",
+    "Platform download entries",
+  );
+  await expect(page.locator(".download-copy")).not.toContainText("GitHub API");
 });
 
-test('bilingual platform headings distinguish experimental macOS builds', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro .kicker')).toHaveText('平台状态');
-  await expect(page.locator('#platforms-title')).toContainText('macOS 安装包');
-  await expect(page.locator('#platforms-title')).toContainText('仍属实验阶段');
+test("bilingual platform headings distinguish experimental macOS builds", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".platform-intro .kicker")).toHaveText("平台状态");
+  await expect(page.locator("#platforms-title")).toContainText("macOS 安装包");
+  await expect(page.locator("#platforms-title")).toContainText("仍属实验阶段");
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro .kicker')).toHaveText('PLATFORM STATUS');
-  await expect(page.locator('#platforms-title')).toContainText('macOS packages');
-  await expect(page.locator('#platforms-title')).toContainText('still experimental');
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".platform-intro .kicker")).toHaveText(
+    "PLATFORM STATUS",
+  );
+  await expect(page.locator("#platforms-title")).toContainText(
+    "macOS packages",
+  );
+  await expect(page.locator("#platforms-title")).toContainText(
+    "still experimental",
+  );
 });
 
-test('macOS download caveat links to the known Gatekeeper issue in both languages', async ({ page }) => {
+test("macOS download caveat links to the known Gatekeeper issue in both languages", async ({
+  page,
+}) => {
   for (const [path, languageText] of [
-    ['/', 'Apple Silicon 用户曾报告 Gatekeeper 提示'],
-    ['/en/', 'An Apple Silicon user reported Gatekeeper’s'],
+    ["/", "Apple Silicon 用户曾报告 Gatekeeper 提示"],
+    ["/en/", "An Apple Silicon user reported Gatekeeper’s"],
   ]) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const notice = page.locator('.download-platform-notice');
-    const actions = page.locator('.download-actions');
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const notice = page.locator(".download-platform-notice");
+    const actions = page.locator(".download-actions");
     await expect(notice).toContainText(languageText);
     const noticeBox = await notice.boundingBox();
     const actionBox = await actions.boundingBox();
-    if (!noticeBox || !actionBox) throw new Error('Download notice or actions are not visible');
+    if (!noticeBox || !actionBox)
+      throw new Error("Download notice or actions are not visible");
     expect(noticeBox.y + noticeBox.height).toBeLessThan(actionBox.y);
-    await expect(notice.locator('a')).toHaveAttribute('href', 'https://github.com/EasyKiconverter/EasyKiConverter/issues/153');
-    await expect(notice.locator('a')).toHaveAttribute('target', '_blank');
-    await expect(notice.locator('a')).toHaveAttribute('rel', 'noreferrer');
-    await expect(notice).toContainText(path === '/' ? '请勿根据未经核实的教程关闭系统安全防护' : 'Do not disable macOS security protections');
+    await expect(notice.locator("a")).toHaveAttribute(
+      "href",
+      "https://github.com/EasyKiconverter/EasyKiConverter/issues/153",
+    );
+    await expect(notice.locator("a")).toHaveAttribute("target", "_blank");
+    await expect(notice.locator("a")).toHaveAttribute("rel", "noreferrer");
+    await expect(notice).toContainText(
+      path === "/"
+        ? "请勿根据未经核实的教程关闭系统安全防护"
+        : "Do not disable macOS security protections",
+    );
   }
 });
 
-test('platform sections offer a direct path to the matching download area', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro-link')).toHaveAttribute('href', '#download');
-  await expect(page.locator('.platform-intro-link')).toContainText('查看平台下载项');
-  await expect(page.locator('.platform-summary')).toHaveCSS('max-width', '400px');
+test("platform sections offer a direct path to the matching download area", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".platform-intro-link")).toHaveAttribute(
+    "href",
+    "#download",
+  );
+  await expect(page.locator(".platform-intro-link")).toContainText(
+    "查看平台下载项",
+  );
+  await expect(page.locator(".platform-summary")).toHaveCSS(
+    "max-width",
+    "400px",
+  );
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.platform-intro-link')).toHaveAttribute('href', '#download');
-  await expect(page.locator('.platform-intro-link')).toContainText('See platform downloads');
-  await expect(page.locator('.platform-summary')).toHaveCSS('max-width', '400px');
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".platform-intro-link")).toHaveAttribute(
+    "href",
+    "#download",
+  );
+  await expect(page.locator(".platform-intro-link")).toContainText(
+    "See platform downloads",
+  );
+  await expect(page.locator(".platform-summary")).toHaveCSS(
+    "max-width",
+    "400px",
+  );
 });
 
-test('bilingual hero copy names target EDAs and generated library content', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.hero-lede')).toContainText('KiCad、Altium');
-  await expect(page.locator('.hero-lede')).toContainText('符号、封装与 3D 模型');
+test("bilingual hero copy names target EDAs and generated library content", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".hero-lede")).toContainText("KiCad、Altium");
+  await expect(page.locator(".hero-lede")).toContainText(
+    "符号、封装与 3D 模型",
+  );
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.hero-lede')).toContainText('KiCad / Altium');
-  await expect(page.locator('.hero-lede')).toContainText('symbols, footprints & 3D models');
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".hero-lede")).toContainText("KiCad / Altium");
+  await expect(page.locator(".hero-lede")).toContainText(
+    "symbols, footprints & 3D models",
+  );
 });
 
-test('bilingual hero artwork stays fully visible from phone through desktop widths', async ({ page }) => {
+test("bilingual hero artwork stays fully visible from phone through desktop widths", async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 390, height: 844 },
     { width: 768, height: 1024 },
@@ -1796,132 +2885,222 @@ test('bilingual hero artwork stays fully visible from phone through desktop widt
   ]) {
     await page.setViewportSize(viewport);
     for (const path of pages) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const scene = page.locator('[data-conversion-scene]');
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const scene = page.locator("[data-conversion-scene]");
       const bounds = await scene.evaluate((element) => {
         const rect = element.getBoundingClientRect();
-        const board = element.querySelector('.conversion-scene-board')!.getBoundingClientRect();
+        const board = element
+          .querySelector(".conversion-scene-board")!
+          .getBoundingClientRect();
         return {
           scene: rect,
           board,
           scrollWidth: document.documentElement.scrollWidth,
         };
       });
-      expect(bounds.scene.left, `${path} ${viewport.width}px scene left edge`).toBeGreaterThanOrEqual(0);
-      expect(bounds.scene.right, `${path} ${viewport.width}px scene right edge`).toBeLessThanOrEqual(viewport.width);
+      expect(
+        bounds.scene.left,
+        `${path} ${viewport.width}px scene left edge`,
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        bounds.scene.right,
+        `${path} ${viewport.width}px scene right edge`,
+      ).toBeLessThanOrEqual(viewport.width);
       expect(bounds.scrollWidth).toBe(viewport.width);
     }
   }
 });
 
-test('English homepage keeps product section labels concrete', async ({ page }) => {
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.product-showcase .kicker')).toHaveText('THE REAL WORKBENCH');
-  await expect(page.locator('#workflow .kicker')).toHaveText('ONE CONVERSION PATH, FOUR STEPS');
-  await expect(page.locator('.feature-card-mint h3')).toHaveText('Prepare one component');
+test("English homepage keeps product section labels concrete", async ({
+  page,
+}) => {
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".product-showcase .kicker")).toHaveText(
+    "THE REAL WORKBENCH",
+  );
+  await expect(page.locator("#workflow .kicker")).toHaveText(
+    "ONE CONVERSION PATH, FOUR STEPS",
+  );
+  await expect(page.locator(".feature-card-mint h3")).toHaveText(
+    "Prepare one component",
+  );
 
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.feature-card-mint h3')).toHaveText('准备一个元件');
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".feature-card-mint h3")).toHaveText(
+    "准备一个元件",
+  );
 });
 
-test('English pages preserve copy across visual line breaks', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  for (const path of ['/en/', '/en/formats/', '/en/cases/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const mismatches = await page.locator('main h1, main h2, main h3, main h4').evaluateAll((headings) =>
-      headings
-        .map((heading) => ({
-          content: heading.textContent?.replace(/\s+/g, ' ').trim(),
-          visual: heading.innerText?.replace(/\s+/g, ' ').trim(),
-          visibility: getComputedStyle(heading).visibility,
-        }))
-        .filter(({ content, visual, visibility }) => visibility !== 'hidden' && content !== visual)
-    );
+test("English pages preserve copy across visual line breaks", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const path of ["/en/", "/en/formats/", "/en/cases/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const mismatches = await page
+      .locator("main h1, main h2, main h3, main h4")
+      .evaluateAll((headings) =>
+        headings
+          .map((heading) => ({
+            content: heading.textContent?.replace(/\s+/g, " ").trim(),
+            visual: heading.innerText?.replace(/\s+/g, " ").trim(),
+            visibility: getComputedStyle(heading).visibility,
+          }))
+          .filter(
+            ({ content, visual, visibility }) =>
+              visibility !== "hidden" && content !== visual,
+          ),
+      );
     expect(mismatches, `${path} heading text`).toEqual([]);
   }
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#features-title')).toHaveText('Make the tedious parts a little easier.');
-});
-
-test('bilingual conversion narrative explains the same input-to-library path', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#workflow > p').nth(1)).toHaveText('从元件数据开始，逐步准备库文件、转换目标格式，并回到熟悉的 EDA 工作流继续设计。');
-  const chineseScene = page.locator('[data-conversion-scene]');
-  await expect(chineseScene.locator('.conversion-input-layer strong')).toHaveText('RP2040');
-  await expect(chineseScene.locator('.conversion-input-layer span')).toContainText('C2040');
-  await expect(chineseScene.locator('.conversion-parts-layer small')).toContainText('56 引脚');
-  await expect(chineseScene.locator('.conversion-output-layer span')).toContainText('符号、封装、3D 均成功');
-  await expect(chineseScene.locator('.conversion-use-layer span')).toContainText('21 项全成功 · 含 C2040');
-  await expect(chineseScene.locator('.conversion-scene-note')).toContainText('QFN 封装为示意');
-  await expect(chineseScene.locator('.conversion-scene-note')).toContainText('使用阶段展示整板背景');
-
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#workflow > p').nth(1)).toHaveText(
-    'Start with component data, prepare the library assets, convert to a target format, then continue in the EDA workflow you already use.'
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#features-title")).toHaveText(
+    "Make the tedious parts a little easier.",
   );
-  const englishScene = page.locator('[data-conversion-scene]');
-  await expect(englishScene.locator('.conversion-input-layer strong')).toHaveText('RP2040');
-  await expect(englishScene.locator('.conversion-input-layer span')).toContainText('C2040');
-  await expect(englishScene.locator('.conversion-parts-layer small')).toContainText('56 PINS');
-  await expect(englishScene.locator('.conversion-output-layer span')).toContainText('symbol, footprint & 3D succeeded');
-  await expect(englishScene.locator('.conversion-use-layer span')).toContainText('21/21 succeeded · C2040 included');
-  await expect(englishScene.locator('.conversion-scene-note')).toContainText('ILLUSTRATIVE QFN PACKAGE');
-  await expect(englishScene.locator('.conversion-scene-note')).toContainText('BOARD CONTEXT AT USE');
 });
 
-test('Chinese homepage keeps editorial labels localized', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  const homepage = page.locator('main');
-  await expect(homepage).not.toContainText('OPEN SOURCE · Qt 6 DESKTOP TOOL');
-  await expect(homepage).not.toContainText('THE QUIET MIDDLE');
-  await expect(homepage).not.toContainText('THE REAL THING');
-  await expect(homepage).not.toContainText('A TOOL WITH GOOD MANNERS');
-  await expect(homepage).not.toContainText('A SMALL RITUAL');
-  await expect(homepage).not.toContainText('WHERE IT LIVES');
-  await expect(homepage).not.toContainText('READY WHEN YOU ARE');
-  await expect(homepage.locator('.kicker').filter({ hasText: '开源' })).toHaveCount(1);
-  await expect(homepage.locator('.kicker').filter({ hasText: '随时可以开始' })).toHaveCount(1);
+test("bilingual conversion narrative explains the same input-to-library path", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#workflow > p").nth(1)).toHaveText(
+    "从元件数据开始，逐步准备库文件、转换目标格式，并回到熟悉的 EDA 工作流继续设计。",
+  );
+  const chineseScene = page.locator("[data-conversion-scene]");
+  await expect(
+    chineseScene.locator(".conversion-input-layer strong"),
+  ).toHaveText("RP2040");
+  await expect(
+    chineseScene.locator(".conversion-input-layer span"),
+  ).toContainText("C2040");
+  await expect(
+    chineseScene.locator(".conversion-parts-layer small"),
+  ).toContainText("56 引脚");
+  await expect(
+    chineseScene.locator(".conversion-output-layer span"),
+  ).toContainText("符号、封装、3D 均成功");
+  await expect(
+    chineseScene.locator(".conversion-use-layer span"),
+  ).toContainText("21 项全成功 · 含 C2040");
+  await expect(chineseScene.locator(".conversion-scene-note")).toContainText(
+    "QFN 封装为示意",
+  );
+  await expect(chineseScene.locator(".conversion-scene-note")).toContainText(
+    "使用阶段展示整板背景",
+  );
+
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#workflow > p").nth(1)).toHaveText(
+    "Start with component data, prepare the library assets, convert to a target format, then continue in the EDA workflow you already use.",
+  );
+  const englishScene = page.locator("[data-conversion-scene]");
+  await expect(
+    englishScene.locator(".conversion-input-layer strong"),
+  ).toHaveText("RP2040");
+  await expect(
+    englishScene.locator(".conversion-input-layer span"),
+  ).toContainText("C2040");
+  await expect(
+    englishScene.locator(".conversion-parts-layer small"),
+  ).toContainText("56 PINS");
+  await expect(
+    englishScene.locator(".conversion-output-layer span"),
+  ).toContainText("symbol, footprint & 3D succeeded");
+  await expect(
+    englishScene.locator(".conversion-use-layer span"),
+  ).toContainText("21/21 succeeded · C2040 included");
+  await expect(englishScene.locator(".conversion-scene-note")).toContainText(
+    "ILLUSTRATIVE QFN PACKAGE",
+  );
+  await expect(englishScene.locator(".conversion-scene-note")).toContainText(
+    "BOARD CONTEXT AT USE",
+  );
 });
 
-test('homepage preserves Qt brand casing and concise release guidance in both languages', async ({ page }) => {
-  for (const path of ['/', '/en/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const brand = page.locator('.hero-copy .kicker-brand-case');
-    await expect(brand).toHaveText('Qt');
-    expect(await brand.evaluate((element) => getComputedStyle(element).textTransform)).toBe('none');
-    expect(await brand.evaluate((element) => getComputedStyle(element).letterSpacing)).toBe('normal');
+test("Chinese homepage keeps editorial labels localized", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const homepage = page.locator("main");
+  await expect(homepage).not.toContainText("OPEN SOURCE · Qt 6 DESKTOP TOOL");
+  await expect(homepage).not.toContainText("THE QUIET MIDDLE");
+  await expect(homepage).not.toContainText("THE REAL THING");
+  await expect(homepage).not.toContainText("A TOOL WITH GOOD MANNERS");
+  await expect(homepage).not.toContainText("A SMALL RITUAL");
+  await expect(homepage).not.toContainText("WHERE IT LIVES");
+  await expect(homepage).not.toContainText("READY WHEN YOU ARE");
+  await expect(
+    homepage.locator(".kicker").filter({ hasText: "开源" }),
+  ).toHaveCount(1);
+  await expect(
+    homepage.locator(".kicker").filter({ hasText: "随时可以开始" }),
+  ).toHaveCount(1);
+});
+
+test("homepage preserves Qt brand casing and concise release guidance in both languages", async ({
+  page,
+}) => {
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const brand = page.locator(".hero-copy .kicker-brand-case");
+    await expect(brand).toHaveText("Qt");
+    expect(
+      await brand.evaluate(
+        (element) => getComputedStyle(element).textTransform,
+      ),
+    ).toBe("none");
+    expect(
+      await brand.evaluate(
+        (element) => getComputedStyle(element).letterSpacing,
+      ),
+    ).toBe("normal");
   }
 
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.showcase-proof-label')).toHaveText('真实 Qt Quick 界面');
-  await expect(page.locator('#formats p')).toContainText('其他目标格式的具体支持范围，请查看对应版本的发布说明和格式矩阵。');
-  await expect(page.locator('#download small')).toContainText('安装前请阅读发布说明并核对 SHA256');
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".showcase-proof-label")).toHaveText(
+    "真实 Qt Quick 界面",
+  );
+  await expect(page.locator("#formats p")).toContainText(
+    "其他目标格式的具体支持范围，请查看对应版本的发布说明和格式矩阵。",
+  );
+  await expect(page.locator("#download small")).toContainText(
+    "安装前请阅读发布说明并核对 SHA256",
+  );
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.showcase-proof-label')).toHaveText('REAL Qt Quick UI');
-  await expect(page.locator('#formats p')).toContainText('For other targets, use the matching Release and format matrix');
-  await expect(page.locator('#download small')).toContainText('Review its notes and verify SHA256 before installing');
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".showcase-proof-label")).toHaveText(
+    "REAL Qt Quick UI",
+  );
+  await expect(page.locator("#formats p")).toContainText(
+    "For other targets, use the matching Release and format matrix",
+  );
+  await expect(page.locator("#download small")).toContainText(
+    "Review its notes and verify SHA256 before installing",
+  );
 });
 
-test('Chinese homepage and inner-page titles avoid orphaned characters on mobile', async ({ page }) => {
+test("Chinese homepage and inner-page titles avoid orphaned characters on mobile", async ({
+  page,
+}) => {
   for (const width of [390, 360, 320]) {
     await page.setViewportSize({ width, height: 844 });
     for (const language of [
-      { path: '/', english: false },
-      { path: '/en/', english: true },
+      { path: "/", english: false },
+      { path: "/en/", english: true },
     ]) {
-      await page.goto(language.path, { waitUntil: 'domcontentloaded' });
+      await page.goto(language.path, { waitUntil: "domcontentloaded" });
       const textLines = async (selector: string) =>
         page
           .locator(selector)
           .first()
           .evaluate((element) => {
             const lines = new Map<number, string>();
-            const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+            const walker = document.createTreeWalker(
+              element,
+              NodeFilter.SHOW_TEXT,
+            );
             let node: Node | null;
             while ((node = walker.nextNode())) {
-              const value = node.nodeValue || '';
+              const value = node.nodeValue || "";
               let offset = 0;
               for (const character of value) {
                 const end = offset + character.length;
@@ -1930,7 +3109,7 @@ test('Chinese homepage and inner-page titles avoid orphaned characters on mobile
                   range.setStart(node, offset);
                   range.setEnd(node, end);
                   const top = Math.round(range.getBoundingClientRect().top);
-                  lines.set(top, (lines.get(top) || '') + character);
+                  lines.set(top, (lines.get(top) || "") + character);
                 }
                 offset = end;
               }
@@ -1940,239 +3119,549 @@ test('Chinese homepage and inner-page titles avoid orphaned characters on mobile
       const assertNoOrphanedHan = (lines: string[], label: string) => {
         if (!language.english) {
           expect(
-            lines.some((line) => /^[\p{Script=Han}。！？、，；：]$/u.test(line)),
-            label
+            lines.some((line) =>
+              /^[\p{Script=Han}。！？、，；：]$/u.test(line),
+            ),
+            label,
           ).toBe(false);
         }
       };
-      const workbenchHeadline = await textLines('.product-showcase #showcase-title em');
-      assertNoOrphanedHan(workbenchHeadline, `${language.path} ${width}px workbench headline has an orphaned character`);
-      if (language.english) expect(workbenchHeadline.length).toBeLessThanOrEqual(width === 320 ? 3 : 2);
+      const workbenchHeadline = await textLines(
+        ".product-showcase #showcase-title em",
+      );
+      assertNoOrphanedHan(
+        workbenchHeadline,
+        `${language.path} ${width}px workbench headline has an orphaned character`,
+      );
+      if (language.english)
+        expect(workbenchHeadline.length).toBeLessThanOrEqual(
+          width === 320 ? 3 : 2,
+        );
 
-      const languagePath = language.english ? '/en' : '';
+      const languagePath = language.english ? "/en" : "";
       await page.goto(`${languagePath}/formats/`, {
-        waitUntil: 'domcontentloaded',
+        waitUntil: "domcontentloaded",
       });
-      const formatHeadline = await textLines('#format-matrix-title');
-      assertNoOrphanedHan(formatHeadline, `${language.path} ${width}px format title has an orphaned character`);
-      if (language.english) expect(formatHeadline.length).toBeLessThanOrEqual(width === 320 ? 3 : 2);
+      const formatHeadline = await textLines("#format-matrix-title");
+      assertNoOrphanedHan(
+        formatHeadline,
+        `${language.path} ${width}px format title has an orphaned character`,
+      );
+      if (language.english)
+        expect(formatHeadline.length).toBeLessThanOrEqual(
+          width === 320 ? 3 : 2,
+        );
 
       await page.goto(`${languagePath}/cases/`, {
-        waitUntil: 'domcontentloaded',
+        waitUntil: "domcontentloaded",
       });
-      const caseHeadline = await textLines('.case-card h2');
-      assertNoOrphanedHan(caseHeadline, `${language.path} ${width}px first case title has an orphaned character`);
+      const caseHeadline = await textLines(".case-card h2");
+      assertNoOrphanedHan(
+        caseHeadline,
+        `${language.path} ${width}px first case title has an orphaned character`,
+      );
       if (width === 320) {
-        expect(caseHeadline.length, `${language.path} ${width}px first case route title lines`).toBeLessThanOrEqual(2);
+        expect(
+          caseHeadline.length,
+          `${language.path} ${width}px first case route title lines`,
+        ).toBeLessThanOrEqual(2);
       } else {
-        expect(caseHeadline.length, `${language.path} ${width}px first case route title lines`).toBe(1);
+        expect(
+          caseHeadline.length,
+          `${language.path} ${width}px first case route title lines`,
+        ).toBe(1);
       }
 
       await page.goto(`${languagePath}/lab/`, {
-        waitUntil: 'domcontentloaded',
+        waitUntil: "domcontentloaded",
       });
-      const labHeadline = await textLines('#lab-title');
-      assertNoOrphanedHan(labHeadline, `${language.path} ${width}px lab title has an orphaned character`);
+      const labHeadline = await textLines("#lab-title");
+      assertNoOrphanedHan(
+        labHeadline,
+        `${language.path} ${width}px lab title has an orphaned character`,
+      );
       if (language.english) expect(labHeadline.length).toBeLessThanOrEqual(2);
     }
   }
 });
 
-test('Chinese homepage keeps visual microcopy localized', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  const homepage = page.locator('main');
-  await expect(homepage.locator('.conversion-scene-board figcaption')).toContainText('RP2040 QFN-56 · 封装示意');
-  await expect(homepage.locator('.conversion-input-layer')).toContainText('LCSC 元件');
-  await expect(homepage.locator('.conversion-input-layer')).toContainText('RP2040');
-  await expect(homepage.locator('.conversion-input-layer')).toContainText('C2040 · QFN-56');
-  await expect(homepage.locator('.conversion-parts-layer')).toContainText('3D 模型');
-  await expect(homepage.locator('.conversion-parts-layer')).toContainText('7 × 7 毫米 · 56 引脚');
-  await expect(homepage.locator('.conversion-output-layer')).toContainText('C2040 · 符号、封装、3D 均成功');
-  await expect(homepage.locator('.story-card-a .story-index')).toHaveText('01 / 输入');
-  await expect(homepage.locator('.story-card-b .story-index')).toHaveText('02 / 整理');
-  await expect(homepage.locator('.story-card-c .story-index')).toHaveText('03 / 转换');
-  await expect(homepage.locator('.story-card-d .story-index')).toHaveText('04 / 使用');
-  await expect(homepage.locator('.conversion-use-layer')).toContainText('回到设计工作台');
-  await expect(homepage.locator('.story-check')).toHaveText('✓ 库文件已生成');
-  await expect(homepage).not.toContainText('Ready to organize');
-  await expect(homepage).not.toContainText('LIBRARY OUTPUT');
-  await expect(homepage).not.toContainText('ready to use');
-  await expect(homepage.locator('.download-stamp')).toContainText('开源');
-  await expect(homepage.locator('.download-stamp')).toContainText('工程师而做');
-  await expect(homepage.locator('.download-stamp')).not.toContainText('OPEN SOURCE');
+test("Chinese homepage keeps visual microcopy localized", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const homepage = page.locator("main");
+  await expect(
+    homepage.locator(".conversion-scene-board figcaption"),
+  ).toContainText("RP2040 QFN-56 · 封装示意");
+  await expect(homepage.locator(".conversion-input-layer")).toContainText(
+    "LCSC 元件",
+  );
+  await expect(homepage.locator(".conversion-input-layer")).toContainText(
+    "RP2040",
+  );
+  await expect(homepage.locator(".conversion-input-layer")).toContainText(
+    "C2040 · QFN-56",
+  );
+  await expect(homepage.locator(".conversion-parts-layer")).toContainText(
+    "3D 模型",
+  );
+  await expect(homepage.locator(".conversion-parts-layer")).toContainText(
+    "7 × 7 毫米 · 56 引脚",
+  );
+  await expect(homepage.locator(".conversion-output-layer")).toContainText(
+    "C2040 · 符号、封装、3D 均成功",
+  );
+  await expect(homepage.locator(".story-card-a .story-index")).toHaveText(
+    "01 / 输入",
+  );
+  await expect(homepage.locator(".story-card-b .story-index")).toHaveText(
+    "02 / 整理",
+  );
+  await expect(homepage.locator(".story-card-c .story-index")).toHaveText(
+    "03 / 转换",
+  );
+  await expect(homepage.locator(".story-card-d .story-index")).toHaveText(
+    "04 / 使用",
+  );
+  await expect(homepage.locator(".conversion-use-layer")).toContainText(
+    "回到设计工作台",
+  );
+  await expect(homepage.locator(".story-check")).toHaveText("✓ 库文件已生成");
+  await expect(homepage).not.toContainText("Ready to organize");
+  await expect(homepage).not.toContainText("LIBRARY OUTPUT");
+  await expect(homepage).not.toContainText("ready to use");
+  await expect(homepage.locator(".download-stamp")).toContainText("开源");
+  await expect(homepage.locator(".download-stamp")).toContainText("工程师而做");
+  await expect(homepage.locator(".download-stamp")).not.toContainText(
+    "OPEN SOURCE",
+  );
 });
 
-test('bilingual platform summaries localize architecture labels consistently', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  const chinesePlatforms = page.locator('.platform-list');
-  await expect(chinesePlatforms).toContainText('Apple 芯片 DMG');
-  await expect(chinesePlatforms).not.toContainText('Apple Silicon');
+test("bilingual platform summaries localize architecture labels consistently", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const chinesePlatforms = page.locator(".platform-list");
+  await expect(chinesePlatforms).toContainText("Apple 芯片 DMG");
+  await expect(chinesePlatforms).not.toContainText("Apple Silicon");
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  const englishPlatforms = page.locator('.platform-list');
-  await expect(englishPlatforms).toContainText('Apple Silicon DMG');
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  const englishPlatforms = page.locator(".platform-list");
+  await expect(englishPlatforms).toContainText("Apple Silicon DMG");
 });
 
-test('Chinese Lab keeps its entry label localized', async ({ page }) => {
-  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-intro .kicker')).toHaveText('按需加载 · 实验性 3D');
-  await expect(page.locator('.lab-intro')).not.toContainText('EXPERIMENTAL 3D');
-  await expect(page.locator('.motion-chapter-input > span')).toHaveText('01 — 输入');
-  await expect(page.locator('.motion-chapter-library > span')).toHaveText('02 — 构建元件库');
-  await expect(page.locator('.motion-artifacts')).toHaveText('符号+封装+3D 模型');
-  await expect(page.locator('[data-visual="symbol"]')).toContainText('元件');
-  await expect(page.locator('[data-visual="symbol"]')).not.toContainText('COMPONENT');
-  await expect(page.locator('[data-visual="footprint"]')).toContainText('俯视图 · 非按比例');
-  await expect(page.locator('[data-visual="footprint"]')).not.toContainText('TOP VIEW');
-  await expect(page.locator('.morph-orbit-import')).toHaveText('导入轨道 ↥');
-  await expect(page.locator('.tomogram-import')).toHaveText('导入 ↥');
-  await expect(page.locator('.motion-chapter-product > span')).toHaveText('03 — 真实工作台');
-  await expect(page.locator('.motion-chapter-product')).not.toContainText('THE REAL WORKBENCH');
-  await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-intro .kicker')).toHaveText('ON DEMAND · EXPERIMENTAL 3D');
-  await expect(page.locator('.motion-chapter-input > span')).toHaveText('01 — INPUT');
-  await expect(page.locator('.motion-artifacts')).toHaveText('SYMBOL+FOOTPRINT+3D MODEL');
-  await expect(page.locator('[data-visual="symbol"]')).toContainText('COMPONENT');
-  await expect(page.locator('[data-visual="footprint"]')).toContainText('TOP VIEW · NOT TO SCALE');
-  await expect(page.locator('.morph-orbit-import')).toHaveText('ORBIT ↥');
+test("Chinese Lab keeps its entry label localized", async ({ page }) => {
+  await page.goto("/lab/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".lab-intro .kicker")).toHaveText(
+    "按需加载 · 实验性 3D",
+  );
+  await expect(page.locator(".lab-intro")).not.toContainText("EXPERIMENTAL 3D");
+  await expect(page.locator(".motion-chapter-input > span")).toHaveText(
+    "01 — 输入",
+  );
+  await expect(page.locator(".motion-chapter-library > span")).toHaveText(
+    "02 — 构建元件库",
+  );
+  await expect(page.locator(".motion-artifacts")).toHaveText(
+    "符号+封装+3D 模型",
+  );
+  await expect(page.locator('[data-visual="symbol"]')).toContainText("元件");
+  await expect(page.locator('[data-visual="symbol"]')).not.toContainText(
+    "COMPONENT",
+  );
+  await expect(page.locator('[data-visual="footprint"]')).toContainText(
+    "俯视图 · 非按比例",
+  );
+  await expect(page.locator('[data-visual="footprint"]')).not.toContainText(
+    "TOP VIEW",
+  );
+  await expect(page.locator(".morph-orbit-import")).toHaveText("导入轨道 ↥");
+  await expect(page.locator(".tomogram-import")).toHaveText("导入 ↥");
+  await expect(page.locator(".motion-chapter-product > span")).toHaveText(
+    "03 — 真实工作台",
+  );
+  await expect(page.locator(".motion-chapter-product")).not.toContainText(
+    "THE REAL WORKBENCH",
+  );
+  await page.goto("/en/lab/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".lab-intro .kicker")).toHaveText(
+    "ON DEMAND · EXPERIMENTAL 3D",
+  );
+  await expect(page.locator(".motion-chapter-input > span")).toHaveText(
+    "01 — INPUT",
+  );
+  await expect(page.locator(".motion-artifacts")).toHaveText(
+    "SYMBOL+FOOTPRINT+3D MODEL",
+  );
+  await expect(page.locator('[data-visual="symbol"]')).toContainText(
+    "COMPONENT",
+  );
+  await expect(page.locator('[data-visual="footprint"]')).toContainText(
+    "TOP VIEW · NOT TO SCALE",
+  );
+  await expect(page.locator(".morph-orbit-import")).toHaveText("ORBIT ↥");
 });
 
-test('case studies describe only conversion routes supported by linked integration tests', async ({ page }) => {
-  await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.case-card')).toHaveCount(2);
-  await expect(page.locator('#easyeda-kicad')).toContainText('符号与封装样本');
-  await expect(page.locator('#easyeda-kicad .case-evidence-link')).toHaveCount(3);
-  await expect(page.locator('#easyeda-kicad .case-evidence-link').nth(1)).toHaveAttribute('href', /footprint_basic\.json$/);
-  await expect(page.locator('#altium-pipeline')).toContainText('本地构造确定性元件数据');
-  await expect(page.locator('#altium-pipeline')).toContainText('不代表 EasyEDA 在线导入');
-  await expect(page.locator('#altium-pipeline .case-evidence-link')).toHaveAttribute('href', /test_parallel_export_cancellation\.cpp$/);
-  await expect(page.locator('#bom-batch')).toHaveCount(0);
-  await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.case-card')).toHaveCount(2);
-  await expect(page.locator('#easyeda-kicad')).toContainText('Both EasyEDA JSON fixtures are read directly by this test.');
-  await expect(page.locator('#altium-pipeline')).toContainText('does not represent an EasyEDA online import');
-  await expect(page.locator('#bom-batch')).toHaveCount(0);
+test("case studies describe only conversion routes supported by linked integration tests", async ({
+  page,
+}) => {
+  await page.goto("/cases/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".case-card")).toHaveCount(2);
+  await expect(page.locator("#easyeda-kicad")).toContainText("符号与封装样本");
+  await expect(page.locator("#easyeda-kicad .case-evidence-link")).toHaveCount(
+    3,
+  );
+  await expect(
+    page.locator("#easyeda-kicad .case-evidence-link").nth(1),
+  ).toHaveAttribute("href", /footprint_basic\.json$/);
+  await expect(page.locator("#altium-pipeline")).toContainText(
+    "本地构造确定性元件数据",
+  );
+  await expect(page.locator("#altium-pipeline")).toContainText(
+    "不代表 EasyEDA 在线导入",
+  );
+  await expect(
+    page.locator("#altium-pipeline .case-evidence-link"),
+  ).toHaveAttribute("href", /test_parallel_export_cancellation\.cpp$/);
+  await expect(page.locator("#bom-batch")).toHaveCount(0);
+  await page.goto("/en/cases/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".case-card")).toHaveCount(2);
+  await expect(page.locator("#easyeda-kicad")).toContainText(
+    "Both EasyEDA JSON fixtures are read directly by this test.",
+  );
+  await expect(page.locator("#altium-pipeline")).toContainText(
+    "does not represent an EasyEDA online import",
+  );
+  await expect(page.locator("#bom-batch")).toHaveCount(0);
 });
 
-test('bilingual case copy keeps inputs, target files, and manual validation scope explicit', async ({ page }) => {
-  await page.goto('/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#easyeda-kicad')).toContainText('KiCad 符号库 + 封装');
-  await expect(page.locator('#altium-pipeline')).toContainText('SchLib + PcbLib + STEP');
-  await expect(page.locator('.case-disclaimer')).toContainText('自动化测试通过不等同于已在');
-  await page.goto('/en/cases/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#easyeda-kicad')).toContainText('KiCad symbol library + footprint');
-  await expect(page.locator('#altium-pipeline')).toContainText('SchLib + PcbLib + STEP');
-  await expect(page.locator('.case-disclaimer')).toContainText('does not replace opening and checking exported files');
+test("bilingual case copy keeps inputs, target files, and manual validation scope explicit", async ({
+  page,
+}) => {
+  await page.goto("/cases/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#easyeda-kicad")).toContainText(
+    "KiCad 符号库 + 封装",
+  );
+  await expect(page.locator("#altium-pipeline")).toContainText(
+    "SchLib + PcbLib + STEP",
+  );
+  await expect(page.locator(".case-disclaimer")).toContainText(
+    "自动化测试通过不等同于已在",
+  );
+  await page.goto("/en/cases/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#easyeda-kicad")).toContainText(
+    "KiCad symbol library + footprint",
+  );
+  await expect(page.locator("#altium-pipeline")).toContainText(
+    "SchLib + PcbLib + STEP",
+  );
+  await expect(page.locator(".case-disclaimer")).toContainText(
+    "does not replace opening and checking exported files",
+  );
 });
 
-test('case evidence paths foreground filenames while retaining directories', async ({ page }) => {
+test("case evidence paths foreground filenames while retaining directories", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ['/cases/', '/en/cases/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const firstEvidence = page.locator('.case-evidence-link').first();
-    await expect(firstEvidence.locator('.case-evidence-name')).toHaveText('symbol_basic.json');
-    await expect(firstEvidence.locator('.case-evidence-directory')).toHaveText('tests/fixtures/easyeda/');
-    await expect(firstEvidence).toHaveAttribute('aria-label', /symbol_basic\.json/);
+  for (const path of ["/cases/", "/en/cases/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const firstEvidence = page.locator(".case-evidence-link").first();
+    await expect(firstEvidence.locator(".case-evidence-name")).toHaveText(
+      "symbol_basic.json",
+    );
+    await expect(firstEvidence.locator(".case-evidence-directory")).toHaveText(
+      "tests/fixtures/easyeda/",
+    );
+    await expect(firstEvidence).toHaveAttribute(
+      "aria-label",
+      /symbol_basic\.json/,
+    );
   }
 });
 
-test('bilingual case evidence follows each summary without stretched-card gaps', async ({ page }) => {
+test("bilingual case evidence follows each summary without stretched-card gaps", async ({
+  page,
+}) => {
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const path of ['/cases/', '/en/cases/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const cards = page.locator('.case-card');
+    for (const path of ["/cases/", "/en/cases/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const cards = page.locator(".case-card");
       const geometry = await cards.evaluateAll((elements) =>
         elements.map((card) => {
-          const summary = card.querySelector(':scope > p')!.getBoundingClientRect();
-          const evidence = card.querySelector('dl')!.getBoundingClientRect();
+          const summary = card
+            .querySelector(":scope > p")!
+            .getBoundingClientRect();
+          const evidence = card.querySelector("dl")!.getBoundingClientRect();
           return {
             gap: evidence.top - summary.bottom,
             bottom: card.getBoundingClientRect().bottom,
           };
-        })
+        }),
       );
 
       expect(geometry).toHaveLength(2);
       expect(geometry.every(({ gap }) => gap >= 20 && gap < 48)).toBe(true);
-      if (width > 850) expect(Math.abs(geometry[0].bottom - geometry[1].bottom)).toBeGreaterThan(40);
+      if (width > 850)
+        expect(
+          Math.abs(geometry[0].bottom - geometry[1].bottom),
+        ).toBeGreaterThan(40);
     }
   }
 });
 
-test('download cards show the actual Release asset architectures', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  const chineseLinks = page.locator('.download-links > a');
+test("download cards show the actual Release asset architectures", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const chineseLinks = page.locator(".download-links > a");
   await expect(chineseLinks).toHaveCount(8);
-  await expect(chineseLinks.nth(0)).toContainText('x86_64 安装包');
-  await expect(chineseLinks.nth(1)).toContainText('arm64 安装包');
-  expect((await chineseLinks.locator('span').allTextContents()).join(' ')).not.toContain('installer');
-  await expect(page.locator('.download-copy small')).toContainText('便携版、MSIX、RPM、Arch Linux 包及逐项校验文件');
-  await expect(page.getByRole('link', { name: /查看全部发布版本/ })).toHaveAttribute('href', 'https://github.com/EasyKiconverter/EasyKiConverter/releases');
+  await expect(chineseLinks.nth(0)).toContainText("x86_64 安装包");
+  await expect(chineseLinks.nth(1)).toContainText("arm64 安装包");
+  expect(
+    (await chineseLinks.locator("span").allTextContents()).join(" "),
+  ).not.toContain("installer");
+  await expect(page.locator(".download-copy small")).toContainText(
+    "便携版、MSIX、RPM、Arch Linux 包及逐项校验文件",
+  );
+  await expect(
+    page.getByRole("link", { name: /查看全部发布版本/ }),
+  ).toHaveAttribute(
+    "href",
+    "https://github.com/EasyKiconverter/EasyKiConverter/releases",
+  );
 
-  await page.goto('/en/', { waitUntil: 'domcontentloaded' });
-  const englishLinks = page.locator('.download-links > a');
+  await page.goto("/en/", { waitUntil: "domcontentloaded" });
+  const englishLinks = page.locator(".download-links > a");
   await expect(englishLinks).toHaveCount(8);
-  await expect(englishLinks.nth(0)).toContainText('x86_64 installer');
-  for (const label of ['arm64 installer', 'x86_64 AppImage', 'amd64 DEB', 'aarch64 AppImage', 'Apple Silicon DMG', 'Intel DMG']) {
+  await expect(englishLinks.nth(0)).toContainText("x86_64 installer");
+  for (const label of [
+    "arm64 installer",
+    "x86_64 AppImage",
+    "amd64 DEB",
+    "aarch64 AppImage",
+    "Apple Silicon DMG",
+    "Intel DMG",
+  ]) {
     await expect(englishLinks.filter({ hasText: label })).toHaveCount(1);
   }
-  await expect(page.locator('.download-copy small')).toContainText('portable builds, MSIX, RPM, Arch Linux packages, and per-file checksums');
-  await expect(page.getByRole('link', { name: 'All releases ↗' })).toHaveAttribute('href', 'https://github.com/EasyKiconverter/EasyKiConverter/releases');
+  await expect(page.locator(".download-copy small")).toContainText(
+    "portable builds, MSIX, RPM, Arch Linux packages, and per-file checksums",
+  );
+  await expect(
+    page.getByRole("link", { name: "All releases ↗" }),
+  ).toHaveAttribute(
+    "href",
+    "https://github.com/EasyKiconverter/EasyKiConverter/releases",
+  );
   for (const links of [chineseLinks, englishLinks]) {
     for (let index = 0; index < 8; index += 1) {
-      await expect(links.nth(index)).toHaveAttribute('href', /v3\.1\.13/);
+      await expect(links.nth(index)).toHaveAttribute("href", /v3\.1\.13/);
     }
     await expect(links.nth(7)).toContainText(/SHA256/);
   }
 });
 
-test('Lab runtime assets remain reachable from nested routes', async ({ request }) => {
+test("Lab runtime assets remain reachable from nested routes", async ({
+  request,
+}) => {
   for (const asset of [
-    '/assets/vendor/occt-import-js.js',
-    '/assets/vendor/occt-import-js.wasm',
-    '/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B.step',
-    '/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B.glb',
-    '/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B-mobile.glb',
+    "/assets/vendor/occt-import-js.js",
+    "/assets/vendor/occt-import-js.wasm",
+    "/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B.step",
+    "/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B.glb",
+    "/assets/model/Easykiconverter_%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9E%8B-mobile.glb",
   ]) {
     const response = await request.get(asset);
     expect(response.ok()).toBeTruthy();
   }
 });
 
-test('Lab advanced controls are collapsed until explicitly opened', async ({ page }) => {
-  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
-  const toggle = page.locator('[data-experiment-controls]');
-  await expect(page.locator('[data-model-stage]')).toHaveAttribute('data-controls-ready', 'true');
-  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  await expect(page.locator('.morph-horizon')).toBeHidden();
+test("Lab advanced controls are collapsed until explicitly opened", async ({
+  page,
+}) => {
+  await page.goto("/lab/", { waitUntil: "domcontentloaded" });
+  const toggle = page.locator("[data-experiment-controls]");
+  await expect(page.locator("[data-model-stage]")).toHaveAttribute(
+    "data-controls-ready",
+    "true",
+  );
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator(".morph-horizon")).toBeHidden();
   await toggle.click({ force: true });
-  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.locator('.morph-horizon')).toBeVisible();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator(".morph-horizon")).toBeVisible();
 });
 
-test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
+test("Lab advanced controls remain reachable in the scrollable desktop rail and touch tray", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await blockLabGeometryAssets(page);
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    for (const path of ["/lab/", "/en/lab/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const stage = page.locator("[data-model-stage]");
+      await stage.scrollIntoViewIfNeeded();
+      await page.locator(".motion-pin").evaluate((pin) => {
+        window.scrollTo(0, pin.getBoundingClientRect().top + window.scrollY);
+      });
+      await expect
+        .poll(() => page.locator(".motion-pin").evaluate((pin) => pin.getBoundingClientRect().top))
+        .toBe(0);
+      await expect(stage).toHaveAttribute("data-controls-ready", "true");
+      const toggle = stage.locator("[data-experiment-controls]");
+      const panel = page.locator("#lab-advanced-panel");
+      await expect(toggle).toHaveAttribute(
+        "aria-controls",
+        "lab-advanced-panel",
+      );
+      await expect(toggle).toHaveAttribute(
+        "aria-describedby",
+        "lab-experiment-controls-note",
+      );
+      await expect(panel).toBeHidden();
+      await toggle.click({ force: true });
+      await expect(panel).toBeVisible();
+      const toggleHit = await toggle.evaluate((button) => {
+        const bounds = button.getBoundingClientRect();
+        const target = document.elementFromPoint(
+          bounds.left + bounds.width / 2,
+          bounds.top + bounds.height / 2,
+        );
+        return Boolean(target && (target === button || button.contains(target)));
+      });
+      expect(
+        toggleHit,
+        `${path} ${viewport.width}px expanded panel leaves its toggle reachable`,
+      ).toBe(true);
+      const panelBounds = await panel.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          left: rect.left,
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          scrollWidth: element.scrollWidth,
+          clientWidth: element.clientWidth,
+          scrollHeight: element.scrollHeight,
+          clientHeight: element.clientHeight,
+        };
+      });
+      expect(panelBounds.left, `${path} ${viewport.width}px panel left`).toBeGreaterThanOrEqual(0);
+      expect(panelBounds.top, `${path} ${viewport.width}px panel top`).toBeGreaterThanOrEqual(0);
+      expect(panelBounds.right, `${path} ${viewport.width}px panel right`).toBeLessThanOrEqual(viewport.width);
+      expect(panelBounds.bottom, `${path} ${viewport.width}px panel bottom`).toBeLessThanOrEqual(viewport.height);
+      if (viewport.width <= 850) {
+        expect(panelBounds.scrollWidth, `${path} ${viewport.width}px touch tray scrolls horizontally`).toBeGreaterThan(panelBounds.clientWidth);
+      } else {
+        expect(panelBounds.scrollHeight, `${path} ${viewport.width}px desktop rail scrolls vertically`).toBeGreaterThan(panelBounds.clientHeight);
+      }
+      await expect(panel.locator(".lab-advanced-hint")).toBeVisible();
+      await expect(panel.locator(".lab-advanced-hint")).toHaveText(
+        path.startsWith("/en/") ? "SWIPE →" : "横向滑动 →",
+      );
+      const hintFits = await panel.evaluate((element) => {
+        const panelRect = element.getBoundingClientRect();
+        const hintRect = element
+          .querySelector(".lab-advanced-hint")!
+          .getBoundingClientRect();
+        return {
+          scrollLeft: element.scrollLeft,
+          left: hintRect.left,
+          right: hintRect.right,
+          panelLeft: panelRect.left,
+          panelRight: panelRect.right,
+        };
+      });
+      expect(
+        hintFits.scrollLeft,
+        `${path} ${viewport.width}px tray opens at its leading edge`,
+      ).toBeLessThanOrEqual(8);
+      expect(
+        hintFits.left,
+        `${path} ${viewport.width}px swipe hint starts inside the tray`,
+      ).toBeGreaterThanOrEqual(hintFits.panelLeft);
+      expect(
+        hintFits.right,
+        `${path} ${viewport.width}px swipe hint ends inside the tray`,
+      ).toBeLessThanOrEqual(hintFits.panelRight);
+      await expect(stage.locator("#lab-experiment-controls-note")).toHaveCSS(
+        "width",
+        "1px",
+      );
+      await expect(panel.locator("button")).toHaveCount(22);
+
+      const arena = panel.locator("[data-genome-arena]");
+      await arena.scrollIntoViewIfNeeded();
+      const hitTest = await arena.evaluate((button) => {
+        const rect = button.getBoundingClientRect();
+        const hit = document.elementFromPoint(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+        );
+        return Boolean(hit && (hit === button || button.contains(hit)));
+      });
+      expect(
+        hitTest,
+        `${path} ${viewport.width}px last advanced control hit target`,
+      ).toBe(true);
+      await arena.focus();
+      await expect(arena).toBeFocused();
+      await arena.evaluate((button) => {
+        button.addEventListener(
+          "click",
+          () => button.setAttribute("data-test-clicked", "true"),
+          { once: true },
+        );
+      });
+      await arena.click();
+      await expect(arena).toHaveAttribute("data-test-clicked", "true");
+      await toggle.click({ force: true });
+      await expect(panel).toBeHidden();
+      await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    }
+  }
+});
+
+test("Lab prefers the generated GLB delivery asset", async ({ page }) => {
   const geometryErrors: string[] = [];
-  page.on('console', (message) => {
-    if (message.type() === 'error' && /BufferGeometry\.(computeBoundingBox|computeBoundingSphere).*NaN/.test(message.text())) {
+  page.on("console", (message) => {
+    if (
+      message.type() === "error" &&
+      /BufferGeometry\.(computeBoundingBox|computeBoundingSphere).*NaN/.test(
+        message.text(),
+      )
+    ) {
       geometryErrors.push(message.text());
     }
   });
-  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
-  const stage = page.locator('[data-model-stage]');
-  await expect(stage).toHaveAttribute('data-model-source', 'glb', {
+  await page.goto("/lab/", { waitUntil: "domcontentloaded" });
+  const stage = page.locator("[data-model-stage]");
+  await expect(stage).toHaveAttribute("data-model-source", "glb", {
     timeout: 20000,
   });
-  await expect(stage).toHaveAttribute('data-model-asset', test.info().project.name === 'chromium-mobile' ? 'mobile' : 'desktop');
-  await expect(stage).toHaveAttribute('data-model-normals', 'provided');
-  await expect(stage).toHaveAttribute('data-model-edge-segments');
-  await expect(stage).toHaveAttribute('data-model-world-bounds');
-  if (test.info().project.name === 'chromium') {
-    await expect(stage).toHaveAttribute('data-first-frame-rendered', 'true', { timeout: 20000 });
+  await expect(stage).toHaveAttribute(
+    "data-model-asset",
+    test.info().project.name === "chromium-mobile" ? "mobile" : "desktop",
+  );
+  await expect(stage).toHaveAttribute("data-model-normals", "provided");
+  await expect(stage).toHaveAttribute("data-model-edge-segments");
+  await expect(stage).toHaveAttribute("data-model-world-bounds");
+  if (test.info().project.name === "chromium") {
+    await expect(stage).toHaveAttribute("data-first-frame-rendered", "true", {
+      timeout: 20000,
+    });
   }
-  const edgeMeshes = Number(await stage.getAttribute('data-model-edge-meshes'));
+  const edgeMeshes = Number(await stage.getAttribute("data-model-edge-meshes"));
   expect(edgeMeshes).toBeGreaterThan(64);
-  const worldBounds = (await stage.getAttribute('data-model-world-bounds'))!.split(',').map(Number);
+  const worldBounds = (await stage.getAttribute("data-model-world-bounds"))!
+    .split(",")
+    .map(Number);
   expect(worldBounds[0]).toBeCloseTo(2, 2);
   expect(worldBounds[1]).toBeCloseTo(1.5632, 2);
   expect(worldBounds[2]).toBeCloseTo(0.7341, 2);
@@ -2180,36 +3669,44 @@ test('Lab prefers the generated GLB delivery asset', async ({ page }) => {
   expect(geometryErrors).toEqual([]);
 });
 
-test('Lab explains that surface detail continues after the GLB is ready', async ({ page }) => {
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const stage = page.locator('[data-model-stage]');
-    await expect(stage).toHaveAttribute('data-model-source', 'glb', {
+test("Lab explains that surface detail continues after the GLB is ready", async ({
+  page,
+}) => {
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const stage = page.locator("[data-model-stage]");
+    await expect(stage).toHaveAttribute("data-model-source", "glb", {
       timeout: 20000,
     });
-    await expect(stage.locator('[data-model-detail-status]')).toContainText(/表面细节|SURFACE DETAIL/);
+    await expect(stage.locator("[data-model-detail-status]")).toContainText(
+      /表面细节|SURFACE DETAIL/,
+    );
   }
 });
 
-test('Lab loading state is bilingual, respects reduced motion, and ends when ready', async ({ page }) => {
+test("Lab loading state is bilingual, respects reduced motion, and ends when ready", async ({
+  page,
+}) => {
   test.setTimeout(60_000);
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  for (const path of ['/lab/', '/en/lab/']) {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const path of ["/lab/", "/en/lab/"]) {
     let continueAsset!: () => void;
     const assetGate = new Promise<void>((resolve) => {
       continueAsset = resolve;
     });
-    await page.route('**/assets/model/*.glb', async (route) => {
+    await page.route("**/assets/model/*.glb", async (route) => {
       await assetGate;
       await route.continue();
     });
 
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const stage = page.locator('[data-model-stage]');
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const stage = page.locator("[data-model-stage]");
     await stage.scrollIntoViewIfNeeded();
     await page.evaluate(() => {
-      const nativeRequestAnimationFrame = window.requestAnimationFrame.bind(window);
-      const nativeCancelAnimationFrame = window.cancelAnimationFrame.bind(window);
+      const nativeRequestAnimationFrame =
+        window.requestAnimationFrame.bind(window);
+      const nativeCancelAnimationFrame =
+        window.cancelAnimationFrame.bind(window);
       const queued = new Map<number, FrameRequestCallback>();
       let nextFrameId = 0;
       let holdFrames = true;
@@ -2226,36 +3723,52 @@ test('Lab loading state is bilingual, respects reduced motion, and ends when rea
       Object.assign(window, {
         releaseLabAnimationFrames: () => {
           holdFrames = false;
-          for (const callback of queued.values()) nativeRequestAnimationFrame(callback);
+          for (const callback of queued.values())
+            nativeRequestAnimationFrame(callback);
           queued.clear();
           window.requestAnimationFrame = nativeRequestAnimationFrame;
           window.cancelAnimationFrame = nativeCancelAnimationFrame;
         },
       });
     });
-    const loading = stage.locator('.model-loading-state');
+    const loading = stage.locator(".model-loading-state");
     await expect(loading).toBeVisible();
-    await expect(loading).toContainText(path.startsWith('/en/') ? 'Preparing the real 3D model' : '正在准备真实 3D 模型');
-    await expect(loading.locator('.model-loading-orbit')).toHaveCSS('animation-name', 'none');
+    await expect(loading).toContainText(
+      path.startsWith("/en/")
+        ? "Preparing the real 3D model"
+        : "正在准备真实 3D 模型",
+    );
+    await expect(loading.locator(".model-loading-orbit")).toHaveCSS(
+      "animation-name",
+      "none",
+    );
     continueAsset();
-    await expect(stage).toHaveAttribute('data-model-normals', /provided|computed/, {
-      timeout: 20_000,
-    });
+    await expect(stage).toHaveAttribute(
+      "data-model-normals",
+      /provided|computed/,
+      {
+        timeout: 20_000,
+      },
+    );
     await expect(stage).not.toHaveClass(/model-loaded/);
     await expect(loading).toBeVisible();
     await page.evaluate(() => {
-      (window as Window & { releaseLabAnimationFrames?: () => void }).releaseLabAnimationFrames?.();
+      (
+        window as Window & { releaseLabAnimationFrames?: () => void }
+      ).releaseLabAnimationFrames?.();
     });
     await expect(stage).toHaveClass(/model-loaded/, { timeout: 20_000 });
-    await expect(stage).toHaveAttribute('data-first-frame-rendered', 'true');
+    await expect(stage).toHaveAttribute("data-first-frame-rendered", "true");
     await expect(loading).toBeHidden();
-    await page.unroute('**/assets/model/*.glb');
+    await page.unroute("**/assets/model/*.glb");
   }
 });
 
-test('Lab keeps model metadata, view controls, caption, and slice panel from overlapping', async ({ page }) => {
-  await page.route('**/assets/model/**', (route) => route.abort());
-  await page.route('**/assets/vendor/**', (route) => route.abort());
+test("Lab keeps model metadata, view controls, caption, and slice panel from overlapping", async ({
+  page,
+}) => {
+  await page.route("**/assets/model/**", (route) => route.abort());
+  await page.route("**/assets/vendor/**", (route) => route.abort());
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 768, height: 1024 },
@@ -2266,41 +3779,77 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
     { width: 320, height: 640 },
   ]) {
     await page.setViewportSize(viewport);
-    for (const path of ['/lab/', '/en/lab/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const stage = page.locator('[data-model-stage]');
+    for (const path of ["/lab/", "/en/lab/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const stage = page.locator("[data-model-stage]");
       await expect(stage).toBeVisible();
       const overlaps = await stage.evaluate((element) => {
-        const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
-        const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        const rect = (selector: string) =>
+          element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
+        const intersects = (a: DOMRect, b: DOMRect) =>
+          a.left < b.right &&
+          a.right > b.left &&
+          a.top < b.bottom &&
+          a.bottom > b.top;
         if (window.innerWidth <= 760) {
-          element.querySelector<HTMLElement>('.neural-memory-readout')!.textContent =
-            document.documentElement.lang === 'en'
-              ? 'SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD'
-              : '突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD';
+          element.querySelector<HTMLElement>(
+            ".neural-memory-readout",
+          )!.textContent =
+            document.documentElement.lang === "en"
+              ? "SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD"
+              : "突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD";
         }
-        const caption = rect('.artifact-caption');
-        const captionStyle = getComputedStyle(element.querySelector<HTMLElement>('.artifact-caption')!);
-        const switcher = rect('.artifact-switcher');
-        const note = rect('.motion-model-note');
-        const detail = rect('.model-detail-status');
-        const readout = rect('.neural-memory-readout');
+        const caption = rect(".artifact-caption");
+        const captionStyle = getComputedStyle(
+          element.querySelector<HTMLElement>(".artifact-caption")!,
+        );
+        const switcher = rect(".artifact-switcher");
+        const note = rect(".motion-model-note");
+        const detail = rect(".model-detail-status");
+        const readout = rect(".neural-memory-readout");
         const stage = element.getBoundingClientRect();
-        const visibleMetadata = [note, detail, readout].filter((item, index) => {
-          const selector = ['.motion-model-note', '.model-detail-status', '.neural-memory-readout'][index];
-          const style = getComputedStyle(element.querySelector<HTMLElement>(selector)!);
-          return style.display !== 'none' && style.visibility !== 'hidden' && Number.parseFloat(style.opacity) > 0;
-        });
+        const visibleMetadata = [note, detail, readout].filter(
+          (item, index) => {
+            const selector = [
+              ".motion-model-note",
+              ".model-detail-status",
+              ".neural-memory-readout",
+            ][index];
+            const style = getComputedStyle(
+              element.querySelector<HTMLElement>(selector)!,
+            );
+            return (
+              style.display !== "none" &&
+              style.visibility !== "hidden" &&
+              Number.parseFloat(style.opacity) > 0
+            );
+          },
+        );
         return {
           noteWithReadout: intersects(note, readout),
           readoutWithDetail: intersects(readout, detail),
-          metadataInsideStage: visibleMetadata.every((item) => item.left >= stage.left && item.right <= stage.right),
-          noteWithSwitcher: intersects(rect('.motion-model-note'), switcher),
-          readoutWithSwitcher: window.innerWidth <= 760 && intersects(readout, switcher),
-          detailWithSwitcher: intersects(rect('.model-detail-status'), switcher),
-          advancedWithSwitcher: intersects(rect('.experiment-controls-toggle'), rect('.artifact-switcher')),
-          sliceDockWithSwitcher: intersects(rect('.model-controls-dock'), switcher),
-          captionIsVisuallyHidden: caption.width <= 1 && caption.height <= 1 && captionStyle.clipPath !== 'none',
+          metadataInsideStage: visibleMetadata.every(
+            (item) => item.left >= stage.left && item.right <= stage.right,
+          ),
+          noteWithSwitcher: intersects(rect(".motion-model-note"), switcher),
+          readoutWithSwitcher:
+            window.innerWidth <= 760 && intersects(readout, switcher),
+          detailWithSwitcher: intersects(
+            rect(".model-detail-status"),
+            switcher,
+          ),
+          advancedWithSwitcher: intersects(
+            rect(".experiment-controls-toggle"),
+            rect(".artifact-switcher"),
+          ),
+          sliceDockWithSwitcher: intersects(
+            rect(".model-controls-dock"),
+            switcher,
+          ),
+          captionIsVisuallyHidden:
+            caption.width <= 1 &&
+            caption.height <= 1 &&
+            captionStyle.clipPath !== "none",
         };
       });
       expect(overlaps).toEqual({
@@ -2318,87 +3867,141 @@ test('Lab keeps model metadata, view controls, caption, and slice panel from ove
   }
 });
 
-test('Lab asset guidance matches the generated delivery path', async ({ page, request }) => {
-  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
+test("Lab asset guidance matches the generated delivery path", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/lab/", { waitUntil: "domcontentloaded" });
   await expectLabModelSizesMatchFiles(page, request);
-  await expect(page.locator('.lab-warning')).toContainText('STEP/WASM');
+  await expect(page.locator(".lab-warning")).toContainText("STEP/WASM");
 });
 
-test('Lab artifact switcher updates the active view and delivery copy', async ({ page }) => {
+test("Lab artifact switcher updates the active view and delivery copy", async ({
+  page,
+}) => {
   test.setTimeout(180_000);
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const stage = page.locator('[data-model-stage]');
-    await expect(stage).toHaveAttribute('data-model-source', 'glb', {
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const stage = page.locator("[data-model-stage]");
+    await expect(stage).toHaveAttribute("data-model-source", "glb", {
       timeout: 60_000,
     });
-    await expect(stage).toHaveAttribute('data-artifact-controls-ready', 'true', { timeout: 60_000 });
-    await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-label', /GLB delivery model|GLB 交付模型/);
-    await stage.locator('.research-view-disclosure > summary').click();
-    const atlas = stage.locator('.research-view-switcher [data-artifact-view="atlas"]');
-    await atlas.dispatchEvent('click');
-    await expect(stage).toHaveAttribute('data-artifact-view', 'atlas');
-    await expect(atlas).toHaveAttribute('aria-pressed', 'true');
-    await expect(stage.locator('.mesh-atlas')).not.toHaveAttribute('inert', '');
-    await expect(stage.locator('.mesh-atlas')).not.toHaveAttribute('aria-hidden', 'true');
-    await expect(stage.locator('#model-canvas')).toHaveAttribute('inert', '');
-    await expect(stage.locator('#model-canvas')).toHaveAttribute('aria-hidden', 'true');
-    await expect(stage.locator('.artifact-caption')).toContainText(/mesh|网格/i);
-    await expect(stage.locator('.motion-model-note')).toBeHidden();
-    await expect(stage.locator('.model-detail-status')).toBeHidden();
-    await expect(stage.locator('.neural-memory-readout')).toBeHidden();
+    await expect(stage).toHaveAttribute(
+      "data-artifact-controls-ready",
+      "true",
+      { timeout: 60_000 },
+    );
+    await expect(stage.locator("#model-canvas")).toHaveAttribute(
+      "aria-label",
+      /GLB delivery model|GLB 交付模型/,
+    );
+    await stage.locator(".research-view-disclosure > summary").click();
+    const atlas = stage.locator(
+      '.research-view-switcher [data-artifact-view="atlas"]',
+    );
+    await atlas.dispatchEvent("click");
+    await expect(stage).toHaveAttribute("data-artifact-view", "atlas");
+    await expect(atlas).toHaveAttribute("aria-pressed", "true");
+    await expect(stage.locator(".mesh-atlas")).not.toHaveAttribute("inert", "");
+    await expect(stage.locator(".mesh-atlas")).not.toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    await expect(stage.locator("#model-canvas")).toHaveAttribute("inert", "");
+    await expect(stage.locator("#model-canvas")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    await expect(stage.locator(".artifact-caption")).toContainText(
+      /mesh|网格/i,
+    );
+    await expect(stage.locator(".motion-model-note")).toBeHidden();
+    await expect(stage.locator(".model-detail-status")).toBeHidden();
+    await expect(stage.locator(".neural-memory-readout")).toBeHidden();
     const model = stage.locator('[data-artifact-view="model"]');
-    await model.dispatchEvent('click');
-    await expect(stage).toHaveAttribute('data-artifact-view', 'model');
-    await expect(model).toHaveAttribute('aria-pressed', 'true');
-    await expect(stage.locator('#model-canvas')).not.toHaveAttribute('inert', '');
-    await expect(stage.locator('#model-canvas')).not.toHaveAttribute('aria-hidden', 'true');
-    await expect(stage.locator('.mesh-atlas')).toHaveAttribute('inert', '');
-    await expect(stage.locator('[data-artifact-label]')).toContainText(/GLB DELIVERY MODEL|GLB 交付模型/);
-    for (const view of ['tomogram', 'oracle', 'trinity', 'morph']) {
-      const researchView = stage.locator(`.research-view-switcher [data-artifact-view="${view}"]`);
-      await researchView.dispatchEvent('click');
-      await expect(stage).toHaveAttribute('data-artifact-view', view);
-      await expect(researchView).toHaveAttribute('aria-pressed', 'true');
+    await model.dispatchEvent("click");
+    await expect(stage).toHaveAttribute("data-artifact-view", "model");
+    await expect(model).toHaveAttribute("aria-pressed", "true");
+    await expect(stage.locator("#model-canvas")).not.toHaveAttribute(
+      "inert",
+      "",
+    );
+    await expect(stage.locator("#model-canvas")).not.toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    await expect(stage.locator(".mesh-atlas")).toHaveAttribute("inert", "");
+    await expect(stage.locator("[data-artifact-label]")).toContainText(
+      /GLB DELIVERY MODEL|GLB 交付模型/,
+    );
+    for (const view of ["tomogram", "oracle", "trinity", "morph"]) {
+      const researchView = stage.locator(
+        `.research-view-switcher [data-artifact-view="${view}"]`,
+      );
+      await researchView.dispatchEvent("click");
+      await expect(stage).toHaveAttribute("data-artifact-view", view);
+      await expect(researchView).toHaveAttribute("aria-pressed", "true");
     }
-    await stage.locator('.artifact-switcher [data-artifact-view="model"]').dispatchEvent('click');
+    await stage
+      .locator('.artifact-switcher [data-artifact-view="model"]')
+      .dispatchEvent("click");
   }
 });
 
-test('Lab analysis views keep canvas metadata and mobile Tomogram tools clear', async ({ page }) => {
+test("Lab analysis views keep canvas metadata and mobile Tomogram tools clear", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.route('**/assets/model/**', (route) => route.abort());
-  await page.route('**/assets/vendor/**', (route) => route.abort());
+  await page.route("**/assets/model/**", (route) => route.abort());
+  await page.route("**/assets/vendor/**", (route) => route.abort());
 
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const stage = page.locator('[data-model-stage]');
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const stage = page.locator("[data-model-stage]");
 
-    for (const view of ['tomogram', 'oracle', 'trinity', 'morph']) {
+    for (const view of ["tomogram", "oracle", "trinity", "morph"]) {
       await stage.evaluate((element, artifactView) => {
         element.dataset.artifactView = artifactView;
       }, view);
-      await expect(stage.locator('.motion-model-note')).toBeHidden();
-      await expect(stage.locator('.model-detail-status')).toBeHidden();
-      await expect(stage.locator('.neural-memory-readout')).toBeHidden();
+      await expect(stage.locator(".motion-model-note")).toBeHidden();
+      await expect(stage.locator(".model-detail-status")).toBeHidden();
+      await expect(stage.locator(".neural-memory-readout")).toBeHidden();
     }
 
     await stage.evaluate((element) => {
-      element.dataset.artifactView = 'tomogram';
+      element.dataset.artifactView = "tomogram";
     });
     const tomogramLayout = await stage.evaluate((element) => {
-      const rect = (selector: string) => element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
-      const switcher = rect('.artifact-switcher');
-      const toolbarButtons = [...element.querySelectorAll<HTMLElement>('.tomogram-toolbar > button')]
-        .filter((button) => getComputedStyle(button).display !== 'none')
+      const rect = (selector: string) =>
+        element.querySelector<HTMLElement>(selector)!.getBoundingClientRect();
+      const switcher = rect(".artifact-switcher");
+      const toolbarButtons = [
+        ...element.querySelectorAll<HTMLElement>(".tomogram-toolbar > button"),
+      ]
+        .filter((button) => getComputedStyle(button).display !== "none")
         .map((button) => button.getBoundingClientRect());
-      const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      const intersects = (a: DOMRect, b: DOMRect) =>
+        a.left < b.right &&
+        a.right > b.left &&
+        a.top < b.bottom &&
+        a.bottom > b.top;
       return {
-        switcherAboveStageBottom: switcher.bottom <= element.getBoundingClientRect().bottom,
-        switcherOverToolbar: intersects(switcher, rect('.tomogram-toolbar')),
-        toolbarOverSpecimenLabel: intersects(rect('.tomogram-toolbar'), rect('.tomogram-specimen-label')),
-        specimenPreviewOverSwitcher: intersects(rect('#model-canvas'), switcher),
-        toolbarButtonsOverlap: toolbarButtons.some((button, index) => toolbarButtons.slice(index + 1).some((other) => intersects(button, other))),
+        switcherAboveStageBottom:
+          switcher.bottom <= element.getBoundingClientRect().bottom,
+        switcherOverToolbar: intersects(switcher, rect(".tomogram-toolbar")),
+        toolbarOverSpecimenLabel: intersects(
+          rect(".tomogram-toolbar"),
+          rect(".tomogram-specimen-label"),
+        ),
+        specimenPreviewOverSwitcher: intersects(
+          rect("#model-canvas"),
+          switcher,
+        ),
+        toolbarButtonsOverlap: toolbarButtons.some((button, index) =>
+          toolbarButtons
+            .slice(index + 1)
+            .some((other) => intersects(button, other)),
+        ),
       };
     });
     expect(tomogramLayout).toEqual({
@@ -2411,8 +4014,10 @@ test('Lab analysis views keep canvas metadata and mobile Tomogram tools clear', 
   }
 });
 
-test('Lab keeps the model view switcher in the upper stage on desktop and mobile', async ({ page }) => {
-  for (const path of ['/lab/', '/en/lab/']) {
+test("Lab keeps the model view switcher in the upper stage on desktop and mobile", async ({
+  page,
+}) => {
+  for (const path of ["/lab/", "/en/lab/"]) {
     for (const viewport of [
       { width: 1440, height: 900 },
       { width: 768, height: 1024 },
@@ -2420,12 +4025,14 @@ test('Lab keeps the model view switcher in the upper stage on desktop and mobile
       { width: 320, height: 640 },
     ]) {
       await page.setViewportSize(viewport);
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const switcher = page.locator('.artifact-switcher');
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const switcher = page.locator(".artifact-switcher");
       await expect(switcher).toBeVisible();
       const geometry = await page.evaluate(() => {
-        const stageElement = document.querySelector<HTMLElement>('[data-model-stage]');
-        const switcherElement = document.querySelector<HTMLElement>('.artifact-switcher');
+        const stageElement =
+          document.querySelector<HTMLElement>("[data-model-stage]");
+        const switcherElement =
+          document.querySelector<HTMLElement>(".artifact-switcher");
         if (!stageElement || !switcherElement) return null;
         const stageRect = stageElement.getBoundingClientRect();
         const switcherRect = switcherElement.getBoundingClientRect();
@@ -2441,94 +4048,130 @@ test('Lab keeps the model view switcher in the upper stage on desktop and mobile
             right: switcherRect.right,
             top: switcherRect.top,
           },
-          buttonHeights: [...switcherElement.querySelectorAll('button')].map((button) => button.getBoundingClientRect().height),
+          buttonHeights: [...switcherElement.querySelectorAll("button")].map(
+            (button) => button.getBoundingClientRect().height,
+          ),
         };
       });
       expect(geometry).not.toBeNull();
-      expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(geometry!.stage.height * 0.42);
+      expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(
+        geometry!.stage.height * 0.42,
+      );
       if (viewport.width <= 760) {
-        expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(geometry!.stage.height * 0.2);
+        expect(geometry!.switcher.top - geometry!.stage.top).toBeLessThan(
+          geometry!.stage.height * 0.2,
+        );
       }
-      expect(geometry!.switcher.left).toBeGreaterThanOrEqual(geometry!.stage.left);
-      expect(geometry!.switcher.right).toBeLessThanOrEqual(geometry!.stage.right);
-      geometry!.buttonHeights.forEach((height) => expect(height).toBeLessThanOrEqual(34));
+      expect(geometry!.switcher.left).toBeGreaterThanOrEqual(
+        geometry!.stage.left,
+      );
+      expect(geometry!.switcher.right).toBeLessThanOrEqual(
+        geometry!.stage.right,
+      );
+      geometry!.buttonHeights.forEach((height) =>
+        expect(height).toBeLessThanOrEqual(34),
+      );
     }
   }
 });
 
-test('Lab gives the mobile model stage enough room in both languages', async ({ page }) => {
+test("Lab gives the mobile model stage enough room in both languages", async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 390, height: 844 },
     { width: 360, height: 640 },
     { width: 320, height: 640 },
   ]) {
     await page.setViewportSize(viewport);
-    for (const path of ['/lab/', '/en/lab/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const stage = page.locator('[data-model-stage]');
-      await expect(stage).toHaveAttribute('data-model-source', 'glb', {
+    for (const path of ["/lab/", "/en/lab/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const stage = page.locator("[data-model-stage]");
+      await expect(stage).toHaveAttribute("data-model-source", "glb", {
         timeout: 20000,
       });
       const bounds = await stage.evaluate((element) => {
         const rect = element.getBoundingClientRect();
         return { width: rect.width, height: rect.height };
       });
-      const minimumHeight = viewport.height <= 700 ? Math.max(viewport.height * 0.5, 320) : viewport.height * 0.4;
+      const minimumHeight =
+        viewport.height <= 700
+          ? Math.max(viewport.height * 0.5, 320)
+          : viewport.height * 0.4;
       expect(bounds.width).toBeLessThanOrEqual(viewport.width);
       expect(bounds.height).toBeGreaterThanOrEqual(minimumHeight);
     }
   }
 });
 
-test('Lab mobile scroll chapters stay clear of model controls in both languages', async ({ page }) => {
+test("Lab mobile scroll chapters stay clear of model controls in both languages", async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 390, height: 844 },
     { width: 360, height: 640 },
   ]) {
     await page.setViewportSize(viewport);
-    for (const path of ['/lab/', '/en/lab/']) {
+    for (const path of ["/lab/", "/en/lab/"]) {
       await page.addInitScript(() => {
         const originalGetContext = HTMLCanvasElement.prototype.getContext;
-        Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+        Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
           configurable: true,
           value(contextId: string, ...options: unknown[]) {
-            if (contextId.startsWith('webgl')) return null;
-            return Reflect.apply(originalGetContext, this, [contextId, ...options]);
+            if (contextId.startsWith("webgl")) return null;
+            return Reflect.apply(originalGetContext, this, [
+              contextId,
+              ...options,
+            ]);
           },
         });
       });
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await page.goto(path, { waitUntil: "domcontentloaded" });
       await page.evaluate(() => {
-        const story = document.querySelector<HTMLElement>('.motion-narrative');
+        const story = document.querySelector<HTMLElement>(".motion-narrative");
         if (story) window.scrollTo(0, story.offsetTop + 120);
       });
 
       for (const [step, chapter] of [
-        ['1', 'input'],
-        ['2', 'library'],
-        ['3', 'product'],
+        ["1", "input"],
+        ["2", "library"],
+        ["3", "product"],
       ]) {
-        await page.locator('[data-motion-timeline]').evaluate((timeline, activeStep) => {
-          timeline.setAttribute('data-story-step', activeStep);
-        }, step);
-        if (step === '3') {
-          const appImage = page.locator('.motion-app-window img');
-          await expect(appImage).toHaveJSProperty('complete', true);
-          await expect.poll(() => appImage.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
-          await expect(page.locator('[data-model-stage]')).toHaveCSS('visibility', 'hidden');
+        await page
+          .locator("[data-motion-timeline]")
+          .evaluate((timeline, activeStep) => {
+            timeline.setAttribute("data-story-step", activeStep);
+          }, step);
+        if (step === "3") {
+          const appImage = page.locator(".motion-app-window img");
+          await expect(appImage).toHaveJSProperty("complete", true);
+          await expect
+            .poll(() =>
+              appImage.evaluate(
+                (image: HTMLImageElement) => image.naturalWidth,
+              ),
+            )
+            .toBeGreaterThan(0);
+          await expect(page.locator("[data-model-stage]")).toHaveCSS(
+            "visibility",
+            "hidden",
+          );
         }
         await page.waitForTimeout(450);
 
         const layout = await page.evaluate((chapterName) => {
-          const chapterElement = document.querySelector<HTMLElement>(`[data-motion-chapter="${chapterName}"]`);
-          const stageElement = document.querySelector<HTMLElement>('[data-model-stage]');
+          const chapterElement = document.querySelector<HTMLElement>(
+            `[data-motion-chapter="${chapterName}"]`,
+          );
+          const stageElement =
+            document.querySelector<HTMLElement>("[data-model-stage]");
           if (!chapterElement || !stageElement) return null;
           const chapter = chapterElement.getBoundingClientRect();
           const stage = stageElement.getBoundingClientRect();
           const controls = Array.from(
             stageElement.querySelectorAll<HTMLElement>(
-              '.artifact-switcher, .model-explode, .artifact-caption, .model-detail-status, .experiment-controls-toggle'
-            )
+              ".artifact-switcher, .model-explode, .artifact-caption, .model-detail-status, .experiment-controls-toggle",
+            ),
           )
             .map((element) => {
               const rect = element.getBoundingClientRect();
@@ -2554,7 +4197,9 @@ test('Lab mobile scroll chapters stay clear of model controls in both languages'
               visibility: getComputedStyle(stageElement).visibility,
             },
             destinations: (() => {
-              const element = document.querySelector<HTMLElement>('.motion-destinations');
+              const element = document.querySelector<HTMLElement>(
+                ".motion-destinations",
+              );
               const rect = element?.getBoundingClientRect();
               return rect && { top: rect.top, bottom: rect.bottom };
             })(),
@@ -2562,21 +4207,34 @@ test('Lab mobile scroll chapters stay clear of model controls in both languages'
           };
         }, chapter);
 
-        expect(layout, `${path} ${viewport.width}px story step ${step}`).not.toBeNull();
-        if (step === '3') {
-          expect(layout!.stage.visibility, `${path} ${viewport.width}px final product chapter should hand off the model`).toBe('hidden');
-          expect(layout!.chapter.bottom, `${path} ${viewport.width}px final chapter should stay clear of destination links`).toBeLessThan(
-            layout!.destinations!.top
-          );
+        expect(
+          layout,
+          `${path} ${viewport.width}px story step ${step}`,
+        ).not.toBeNull();
+        if (step === "3") {
+          expect(
+            layout!.stage.visibility,
+            `${path} ${viewport.width}px final product chapter should hand off the model`,
+          ).toBe("hidden");
+          expect(
+            layout!.chapter.bottom,
+            `${path} ${viewport.width}px final chapter should stay clear of destination links`,
+          ).toBeLessThan(layout!.destinations!.top);
         } else {
-          expect(layout!.chapter.bottom, `${path} ${viewport.width}px story step ${step} should keep copy above the model`).toBeLessThan(layout!.stage.top);
+          expect(
+            layout!.chapter.bottom,
+            `${path} ${viewport.width}px story step ${step} should keep copy above the model`,
+          ).toBeLessThan(layout!.stage.top);
           for (const control of layout!.controls) {
             const overlaps =
               layout!.chapter.top < control.bottom &&
               layout!.chapter.bottom > control.top &&
               layout!.chapter.left < control.right &&
               layout!.chapter.right > control.left;
-            expect(overlaps, `${path} ${viewport.width}px story step ${step} overlaps ${control.name}`).toBe(false);
+            expect(
+              overlaps,
+              `${path} ${viewport.width}px story step ${step} overlaps ${control.name}`,
+            ).toBe(false);
           }
         }
       }
@@ -2584,13 +4242,15 @@ test('Lab mobile scroll chapters stay clear of model controls in both languages'
   }
 });
 
-test('Lab tablet layout keeps the narrative heading clear of the model in both languages', async ({ page }) => {
+test("Lab tablet layout keeps the narrative heading clear of the model in both languages", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 768, height: 1024 });
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     const layout = await page.evaluate(() => {
-      const heading = document.querySelector<HTMLElement>('.motion-heading');
-      const model = document.querySelector<HTMLElement>('[data-model-stage]');
+      const heading = document.querySelector<HTMLElement>(".motion-heading");
+      const model = document.querySelector<HTMLElement>("[data-model-stage]");
       if (!heading || !model) return null;
       const headingRect = heading.getBoundingClientRect();
       const modelRect = model.getBoundingClientRect();
@@ -2606,13 +4266,15 @@ test('Lab tablet layout keeps the narrative heading clear of the model in both l
   }
 });
 
-test('Lab desktop model stage stays clear of the narrative heading', async ({ page }) => {
+test("Lab desktop model stage stays clear of the narrative heading", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     const layout = await page.evaluate(() => {
-      const heading = document.querySelector<HTMLElement>('.motion-heading');
-      const model = document.querySelector<HTMLElement>('[data-model-stage]');
+      const heading = document.querySelector<HTMLElement>(".motion-heading");
+      const model = document.querySelector<HTMLElement>("[data-model-stage]");
       if (!heading || !model) return null;
       const headingRect = heading.getBoundingClientRect();
       const modelRect = model.getBoundingClientRect();
@@ -2628,53 +4290,69 @@ test('Lab desktop model stage stays clear of the narrative heading', async ({ pa
   }
 });
 
-test('Lab narrative headlines keep the Chinese lead together on desktop', async ({ page }) => {
+test("Lab narrative headlines keep the Chinese lead together on desktop", async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 1024, height: 900 },
   ]) {
     await page.setViewportSize(viewport);
-    for (const path of ['/lab/', '/en/lab/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const lines = await page.locator('.motion-heading h1').evaluate((element) => {
-        const grouped = new Map<number, string>();
-        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-        let node: Node | null;
-        while ((node = walker.nextNode())) {
-          let offset = 0;
-          for (const character of node.nodeValue || '') {
-            const range = document.createRange();
-            range.setStart(node, offset);
-            range.setEnd(node, offset + character.length);
-            const top = Math.round(range.getBoundingClientRect().top);
-            if (!/\s/.test(character)) grouped.set(top, (grouped.get(top) || '') + character);
-            offset += character.length;
+    for (const path of ["/lab/", "/en/lab/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const lines = await page
+        .locator(".motion-heading h1")
+        .evaluate((element) => {
+          const grouped = new Map<number, string>();
+          const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+          );
+          let node: Node | null;
+          while ((node = walker.nextNode())) {
+            let offset = 0;
+            for (const character of node.nodeValue || "") {
+              const range = document.createRange();
+              range.setStart(node, offset);
+              range.setEnd(node, offset + character.length);
+              const top = Math.round(range.getBoundingClientRect().top);
+              if (!/\s/.test(character))
+                grouped.set(top, (grouped.get(top) || "") + character);
+              offset += character.length;
+            }
           }
-        }
-        return [...grouped.values()];
-      });
+          return [...grouped.values()];
+        });
 
-      if (path === '/lab/') {
-        expect(lines, `${path} ${viewport.width}px headline lines`).toEqual(['让元件库转换，', '顺手一点。']);
+      if (path === "/lab/") {
+        expect(lines, `${path} ${viewport.width}px headline lines`).toEqual([
+          "让元件库转换，",
+          "顺手一点。",
+        ]);
       } else {
-        expect(lines.length, `${path} ${viewport.width}px headline line count`).toBeLessThanOrEqual(3);
+        expect(
+          lines.length,
+          `${path} ${viewport.width}px headline line count`,
+        ).toBeLessThanOrEqual(3);
       }
     }
   }
 });
 
-test('Lab model controls stay inside the visible stage at phone, tablet, and desktop widths', async ({ page }) => {
+test("Lab model controls stay inside the visible stage at phone, tablet, and desktop widths", async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 390, height: 844 },
     { width: 768, height: 1024 },
     { width: 1440, height: 900 },
   ]) {
     await page.setViewportSize(viewport);
-    for (const path of ['/lab/', '/en/lab/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
+    for (const path of ["/lab/", "/en/lab/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
       const bounds = await page.evaluate(() => {
-        const stage = document.querySelector<HTMLElement>('[data-model-stage]');
-        const controls = stage?.querySelector<HTMLElement>('.model-explode');
+        const stage = document.querySelector<HTMLElement>("[data-model-stage]");
+        const controls = stage?.querySelector<HTMLElement>(".model-explode");
         if (!stage || !controls) return null;
         const stageRect = stage.getBoundingClientRect();
         const controlsRect = controls.getBoundingClientRect();
@@ -2702,19 +4380,24 @@ test('Lab model controls stay inside the visible stage at phone, tablet, and des
   }
 });
 
-test('Lab advanced-tools entry stays with the model and clear of the view switcher', async ({ page }) => {
+test("Lab advanced-tools entry stays with the model and clear of the view switcher", async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 390, height: 844 },
     { width: 768, height: 1024 },
     { width: 1440, height: 900 },
   ]) {
     await page.setViewportSize(viewport);
-    for (const path of ['/lab/', '/en/lab/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
+    for (const path of ["/lab/", "/en/lab/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
       const bounds = await page.evaluate(() => {
-        const stage = document.querySelector<HTMLElement>('[data-model-stage]');
-        const toggle = stage?.querySelector<HTMLElement>('[data-experiment-controls]');
-        const switcher = stage?.querySelector<HTMLElement>('.artifact-switcher');
+        const stage = document.querySelector<HTMLElement>("[data-model-stage]");
+        const toggle = stage?.querySelector<HTMLElement>(
+          "[data-experiment-controls]",
+        );
+        const switcher =
+          stage?.querySelector<HTMLElement>(".artifact-switcher");
         if (!stage || !toggle || !switcher) return null;
         const rect = (element: HTMLElement) => {
           const { top, right, bottom, left } = element.getBoundingClientRect();
@@ -2741,253 +4424,338 @@ test('Lab advanced-tools entry stays with the model and clear of the view switch
   }
 });
 
-test('Lab story keeps a concise scroll runway across desktop and mobile', async ({ page }) => {
+test("Lab story keeps a concise scroll runway across desktop and mobile", async ({
+  page,
+}) => {
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 390, height: 844 },
   ]) {
     await page.setViewportSize(viewport);
     const maxViewports = viewport.width <= 760 ? 2.9 : 3.3;
-    for (const path of ['/lab/', '/en/lab/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const storyHeight = await page.locator('.motion-narrative').evaluate((element) => element.getBoundingClientRect().height);
+    for (const path of ["/lab/", "/en/lab/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const storyHeight = await page
+        .locator(".motion-narrative")
+        .evaluate((element) => element.getBoundingClientRect().height);
       expect(storyHeight / viewport.height).toBeLessThanOrEqual(maxViewports);
     }
   }
 });
 
-test('mobile Lab controls keep the model open and reveal slice controls on demand', async ({ page }) => {
+test("mobile Lab controls keep the model open and reveal slice controls on demand", async ({
+  page,
+}) => {
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const stage = page.locator('[data-model-stage]');
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const stage = page.locator("[data-model-stage]");
     await stage.scrollIntoViewIfNeeded();
-    const controls = await page.locator('.artifact-switcher').evaluate((switcher) => {
-      const stage = switcher.closest('[data-model-stage]');
-      const panel = stage?.querySelector('.model-explode');
-      return {
-        flexWrap: getComputedStyle(switcher).flexWrap,
-        overflowX: getComputedStyle(switcher).overflowX,
-        clientWidth: switcher.clientWidth,
-        scrollWidth: switcher.scrollWidth,
-        switcherHeight: switcher.getBoundingClientRect().height,
-        sliceAxesDisplay: getComputedStyle(panel?.querySelector('.model-slice-axes') as Element).display,
-        sliceRangeDisplay: getComputedStyle(panel?.querySelector('.model-slice-range') as Element).display,
-      };
-    });
+    const controls = await page
+      .locator(".artifact-switcher")
+      .evaluate((switcher) => {
+        const stage = switcher.closest("[data-model-stage]");
+        const panel = stage?.querySelector(".model-explode");
+        return {
+          flexWrap: getComputedStyle(switcher).flexWrap,
+          overflowX: getComputedStyle(switcher).overflowX,
+          clientWidth: switcher.clientWidth,
+          scrollWidth: switcher.scrollWidth,
+          switcherHeight: switcher.getBoundingClientRect().height,
+          sliceAxesDisplay: getComputedStyle(
+            panel?.querySelector(".model-slice-axes") as Element,
+          ).display,
+          sliceRangeDisplay: getComputedStyle(
+            panel?.querySelector(".model-slice-range") as Element,
+          ).display,
+        };
+      });
 
-    expect(controls.flexWrap).toBe('nowrap');
-    expect(controls.overflowX).toBe('auto');
+    expect(controls.flexWrap).toBe("nowrap");
+    expect(controls.overflowX).toBe("auto");
     expect(controls.scrollWidth).toBeLessThanOrEqual(controls.clientWidth);
     expect(controls.switcherHeight).toBeLessThan(48);
-    expect(controls.sliceAxesDisplay).toBe('none');
-    expect(controls.sliceRangeDisplay).toBe('none');
+    expect(controls.sliceAxesDisplay).toBe("none");
+    expect(controls.sliceRangeDisplay).toBe("none");
 
-    const sliceToggle = page.locator('.model-slice-toggle');
-    await expect(stage).toHaveAttribute('data-controls-ready', 'true');
+    const sliceToggle = page.locator(".model-slice-toggle");
+    await expect(stage).toHaveAttribute("data-controls-ready", "true");
     await expect(stage).toHaveClass(/model-loaded/, { timeout: 120_000 });
     await expect(sliceToggle).toBeEnabled();
     await sliceToggle.click();
-    await expect(sliceToggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(sliceToggle).toHaveAttribute("aria-pressed", "true");
     const expandedControls = await sliceToggle.evaluate((toggle) => {
-      const panel = toggle.closest('.model-explode');
+      const panel = toggle.closest(".model-explode");
       return {
-        sliceAxesDisplay: getComputedStyle(panel?.querySelector('.model-slice-axes') as Element).display,
-        sliceRangeDisplay: getComputedStyle(panel?.querySelector('.model-slice-range') as Element).display,
+        sliceAxesDisplay: getComputedStyle(
+          panel?.querySelector(".model-slice-axes") as Element,
+        ).display,
+        sliceRangeDisplay: getComputedStyle(
+          panel?.querySelector(".model-slice-range") as Element,
+        ).display,
       };
     });
-    expect(expandedControls.sliceAxesDisplay).not.toBe('none');
-    expect(expandedControls.sliceRangeDisplay).not.toBe('none');
+    expect(expandedControls.sliceAxesDisplay).not.toBe("none");
+    expect(expandedControls.sliceRangeDisplay).not.toBe("none");
   }
 });
 
-test('mobile Lab separates everyday views from the expandable research views', async ({ browser }) => {
+test("mobile Lab separates everyday views from the expandable research views", async ({
+  browser,
+}) => {
   test.setTimeout(60_000);
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
   });
   const page = await context.newPage();
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    for (const reducedMotion of ["no-preference", "reduce"] as const) {
       await page.emulateMedia({ reducedMotion });
-      const switcher = page.locator('.artifact-switcher');
-      const researchViews = page.locator('.research-view-disclosure');
-      await expect(switcher.locator('[data-artifact-view]')).toHaveCount(3);
-      await expect(researchViews.locator('summary')).toBeVisible();
-      await expect(page.locator('.artifact-scroll-hint')).toBeHidden();
-      await expect(page.locator('.research-view-panel')).toBeHidden();
+      const switcher = page.locator(".artifact-switcher");
+      const researchViews = page.locator(".research-view-disclosure");
+      await expect(switcher.locator("[data-artifact-view]")).toHaveCount(3);
+      await expect(researchViews.locator("summary")).toBeVisible();
+      await expect(page.locator(".artifact-scroll-hint")).toBeHidden();
+      await expect(page.locator(".research-view-panel")).toBeHidden();
       const layout = await page.evaluate(() => {
-        const stage = document.querySelector('[data-model-stage]')!.getBoundingClientRect();
-        const controls = document.querySelector('.model-view-controls')!.getBoundingClientRect();
-        const switcher = document.querySelector('.artifact-switcher')!.getBoundingClientRect();
-        const advanced = document.querySelector('.experiment-controls-toggle')!.getBoundingClientRect();
-        const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        const stage = document
+          .querySelector("[data-model-stage]")!
+          .getBoundingClientRect();
+        const controls = document
+          .querySelector(".model-view-controls")!
+          .getBoundingClientRect();
+        const switcher = document
+          .querySelector(".artifact-switcher")!
+          .getBoundingClientRect();
+        const advanced = document
+          .querySelector(".experiment-controls-toggle")!
+          .getBoundingClientRect();
+        const intersects = (a: DOMRect, b: DOMRect) =>
+          a.left < b.right &&
+          a.right > b.left &&
+          a.top < b.bottom &&
+          a.bottom > b.top;
         return {
-          controlsInsideStage: controls.left >= stage.left && controls.right <= stage.right,
-          coreViewsInsideControls: switcher.left >= controls.left && switcher.right <= controls.right,
+          controlsInsideStage:
+            controls.left >= stage.left && controls.right <= stage.right,
+          coreViewsInsideControls:
+            switcher.left >= controls.left && switcher.right <= controls.right,
           advancedToggleClear: !intersects(controls, advanced),
         };
       });
-      expect(layout, `${path} ${reducedMotion} view controls should stay clear and inside the model stage`).toEqual({
+      expect(
+        layout,
+        `${path} ${reducedMotion} view controls should stay clear and inside the model stage`,
+      ).toEqual({
         controlsInsideStage: true,
         coreViewsInsideControls: true,
         advancedToggleClear: true,
       });
 
-      await researchViews.locator('summary').click();
-      await expect(page.locator('.research-view-switcher [data-artifact-view]')).toHaveCount(5);
-      const panel = await page.locator('.research-view-panel').boundingBox();
-      expect(panel, `${path} ${reducedMotion} research panel should have a visible boundary`).not.toBeNull();
+      await researchViews.locator("summary").click();
+      await expect(
+        page.locator(".research-view-switcher [data-artifact-view]"),
+      ).toHaveCount(5);
+      const panel = await page.locator(".research-view-panel").boundingBox();
+      expect(
+        panel,
+        `${path} ${reducedMotion} research panel should have a visible boundary`,
+      ).not.toBeNull();
       expect(panel!.x).toBeGreaterThanOrEqual(0);
       expect(panel!.x + panel!.width).toBeLessThanOrEqual(390);
-      await researchViews.locator('summary').click();
-      await expect(page.locator('.research-view-panel')).toBeHidden();
+      await researchViews.locator("summary").click();
+      await expect(page.locator(".research-view-panel")).toBeHidden();
     }
   }
   for (const width of [768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    await expect(page.locator('.artifact-scroll-hint')).toBeHidden();
+    await expect(page.locator(".artifact-scroll-hint")).toBeHidden();
   }
   await context.close();
 });
 
-test('Tomogram research actions stay collapsed until advanced tools are opened', async ({ page }) => {
+test("Tomogram research actions stay collapsed until advanced tools are opened", async ({
+  page,
+}) => {
   test.setTimeout(60_000);
   await blockLabGeometryAssets(page);
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const researchViews = page.locator('.research-view-disclosure');
-    await researchViews.locator('summary').click();
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const researchViews = page.locator(".research-view-disclosure");
+    await researchViews.locator("summary").click();
     await researchViews.locator('[data-artifact-view="tomogram"]').click();
-    await expect(researchViews).not.toHaveAttribute('open', '');
-    await expect(researchViews.locator('summary')).toBeFocused();
-    const stage = page.locator('[data-model-stage]');
+    await expect(researchViews).not.toHaveAttribute("open", "");
+    await expect(researchViews.locator("summary")).toBeFocused();
+    const stage = page.locator("[data-model-stage]");
     await stage.scrollIntoViewIfNeeded();
-    await expect(stage).toHaveAttribute('data-controls-ready', 'true');
-    const toolbar = stage.locator('.tomogram-toolbar');
-    const advanced = page.locator('[data-experiment-controls]');
+    await expect(stage).toHaveAttribute("data-controls-ready", "true");
+    const toolbar = stage.locator(".tomogram-toolbar");
+    const advanced = page.locator("[data-experiment-controls]");
 
-    await expect(stage).toHaveAttribute('data-artifact-view', 'tomogram');
-    await expect(advanced).toHaveAttribute('aria-expanded', 'false');
+    await expect(stage).toHaveAttribute("data-artifact-view", "tomogram");
+    await expect(advanced).toHaveAttribute("aria-expanded", "false");
     await expect(toolbar).toBeHidden();
     await advanced.click({ force: true });
-    await expect(advanced).toHaveAttribute('aria-expanded', 'true');
+    await expect(advanced).toHaveAttribute("aria-expanded", "true");
     await expect(toolbar).toBeVisible();
     await advanced.click({ force: true });
     await expect(toolbar).toBeHidden();
   }
 });
 
-test('Lab loading guidance avoids repeating the same delivery facts', async ({ page }) => {
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.lab-facts')).toHaveCount(0);
-    await expect(page.locator('.lab-warning')).toContainText(/首页不加载 CAD\/WASM|The homepage skips CAD\/WASM/);
-    await expect(page.locator('.lab-warning')).toContainText(/GLB 优先|GLB first/);
-    await expect(page.locator('.lab-warning')).toContainText(/STEP\/WASM/);
+test("Lab loading guidance avoids repeating the same delivery facts", async ({
+  page,
+}) => {
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(page.locator(".lab-facts")).toHaveCount(0);
+    await expect(page.locator(".lab-warning")).toContainText(
+      /首页不加载 CAD\/WASM|The homepage skips CAD\/WASM/,
+    );
+    await expect(page.locator(".lab-warning")).toContainText(
+      /GLB 优先|GLB first/,
+    );
+    await expect(page.locator(".lab-warning")).toContainText(/STEP\/WASM/);
   }
 });
 
-test('Lab loading guidance separates delivery sizes from fallback copy', async ({ page, request }) => {
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const warning = page.locator('.lab-warning');
-    await expect(warning.locator('.lab-warning-heading strong')).toHaveText(/GLB 优先|GLB first/);
-    await expect(warning.locator('.lab-warning-metrics')).toHaveCount(1);
+test("Lab loading guidance separates delivery sizes from fallback copy", async ({
+  page,
+  request,
+}) => {
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const warning = page.locator(".lab-warning");
+    await expect(warning.locator(".lab-warning-heading strong")).toHaveText(
+      /GLB 优先|GLB first/,
+    );
+    await expect(warning.locator(".lab-warning-metrics")).toHaveCount(1);
     await expectLabModelSizesMatchFiles(page, request);
-    await expect(warning.locator('p')).toContainText(/STEP\/WASM/);
+    await expect(warning.locator("p")).toContainText(/STEP\/WASM/);
   }
 });
 
-test('Lab introductions explain the real geometry story in both languages', async ({ page }) => {
-  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-intro')).toContainText('真实 STEP 几何');
-  await expect(page.locator('.lab-intro')).toContainText('真实 STEP 几何生成的 GLB');
-  await expect(page.locator('.lab-intro')).toContainText('网格星图');
-  await expect(page.locator('.lab-intro')).toContainText('剖面');
-  await expect(page.locator('.lab-intro')).toContainText('拓扑视图');
-  await expect(page.locator('.lab-warning')).toContainText('模型就绪后开放实验控件');
-  await expect(page.locator('.lab-warning')).toContainText('首页不加载 CAD/WASM');
+test("Lab introductions explain the real geometry story in both languages", async ({
+  page,
+}) => {
+  await page.goto("/lab/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".lab-intro")).toContainText("真实 STEP 几何");
+  await expect(page.locator(".lab-intro")).toContainText(
+    "真实 STEP 几何生成的 GLB",
+  );
+  await expect(page.locator(".lab-intro")).toContainText("网格星图");
+  await expect(page.locator(".lab-intro")).toContainText("剖面");
+  await expect(page.locator(".lab-intro")).toContainText("拓扑视图");
+  await expect(page.locator(".lab-warning")).toContainText(
+    "模型就绪后开放实验控件",
+  );
+  await expect(page.locator(".lab-warning")).toContainText(
+    "首页不加载 CAD/WASM",
+  );
 
-  await page.goto('/en/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.lab-intro')).toContainText('STEP-derived GLB through mesh atlas, section, and topology views');
-  await expect(page.locator('.lab-warning')).toContainText('controls unlock when the model is ready');
-  await expect(page.locator('.lab-warning')).toContainText('The homepage skips CAD/WASM');
+  await page.goto("/en/lab/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".lab-intro")).toContainText(
+    "STEP-derived GLB through mesh atlas, section, and topology views",
+  );
+  await expect(page.locator(".lab-warning")).toContainText(
+    "controls unlock when the model is ready",
+  );
+  await expect(page.locator(".lab-warning")).toContainText(
+    "The homepage skips CAD/WASM",
+  );
 
   for (const [path, english] of [
-    ['/lab/', false],
-    ['/en/lab/', true],
+    ["/lab/", false],
+    ["/en/lab/", true],
   ] as const) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     for (const width of [390, 360, 320]) {
       await page.setViewportSize({ width, height: 844 });
-      const lines = await page.locator('.lab-intro > p:not(.kicker)').evaluate((element) => {
-        const lines = new Map<number, string>();
-        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-        let node: Node | null;
-        while ((node = walker.nextNode())) {
-          const value = node.nodeValue || '';
-          let offset = 0;
-          for (const character of value) {
-            if (!/\s/.test(character)) {
-              const range = document.createRange();
-              range.setStart(node, offset);
-              range.setEnd(node, offset + character.length);
-              const top = Math.round(range.getBoundingClientRect().top);
-              lines.set(top, (lines.get(top) || '') + character);
+      const lines = await page
+        .locator(".lab-intro > p:not(.kicker)")
+        .evaluate((element) => {
+          const lines = new Map<number, string>();
+          const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+          );
+          let node: Node | null;
+          while ((node = walker.nextNode())) {
+            const value = node.nodeValue || "";
+            let offset = 0;
+            for (const character of value) {
+              if (!/\s/.test(character)) {
+                const range = document.createRange();
+                range.setStart(node, offset);
+                range.setEnd(node, offset + character.length);
+                const top = Math.round(range.getBoundingClientRect().top);
+                lines.set(top, (lines.get(top) || "") + character);
+              }
+              offset += character.length;
             }
-            offset += character.length;
           }
-        }
-        return [...lines.values()];
-      });
-      const introHeight = await page.locator('.lab-intro > p:not(.kicker)').evaluate((element) => element.getBoundingClientRect().height);
-      expect(introHeight, `${path} ${width}px introduction should stay compact`).toBeLessThanOrEqual(80);
+          return [...lines.values()];
+        });
+      const introHeight = await page
+        .locator(".lab-intro > p:not(.kicker)")
+        .evaluate((element) => element.getBoundingClientRect().height);
+      expect(
+        introHeight,
+        `${path} ${width}px introduction should stay compact`,
+      ).toBeLessThanOrEqual(80);
       if (!english) {
         expect(
           lines.some((line) => /^[\p{Script=Han}。！？、，；：]$/u.test(line)),
-          `${path} ${width}px intro should not strand a Han character`
+          `${path} ${width}px intro should not strand a Han character`,
         ).toBe(false);
       }
     }
   }
 });
 
-test('Lab pages clearly label the versioned release downloads page', async ({ page }) => {
-  for (const path of ['/lab/', '/en/lab/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const link = page.locator('[data-release-link]');
+test("Lab pages clearly label the versioned release downloads page", async ({
+  page,
+}) => {
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const link = page.locator("[data-release-link]");
     await expect(link).toHaveClass(/text-link-external/);
-    await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
-    await expect(link).toHaveAttribute('target', '_blank');
-    await expect(link).toHaveAttribute('rel', 'noreferrer');
+    await expect(link).toHaveAttribute("href", /releases\/tag\/v3\.1\.13/);
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link).toHaveAttribute("rel", "noreferrer");
     await expect(link).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
   }
 });
 
-test('Formats and Cases CTAs clearly direct visitors to Release download options', async ({ page }) => {
-  for (const path of ['/formats/', '/en/formats/', '/cases/', '/en/cases/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
-    const link = page.locator('.content-page-cta [data-release-link]');
-    await expect(link).toHaveAttribute('href', /releases\/tag\/v3\.1\.13/);
-    await expect(link).toHaveAttribute('target', '_blank');
-    await expect(link).toHaveAttribute('rel', 'noreferrer');
+test("Formats and Cases CTAs clearly direct visitors to Release download options", async ({
+  page,
+}) => {
+  for (const path of ["/formats/", "/en/formats/", "/cases/", "/en/cases/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const link = page.locator(".content-page-cta [data-release-link]");
+    await expect(link).toHaveAttribute("href", /releases\/tag\/v3\.1\.13/);
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link).toHaveAttribute("rel", "noreferrer");
     await expect(link).toContainText(/v3\.1\.13 下载项|v3\.1\.13 downloads/);
 
-    const copy = page.locator('.content-page-cta > div').first();
+    const copy = page.locator(".content-page-cta > div").first();
     await expect(copy).toContainText(/版本发布页选择安装包|release page/);
   }
 });
 
-test('320px Cases actions stay inside the viewport in both languages', async ({ page }) => {
+test("320px Cases actions stay inside the viewport in both languages", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 320, height: 740 });
-  for (const path of ['/cases/', '/en/cases/']) {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
+  for (const path of ["/cases/", "/en/cases/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     const layout = await page.evaluate(() => {
-      const actions = document.querySelector<HTMLElement>('.case-studies-actions');
+      const actions = document.querySelector<HTMLElement>(
+        ".case-studies-actions",
+      );
       if (!actions) return null;
       const links = Array.from(actions.children, (element) => {
         const { left, right, top, bottom } = element.getBoundingClientRect();
@@ -3001,22 +4769,35 @@ test('320px Cases actions stay inside the viewport in both languages', async ({ 
     });
 
     expect(layout, `${path} should render its case actions`).not.toBeNull();
-    expect(layout!.document, `${path} should not create page-level horizontal overflow`).toBeLessThanOrEqual(320);
+    expect(
+      layout!.document,
+      `${path} should not create page-level horizontal overflow`,
+    ).toBeLessThanOrEqual(320);
     expect(layout!.links).toHaveLength(2);
     for (const link of layout!.links) {
-      expect(link.left, `${path} action should stay inside the left viewport edge`).toBeGreaterThanOrEqual(0);
-      expect(link.right, `${path} action should stay inside the right viewport edge`).toBeLessThanOrEqual(320);
+      expect(
+        link.left,
+        `${path} action should stay inside the left viewport edge`,
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        link.right,
+        `${path} action should stay inside the right viewport edge`,
+      ).toBeLessThanOrEqual(320);
     }
   }
 });
 
-test('Format actions stay inside their content column at narrow mobile widths', async ({ page }) => {
+test("Format actions stay inside their content column at narrow mobile widths", async ({
+  page,
+}) => {
   for (const width of [320, 360]) {
     await page.setViewportSize({ width, height: 740 });
-    for (const path of ['/formats/', '/en/formats/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
+    for (const path of ["/formats/", "/en/formats/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
       const layout = await page.evaluate(() => {
-        const actions = document.querySelector<HTMLElement>('.format-matrix-actions');
+        const actions = document.querySelector<HTMLElement>(
+          ".format-matrix-actions",
+        );
         if (!actions) return null;
         const { left, right } = actions.getBoundingClientRect();
         const links = Array.from(actions.children, (element) => {
@@ -3043,32 +4824,54 @@ test('Format actions stay inside their content column at narrow mobile widths', 
         };
       });
 
-      expect(layout, `${path} should render format actions at ${width}px`).not.toBeNull();
-      expect(layout!.document, `${path} should not create page-level overflow at ${width}px`).toBeLessThanOrEqual(width);
-      expect(layout!.container.scrollWidth, `${path} action row should fit its content column at ${width}px`).toBeLessThanOrEqual(
-        layout!.container.clientWidth
-      );
+      expect(
+        layout,
+        `${path} should render format actions at ${width}px`,
+      ).not.toBeNull();
+      expect(
+        layout!.document,
+        `${path} should not create page-level overflow at ${width}px`,
+      ).toBeLessThanOrEqual(width);
+      expect(
+        layout!.container.scrollWidth,
+        `${path} action row should fit its content column at ${width}px`,
+      ).toBeLessThanOrEqual(layout!.container.clientWidth);
       expect(layout!.links).toHaveLength(2);
       for (const link of layout!.links) {
-        expect(link.left, `${path} action should remain inside its content column at ${width}px`).toBeGreaterThanOrEqual(layout!.container.left - 1);
-        expect(link.right, `${path} action should remain inside its content column at ${width}px`).toBeLessThanOrEqual(layout!.container.right + 1);
-        expect(link.scrollWidth, `${path} action text should not be clipped at ${width}px`).toBeLessThanOrEqual(link.clientWidth);
+        expect(
+          link.left,
+          `${path} action should remain inside its content column at ${width}px`,
+        ).toBeGreaterThanOrEqual(layout!.container.left - 1);
+        expect(
+          link.right,
+          `${path} action should remain inside its content column at ${width}px`,
+        ).toBeLessThanOrEqual(layout!.container.right + 1);
+        expect(
+          link.scrollWidth,
+          `${path} action text should not be clipped at ${width}px`,
+        ).toBeLessThanOrEqual(link.clientWidth);
       }
 
-      if (width === 320 && path === '/en/formats/') {
-        expect(layout!.links[1].top, 'the English release link should wrap below the primary CTA when needed').toBeGreaterThanOrEqual(
-          layout!.links[0].bottom - 1
-        );
+      if (width === 320 && path === "/en/formats/") {
+        expect(
+          layout!.links[1].top,
+          "the English release link should wrap below the primary CTA when needed",
+        ).toBeGreaterThanOrEqual(layout!.links[0].bottom - 1);
       }
       if (width === 360) {
-        expect(layout!.links[1].top, `${path} actions should remain on one row when they fit`).toBeLessThan(layout!.links[0].bottom);
+        expect(
+          layout!.links[1].top,
+          `${path} actions should remain on one row when they fit`,
+        ).toBeLessThan(layout!.links[0].bottom);
       }
     }
   }
 });
 
-test('reduced motion renders the Lab without a continuous animation loop', async ({ browser }) => {
-  const context = await browser.newContext({ reducedMotion: 'reduce' });
+test("reduced motion renders the Lab without a continuous animation loop", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ reducedMotion: "reduce" });
   const page = await context.newPage();
   await page.addInitScript(() => {
     let frames = 0;
@@ -3078,24 +4881,36 @@ test('reduced motion renders the Lab without a continuous animation loop', async
         frames += 1;
         callback(time);
       });
-    (window as typeof window & { __modelFrames?: () => number }).__modelFrames = () => frames;
+    (window as typeof window & { __modelFrames?: () => number }).__modelFrames =
+      () => frames;
   });
-  await page.goto('/lab/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('[data-model-stage]')).toHaveAttribute('data-model-source', 'glb', { timeout: 20000 });
+  await page.goto("/lab/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-model-stage]")).toHaveAttribute(
+    "data-model-source",
+    "glb",
+    { timeout: 20000 },
+  );
   await page.waitForTimeout(1000);
-  const frames = await page.evaluate(() => (window as typeof window & { __modelFrames?: () => number }).__modelFrames?.() ?? 0);
+  const frames = await page.evaluate(
+    () =>
+      (
+        window as typeof window & { __modelFrames?: () => number }
+      ).__modelFrames?.() ?? 0,
+  );
   expect(frames).toBeLessThan(12);
   await context.close();
 });
 
-test('reduced-motion Lab keeps the model stage below its heading in every render view', async ({ browser }) => {
+test("reduced-motion Lab keeps the model stage below its heading in every render view", async ({
+  browser,
+}) => {
   const context = await browser.newContext({
-    reducedMotion: 'reduce',
+    reducedMotion: "reduce",
     viewport: { width: 1440, height: 900 },
   });
   const page = await context.newPage();
-  await page.route('**/assets/model/**', (route) => route.abort());
-  await page.route('**/assets/vendor/**', (route) => route.abort());
+  await page.route("**/assets/model/**", (route) => route.abort());
+  await page.route("**/assets/vendor/**", (route) => route.abort());
 
   for (const viewport of [
     { width: 1440, height: 900 },
@@ -3105,22 +4920,35 @@ test('reduced-motion Lab keeps the model stage below its heading in every render
     { width: 320, height: 700 },
   ]) {
     await page.setViewportSize(viewport);
-    for (const path of ['/lab/', '/en/lab/']) {
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      const stage = page.locator('[data-model-stage]');
-      for (const view of ['model', 'atlas', 'tomogram', 'oracle', 'trinity', 'morph']) {
+    for (const path of ["/lab/", "/en/lab/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      const stage = page.locator("[data-model-stage]");
+      for (const view of [
+        "model",
+        "atlas",
+        "tomogram",
+        "oracle",
+        "trinity",
+        "morph",
+      ]) {
         await stage.evaluate((element, artifactView) => {
           element.dataset.artifactView = artifactView;
-          if (artifactView === 'model' && window.innerWidth <= 760) {
-            element.querySelector<HTMLElement>('.neural-memory-readout')!.textContent =
-              document.documentElement.lang === 'en'
-                ? 'SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD'
-                : '突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD';
+          if (artifactView === "model" && window.innerWidth <= 760) {
+            element.querySelector<HTMLElement>(
+              ".neural-memory-readout",
+            )!.textContent =
+              document.documentElement.lang === "en"
+                ? "SYNAPTIC MEMORY · 18 PATHS · 100% · FAMILIAR · FUTURE W4 100% · MEMORY 100% · OBSERVER C66CCD"
+                : "突触记忆 · 18 条路径 · 100% · 熟悉回路 · 未来胜者 4 100% · 记忆 100% · 观察者 C66CCD";
           }
         }, view);
         const layout = await page.evaluate(() => {
-          const heading = document.querySelector('.motion-heading')!.getBoundingClientRect();
-          const model = document.querySelector('[data-model-stage]')!.getBoundingClientRect();
+          const heading = document
+            .querySelector(".motion-heading")!
+            .getBoundingClientRect();
+          const model = document
+            .querySelector("[data-model-stage]")!
+            .getBoundingClientRect();
           return {
             headingBottom: heading.bottom,
             modelTop: model.top,
@@ -3128,21 +4956,47 @@ test('reduced-motion Lab keeps the model stage below its heading in every render
             modelRight: model.right,
           };
         });
-        expect(layout.modelTop, `${path} ${viewport.width}px ${view} should follow its heading`).toBeGreaterThanOrEqual(layout.headingBottom - 1);
-        expect(layout.modelLeft, `${path} ${viewport.width}px ${view} should remain in the viewport`).toBeGreaterThanOrEqual(-1);
-        expect(layout.modelRight, `${path} ${viewport.width}px ${view} should remain in the viewport`).toBeLessThanOrEqual(viewport.width + 1);
+        expect(
+          layout.modelTop,
+          `${path} ${viewport.width}px ${view} should follow its heading`,
+        ).toBeGreaterThanOrEqual(layout.headingBottom - 1);
+        expect(
+          layout.modelLeft,
+          `${path} ${viewport.width}px ${view} should remain in the viewport`,
+        ).toBeGreaterThanOrEqual(-1);
+        expect(
+          layout.modelRight,
+          `${path} ${viewport.width}px ${view} should remain in the viewport`,
+        ).toBeLessThanOrEqual(viewport.width + 1);
 
-        if (view === 'model') {
+        if (view === "model") {
           const controls = await page.evaluate(() => {
-            const stage = document.querySelector('[data-model-stage]')!.getBoundingClientRect();
-            const switcher = document.querySelector('.artifact-switcher')!.getBoundingClientRect();
-            const dock = document.querySelector('.model-controls-dock')!.getBoundingClientRect();
-            const readout = document.querySelector('.neural-memory-readout')!.getBoundingClientRect();
-            const detail = document.querySelector('.model-detail-status')!.getBoundingClientRect();
+            const stage = document
+              .querySelector("[data-model-stage]")!
+              .getBoundingClientRect();
+            const switcher = document
+              .querySelector(".artifact-switcher")!
+              .getBoundingClientRect();
+            const dock = document
+              .querySelector(".model-controls-dock")!
+              .getBoundingClientRect();
+            const readout = document
+              .querySelector(".neural-memory-readout")!
+              .getBoundingClientRect();
+            const detail = document
+              .querySelector(".model-detail-status")!
+              .getBoundingClientRect();
             return {
-              switcherInsideStage: switcher.top >= stage.top - 1 && switcher.bottom <= stage.bottom + 1,
-              dockInsideStage: dock.top >= stage.top - 1 && dock.bottom <= stage.bottom + 1,
-              controlsOverlap: switcher.left < dock.right && switcher.right > dock.left && switcher.top < dock.bottom && switcher.bottom > dock.top,
+              switcherInsideStage:
+                switcher.top >= stage.top - 1 &&
+                switcher.bottom <= stage.bottom + 1,
+              dockInsideStage:
+                dock.top >= stage.top - 1 && dock.bottom <= stage.bottom + 1,
+              controlsOverlap:
+                switcher.left < dock.right &&
+                switcher.right > dock.left &&
+                switcher.top < dock.bottom &&
+                switcher.bottom > dock.top,
               readoutOverlap:
                 window.innerWidth <= 760 &&
                 switcher.left < readout.right &&
@@ -3157,11 +5011,26 @@ test('reduced-motion Lab keeps the model stage below its heading in every render
                 switcher.bottom > detail.top,
             };
           });
-          expect(controls.switcherInsideStage, `${path} ${viewport.width}px view switcher should stay inside its model stage`).toBe(true);
-          expect(controls.dockInsideStage, `${path} ${viewport.width}px model controls should stay inside their stage`).toBe(true);
-          expect(controls.controlsOverlap, `${path} ${viewport.width}px view switcher and model controls should not overlap`).toBe(false);
-          expect(controls.readoutOverlap, `${path} ${viewport.width}px model metadata and view switcher should not overlap`).toBe(false);
-          expect(controls.detailOverlap, `${path} ${viewport.width}px detail label and view switcher should not overlap`).toBe(false);
+          expect(
+            controls.switcherInsideStage,
+            `${path} ${viewport.width}px view switcher should stay inside its model stage`,
+          ).toBe(true);
+          expect(
+            controls.dockInsideStage,
+            `${path} ${viewport.width}px model controls should stay inside their stage`,
+          ).toBe(true);
+          expect(
+            controls.controlsOverlap,
+            `${path} ${viewport.width}px view switcher and model controls should not overlap`,
+          ).toBe(false);
+          expect(
+            controls.readoutOverlap,
+            `${path} ${viewport.width}px model metadata and view switcher should not overlap`,
+          ).toBe(false);
+          expect(
+            controls.detailOverlap,
+            `${path} ${viewport.width}px detail label and view switcher should not overlap`,
+          ).toBe(false);
         }
       }
     }
@@ -3170,21 +5039,46 @@ test('reduced-motion Lab keeps the model stage below its heading in every render
   await context.close();
 });
 
-test('sitemap lists every public bilingual route', async ({ request }) => {
-  const response = await request.get('/sitemap.xml');
+test("sitemap lists every public bilingual route", async ({ request }) => {
+  const response = await request.get("/sitemap.xml");
   expect(response.ok()).toBeTruthy();
   const sitemap = await response.text();
-  const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname);
-  expect(paths).toEqual(['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']);
+  const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+    (match) => new URL(match[1]).pathname,
+  );
+  expect(paths).toEqual([
+    "/",
+    "/en/",
+    "/formats/",
+    "/en/formats/",
+    "/cases/",
+    "/en/cases/",
+    "/lab/",
+    "/en/lab/",
+  ]);
 });
 
-test('all public routes expose complete social metadata', async ({ request }) => {
-  for (const path of ['/', '/en/', '/formats/', '/en/formats/', '/cases/', '/en/cases/', '/lab/', '/en/lab/']) {
+test("all public routes expose complete social metadata", async ({
+  request,
+}) => {
+  for (const path of [
+    "/",
+    "/en/",
+    "/formats/",
+    "/en/formats/",
+    "/cases/",
+    "/en/cases/",
+    "/lab/",
+    "/en/lab/",
+  ]) {
     const response = await request.get(path);
     expect(response.ok()).toBeTruthy();
     const html = await response.text();
     const titles = html.match(/<title\b[^>]*>[\s\S]*?<\/title>/gi) || [];
-    expect(titles, `${path} should expose exactly one document title`).toHaveLength(1);
+    expect(
+      titles,
+      `${path} should expose exactly one document title`,
+    ).toHaveLength(1);
     expect(html).toContain('property="og:image"');
     expect(html).toContain('name="twitter:image"');
     expect(html).toContain('rel="icon"');
