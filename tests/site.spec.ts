@@ -1986,9 +1986,17 @@ test("the studio environment map is requested only by the Lab runtime", async ({
   page,
 }) => {
   const studioEnvironmentRequests: string[] = [];
+  const modelSourcesAtEnvironmentRequest: string[] = [];
   page.on("request", (request) => {
     if (new URL(request.url()).pathname.includes("RoomEnvironment"))
       studioEnvironmentRequests.push(request.url());
+  });
+  await page.route("**/RoomEnvironment*.js", async (route) => {
+    modelSourcesAtEnvironmentRequest.push(
+      (await page.locator("[data-model-stage]").getAttribute("data-model-source")) ??
+        "not-ready",
+    );
+    await route.continue();
   });
 
   for (const path of ["/", "/en/"]) {
@@ -1997,12 +2005,22 @@ test("the studio environment map is requested only by the Lab runtime", async ({
     expect(studioEnvironmentRequests, `${path} homepage bundle`).toHaveLength(0);
   }
 
-  for (const path of ["/lab/", "/en/lab/"]) {
+  for (const [index, path] of ["/lab/", "/en/lab/"].entries()) {
     await page.goto(path, { waitUntil: "domcontentloaded" });
+    const modelStage = page.locator("[data-model-stage]");
+    await expect(modelStage).toHaveAttribute(
+      "data-controls-ready",
+      "true",
+    );
+    await modelStage.scrollIntoViewIfNeeded();
     await expect
       .poll(() => studioEnvironmentRequests.length, { timeout: 10_000 })
-      .toBeGreaterThan(0);
+      .toBe(index + 1);
+    await expect
+      .poll(() => modelSourcesAtEnvironmentRequest.length, { timeout: 10_000 })
+      .toBe(index + 1);
   }
+  expect(modelSourcesAtEnvironmentRequest).toEqual(["glb", "glb"]);
 });
 
 test("all public pages share the paper-grain visual layer", async ({
