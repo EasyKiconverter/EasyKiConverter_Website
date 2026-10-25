@@ -130,9 +130,12 @@ export const setupModel = async (): Promise<void> => {
   stage?.setAttribute("data-controls-ready", "true");
 
   const THREE = await import("three");
-  const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
-  const { MeshoptDecoder } =
-    await import("three/addons/libs/meshopt_decoder.module.js");
+  const [{ GLTFLoader }, { MeshoptDecoder }, { RoomEnvironment }] =
+    await Promise.all([
+      import("three/addons/loaders/GLTFLoader.js"),
+      import("three/addons/libs/meshopt_decoder.module.js"),
+      import("three/addons/environments/RoomEnvironment.js"),
+    ]);
   const canvas = document.querySelector<HTMLCanvasElement>("#model-canvas");
   const atlasCanvas =
     stage?.querySelector<HTMLCanvasElement>("[data-mesh-atlas]");
@@ -310,6 +313,26 @@ export const setupModel = async (): Promise<void> => {
   renderer.localClippingEnabled = true;
 
   const scene = new THREE.Scene();
+  let studioEnvironment: InstanceType<typeof RoomEnvironment> | null = null;
+  let pmremGenerator: THREE.PMREMGenerator | null = null;
+  try {
+    studioEnvironment = new RoomEnvironment();
+    pmremGenerator = new THREE.PMREMGenerator(renderer);
+    // A small, procedural studio map adds broad PBR highlights without a network asset.
+    scene.environment = pmremGenerator.fromScene(
+      studioEnvironment,
+      0,
+      0.1,
+      100,
+      { size: 128 },
+    ).texture;
+    scene.environmentIntensity = 0.12;
+  } catch {
+    // Keep the existing direct lights as a complete fallback on limited GPUs.
+  } finally {
+    studioEnvironment?.dispose();
+    pmremGenerator?.dispose();
+  }
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
   camera.position.set(0, 0, 4);
 

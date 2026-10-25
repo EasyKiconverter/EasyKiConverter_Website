@@ -2,6 +2,12 @@
 
 [中文](OPTIMIZATION_LOG.md)
 
+## 2026-10-26 — Add subtle studio reflections to the Lab model
+
+- **Issue:** The real component geometry was visible, but the light-gray board lacked environmental reflections and still looked flat in desktop and mobile screenshots, with weak edge definition.
+- **Change:** Lazily load Three.js `RoomEnvironment` in the Lab, generate a 128px PMREM, and set environment intensity to 0.12; retain the source GLB materials and direct lights. Keep the existing direct-light fallback if generation fails. No external environment texture, geometry, or wireframe changes.
+- **Validation:** Chinese and English Chromium SwiftShader loaded the real model at 320×760, 390×844, 768×1024, 1440×900, and 1920×1080 (10 language/viewport combinations), with no page/console errors or failed first-party requests. Screenshots: `.github/pr-evidence/lab-studio-environment-after-{zh,en}-{320x760,390x844,768x1024,1440x900,1920x1080}.jpg`. One instrumented sample measured 833ms to first frame and 74ms for PMREM generation; this is not a real-device benchmark. Build generated eight pages with zero Astro diagnostics; eight-page validation, model-asset checks, the full Playwright suite on an isolated preview (281 passed, 6 skipped), and `pnpm run format:check` passed. The Release API returned 403 and the checked-in `v3.1.13` fallback was used. Not merged, deployed, or tested on real devices.
+
 ## 2026-10-15 — Match format-matrix evidence links to each target
 
 - **Finding:** Ten format rows linked to the same parallel-export cancellation test. As a result, targets such as Altium had no relevant linked evidence, and the page described a manual procedure generically as a repository test.

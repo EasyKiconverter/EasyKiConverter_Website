@@ -1982,6 +1982,29 @@ test("the heavy 3D runtime is isolated to the Lab route", async ({
   }
 });
 
+test("the studio environment map is requested only by the Lab runtime", async ({
+  page,
+}) => {
+  const studioEnvironmentRequests: string[] = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname.includes("RoomEnvironment"))
+      studioEnvironmentRequests.push(request.url());
+  });
+
+  for (const path of ["/", "/en/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("h1")).toBeVisible();
+    expect(studioEnvironmentRequests, `${path} homepage bundle`).toHaveLength(0);
+  }
+
+  for (const path of ["/lab/", "/en/lab/"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await expect
+      .poll(() => studioEnvironmentRequests.length, { timeout: 10_000 })
+      .toBeGreaterThan(0);
+  }
+});
+
 test("all public pages share the paper-grain visual layer", async ({
   page,
 }) => {
