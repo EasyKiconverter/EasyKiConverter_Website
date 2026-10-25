@@ -243,6 +243,12 @@ test("bilingual homepage places the complete, centered model below the hero at e
           `${path} 1440x900: the complete 3D stage fits in the first viewport`,
         ).toBeLessThanOrEqual(viewport.height - 4);
       }
+      if (viewport.width <= 360 && viewport.height >= 700) {
+        expect(
+          geometry.scene.bottom,
+          `${path} ${viewport.width}x${viewport.height}: the complete 3D stage fits in the first viewport`,
+        ).toBeLessThanOrEqual(viewport.height - 4);
+      }
     }
   }
 });
