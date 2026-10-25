@@ -130,9 +130,10 @@ export const setupModel = async (): Promise<void> => {
   stage?.setAttribute("data-controls-ready", "true");
 
   const THREE = await import("three");
-  const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
-  const { MeshoptDecoder } =
-    await import("three/addons/libs/meshopt_decoder.module.js");
+  const [{ GLTFLoader }, { MeshoptDecoder }] = await Promise.all([
+    import("three/addons/loaders/GLTFLoader.js"),
+    import("three/addons/libs/meshopt_decoder.module.js"),
+  ]);
   const canvas = document.querySelector<HTMLCanvasElement>("#model-canvas");
   const atlasCanvas =
     stage?.querySelector<HTMLCanvasElement>("[data-mesh-atlas]");
@@ -310,6 +311,8 @@ export const setupModel = async (): Promise<void> => {
   renderer.localClippingEnabled = true;
 
   const scene = new THREE.Scene();
+  let studioEnvironmentScheduled = false;
+  let studioEnvironmentAttempted = false;
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
   camera.position.set(0, 0, 4);
 
@@ -1998,6 +2001,76 @@ export const setupModel = async (): Promise<void> => {
   let rendering = false;
   let reducedMotionRenderPending = true;
   let modelUploaded = false;
+  const scheduleStudioEnvironment = (): void => {
+    if (
+      studioEnvironmentScheduled ||
+      studioEnvironmentAttempted ||
+      scene.environment ||
+      !modelUploaded ||
+      !state.visible ||
+      document.hidden
+    )
+      return;
+    studioEnvironmentScheduled = true;
+    const initialize = async (): Promise<void> => {
+      let studioEnvironment: THREE.Scene | null = null;
+      let pmremGenerator: THREE.PMREMGenerator | null = null;
+      try {
+        if (
+          scene.environment ||
+          !modelUploaded ||
+          !state.visible ||
+          document.hidden ||
+          !canvas.isConnected ||
+          !stage.isConnected
+        )
+          return;
+        studioEnvironmentAttempted = true;
+        const { RoomEnvironment } = await import(
+          "three/addons/environments/RoomEnvironment.js"
+        );
+        if (
+          scene.environment ||
+          !state.visible ||
+          document.hidden ||
+          !canvas.isConnected ||
+          !stage.isConnected
+        ) {
+          studioEnvironmentAttempted = false;
+          return;
+        }
+        studioEnvironment = new RoomEnvironment();
+        pmremGenerator = new THREE.PMREMGenerator(renderer);
+        // Build the procedural studio map after the model is visible and the main thread is idle.
+        const environment = pmremGenerator.fromScene(
+          studioEnvironment,
+          0,
+          0.1,
+          100,
+          { size: 128 },
+        );
+        scene.environment = environment.texture;
+        scene.environmentIntensity = 0.12;
+        wake();
+      } catch {
+        // Keep the existing direct lights as a complete fallback on limited GPUs.
+      } finally {
+        studioEnvironment?.dispose();
+        pmremGenerator?.dispose();
+        studioEnvironmentScheduled = false;
+      }
+    };
+    const requestIdle = window.requestIdleCallback;
+    if (typeof requestIdle === "function") {
+      requestIdle.call(
+        window,
+        () => void initialize(),
+        { timeout: 1800 },
+      );
+    } else {
+      window.setTimeout(() => void initialize(), 250);
+    }
+  };
   const neuralMemory = stage.querySelector<HTMLElement>("[data-neural-memory]");
   const synapticStorageKey = "easyki-synaptic-memory-v1";
   const persistedSynapses = new Map<
@@ -7401,6 +7474,7 @@ export const setupModel = async (): Promise<void> => {
     centerMm: number[],
   ): void => {
     modelUploaded = true;
+    scheduleStudioEnvironment();
     modelSpanMm = spanMm;
     modelCenterMm = centerMm.length === 3 ? centerMm : [0, 0, 0];
     const materials = new Map<string, THREE.MeshStandardMaterial>();
@@ -11817,7 +11891,10 @@ export const setupModel = async (): Promise<void> => {
     },
     { passive: true },
   );
-  document.addEventListener("visibilitychange", wake);
+  document.addEventListener("visibilitychange", () => {
+    wake();
+    scheduleStudioEnvironment();
+  });
   const motionPreference = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   );
@@ -11847,6 +11924,7 @@ export const setupModel = async (): Promise<void> => {
       ([entry]) => {
         state.visible = entry.isIntersecting;
         wake();
+        scheduleStudioEnvironment();
       },
       { threshold: 0.01 },
     ).observe(stage);
