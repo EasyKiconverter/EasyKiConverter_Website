@@ -2190,3 +2190,13 @@
     visibility: hidden;
   }
 }
+
+@media (min-width: 1200px) and (max-height: 1000px) {
+  .product-journey {
+    gap: clamp(10px, calc(28svh - 242px), 3vw);
+  }
+
+  .product-journey > .hero {
+    padding-top: clamp(11px, calc(19svh - 160px), clamp(24px, 3svh, 40px));
+  }
+}
