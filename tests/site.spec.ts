@@ -3701,6 +3701,21 @@ test("Lab loading state is bilingual, respects reduced motion, and ends when rea
 }) => {
   test.setTimeout(60_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
+  const poster = page.locator("[data-model-poster]");
+  const posterImage = poster.locator("img");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/lab/", { waitUntil: "domcontentloaded" });
+  await expect(posterImage).toBeVisible();
+  await expect
+    .poll(() => posterImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0))
+    .toBe(true);
+  expect(await posterImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain(
+    "easyki-lab-model-poster-mobile.webp",
+  );
+  await page.setViewportSize({ width: 1280, height: 900 });
+  expect(await posterImage.evaluate((image: HTMLImageElement) => image.currentSrc)).toContain(
+    "easyki-lab-model-poster.webp",
+  );
   for (const path of ["/lab/", "/en/lab/"]) {
     let continueAsset!: () => void;
     const assetGate = new Promise<void>((resolve) => {
@@ -3714,6 +3729,7 @@ test("Lab loading state is bilingual, respects reduced motion, and ends when rea
     await page.goto(path, { waitUntil: "domcontentloaded" });
     const stage = page.locator("[data-model-stage]");
     await stage.scrollIntoViewIfNeeded();
+    await expect(posterImage).toBeVisible();
     await page.evaluate(() => {
       const nativeRequestAnimationFrame =
         window.requestAnimationFrame.bind(window);
@@ -3745,6 +3761,9 @@ test("Lab loading state is bilingual, respects reduced motion, and ends when rea
     });
     const loading = stage.locator(".model-loading-state");
     await expect(loading).toBeVisible();
+    await expect(stage.locator(".artifact-switcher")).toBeVisible();
+    await expect(stage.locator(".model-controls-dock")).toBeVisible();
+    await expect(stage.locator("[data-model-detail-status]")).toBeHidden();
     await expect(loading).toContainText(
       path.startsWith("/en/")
         ? "Preparing the real 3D model"
@@ -3772,7 +3791,31 @@ test("Lab loading state is bilingual, respects reduced motion, and ends when rea
     await expect(stage).toHaveClass(/model-loaded/, { timeout: 20_000 });
     await expect(stage).toHaveAttribute("data-first-frame-rendered", "true");
     await expect(loading).toBeHidden();
+    await expect(poster).toBeHidden();
+    await expect(stage.locator(".artifact-switcher")).toBeVisible();
+    await expect(stage.locator("[data-model-detail-status]")).toBeVisible();
     await page.unroute("**/assets/model/*.glb");
+  }
+});
+
+test("Lab keeps the static model poster visible when interactive model assets fail", async ({
+  page,
+}) => {
+  await blockLabGeometryAssets(page);
+  for (const [path, copy] of [
+    ["/lab/", "静态模型预览"],
+    ["/en/lab/", "Static model preview"],
+  ] as const) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    const stage = page.locator("[data-model-stage]");
+    await expect(stage).toHaveClass(/model-fallback/, { timeout: 20_000 });
+    const poster = stage.locator("[data-model-poster]");
+    const image = poster.locator("img");
+    await expect(poster).toBeVisible();
+    await expect.poll(() => image.evaluate((item: HTMLImageElement) => item.complete && item.naturalWidth > 0)).toBe(true);
+    await expect(stage.locator(".model-fallback-copy")).toContainText(copy);
+    await expect(stage.locator(".artifact-switcher")).toBeVisible();
+    await expect(stage.locator(".model-controls-dock")).toBeVisible();
   }
 });
 
