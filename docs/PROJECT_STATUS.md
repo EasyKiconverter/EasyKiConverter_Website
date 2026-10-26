@@ -10,13 +10,13 @@
 
 ## 当前阶段
 
-截至 2026-10-26，`version/V0.0.1` 与远程一致，当前提交为 `718a052`（PR #425）。PR #422–#425 均已合入版本分支，经过 Feng083 独立审批，`Static site checks` 与 `Dependency Review` 均成功；内容包括 Lab 静态模型预览、模型表面细节、首页首屏文案可见性，以及 reduced-motion 下 Lab 控件可达性。本状态快照生成时，`master` 为 `81b4938`（PR #418 文档晋级），生产站仍对应 2026-10-25 的部署记录；版本分支尚未晋级或部署。
+截至 2026-10-26，`version/V0.0.1` 的基础提交 `718a052` 已经由 PR #426 晋级至 `master`，部署提交为 `5486e563691385788356c276f2ef4399591ccb97`。PR #422–#426 均已合并；本轮部署记录文档已由 PR #428 合入版本分支，版本分支相较 master 还包含其他历史提交，故这些记录正通过独立晋级 PR 提交至 master。
 
 当前版本分支验证：`pnpm run check` 检查 38 个 Astro 文件、0 项诊断；`pnpm run format:check`、`pnpm run build`（生成 8 页）、`python3 tools/validate_site.py`（8 页）、`pnpm run assets:check` 与 `git diff --check` 均通过。完整浏览器回归为 284 passed、6 skipped。另对中英文 8 个公开路由在 320×760、390×844、768×1024、1440×900、1920×1080 做了 40 组 reduced-motion 布局检查，未发现横向溢出、主内容地标缺失或导航不可见；实际检查了 390px 与 1440px 页面截图及首页滚动叙事。构建时 GitHub Release API 返回 403，按规则使用仓库内 `v3.1.13` 回退数据。
 
-2026-10-26 只读线上复核确认 8 个生产路由均返回 HTTP 200，且各自有一个 `<title>`、一个 canonical 和完整 hreflang（`zh-CN`、`en`、`x-default`）；响应 `Last-Modified` 为 `Sat, 24 Oct 2026 22:13:18 GMT`。真实设备及不同网络条件仍未验证。
+PR #426 合入后的 Site Quality run `40256709817` 成功。`tools/deploy_production.py` 于 2026-10-26 完成部署，部署 ID 为 `20261026-103601`，远端备份为 `/var/www/backups/easykiconverter-website-20261026-103601`；工具的构建、8 路由 smoke test 与 Nginx 配置检查均通过。线上 Chromium 确认全部 8 个路由 HTTP 200、canonical/hreflang 正确、768px 无横向溢出，且无页面错误或本站请求失败。模拟阻断 Lab 模型/vendor 资源后，中英文静态模型海报、降级说明及控件仍可用，截图见[中文](../.github/pr-evidence/production-lab-fallback-zh-390-20261026.png)与[英文](../.github/pr-evidence/production-lab-fallback-en-390-20261026.png)。构建因 GitHub Release API 403 限流使用仓库 `v3.1.13` 回退数据；真实设备与不同网络条件仍未验证。
 
-历史记录（2026-10-17，PR #398）：Lab 手机视图切换栏增加了中英文提示并通过回归；当时尚未部署。当前生产状态以 2026-10-25 部署后审计为准。
+历史记录（2026-10-17，PR #398）：Lab 手机视图切换栏增加了中英文提示并通过回归；当时尚未部署。2026-10-25 部署审计保留为历史记录，当前生产状态见上方 2026-10-26 摘要。
 
 ### 2026-10-25 部署后审计（PR #416 之后）
 
