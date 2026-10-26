@@ -155,6 +155,7 @@ if (depthStage || depthRail) {
       const scene = depthRail.querySelector<HTMLElement>('[data-conversion-scene]');
       const sceneBox = scene?.getBoundingClientRect();
       const sceneIsSticky = scene && window.getComputedStyle(scene).position === 'sticky';
+      const tabletCardClearanceEnabled = sceneIsSticky && window.innerWidth >= 600 && window.innerWidth <= 850 && window.innerHeight >= 640;
       const storyStart = sceneIsSticky ? Number.parseFloat(window.getComputedStyle(scene).top) || 0 : window.innerHeight * 0.78;
       const storyRunway = sceneIsSticky && sceneBox
         ? Math.max(1, (railBox.height - sceneBox.height) * (window.innerWidth <= 850 ? 0.75 : 1))
@@ -173,6 +174,14 @@ if (depthStage || depthRail) {
         card.style.setProperty('--story-turn', `${(centerOffset * 2.4 * (1 - activation)).toFixed(2)}deg`);
         card.toggleAttribute('data-active', activation > 0.48);
       });
+      if (scene && tabletCardClearanceEnabled) {
+        cards.forEach((card) => card.style.setProperty('--tablet-card-clearance', '0px'));
+        const clearanceTop = scene.getBoundingClientRect().bottom + 12;
+        cards.filter((card) => card.hasAttribute('data-active')).forEach((card) => {
+          const clearance = Math.max(0, clearanceTop - card.getBoundingClientRect().top);
+          card.style.setProperty('--tablet-card-clearance', `${clearance.toFixed(2)}px`);
+        });
+      }
     }
     if (canAnimate() && (Math.abs(pointerX - currentX) > 0.002 || Math.abs(pointerY - currentY) > 0.002)) scheduleDepthFrame();
   };

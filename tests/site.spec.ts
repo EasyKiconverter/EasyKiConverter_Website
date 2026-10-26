@@ -1176,6 +1176,8 @@ test('conversion scene stays visible with its active narrative on tablet and pho
     await page.setViewportSize(viewport);
     for (const path of ['/', '/en/']) {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await expect(page.locator('html')).toHaveClass(/js-ready/);
+      await page.evaluate(() => document.fonts.ready);
       const scene = page.locator('[data-conversion-scene]');
       await expect(scene).toHaveCSS('position', 'sticky');
       await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
@@ -1189,7 +1191,10 @@ test('conversion scene stays visible with its active narrative on tablet and pho
         };
       });
       const scrollRunway = (railHeight - sceneHeight) * 0.75;
-      for (const [progress, activeIndex] of [[0, 0], [0.5, 1], [1, 2], [0.5, 1], [0, 0]] as const) {
+      const progressPoints = width >= 600 && width <= 850 && height >= 640
+        ? [[0, 0], [0.5, 1], [0.65, 1], [1, 2], [0.5, 1], [0, 0]] as const
+        : [[0, 0], [0.5, 1], [1, 2], [0.5, 1], [0, 0]] as const;
+      for (const [progress, activeIndex] of progressPoints) {
         await page.evaluate(({ railTop, stickyTop, scrollRunway, progress }) => {
           window.scrollTo({ top: railTop - stickyTop + scrollRunway * progress, behavior: 'instant' });
         }, { railTop, stickyTop, scrollRunway, progress });
@@ -1229,6 +1234,22 @@ test('conversion scene stays visible with its active narrative on tablet and pho
               return { left, top, right, bottom };
             };
             const modelRect = model.getBoundingClientRect();
+            const modelQuad = (model as HTMLElement & {
+              getBoxQuads?: () => Array<{
+                p1: { x: number; y: number };
+                p2: { x: number; y: number };
+                p3: { x: number; y: number };
+                p4: { x: number; y: number };
+              }>;
+            }).getBoxQuads?.()[0];
+            const modelCorners = modelQuad
+              ? [modelQuad.p1, modelQuad.p2, modelQuad.p3, modelQuad.p4]
+              : [
+                  { x: modelRect.left, y: modelRect.top },
+                  { x: modelRect.right, y: modelRect.top },
+                  { x: modelRect.right, y: modelRect.bottom },
+                  { x: modelRect.left, y: modelRect.bottom },
+                ];
             const decorations = [...card.querySelectorAll<HTMLElement>('.story-stack b, .story-pulse, .story-check')].map((element) => ({
               ...rect(element),
               text: element.textContent?.trim() ?? '',
@@ -1236,8 +1257,11 @@ test('conversion scene stays visible with its active narrative on tablet and pho
             let cardPaintedOverModel = 0;
             for (let row = 0; row < 11; row += 1) {
               for (let column = 0; column < 11; column += 1) {
-                const x = modelRect.left + modelRect.width * (0.12 + ((column + 0.5) / 11) * 0.76);
-                const y = modelRect.top + modelRect.height * (0.12 + ((row + 0.5) / 11) * 0.76);
+                const u = 0.08 + ((column + 0.5) / 11) * 0.84;
+                const v = 0.08 + ((row + 0.5) / 11) * 0.84;
+                const [topLeft, topRight, bottomRight, bottomLeft] = modelCorners;
+                const x = (1 - u) * (1 - v) * topLeft.x + u * (1 - v) * topRight.x + u * v * bottomRight.x + (1 - u) * v * bottomLeft.x;
+                const y = (1 - u) * (1 - v) * topLeft.y + u * (1 - v) * topRight.y + u * v * bottomRight.y + (1 - u) * v * bottomLeft.y;
                 if (document.elementFromPoint(x, y)?.closest('.story-card')) cardPaintedOverModel += 1;
               }
             }
@@ -1248,6 +1272,10 @@ test('conversion scene stays visible with its active narrative on tablet and pho
               card: rect(card),
               decorations,
               layer: rect(layer),
+              layerOverflow: {
+                horizontal: layer.scrollWidth - layer.clientWidth,
+                vertical: layer.scrollHeight - layer.clientHeight,
+              },
               cardPaintedOverModel,
             };
           });
@@ -1264,7 +1292,9 @@ test('conversion scene stays visible with its active narrative on tablet and pho
           expect(card.right, `${path} ${width}x${height}px ${progress} complete card right`).toBeLessThanOrEqual(width + 1);
           expect(card.top, `${path} ${width}x${height}px ${progress} complete card top`).toBeGreaterThanOrEqual(-1);
           expect(card.bottom, `${path} ${width}x${height}px ${progress} complete card bottom`).toBeLessThanOrEqual(height + 1);
-          expect(card.top, `${path} ${width}x${height}px ${progress} complete card clears the model scene`).toBeGreaterThanOrEqual(scene.bottom - 1);
+          expect(card.top, `${path} ${width}x${height}px ${progress} complete card clears the model scene`).toBeGreaterThanOrEqual(scene.bottom + 8);
+          expect(renderedGeometry.layerOverflow.horizontal, `${path} ${width}x${height}px ${progress} complete stage label has no horizontal clipping`).toBeLessThanOrEqual(1);
+          expect(renderedGeometry.layerOverflow.vertical, `${path} ${width}x${height}px ${progress} complete stage label has no vertical clipping`).toBeLessThanOrEqual(1);
           for (const [decorationIndex, decoration] of renderedGeometry.decorations.entries()) {
             expect(decoration.text, `${path} ${width}x${height}px ${progress} card decoration ${decorationIndex} has text`).not.toBe('');
             expect(decoration.left, `${path} ${width}x${height}px ${progress} card decoration ${decorationIndex} stays inside the card`).toBeGreaterThanOrEqual(card.left - 1);
@@ -1290,9 +1320,11 @@ test('conversion scene stays visible with its active narrative on tablet and pho
         if (height <= 500 && width > 600) {
           const sceneBounds = await scene.boundingBox();
           expect(sceneBounds).not.toBeNull();
-          expect(activeHeading!.x, `${path} ${width}px landscape card clears the model stage`).toBeGreaterThan(sceneBounds!.x + sceneBounds!.width);
+          expect(activeHeading!.x, `${path} ${width}x${height}px stage ${progress} landscape card clears the model stage`).toBeGreaterThan(sceneBounds!.x + sceneBounds!.width);
         } else {
-          expect(activeHeading!.y).toBeGreaterThan(visibleGeometry.bottom - 18);
+          const settledHeading = await page.locator('.story-card[data-active] h3').boundingBox();
+          expect(settledHeading, `${path} ${width}x${height}px stage ${progress} settled heading`).not.toBeNull();
+          expect(settledHeading!.y, `${path} ${width}x${height}px stage ${progress} active heading clears the model scene`).toBeGreaterThan(visibleGeometry.bottom - 18);
         }
       }
       const bounds = await scene.evaluate((element) => {

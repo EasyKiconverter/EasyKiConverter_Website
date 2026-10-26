@@ -1382,7 +1382,7 @@
   .js-ready .story-rail > .story-card.story-card-a[data-active],
   .js-ready .story-rail > .story-card.story-card-b[data-active],
   .js-ready .story-rail > .story-card.story-card-c[data-active] {
-    transform: translateY(calc(var(--story-lift, 0px) + var(--tablet-card-offset, 0px))) scale(0.88);
+    transform: translateY(calc(var(--story-lift, 0px) + var(--tablet-card-offset, 0px) + var(--tablet-card-clearance, 0px))) scale(0.84);
     transform-origin: top center;
   }
 
@@ -1391,11 +1391,15 @@
   }
 
   .js-ready .story-rail > .story-card.story-card-b[data-active] {
-    --tablet-card-offset: 58px;
+    --tablet-card-offset: 0px;
   }
 
   .js-ready .story-rail > .story-card.story-card-c[data-active] {
-    --tablet-card-offset: 70px;
+    --tablet-card-offset: 0px;
+  }
+
+  .js-ready .story-rail > .story-card[data-active] {
+    transition: none;
   }
 
   .story-rail > .story-card[data-active] {
