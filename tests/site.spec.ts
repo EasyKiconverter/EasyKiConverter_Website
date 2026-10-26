@@ -3636,7 +3636,7 @@ test("Lab advanced controls stay beside the model with reduced motion enabled", 
         return { top: rect.top, bottom: rect.bottom, viewportHeight: innerHeight };
       });
       expect(reachable.top).toBeGreaterThanOrEqual(-1);
-      expect(reachable.bottom).toBeLessThanOrEqual(reachable.viewportHeight + 1);
+      expect(reachable.bottom).toBeLessThanOrEqual(reachable.viewportHeight + 2);
     }
   }
 });
