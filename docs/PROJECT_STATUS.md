@@ -10,7 +10,11 @@
 
 ## 当前阶段
 
-截至 2026-10-26，`version/V0.0.1` 为 `a599a5a`（PR #422 合并后）；PR #416 以合并提交 `d2e5d43` 晋级至 `master`。PR #420 调整桌面首页产品场景首屏布局，PR [#421](https://github.com/EasyKiconverter/EasyKiConverter_Website/pull/421) 修复 320×760 首页模型场景超出首屏的问题；两者均经 Feng083 独立审批后合入版本分支。PR #421 的 PR 与合并后 Site Quality 均为 277 passed、6 skipped，Dependency Review 通过。截图：[中文修复前](../.github/pr-evidence/mobile-stage-fit-before-zh-320x760.png)、[中文修复后](../.github/pr-evidence/mobile-stage-fit-after-zh-320x760.png)、[英文修复前](../.github/pr-evidence/mobile-stage-fit-before-en-320x760.png)、[英文修复后](../.github/pr-evidence/mobile-stage-fit-after-en-320x760.png)。本地构建生成 8 页且 Astro 0 诊断；格式、页面、模型资产和差异检查通过。正式站已于 2026-10-25 通过仓库部署工具发布，备份为 `/var/www/backups/easykiconverter-website-20261025-061311`；脚本验证 8 个路由 HTTP 200、单一 `<title>`、canonical 和 hreflang 正确。线上 Chromium 复核覆盖 8 路由 × 320/390/768/1440px 共 32 组，无横向溢出、页面/控制台错误或本站资源失败；首页 390/768px 的中英文四阶段均加载真实 WebGL，303 个网格中 302 个可移动，阶段截图无卡片遮挡。Release API 返回 403，构建使用仓库 `v3.1.13` 回退数据。生产部署和桌面模拟浏览器验收完成；真实设备及不同网络条件仍未验证。新一轮本地 P1 候选见质量基线和优化记录，尚未晋级 `master` 或部署。
+截至 2026-10-26，`version/V0.0.1` 与远程一致，当前提交为 `718a052`（PR #425）。PR #422–#425 均已合入版本分支，经过 Feng083 独立审批，`Static site checks` 与 `Dependency Review` 均成功；内容包括 Lab 静态模型预览、模型表面细节、首页首屏文案可见性，以及 reduced-motion 下 Lab 控件可达性。本状态快照生成时，`master` 为 `81b4938`（PR #418 文档晋级），生产站仍对应 2026-10-25 的部署记录；版本分支尚未晋级或部署。
+
+当前版本分支验证：`pnpm run check` 检查 38 个 Astro 文件、0 项诊断；`pnpm run format:check`、`pnpm run build`（生成 8 页）、`python3 tools/validate_site.py`（8 页）、`pnpm run assets:check` 与 `git diff --check` 均通过。完整浏览器回归为 284 passed、6 skipped。另对中英文 8 个公开路由在 320×760、390×844、768×1024、1440×900、1920×1080 做了 40 组 reduced-motion 布局检查，未发现横向溢出、主内容地标缺失或导航不可见；实际检查了 390px 与 1440px 页面截图及首页滚动叙事。构建时 GitHub Release API 返回 403，按规则使用仓库内 `v3.1.13` 回退数据。
+
+2026-10-26 只读线上复核确认 8 个生产路由均返回 HTTP 200，且各自有一个 `<title>`、一个 canonical 和完整 hreflang（`zh-CN`、`en`、`x-default`）；响应 `Last-Modified` 为 `Sat, 24 Oct 2026 22:13:18 GMT`。真实设备及不同网络条件仍未验证。
 
 历史记录（2026-10-17，PR #398）：Lab 手机视图切换栏增加了中英文提示并通过回归；当时尚未部署。当前生产状态以 2026-10-25 部署后审计为准。
 
