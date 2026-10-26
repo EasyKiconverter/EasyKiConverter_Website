@@ -10,9 +10,11 @@
 
 ## 当前阶段
 
-截至 2026-10-26，`version/V0.0.1` 为 `a599a5a`（PR #422 合并后）；PR #416 以合并提交 `d2e5d43` 晋级至 `master`。PR #420 调整桌面首页产品场景首屏布局，PR [#421](https://github.com/EasyKiconverter/EasyKiConverter_Website/pull/421) 修复 320×760 首页模型场景超出首屏的问题；两者均经 Feng083 独立审批后合入版本分支。PR #421 的 PR 与合并后 Site Quality 均为 277 passed、6 skipped，Dependency Review 通过。截图：[中文修复前](../.github/pr-evidence/mobile-stage-fit-before-zh-320x760.png)、[中文修复后](../.github/pr-evidence/mobile-stage-fit-after-zh-320x760.png)、[英文修复前](../.github/pr-evidence/mobile-stage-fit-before-en-320x760.png)、[英文修复后](../.github/pr-evidence/mobile-stage-fit-after-en-320x760.png)。本地构建生成 8 页且 Astro 0 诊断；格式、页面、模型资产和差异检查通过。正式站已于 2026-10-25 通过仓库部署工具发布，备份为 `/var/www/backups/easykiconverter-website-20261025-061311`；脚本验证 8 个路由 HTTP 200、单一 `<title>`、canonical 和 hreflang 正确。线上 Chromium 复核覆盖 8 路由 × 320/390/768/1440px 共 32 组，无横向溢出、页面/控制台错误或本站资源失败；首页 390/768px 的中英文四阶段均加载真实 WebGL，303 个网格中 302 个可移动，阶段截图无卡片遮挡。Release API 返回 403，构建使用仓库 `v3.1.13` 回退数据。生产部署和桌面模拟浏览器验收完成；真实设备及不同网络条件仍未验证。新一轮本地 P1 候选见质量基线和优化记录，尚未晋级 `master` 或部署。
+截至 2026-10-26，`version/V0.0.1` 为 `718a052`（PR #425）。PR [#426](https://github.com/EasyKiconverter/EasyKiConverter_Website/pull/426) 已将该版本晋级 `master`；生产部署提交为 `5486e563691385788356c276f2ef4399591ccb97`。合并后 Site Quality run [40256709817](https://github.com/EasyKiconverter/EasyKiConverter_Website/actions/runs/40256709817) 成功后，`tools/deploy_production.py` 于 2026-10-26 完成部署，部署 ID 为 `20261026-103601`，远端备份为 `/var/www/backups/easykiconverter-website-20261026-103601`。脚本构建、8 路由线上 smoke test 与 Nginx 配置检查均通过。
 
-历史记录（2026-10-17，PR #398）：Lab 手机视图切换栏增加了中英文提示并通过回归；当时尚未部署。当前生产状态以 2026-10-25 部署后审计为准。
+生产构建检查 38 个 Astro 文件、0 项诊断并生成 8 页；GitHub Release API 返回 403 限流，按规则使用仓库 `v3.1.13` 回退数据。线上 Chromium 复核全部 8 个公开路由：HTTP 200、canonical/hreflang 正确、768px 视口无横向溢出，未见页面错误或本站请求失败。模拟阻断 Lab 模型与 vendor 资源后，中英文静态模型海报（自然宽度 720px）、本地化降级说明和控件仍可见；截图见[中文](../.github/pr-evidence/production-lab-fallback-zh-390-20261026.png)与[英文](../.github/pr-evidence/production-lab-fallback-en-390-20261026.png)。真实设备与不同网络条件仍未验证。
+
+历史记录（2026-10-17，PR #398）：Lab 手机视图切换栏增加了中英文提示并通过回归；当时尚未部署。2026-10-25 部署审计保留为历史记录，当前生产状态见上方 2026-10-26 摘要。
 
 ### 2026-10-25 部署后审计（PR #416 之后）
 
