@@ -3573,6 +3573,74 @@ test("Lab advanced controls are collapsed until explicitly opened", async ({
   await expect(page.locator(".morph-horizon")).toBeVisible();
 });
 
+test("Lab advanced controls stay beside the model with reduced motion enabled", async ({
+  page,
+}) => {
+  await blockLabGeometryAssets(page);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    for (const path of ["/lab/", "/en/lab/"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      await page.evaluate(() => window.scrollTo(0, 0));
+      const stage = page.locator("[data-model-stage]");
+      const toggle = stage.locator("[data-experiment-controls]");
+      const panel = page.locator("#lab-advanced-panel");
+      await expect(stage).toHaveAttribute("data-controls-ready", "true");
+      await expect(panel).toBeHidden();
+      await toggle.click({ force: true });
+      await expect(toggle).toHaveAttribute("aria-expanded", "true");
+      await expect(panel).toBeVisible();
+
+      const geometry = await page.evaluate(() => {
+        const model = document.querySelector<HTMLElement>("[data-model-stage]")!;
+        const panel = document.querySelector<HTMLElement>("#lab-advanced-panel")!;
+        const modelRect = model.getBoundingClientRect();
+        const panelRect = panel.getBoundingClientRect();
+        const firstControlRect = panel
+          .querySelector<HTMLElement>("button")!
+          .getBoundingClientRect();
+        return {
+          modelBottom: modelRect.bottom,
+          panelTop: panelRect.top,
+          panelLeft: panelRect.left,
+          panelRight: panelRect.right,
+          panelHeight: panelRect.height,
+          panelClientWidth: panel.clientWidth,
+          panelScrollWidth: panel.scrollWidth,
+          firstControlWidth: firstControlRect.width,
+        };
+      });
+      expect(
+        geometry.panelTop,
+        `${path} ${viewport.width}px advanced controls follow the model`,
+      ).toBeGreaterThanOrEqual(geometry.modelBottom - 16);
+      expect(
+        geometry.panelTop,
+        `${path} ${viewport.width}px advanced controls stay adjacent to the model`,
+      ).toBeLessThanOrEqual(geometry.modelBottom + 32);
+      expect(geometry.panelLeft).toBeGreaterThanOrEqual(0);
+      expect(geometry.panelRight).toBeLessThanOrEqual(viewport.width);
+      expect(geometry.panelHeight).toBeGreaterThan(0);
+      expect(geometry.panelScrollWidth).toBeGreaterThan(geometry.panelClientWidth);
+      expect(geometry.firstControlWidth).toBeLessThan(
+        geometry.panelClientWidth / 2,
+      );
+      await panel.scrollIntoViewIfNeeded();
+      const reachable = await panel.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return { top: rect.top, bottom: rect.bottom, viewportHeight: innerHeight };
+      });
+      expect(reachable.top).toBeGreaterThanOrEqual(-1);
+      expect(reachable.bottom).toBeLessThanOrEqual(reachable.viewportHeight + 2);
+    }
+  }
+});
+
 test("Lab advanced controls remain reachable in the scrollable desktop rail and touch tray", async ({
   page,
 }) => {
