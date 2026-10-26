@@ -20,17 +20,17 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: '**/home-webgl.spec.ts',
+      testIgnore: ['**/home-webgl.spec.ts', '**/lab-webgl.spec.ts'],
       use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'chromium-mobile',
-      testIgnore: '**/home-webgl.spec.ts',
+      testIgnore: ['**/home-webgl.spec.ts', '**/lab-webgl.spec.ts'],
       use: { ...devices['Pixel 5'] },
     },
     {
       name: 'chromium-webgl',
-      testMatch: '**/home-webgl.spec.ts',
+      testMatch: ['**/home-webgl.spec.ts', '**/lab-webgl.spec.ts'],
       workers: 1,
       use: {
         ...devices['Desktop Chrome'],

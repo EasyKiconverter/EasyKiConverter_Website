@@ -2,7 +2,7 @@
 
 [English](PROJECT_STATUS_en.md)
 
-最后核对：2026-10-25。本文根据当前仓库、GitHub PR/CI、正式部署记录和线上浏览器复核更新；真机与不同网络条件仍未核实。
+最后核对：2026-10-26。本文根据当前仓库、GitHub PR/CI、正式部署记录和浏览器复核更新；真机与真实网络条件仍未核实。
 
 ## 项目目标
 
@@ -10,7 +10,11 @@
 
 ## 当前阶段
 
-截至 2026-10-25，`version/V0.0.1` 为 `4c754a2`；PR #416 以合并提交 `d2e5d43` 晋级至 `master`。PR #414 补强平板四阶段遮挡回归并合入版本分支；PR #416 经 Feng083 独立审批、Site Quality（274 passed、6 skipped）、Dependency Review 和 Actionlint 通过后，以 merge commit 晋级 `master`。本地构建生成 8 页且 Astro 0 诊断；格式、页面、模型资产和差异检查通过。正式站已于 2026-10-25 通过仓库部署工具发布，备份为 `/var/www/backups/easykiconverter-website-20261025-061311`；脚本验证 8 个路由 HTTP 200、单一 `<title>`、canonical 和 hreflang 正确。线上 Chromium 复核覆盖 8 路由 × 320/390/768/1440px 共 32 组，无横向溢出、页面/控制台错误或本站资源失败；首页 390/768px 的中英文四阶段均加载真实 WebGL，303 个网格中 302 个可移动，阶段截图无卡片遮挡。Release API 返回 403，构建使用仓库 `v3.1.13` 回退数据。生产部署和桌面模拟浏览器验收完成；真实设备及不同网络条件仍未验证。
+截至 2026-10-26，`version/V0.0.1` 与远程一致，当前提交为 `718a052`（PR #425）。PR #422–#425 均已合入版本分支，经过 Feng083 独立审批，`Static site checks` 与 `Dependency Review` 均成功；内容包括 Lab 静态模型预览、模型表面细节、首页首屏文案可见性，以及 reduced-motion 下 Lab 控件可达性。本状态快照生成时，`master` 为 `81b4938`（PR #418 文档晋级），生产站仍对应 2026-10-25 的部署记录；版本分支尚未晋级或部署。
+
+当前版本分支验证：`pnpm run check` 检查 38 个 Astro 文件、0 项诊断；`pnpm run format:check`、`pnpm run build`（生成 8 页）、`python3 tools/validate_site.py`（8 页）、`pnpm run assets:check` 与 `git diff --check` 均通过。完整浏览器回归为 284 passed、6 skipped。另对中英文 8 个公开路由在 320×760、390×844、768×1024、1440×900、1920×1080 做了 40 组 reduced-motion 布局检查，未发现横向溢出、主内容地标缺失或导航不可见；实际检查了 390px 与 1440px 页面截图及首页滚动叙事。构建时 GitHub Release API 返回 403，按规则使用仓库内 `v3.1.13` 回退数据。
+
+2026-10-26 只读线上复核确认 8 个生产路由均返回 HTTP 200，且各自有一个 `<title>`、一个 canonical 和完整 hreflang（`zh-CN`、`en`、`x-default`）；响应 `Last-Modified` 为 `Sat, 24 Oct 2026 22:13:18 GMT`。真实设备及不同网络条件仍未验证。
 
 历史记录（2026-10-17，PR #398）：Lab 手机视图切换栏增加了中英文提示并通过回归；当时尚未部署。当前生产状态以 2026-10-25 部署后审计为准。
 
@@ -81,7 +85,7 @@ PR #347 将 3D Lab 的环境光、补光和正面光强度调低，以改善板�
 | WEB-01 / P1 | 修正首页双语品牌大小写、格式支持说明和下载引导。 | 双语文案/样式回归；构建、站点校验、完整 Playwright；PR #285/#286。 | 已完成、晋级 `master` 并随 2026-10-25 部署上线 |
 | WEB-02 / P1 | 将唯一标题的当前版本构建发布到正式站，并验证 8 路由及首页标题。 | 已按正式流程 dry-run、备份、部署，并逐路由验证 HTTP、标题数、语言互链、资源和浏览器表现。 | 已于 2026-10-25 部署；备份 `/var/www/backups/easykiconverter-website-20261025-061311`。脚本确认 8 路由均 HTTP 200、单一 `<title>`、canonical/hreflang 正确；线上 32 组路由/视口检查无溢出、页面/控制台错误或本站资源失败。已完成；保留部署回滚备份 |
 | WEB-03 / P2 | 测量真实手机和不同网络环境下的加载、缓存与交互性能，形成可复现记录。 | 收集设备/网络型号、浏览器、缓存状态和测试步骤；测首屏/模型加载、下载与交互，记录原始数据。 | 等待真实设备及可控网络；未验证 |
-| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | 新变更需双语回归、构建、路由/资产检查、完整 Playwright 和独立审评。 | PR #398 提升 Lab 手机视图切换器可发现性；#399 调整叙事姿态；#400、#403 同步验证与状态记录；#402 建立首页 3D 转换故事并修复阶段卡片/模型遮挡；#404 将移动端 3D 模型带入首屏；#406 将 Lab 首要 CTA 改为进入交互模型并明确区分 Release 外链；#407 稳定 CTA 视口回归。上述 PR 均已独立审评并合入 `version/V0.0.1`。#404 的 390×844 中英文前后截图见 `.github/pr-evidence/home-first-fold-{before,after}-{zh,en}-390.png`，双语首屏回归覆盖 320–428px；#406 的 Lab 前后截图见 `.github/pr-evidence/lab-viewer-entry-{before,after}-*`，并覆盖 390/768/1440px、双语与 reduced-motion；PR Site Quality 通过（258 passed、4 skipped）。#407 将相关回归拆为小型独立用例，桌面 1440px 仅由桌面项目执行；PR Site Quality 通过（268 passed、6 skipped）。平板“整理”阶段 768×760 中英文截图见 `.github/pr-evidence/homepage-3d-story-{zh,en}-768-prepare-after-overlap.png`；当前场景几何与遮挡回归覆盖各阶段，聚焦浏览器测试通过。视口截图不替代真机验证；PR #416 合并提交 `d2e5d43` 对应的网站代码已于 2026-10-25 部署，真机仍未验证。 |
+| WEB-04 / P1 | 持续审查 Home → Formats → Cases → Lab → Download 的双语信息、证据范围、CTA 和视觉一致性；仅对证据支持的问题实施成组修复。 | 新变更需双语回归、构建、路由/资产检查、完整 Playwright 和独立审评。 | PR #398 提升 Lab 手机视图切换器可发现性；#399 调整叙事姿态；#400、#403 同步验证与状态记录；#402 建立首页 3D 转换故事并修复阶段卡片/模型遮挡；#404 将移动端 3D 模型带入首屏；#406 将 Lab 首要 CTA 改为进入交互模型并明确区分 Release 外链；#407 稳定 CTA 视口回归。上述 PR 均已独立审评并合入 `version/V0.0.1`。#404 的 390×844 中英文前后截图见 `.github/pr-evidence/home-first-fold-{before,after}-{zh,en}-390.png`，双语首屏回归覆盖 320–428px；#406 的 Lab 前后截图见 `.github/pr-evidence/lab-viewer-entry-{before,after}-*`，并覆盖 390/768/1440px、双语与 reduced-motion；PR Site Quality 通过（258 passed、4 skipped）。#407 将相关回归拆为小型独立用例，桌面 1440px 仅由桌面项目执行；PR Site Quality 通过（268 passed、6 skipped）。平板“整理”阶段 768×760 中英文截图见 `.github/pr-evidence/homepage-3d-story-{zh,en}-768-prepare-after-overlap.png`；当前场景几何与遮挡回归覆盖各阶段，聚焦浏览器测试通过。PR #420 改进桌面首屏布局，PR #421 修复 320×760 首屏裁切并补充中英文前后截图；PR #421 的 PR/合并后 Site Quality 均为 277 passed、6 skipped。视口截图不替代真机验证；PR #416 合并提交 `d2e5d43` 对应的网站代码已于 2026-10-25 部署，PR #421 尚未晋级或部署，真机仍未验证。 |
 | WEB-05 / P1 | 让格式矩阵每个目标链接到准确的专属验证依据，并准确描述自动测试和人工规程的覆盖边界。 | 11 行双语链接回归；构建、站点校验、资产检查、完整 Playwright；PR #287/#288 CI 和独立审查。 | 已完成并晋级 `master` |
 
 ## 关键风险与控制
